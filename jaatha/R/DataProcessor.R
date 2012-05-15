@@ -17,15 +17,15 @@ setClass("DataProcessor",
 ##Function to generate new msoutput file with given parameter values,
 ##calculate its jsfs and return its summary statistics. Command for ms
 ##needs to be put in manually (Simulator.simulate()).
-Jaatha.msSimulatedSS <- function(object,dm,sumstatFunc,nTotalSumstat,finiteS=FALSE){
-	cat("just called generic msSimulatedSS \n")}
-setMethod("Jaatha.msSimulatedSS", signature(object = "DataProcessor"),
-		function(object,dm,sumstatFunc,nTotalSumstat,finiteS=FALSE){
-
-			Jaatha.simulate(dm, nSample=object@popSampleSizes, nLoci=object@nLoci,
-					par=c(.5,.5,.5,.5,.5),finite=finiteS, fileName="../data/msoutputToFind")
-			return(sumstatFunc(dm.getJSFS(dm)))
-		})
+#Jaatha.msSimulatedSS <- function(object,dm,sumstatFunc,nTotalSumstat,finiteS=FALSE){
+#	cat("just called generic msSimulatedSS \n")}
+#setMethod("Jaatha.msSimulatedSS", signature(object = "DataProcessor"),
+#		function(object,dm,sumstatFunc,nTotalSumstat,finiteS=FALSE){
+#
+#			Jaatha.simulate(dm, nSample=object@popSampleSizes, nLoci=object@nLoci,
+#					par=c(.5,.5,.5,.5,.5),finite=finiteS, fileName="../data/msoutputToFind")
+#			return(sumstatFunc(dm.getJSFS(dm)))
+#		})
 
 
 
@@ -43,14 +43,14 @@ setMethod("Jaatha.msSimulatedSS", signature(object = "DataProcessor"),
 ## Reads msout from internal memory and calculates jsfs with use of the C++
 ## code 'ms2jsfs_C'. The C++ code needs to be read in before. The
 ## result is returned as a matrix.
-Jaatha.getJSFS <- function(msout,samplesizes,anzLoci){
-	return ( matrix(.C("ms2jsfs",as.character(msout),
-							as.integer(samplesizes[1]),
-							as.integer(samplesizes[2]),
-							as.integer(anzLoci),
-							res=integer((samplesizes[1]+1)*(samplesizes[2]+1)))$res,
-					nrow=samplesizes[1]+1,ncol=samplesizes[2]+1) )
-}
+#Jaatha.getJSFS <- function(msout,samplesizes,anzLoci){
+#	return ( matrix(.C("ms2jsfs",as.character(msout),
+#							as.integer(samplesizes[1]),
+#							as.integer(samplesizes[2]),
+#							as.integer(anzLoci),
+#							res=integer((samplesizes[1]+1)*(samplesizes[2]+1)))$res,
+#					nrow=samplesizes[1]+1,ncol=samplesizes[2]+1) )
+#}
 
 #dyn.load(paste("../../R-eclipse/seqGenFile2jsfs_C++",.Platform$dynlib.ext, sep=""))  ## 23ss
 #dyn.load(paste("../../R-eclipse/seqGenFile2jsfs_30ss_C++",.Platform$dynlib.ext, sep=""))
@@ -59,19 +59,19 @@ Jaatha.getJSFS <- function(msout,samplesizes,anzLoci){
 ## Reads in file 'filename' and calculates jsfs or any sumstats with use of the 
 ## C++ code 'msFile2jsfs_C'. The C++ code needs to be read in before. The
 ## result is returned as an array!!
-Jaatha.calcJSFSfromFile <- function(fileName="output",samplesizes,anzLoci,
-								nTotalSS,nAdditionalSS=0,finiteSites=FALSE){
-	resultSize <- (samplesizes[1]+1)*(samplesizes[2]+1)+ nAdditionalSS
-	if(finiteSites){
-		## 23 ss
-		return (.C( "seqFile2jsfs",as.character(fileName),
-			as.integer(samplesizes[1]),
-			as.integer(samplesizes[2]),
-			as.integer(anzLoci),
-			as.integer(resultSize),
-			res=integer(resultSize))$res )
-		
-		## 30 ss
+#Jaatha.calcJSFSfromFile <- function(fileName="output",samplesizes,anzLoci,
+#								nTotalSS,nAdditionalSS=0,finiteSites=FALSE){
+#	resultSize <- (samplesizes[1]+1)*(samplesizes[2]+1)+ nAdditionalSS
+#	if(finiteSites){
+#		## 23 ss
+#		return (.C( "seqFile2jsfs",as.character(fileName),
+#			as.integer(samplesizes[1]),
+#			as.integer(samplesizes[2]),
+#			as.integer(anzLoci),
+#			as.integer(resultSize),
+#			res=integer(resultSize))$res )
+#		
+#		## 30 ss
 #		return (.C("seqFile2jsfs_30ss",as.character(fileName),
 #						as.integer(samplesizes[1]),
 #						as.integer(samplesizes[2]),
@@ -85,15 +85,15 @@ Jaatha.calcJSFSfromFile <- function(fileName="output",samplesizes,anzLoci,
 #				as.integer(anzLoci),
 #				as.integer(resultSize),
 #				res=integer(resultSize))$res )
-	
-	} else{ ## infinite sites jsfs calculation	
-		return ( .C("msFile2jsfs",as.character(fileName),
-							as.integer(samplesizes[1]),
-							as.integer(samplesizes[2]),
-							as.integer(anzLoci),
-							res=integer(resultSize))$res )
-	}
-}
+#	
+#	} else{ ## infinite sites jsfs calculation	
+#		return ( .C("msFile2jsfs",as.character(fileName),
+#							as.integer(samplesizes[1]),
+#							as.integer(samplesizes[2]),
+#							as.integer(anzLoci),
+#							res=integer(resultSize))$res )
+#	}
+#}
 
 
 
@@ -125,14 +125,14 @@ Jaatha.calcLikelihood <- function(jObject, nSimulations, par){
 ## Reads msout from internal memory and calculates jsfs with use of the C++
 ## code 'ms2jsfs_C'. The C++ code needs to be read in before. The
 ## result is returned as a matrix.
-getJSFS <- function(msout,samplesizes,anzLoci){
-	return ( matrix(.C("ms2jsfs",as.character(msout),
-							as.integer(samplesizes[1]),
-							as.integer(samplesizes[2]),
-							as.integer(anzLoci),
-							res=integer((samplesizes[1]+1)*(samplesizes[2]+1)))$res,
-					nrow=samplesizes[1]+1,ncol=samplesizes[2]+1) )
-}
+#getJSFS <- function(msout,samplesizes,anzLoci){
+#	return ( matrix(.C("ms2jsfs",as.character(msout),
+#							as.integer(samplesizes[1]),
+#							as.integer(samplesizes[2]),
+#							as.integer(anzLoci),
+#							res=integer((samplesizes[1]+1)*(samplesizes[2]+1)))$res,
+#					nrow=samplesizes[1]+1,ncol=samplesizes[2]+1) )
+#}
 
 
 ## Returns the logarithm of the factorial of k. Recursively implemented.

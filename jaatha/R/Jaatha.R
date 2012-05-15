@@ -26,6 +26,7 @@
 #' @docType package
 #' @title Fast estimation of demographic parameters
 #' @keywords package
+#' @useDynLib jaatha
 NULL
 
 #' The "Jaatha" S4 class saves the basic parameters for a Jaatha estimation

@@ -53,7 +53,6 @@
 		return(parameters[feature$parameter])
 }
 
-#dyn.load(paste("src/msFile2jsfs",.Platform$dynlib.ext, sep=""))
 .ms.getJSFS <- function(dm){
 	.dm.log(dm,"Called .ms.getJSFS()")
 	resultSize <- (dm@sampleSizes[1]+1)*(dm@sampleSizes[2]+1)

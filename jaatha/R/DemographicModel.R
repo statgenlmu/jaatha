@@ -437,7 +437,7 @@ dm.simulationCmd <- function(dm,parameters){
 #' dm <- dm.createDemographicModel(sampleSizes=c(25,25),nLoci=100,seqLength=1000)
 #' dm <- dm.addSpeciationEvent(dm,0.01,5)
 #' dm <- dm.addMutation(dm,1,20)
-#' dm.simSumStats(dm,c(1,10))
+##' dm.simSumStats(dm,c(1,10))
 dm.simSumStats <- function(dm,parameters,sumStatFunc=dm.defaultSumStats){
 	.dm.log(dm,"Called dm.simSumStats()")
 	if (!is.matrix(parameters)) parameters <- matrix(parameters,1,length(parameters))

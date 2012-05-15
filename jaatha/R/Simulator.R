@@ -71,17 +71,17 @@ setMethod("simulateWithinBlock", signature(bObject = "Block",
 ## Each demo-model needs to be specified in 2 ways, an infinite sites way (i.e.
 ## as the ms command) and as a finite sites way (i.e. first call ms that 
 ## generates treeFile which will be read in by seq-gen.)  
-Jaatha.simulate <- function(dm,par,nLoci,fileName="simOutput",
-			    nSample=NA,finite=FALSE # unused
-			   )
-{
-       if (missing(par)) {
-		cat("No model parametes given. Using random values:\n")
-		par <- runif(dm.getNPar(dm))
-		print( .calcAbsParamValue(dm,par) )  
-       }
-	system( dm.simulationCmd(dm,relParamValue=par,nLoci=nLoci,fileName) )
-} 
+#Jaatha.simulate <- function(dm,par,nLoci,fileName="simOutput",
+#			    nSample=NA,finite=FALSE # unused
+#			   )
+#{
+#       if (missing(par)) {
+#		cat("No model parametes given. Using random values:\n")
+#		par <- runif(dm.getNPar(dm))
+#		print( .calcAbsParamValue(dm,par) )  
+#       }
+#	system( dm.simulationCmd(dm,relParamValue=par,nLoci=nLoci,fileName) )
+#} 
 
 
 ##Function to map 'value' in oldRange to values between 0 and

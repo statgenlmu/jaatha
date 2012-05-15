@@ -1,3 +1,0 @@
-#useDynLib(jaatha, msFile2jsfs)
-useDynLib(jaatha)
-exportPattern("^[^\\.]")
