@@ -51,7 +51,7 @@ rm(.init)
 # "Private" functions
 #-----------------------------------------------------------------------
 
-.addFeature <- function(dm,type,parameter,population,
+.appendFeature <- function(dm,type,parameter,population,
 			lowerRange,upperRange,
 			startsAtTime,timeLine){
 	
@@ -84,6 +84,34 @@ rm(.init)
 	if (any(dm@parameters == parameterName)) 
 		stop("parameter already exists")
 	dm@parameters <- c(dm@parameters,parameterName)
+	return(dm)
+}
+
+.addFeature <- function(dm,type,parName,lowerRange,upperRange,fixedValue,
+			   population=NA,startsAtTime=NA,timeLine=NA){
+
+	#Set range
+	if ( ( !missing(fixedValue) & !missing(lowerRange) & !missing(upperRange) ) |
+	     ( missing(fixedValue) & ( missing(lowerRange) | missing(upperRange) ) ) 
+	   )
+		stop("Exactly either fixedValue or lowerRange and upperRange must be specified.")
+
+	if ( !missing(fixedValue) ) {
+		lowerRange <- fixedValue
+		upperRange <- fixedValue
+	}
+
+	parameter <- NA
+
+	if ( missing(fixedValue) ) {
+		dm <- .addParameter(dm,parName)
+		parameter <- length(dm@parameters)
+	}
+
+	dm <- .appendFeature(dm,type,parameter,population,
+		             lowerRange,upperRange,
+			     startsAtTime,timeLine)
+	
 	return(dm)
 }
 
@@ -239,10 +267,35 @@ dm.getParRanges <- function(dm){
 	return( cbind(lower=dm@features$lowerRange[parMask],upper=dm@features$upperRange[parMask]) )
 }
 
+#' Create a basic demographic model
+#' 
+#' This function creates a basic empty demographic model, which
+#' is returned. Features like mutation, population splits and 
+#' migration can be added afterwards.
+#'
+#' @param sampleSizes Number of individual that are sampled. If your model 
+#' 		      has multiple populations, this needs to be a vector
+#'		      containing the sample sizes from each population.
+#' @param nLoci	      Number of loci that will be simulated
+#' @param seqLength   Number of bases for each locus
+#' @param finiteSites If 'TRUE', a finite sites mutation model is assumed
+#'		      instead of an infinite sites one.
+#' @param tsTvRatio   Transition transversion ratio
+#' @param debugMode   If 'TRUE', a debug output will be produced
+#' @param logFile     If set, the debug output will be written into the given file
+#' @return 	      The demographic model
+#' @export
+#'
+#' @examples
+#' dm <- dm.createDemographicModel(sampleSizes=c(25,25),nLoci=100,seqLength=1000)
+#' dm <- dm.addSpeciationEvent(dm,0.01,5)
+#' dm <- dm.addMutation(dm,1,20)
+#' dm
 dm.createDemographicModel <- function(sampleSizes,nLoci,seqLength,
 				      finiteSites=F,tsTvRatio=.33,
 				      debugMode=F,logFile=""){
-	dm <- new("DemographicModel",sampleSizes,nLoci,seqLength,finiteSites,tsTvRatio,debugMode,logFile)
+	dm <- new("DemographicModel",sampleSizes,nLoci,seqLength,
+		  finiteSites,tsTvRatio,debugMode,logFile)
 	return(dm)
 }
 
@@ -260,175 +313,103 @@ dm.getNPar <- function(dm){
 	return(length(dm@parameters)-dm@externalTheta)
 }
 
-dm.addMutation <- function(dm,lowerRange=F,upperRange=F,fixedValue=F,
-			   population=NA,startsAtTime=NA,timeLine=NA){
 
-	#.checkFeatureParameters(lowerRange,upperRange,fixedValue,startsAtTime,timeLine)
 
-	if ( (lowerRange==F) & (upperRange==F) & (fixedValue==F) ){
+#' Adds mutations to a demographic model
+#' 
+#' @param dm	      The demographic model to which mutations should be added
+#' @param lowerRange  If you want to estimate the mutation rate, this will be used 
+#'		      as the smallest possible value.
+#' @param upperRange  If you want to estimate the mutation rate, this will be used 
+#'		      as the largest possible value.
+#' @param fixedValue  If specified, the mutation rate will not be estimated, but assumend
+#'		      to be fixed at the given value.
+#' @return 	      The demographic model with mutation
+#' @export
+#'
+#' @examples
+#' dm <- dm.createDemographicModel(sampleSizes=c(25,25),nLoci=100,seqLength=1000)
+#' dm <- dm.addSpeciationEvent(dm,0.01,5)
+#' dm <- dm.addMutation(dm,1,20)
+#' dm
+dm.addMutation <- function(dm,lowerRange,upperRange,fixedValue){
+	if ( missing(lowerRange) & missing(upperRange) & missing(fixedValue) ){
 		dm@externalTheta <- T
 		upperRange <- 5
 		lowerRange <- 5
 	}
 
-	if ( is.numeric(fixedValue) ) {
-		lowerRange <- fixedValue
-		upperRange <- fixedValue
-	}
-
-	parameter <- NA
-
-	if ( fixedValue == F) {
-		dm <- .addParameter(dm,"theta")
-		parameter <- length(dm@parameters)
-	}
-
-	dm <- .addFeature(dm,"mutation",parameter,population,
-		             lowerRange,upperRange,startsAtTime,timeLine)
-	
-	return(dm)
+	return(.addFeature(dm,"mutation","theta",lowerRange,upperRange,fixedValue))
 }
 
-dm.addRecombination <- function(dm,lowerRange=F,upperRange=F,fixedValue=F,
-			   population=NA,startsAtTime=NA,timeLine=NA){
-
-	#.checkFeatureParameters(lowerRange,upperRange,fixedValue,startsAtTime,timeLine)
-
-	if ( (lowerRange==F) & (upperRange==F) & (fixedValue==F) ){
-		dm@externalTheta <- T
-		upperRange <- 5
-		lowerRange <- 5
-	}
-
-	if ( is.numeric(fixedValue) ) {
-		lowerRange <- fixedValue
-		upperRange <- fixedValue
-	}
-
-	parameter <- NA
-
-	if ( fixedValue == F) {
-		dm <- .addParameter(dm,"rho")
-		parameter <- length(dm@parameters)
-	}
-
-	dm <- .addFeature(dm,"recombination",parameter,population,
-		             lowerRange,upperRange,startsAtTime,timeLine)
-	
-	return(dm)
+#' Adds recombination events to a demographic model
+#' 
+#' @param dm	      The demographic model to which recombination events should be added
+#' @param lowerRange  If you want to estimate the recombination rate, this will be used 
+#'		      as the smallest possible value.
+#' @param upperRange  If you want to estimate the recombination rate, this will be used 
+#'		      as the largest possible value.
+#' @param fixedValue  If specified, the mutation rate will not be estimated, but assumend
+#'		      to be fixed at the given value.
+#' @return 	      The demographic model with recombination
+#' @export
+#'
+#' @examples
+#' dm <- dm.createDemographicModel(sampleSizes=c(25,25),nLoci=100,seqLength=1000)
+#' dm <- dm.addSpeciationEvent(dm,0.01,5)
+#' dm <- dm.addRecombination(dm,fixed=5)
+#' dm <- dm.addMutation(dm,1,20)
+#' dm
+dm.addRecombination <- function(dm,lowerRange,upperRange,fixedValue){
+	return(.addFeature(dm,"recombination","rho",lowerRange,upperRange,fixedValue))
 }
 
-dm.addSymmetricMigration <- function(dm,lowerRange=F,upperRange=F,
-			   		startsAtTime=NA,timeLine=NA,fixedValue=F){
+#' Adds symmetric migration to a demographic model
+#' 
+#' @param dm	      The demographic model to which the migration should be added
+#' @param lowerRange  If you want to estimate the mutation rate, this will be used 
+#'		      as the smallest possible value.
+#' @param upperRange  If you want to estimate the mutation rate, this will be used 
+#'		      as the largest possible value.
+#' @param fixedValue  If specified, the mutation rate will not be estimated, but assumend
+#'		      to be fixed at the given value.
+#' @return 	      The demographic model with symmetric migration
+#' @export
+#'
+#' @examples
+#' dm <- dm.createDemographicModel(sampleSizes=c(25,25),nLoci=100,seqLength=1000)
+#' dm <- dm.addSpeciationEvent(dm,0.01,5)
+#' dm <- dm.addSymmetricMigration(dm,0.1,5)
+#' dm <- dm.addMutation(dm,1,20)
+#' dm
+dm.addSymmetricMigration <- function(dm,lowerRange,upperRange,fixedValue){
+	return(.addFeature(dm,"migration","m",lowerRange,upperRange,fixedValue))
+}
 
-	if ( is.numeric(fixedValue) ) {
-		lowerRange <- fixedValue
-		upperRange <- fixedValue
-	}
-
-	parameter <- NA
-	population <- NA
-
-	if ( fixedValue == F) {
-		dm <- .addParameter(dm,"mig")
-		parameter <- length(dm@parameters)
-	}
-
-	dm <- .addFeature(dm,"migration",parameter,population,
-		             lowerRange,upperRange,startsAtTime,timeLine)
-	
-	return(dm)
+dm.addEffectivePopSize <- function(dm,population,lowerRange,upperRange,fixedValue){
+	return(.addFeature(dm,"effPopSize",paste("Ne",population,sep=""),lowerRange,upperRange,fixedValue))
 }
 
 
-dm.addEffectivePopSize <- function(dm,population,lowerRange=F,upperRange=F,
-			           startsAtTime=NA,timeLine=NA,fixedValue=F){
-
-	if ( is.numeric(fixedValue) ) {
-		lowerRange <- fixedValue
-		upperRange <- fixedValue
-	}
-
-	parameter  <- NA
-
-	if ( fixedValue == F) {
-		dm <- .addParameter(dm,paste("Ne",population,sep=""))
-		parameter <- length(dm@parameters)
-	}
-
-	dm <- .addFeature(dm,"effPopSize",parameter,population,
-		             lowerRange,upperRange,startsAtTime,timeLine)
-
-	return(dm)
-}
-
-
-dm.addSpeciationEvent <- function(dm,lowerRange=F,upperRange=F,
-				  population=1,timeLine=NA,fixedValue=F){
-
-	#.checkFeatureParameters(lowerRange,upperRange,fixedValue,startsAtTime=F,timeLine)
-
-	if ( is.numeric(fixedValue) ) {
-		lowerRange <- fixedValue
-		upperRange <- fixedValue
-	}
-
-	parameter <- NA 
-	startsAtTime <- NA
-
-	if ( fixedValue == F) {
-		dm <- .addParameter(dm,"tau")
-		parameter <- length(dm@parameters)
-	}
-
-	dm <- .addFeature(dm,"split",parameter,population,
-		             lowerRange,upperRange,startsAtTime,timeLine)
-
-	return(dm)
-}
-
-
-dm.setPopSize <- function(dm,population=1,lowerRange=F,upperRange=F,fixedValue=F,
-			  startsAtTime=NA,timeLine=NA){
-
-	if ( is.numeric(fixedValue) ) {
-		lowerRange <- fixedValue
-		upperRange <- fixedValue
-	}
-
-	parameter <- NA 
-
-	if ( fixedValue == F) {
-		dm <- .addParameter(dm,paste("pop",population,"_size",sep=""))
-		parameter <- length(dm@parameters)
-	}
-
-	dm <- .addFeature(dm,"popSize",parameter,population,
-		             lowerRange,upperRange,startsAtTime,timeLine)
-
-	return(dm)
-}
-
-
-dm.addPopSizeChange <- function(dm,population=1,lowerRange=F,upperRange=F,fixedValue=F,
-			  startsAtTime=NA,timeLine=NA){
-
-if ( is.numeric(fixedValue) ) {
-		lowerRange <- fixedValue
-		upperRange <- fixedValue
-	}
-
-	parameter <- NA 
-
-	if ( fixedValue == F) {
-		dm <- .addParameter(dm,paste("pop",population,"_sizeChange",sep=""))
-		parameter <- length(dm@parameters)
-	}
-
-	dm <- .addFeature(dm,"sizeChange",parameter,population,
-		             lowerRange,upperRange,startsAtTime,timeLine)
-
-	return(dm)
+#' Adds a speciation event to a demographic model
+#' 
+#' @param dm	      The demographic model to which the speciation event should be added
+#' @param lowerRange  If you want to estimate the mutation rate, this will be used 
+#'		      as the smallest possible value.
+#' @param upperRange  If you want to estimate the mutation rate, this will be used 
+#'		      as the largest possible value.
+#' @param fixedValue  If specified, the mutation rate will not be estimated, but assumend
+#'		      to be fixed at the given value.
+#' @return 	      The extended demographic model
+#' @export
+#'
+#' @examples
+#' dm <- dm.createDemographicModel(sampleSizes=c(25,25),nLoci=100,seqLength=1000)
+#' dm <- dm.addSpeciationEvent(dm,0.01,5)
+#' dm <- dm.addMutation(dm,1,20)
+#' dm
+dm.addSpeciationEvent <- function(dm,lowerRange,upperRange,fixedValue,population=1){
+	return(.addFeature(dm,"split","tau",lowerRange,upperRange,fixedValue,population=population))
 }
 
 
@@ -441,29 +422,70 @@ dm.simulationCmd <- function(dm,parameters){
 	.dm.log(dm,"Finished dm.simulationCmd()")
 }
 
-
-dm.getJSFS <- function(dm){
-	if (dm@finiteSites) .fsc.getJSFS(dm)
-}
-
-dm.simSumStats <- function(dm,parameters){
+#' Simulates data according to a demographic model and calculates summary statistics form it
+#' 
+#' @param dm	      The demographic model according to which the simulations should be done
+#' @param parameters  A vector of parameters which should be used for the simulations. 
+#'		      If a matrix is given, a simulation for each row of the matrix will be performed
+#' @param sumStatFunc The function to calculate summary statistics of the JSFS. It must return
+#'		      a numeric vector.
+#' @return 	      A matrix where each row is the vector of summary statistics for 
+#'		      the parameters in the same row of the "parameter" matrix
+#' @export
+#'
+#' @examples
+#' dm <- dm.createDemographicModel(sampleSizes=c(25,25),nLoci=100,seqLength=1000)
+#' dm <- dm.addSpeciationEvent(dm,0.01,5)
+#' dm <- dm.addMutation(dm,1,20)
+#' dm.simSumStats(dm,c(1,10))
+dm.simSumStats <- function(dm,parameters,sumStatFunc=dm.defaultSumStats){
 	.dm.log(dm,"Called dm.simSumStats()")
 	if (!is.matrix(parameters)) parameters <- matrix(parameters,1,length(parameters))
 
 	if 	(dm@simProg == "fsc") {
-		sumStats <- .fsc.simSumStats(dm,parameters)
+		sumStats <- .fsc.simSumStats(dm,parameters,sumStatFunc)
 	}
 	else if (dm@simProg == "ms" ) {
-	       	sumStats <- .ms.simSumStats(dm,parameters)
+	       	sumStats <- .ms.simSumStats(dm,parameters,sumStatFunc)
 	}
 	else	message("ERROR: unkown simulation programm")
 	.dm.log(dm,"Finished dm.simSumStats()")
 	return(sumStats)
 }
 
-#source("DemographicModel-ms.R")
-#source("DemographicModel-fsc.R")
-
-#-----------------------------------------------------------------------
-# CleanUp
-#-----------------------------------------------------------------------
+#' These are the default summary statistics for Jaatha
+#' 
+#' @param jsfs	      The joint site frequency spectrum of two populations
+#' @return 	      A vector with sums over different areas of the JSFS
+#' @export
+#'
+#' @examples
+#' jsfs <- matrix(rpois(26*26,5),26,26)
+#' dm.defaultSumStats(jsfs)
+dm.defaultSumStats <- function(jsfs) {
+  n <- nrow(jsfs)
+  m <- ncol(jsfs)
+  c(sum(jsfs[1,2:3]),
+    sum(jsfs[2:3,1]),
+    sum(jsfs[1,4:(m-3)]),
+    sum(jsfs[4:(n-3),1]),
+    sum(jsfs[1,(m-2):(m-1)]),
+    sum(jsfs[(n-2):(n-1),1]),
+    sum(jsfs[2:3,2:3]),
+    sum(jsfs[2:3,4:(m-3)]),
+    sum(jsfs[4:(n-3),2:3]),
+    sum(jsfs[(n-2):(n-1),4:(m-3)]),
+    sum(jsfs[4:(n-3),(m-2):(m-1)]),
+    sum(jsfs[2:3,(m-2):(m-1)]),
+    sum(jsfs[(n-2):(n-1),2:3]),
+    sum(jsfs[4:(n-3),4:(m-3)]),
+    sum(jsfs[(n-2):(n-1),(m-2):(m-1)]),
+    jsfs[1,m],
+    jsfs[n,1],
+    sum(jsfs[n,2:3]),
+    sum(jsfs[2:3,m]),
+    sum(jsfs[n,4:(m-3)]),
+    sum(jsfs[4:(n-3),m]),
+    sum(jsfs[n,(m-2):(m-1)]),
+    sum(jsfs[(n-2):(n-1),m]) )
+}

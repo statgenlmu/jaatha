@@ -69,10 +69,10 @@
 	return(matrix(jsfs,dm@sampleSizes[1]+1,dm@sampleSizes[2]+1))
 }
 
-.ms.simSumStats <- function(dm,parameters){
+.ms.simSumStats <- function(dm,parameters,sumStatFunc){
 	.dm.log(dm,"Called .ms.simSumStats()")
 
-	nSumStats <- length(.ms.sumStatFunc(matrix(0,dm@sampleSizes[1],dm@sampleSizes[2])))
+	nSumStats <- length(sumStatFunc(matrix(0,dm@sampleSizes[1],dm@sampleSizes[2])))
         nSims	  <- max(dim(parameters)[1],1)
 	sumStats  <- matrix(0,nSims,nSumStats)
 
@@ -80,37 +80,10 @@
 
 	for ( n in 1:nSims ) {
 		system(.ms.generateCmd(dm,parameters[n,]))
-		sumStats[n,] <- .ms.sumStatFunc(.ms.getJSFS(dm))
+		sumStats[n,] <- sumStatFunc(.ms.getJSFS(dm))
 	}
 
 	.dm.log(dm,"Finished .ms.simSumStats()")
 	return(sumStats)
 }
 
-.ms.sumStatFunc <- function(jsfs) {
-  n <- nrow(jsfs)
-  m <- ncol(jsfs)
-  c(sum(jsfs[1,2:3]),
-    sum(jsfs[2:3,1]),
-    sum(jsfs[1,4:(m-3)]),
-    sum(jsfs[4:(n-3),1]),
-    sum(jsfs[1,(m-2):(m-1)]),
-    sum(jsfs[(n-2):(n-1),1]),
-    sum(jsfs[2:3,2:3]),
-    sum(jsfs[2:3,4:(m-3)]),
-    sum(jsfs[4:(n-3),2:3]),
-    sum(jsfs[(n-2):(n-1),4:(m-3)]),
-    sum(jsfs[4:(n-3),(m-2):(m-1)]),
-    sum(jsfs[2:3,(m-2):(m-1)]),
-    sum(jsfs[(n-2):(n-1),2:3]),
-    sum(jsfs[4:(n-3),4:(m-3)]),
-    sum(jsfs[(n-2):(n-1),(m-2):(m-1)]),
-    jsfs[1,m],
-    jsfs[n,1],
-    sum(jsfs[n,2:3]),
-    sum(jsfs[2:3,m]),
-    sum(jsfs[n,4:(m-3)]),
-    sum(jsfs[4:(n-3),m]),
-    sum(jsfs[n,(m-2):(m-1)]),
-    sum(jsfs[(n-2):(n-1),m]) )
-}
