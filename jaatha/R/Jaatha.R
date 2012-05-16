@@ -69,12 +69,12 @@ setClass("Jaatha",
 			logFile = "character",		sumStats = "numeric",
 			likelihood.table = "matrix"
 		),
-		validity = function(object){
+		#validity = function(object){
 			#iniBlocks <- object@nBlocksPerPar   
-			if (object@nPar<1){
-				stop("Validation-ERROR: Number of parameters should be at least 1. Got:",
-						object@nPar,"!")
-			}
+		#	if (object@nPar<1){
+		#		stop("Validation-ERROR: Number of parameters should be at least 1. Got:",
+			#			object@nPar,"!")
+			#}
 			# The 3 cases below will be checked in DemographicModel.R
 			#else if (  length(object@parNames)!=object@nPar & externalTheta=F ) ){
 			#	stop("Validation-ERROR: number of parameter names (parNames) is ",
@@ -90,10 +90,10 @@ setClass("Jaatha",
 			#	stop("Validation-ERROR: Lower Bounds must be less than or equal to upper bounds! Got ",
 			#			range," instead!")
 			#}
-			else if (length(object@popSampleSizes) != 2){
-				stop("Validation-ERROR: We need sample sizes for two populations!Got ",
-						length(object@popSampleSizes), " instead!")
-			}
+			#else if (length(object@popSampleSizes) != 2){
+			#	stop("Validation-ERROR: We need sample sizes for two populations!Got ",
+			#			length(object@popSampleSizes), " instead!")
+			#}
 			#else if (length(unlist(as.list(object@ssFunc)))==0){ ##checks just the length of given fuction
 				#print(length(unlist(as.list(object@ssFunc))))
 			#	stop("You did not specify the summary statistic function (ssFunc) with has the JSFS-Array as input!")
@@ -101,8 +101,9 @@ setClass("Jaatha",
 			#else  if (object@nTotalSumstat <=0 || object@nTotalSumstat < object@nNonJsfsSumstat){
 			#	stop("nTotalSumstat has to be bigger than 0 and >= nNonJsfsSumstat! Got", object@nTotalSumstat,"!" )
 			#}
-			return (TRUE)
-		})
+			#return (TRUE)
+		#}
+	 )
 
 ## constructor method for Jaatha object
 .init <- function(.Object, demographicModel, sumStats, seed=numeric(), resultFile, debugMode, logFile){
@@ -175,14 +176,8 @@ setClass("Jaatha",
 	} 
 	.Object@seed <- seed
 	set.seed(seed)            
-	## setting initial ms seeds
-	msSeeds <- c()
-	for (s in 1:3){
-		msSeeds <- c(msSeeds,sample(1:65535,size=1))
-	}
-	cat(msSeeds,"\n",file="seedms")
 	#cat("Initial msSeeds set to ",msSeeds,"\n")            
-	validObject(.Object)
+	#validObject(.Object)
 	show(.Object)      
 	.log(.Object,"Finished initialization")
 	return (.Object)
@@ -242,7 +237,7 @@ setMethod("show","Jaatha",
 			#cat(" ssFunc provided =",
 			#		(length(unlist(as.list(object@ssFunc)))!=0),"\n")
 			if (length(object@MLest)!=0){
-				cat(" MLest(conv) =",round(getMLest(object),6)
+				cat(" MLest(conv) =",round(Jaatha.getMLest(object),6)
 								,"with likelihood",object@logMLmax,"\n")
 			} else{}
 			cat("*** End of Object of class JAATHA ***\n")   
@@ -401,7 +396,7 @@ Jaatha.refineSearch <- function(jObject,startPoints,nSim,
 	}
 
 	cat("Best log-composite-likelihood values are:\n")
-	Jaatha.printLikelihoods(jObject)
+	print(Jaatha.printLikelihoods(jObject))
 
 	return(jObject)
 }
@@ -549,12 +544,14 @@ Jaatha.refineSearch <- function(jObject,startPoints,nSim,
 
 			likelihoods <- c()
 			.log(jObject,"Starting final sim.")
+			.print(jObject,"Calulating composite log likelihoods for best blocks:")
 			for (t in 1:nBest){
+				.print(jObject,"Block",t,"of",nBest,"...")
 				topPar <- topTen[t,2:(nTotalPar+1)]    # in original parameter range
 				likelihoods[t] <- Jaatha.calcLikelihood( jObject, 
 									 nSimulations=nFinalSim, 
 									 par=topPar )
-				cat(t,likelihoods[t],"\n")
+				#cat(t,likelihoods[t],"\n")
 			}
 			.log(jObject,"Finished final sim.")
 
@@ -1127,19 +1124,22 @@ is.jaatha <- function(jObject){
 }
 
 Jaatha.printStartPoints <- function(jObject,startPoints){
-	mat <- matrix(0,length(startPoints),startPoints[[1]]@nPar+1)
-	colnames(mat) <- c("score",jObject@dm@parameters)
+	width <- startPoints[[1]]@nPar + 1 + jObject@externalTheta
+	mat <- matrix(0,length(startPoints),width)
+	colnames(mat) <- c("score",jObject@dm@parameters)[1:width]
 	for (i in 1:length(startPoints)){
 		mat[i,1] <- round(startPoints[[i]]@score,2)
-		mat[i,-1] <- round(.deNormalize(jObject,startPoints[[i]]@MLest), 3)
+		mat[i,-1] <- round(.deNormalize(jObject,startPoints[[i]]@MLest)[1:(width-1)], 3)
 	}
 	perm <- sort.list(mat[,1],decreasing=T)	
 	return(mat[perm,])
 }
 
 Jaatha.printLikelihoods <- function(jObject){
+	.log(jObject,"Called Jaatha.printLikelihoods")
 	lt <- jObject@likelihood.table
 	lt[,-(1:2)] <- .deNormalize(jObject,lt[,-(1:2)])
 	perm <- sort.list(lt[,1],decreasing=F)	
+	.log(jObject,"Finished Jaatha.printLikelihoods")
 	return(lt[perm,])
 }

@@ -1,0 +1,88 @@
+\documentclass{article}
+
+\usepackage{natbib}
+\usepackage{graphics}
+\usepackage{amsmath}
+\usepackage{indentfirst}
+\usepackage[utf8]{inputenc}
+
+%\VignetteIndexEntry{Jaatha Overview}
+
+\begin{document}
+
+<<foo,include=FALSE,echo=FALSE>>=
+options(keep.source = TRUE, width = 60)
+foo <- packageDescription("jaatha")
+@
+
+\title{The Jaatha HowTo}
+\author{\Sexpr{foo$Author}}
+\date{Version \Sexpr{foo$Version}}
+\maketitle
+
+\section{Introduction}
+\noindent
+Jaatha is a fast composite likelihood method to estimate model parameters of the 
+demographic history of (at the moment) two related species. To do so, it uses molecular
+data from multiple individuals from both species.
+This HowTo describes the method and gives an example of using its implementation
+as \verb@R@ package \verb@jaatha@.
+
+\section{A demographic model}
+\noindent
+Before we can apply Jaatha to estimate parameter, we first need to create a model
+of the demographic history of the species.
+
+% insert model picture and description here
+
+To specify the above demographic model in \verb@R@, we first need to load \verb@jaatha@.
+<<Loading Jaatha>>=
+library(jaatha)
+@
+we can then create an 'empty' model \verb@dm@ using the \verb@dm.createDemographicModel()@
+function:
+<<Creating a demographic model in R>>=
+dm <- dm.createDemographicModel(sampleSizes=c(25,24),nLoci=100,
+						seqLength=10^3)
+@
+The parameter \verb@sampleSizes@ here states we have sampled molecular data from $25$ 
+individuals of the first population and $24$ individuals from the second one. The 
+second argument \verb@nLoci@ states are using data from $100$ independent loci in the
+genome while \verb@seqLength@ gives the (average) length of each loci\footnote{This 
+is only used when a finite sites model is assumed or if recombination is included.}.
+
+We can now successively add the other assumptions of our model: 
+<<Creating a demographic model in R>>=
+dm <- dm.addSpeciationEvent(dm,.1,5)
+dm <- dm.addSymmetricMigration(dm,.01,5)
+dm <- dm.addMutation(dm,1,20)
+dm <- dm.addRecombination(dm,fixed=5)
+@
+Here, the first parameter is always the demographic model to which we want to add
+an assumption/feature, while the first number is the lowest possible value we assume
+that our parameter could have and the second number is the highest possible value.
+\begin{itemize}
+	\item The parameter for the speciation event is the split time $\tau$, which
+		states how many generations ago the split of the population has occurred.
+		As usual in population genetics, its is measured in units of $4N_1$ 
+		generations ago, where $N_1$ is effective population size of the first 
+		population.
+	\item The parameter for the (symmetric) migration is the scaled migration rate $M$, 
+		which is given by $M=4N_1m$, where $m$ is the fraction of individuals of each 
+		population which are replaced by immigrants from the other population each
+		generation.
+\end{itemize}
+
+Keep in mind that a `good' model -- which one that approximates the real demographic
+history but is also as simple as possible -- is crucial for getting meaningful 
+estimates in the end. Jaatha will always try to find the parameters that make the
+model fit best to the real data. If the model does not fit to the real data at all,
+also the estimates will not be related to the real situation.
+
+
+
+
+\section{Running Jaatha}
+
+
+\end{document}

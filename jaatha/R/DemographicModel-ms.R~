@@ -1,5 +1,3 @@
-dm.mscmd <- "ms"
-
 .ms.outfile <- function() {
 	return( paste(tempdir(),"/ms.out",sep="") )
 }
@@ -8,7 +6,7 @@ dm.mscmd <- "ms"
 	.dm.log(dm,"Called .ms.generateCmd()")
 
 	nSample <- dm@sampleSizes
-	cmd <- c(sum(nSample),dm@nLoci)                     #repetitions and number of loci
+	cmd <- c("ms",sum(nSample),dm@nLoci)                     #repetitions and number of loci
 	cmd <- c(cmd,"-I 2",nSample[1],nSample[2])            	 #two populations
 	
 	for (i in 1:dim(dm@features)[1] ){
@@ -39,7 +37,7 @@ dm.mscmd <- "ms"
 		#		     parameters[i])
 	}
 
-	#if (outfile != F) cmd <- c(cmd,">",outfile)
+	if (outfile != F) cmd <- c(cmd,">",outfile)
 	cmd <- paste(cmd,collapse=" ")
 	.dm.log(dm,"Generated simulation cmd:",cmd)
 	.dm.log(dm,"Finished .ms.generateCmd()")
@@ -55,17 +53,18 @@ dm.mscmd <- "ms"
 		return(parameters[feature$parameter])
 }
 
-.ms.getJSFS <- function(dm,msOut){
+#dyn.load(paste("src/msFile2jsfs",.Platform$dynlib.ext, sep=""))
+.ms.getJSFS <- function(dm){
 	.dm.log(dm,"Called .ms.getJSFS()")
 	resultSize <- (dm@sampleSizes[1]+1)*(dm@sampleSizes[2]+1)
-	jsfs <- ( .C("ms2jsfs",
-		as.character(msOut),
+	jsfs <- ( .C("msFile2jsfs",
+		as.character(.ms.outfile()),
 		as.integer(dm@sampleSizes[1]),
 		as.integer(dm@sampleSizes[2]),
 		as.integer(dm@nLoci),
 		res=integer(resultSize),
 	        PACKAGE="jaatha")$res )
-	#unlink(.ms.outfile())
+	unlink(.ms.outfile())
 	.dm.log(dm,"Finished .ms.getJSFS()")
 	return(matrix(jsfs,dm@sampleSizes[1]+1,dm@sampleSizes[2]+1))
 }
@@ -78,23 +77,13 @@ dm.mscmd <- "ms"
 	sumStats  <- matrix(0,nSims,nSumStats)
 
 	.dm.log(dm,"Simulating",nSumStats,"summary statistics for",nSims,"parameter combination(s)")
-	
-	wd <- getwd()
-	setwd(tempdir())
-	.ms.setSeed()
 
 	for ( n in 1:nSims ) {
-		suppressWarnings(ms <- system2(dm.mscmd,.ms.generateCmd(dm,parameters[n,]),stdout=T))
-		sumStats[n,] <- sumStatFunc(.ms.getJSFS(dm,ms))
+		system(.ms.generateCmd(dm,parameters[n,]))
+		sumStats[n,] <- sumStatFunc(.ms.getJSFS(dm))
 	}
 
-	setwd(wd)
 	.dm.log(dm,"Finished .ms.simSumStats()")
 	return(sumStats)
 }
 
-.ms.setSeed <- function(){
-	if ( file.exists("seedms") ) return(F)
-	cat(sample(1:65525,3),"\n",file="seedms")
-	return(T)
-}
