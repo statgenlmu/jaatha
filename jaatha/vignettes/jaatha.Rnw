@@ -77,6 +77,12 @@ that our parameter could have and the second number is the highest possible valu
 	the probability of recombination between the ends of the locus per generation.
 \end{itemize}
 
+\noindent
+Finally we can check your model using
+<<Checking the model>>=
+dm
+@
+
 Keep in mind that a `good' model -- which is one that approximates the real demographic
 history but is also as simple as possible -- is crucial for getting meaningful
 estimates in the end. Jaatha will always try to find the parameters that make the
@@ -85,8 +91,112 @@ also the estimates will not be related to the real situation.
 
 
 
-
 \section{Running Jaatha}
 
+\noindent
+Jaatha is divided into two parts. First we find good starting
+positions by simulating very coarsely across the entire parameter space. We call
+this part \emph{initial search}. Afterwards a more thorough \emph{refined search}
+is performed starting from the best positions of the first step.
+
+\subsection{Theoretical background}
+
+\subsection{The initial search}
+
+\subsection{The refined search}
+
+
+Taking a set of best starting points chosen by 
+their score we can then conduct a more thorough search to fit GLMs to the 
+simulated $\widehat{\textbf{S}}$ in smaller regions of the parameter space and 
+thus improving the fit of the GLMs and consequently the likelihood approximations. 
+The score is proportional to the likelihood and is defined as equation without the
+denumerator $s_i!$, since it does not change during the course of the Jaatha run.
+In the following paragraphs we will explain in more detail the two phases and the variables
+that can be specified by the user.
+
+\begin{enumerate}
+  \item Initial Search: Finding good starting positions\\
+  First we divide the parameter
+  space into equally-sized blocks by dividing each parameter range into 
+  $\delta$ intervals such that we obtain $\delta^n$ blocks. Within each block
+  we simulate $s_{ini}$ data sets of $n_{loc}$ loci with, on the log scale 
+  uniformly (in the following simply uniformly drawn) drawn parameter 
+  values within each block. 
+  To ensure a better sampling of the edges, we simulate
+  in addition data sets for all corner points of each parameter block.
+  For these data sets we calculate 
+  $\widehat{\textbf{S}}$ and fit GLMs to them. 
+  With these GLMs within each block we can find the
+  parameter combination that maximizes the score of the observed SS. 
+  Thus, compared to the first Jaatha version, 
+  this step is not independent of the data set anymore. Each of the 
+  $\delta^n$ blocks provides a single best
+  parameter combination. Out of this list, the user choses $n_{RP}$ best points 
+  $\{\mathbf{\tilde{p}}_{1}, \ldots, \mathbf{\tilde{p}}_{n_{RP}}\}$ to run the 
+  in-depth-search on. 
+  \item Refined search: Getting the point estimate\\
+  For $b \in \left\{1,\ldots, n_{RP}\right\}$ do:
+      \begin{enumerate}
+	\item 
+    Around $\mathbf{\tilde{p}}_{b}$ we perform a \textit{Jaatha step}: We define a block 
+    $\mathcal{B}_{\mathbf{\tilde{p}}_{b}}$ with middle point $\mathbf{\tilde{p}}_{b}$ 
+    and side length $r$ in all 
+    dimensions on the parameter range, simulate 
+    $s_{main}$ data sets of $n_{loc}$ loci with uniformly chosen parameters from within this 
+    block (corner points in addition), calculate $\widehat{\textbf{S}}$,
+    fit GLMs as described above, and estimate a new optimal parameter 
+    combination $\mathbf{\tilde{p}}_{b}^\prime$.  
+    Now around $\mathbf{\tilde{p}}_{b}^\prime$ we run a Jaatha step 
+    %$\mathcal{B}_{\mathbf{\tilde{p}}_{b}^\prime}$
+    to find $\mathbf{\tilde{p}}_{b}^{\prime\prime}$. 
+    For the GLM fitting to find $\mathbf{\tilde{p}}_{b}^{\prime\prime}$ we only 
+    reuse simulations of previous blocks if 
+    $\mathbf{\tilde{p}}_{b}^\prime$ falls within the 
+    block, otherwise the simulations are deleted from memory. 
+    Especially for the FSM runs this was necessary to reduce the amount of 
+    memory usage.
+    This procedure is iterated and the search stops
+    when the score of the new parameter combination failed to change over the last 
+    $t_{stop}$ steps by at least $\epsilon$. The maximum number of steps can be 
+    specified as another stopping criterion ($t_{max}$) which was necessary in 
+    particular when $\epsilon$ was small such
+    that the score did not seem to converge. 
+    Throughout this phase we keep a list of $n_B$ 
+    parameter combinations with the highest scores ($\mathcal{L}$). 
+
+    To avoid being trapped in local maxima there is an 
+    option to weigh simulations of previous blocks with $w \in [0,1]$.
+    Each time simulations of a block are kept, we multiply the weight of these simulations 
+    in the GLM fitting by $w$, such that if $w=1$ all simulation 
+    results have the same contribution in each step.
+
+	\item Evaluation of the parameter estimates in $\mathcal{L}$:\\
+    After the phase 2 (a) has finished, the parameter combinations which were stored in 
+    $\mathcal{L}$ will be used to simulate $s_{final}$ independent
+    simulations for each of them to calculate the (composite) likelihood of each parameter 
+    combination (using eqn.~\ref{PoissonApprox}). 
+    The combination with the highest likelihood will then be reported
+    as the result for $b$.
+        \end{enumerate}
+Since we start the detailed search for each of the $n_{RP}$ refine points,
+Jaatha will report $n_{RP}$ parameter combinations in total. 
+The Jaatha results in the following always represent the
+parameter combination with the highest likelihood.
+\end{enumerate}
+
+Another option that can be set by the user is $ext_\theta$, which specifies whether
+$\theta$ is excluded from the parameter range from which the random values are 
+chosen for the simulations. If this option is set, for the simulations $\theta$
+is fixed to the value of 5, which reduces the dimension of block $\mathcal{B}$ by one
+while the other parameters are calculated as described above.
+$\theta$ is then estimated separately of the other parameters with 
+\begin{equation} \label{eqn:extTheta}
+\widehat{\theta}_\mathcal{B} = \frac{\sum\limits_{i=0}^{n_{SS}}s_i}
+{\sum\limits_{j=0}^{n_{SS}}\widehat{\lambda_i}
+(\mathbf{\hat{p}}_\mathcal{B})/(5\cdot n_{loc})},
+\end{equation}
+where the parameter combination of the block center of $\mathcal{B}$ is denoted by
+$\mathbf{\hat{p}}_\mathcal{B}$. 
 
 \end{document}
