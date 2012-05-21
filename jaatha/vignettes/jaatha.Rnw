@@ -12,12 +12,12 @@
 
 <<foo,include=FALSE,echo=FALSE>>=
 options(keep.source = TRUE, width = 60)
-foo <- packageDescription("jaatha")
+jinfo <- packageDescription("jaatha")
 @
 
 \title{The Jaatha HowTo}
-\author{\Sexpr{foo$Author}}
-\date{Version \Sexpr{foo$Version}}
+\author{\Sexpr{jinfo$Author}}
+\date{Version \Sexpr{jinfo$Version}}
 \maketitle
 
 \section{Introduction}
@@ -39,7 +39,7 @@ To specify the above demographic model in \verb@R@, we first need to load \verb@
 <<Loading Jaatha>>=
 library(jaatha)
 @
-we can then create an 'empty' model \verb@dm@ using the \verb@dm.createDemographicModel()@
+We can now create an 'empty' model \verb@dm@ using the \verb@dm.createDemographicModel()@
 function:
 <<Creating a demographic model in R>>=
 dm <- dm.createDemographicModel(sampleSizes=c(25,24),nLoci=100,
@@ -51,7 +51,7 @@ second argument \verb@nLoci@ states are using data from $100$ independent loci i
 genome while \verb@seqLength@ gives the (average) length of each loci\footnote{This 
 is only used when a finite sites model is assumed or if recombination is included.}.
 
-We can now successively add the other assumptions of our model: 
+We can now successively add the other assumptions of our model:
 <<Creating a demographic model in R>>=
 dm <- dm.addSpeciationEvent(dm,.1,5)
 dm <- dm.addSymmetricMigration(dm,.01,5)
@@ -62,19 +62,23 @@ Here, the first parameter is always the demographic model to which we want to ad
 an assumption/feature, while the first number is the lowest possible value we assume
 that our parameter could have and the second number is the highest possible value.
 \begin{itemize}
-	\item The parameter for the speciation event is the split time $\tau$, which
-		states how many generations ago the split of the population has occurred.
-		As usual in population genetics, its is measured in units of $4N_1$ 
-		generations ago, where $N_1$ is effective population size of the first 
-		population.
-	\item The parameter for the (symmetric) migration is the scaled migration rate $M$, 
-		which is given by $M=4N_1m$, where $m$ is the fraction of individuals of each 
-		population which are replaced by immigrants from the other population each
-		generation.
+\item The parameter for the \emph{speciation} event is the split time $\tau$, which
+	states how many generations ago the split of the population has occurred.
+	As usual in population genetics, its is measured in units of $4N_1$ 
+	generations ago, where $N_1$ is the (diploid) effective population size of 
+	the first population.
+\item The parameter for the (symmetric) \emph{migration} is the scaled migration rate $M$, 
+	which is given by $M=4N_1m$, where $m$ is the fraction of individuals of each 
+	population which are replaced by immigrants from the other population each
+	generation.
+\item The \emph{mutation} parameter $\theta$ is scaled with $4N_1$ times the neutral mutations
+	rate per locus.
+\item Finally, the \emph{recombination} parameter $\rho$ is scaled with $4N_1$ times
+	the probability of recombination between the ends of the locus per generation.
 \end{itemize}
 
-Keep in mind that a `good' model -- which one that approximates the real demographic
-history but is also as simple as possible -- is crucial for getting meaningful 
+Keep in mind that a `good' model -- which is one that approximates the real demographic
+history but is also as simple as possible -- is crucial for getting meaningful
 estimates in the end. Jaatha will always try to find the parameters that make the
 model fit best to the real data. If the model does not fit to the real data at all,
 also the estimates will not be related to the real situation.
