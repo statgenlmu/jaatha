@@ -164,18 +164,19 @@ setClass("Jaatha",
 	## and file "Rseed.txt" overwritten. If no 'seed' is
 	## specied but 'Rseed.txt' exists seed will be read from
 	## file, otherwise 'seed' will be set.
+	seedfile <- paste(tempdir(),"/Rseed.txt",sep="")
 	if (length(seed)!=0){ # if seed was specified
-		cat(seed,"\n",file="Rseed.txt")              
-	} else if (file.exists("Rseed.txt")){ #if file exists
+		cat(seed,"\n",file=seedfile)              
+	} else if (file.exists(seedfile)){ #if file exists
 		seed <- as.numeric(readLines("Rseed.txt"))
 		cat("R seed was read in from file:",seed, "\n")
 	} else {  #if no seed was specified and no file is available
 		seed <- sample(1:(2^20),size=1)
 		cat("R seed set to",seed,"\n")
-		cat(seed,"\n",file="Rseed.txt")
+		cat(seed,"\n",file=seedfile)
 	} 
 	.Object@seed <- seed
-	set.seed(seed)            
+	set.seed(seed)      
 	#cat("Initial msSeeds set to ",msSeeds,"\n")            
 	#validObject(.Object)
 	show(.Object)      

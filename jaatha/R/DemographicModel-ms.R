@@ -94,7 +94,6 @@ dm.mscmd <- "ms"
 }
 
 .ms.setSeed <- function(){
-	if ( file.exists("seedms") ) return(F)
 	cat(sample(1:65525,3),"\n",file="seedms")
 	return(T)
 }
