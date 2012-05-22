@@ -1123,6 +1123,15 @@ is.jaatha <- function(jObject){
 	return(class(jObject)[1] == "Jaatha")
 }
 
+#' Print Start points
+#'
+#' Method to print the start Points given by an initial Jaatha
+#' search sorted by score.
+#'
+#' @param jObject The Jaatha options
+#' @param startPoints The list of startPoints which will be printed
+#' @return a matrix with score and parameters of each start point
+#' @export
 Jaatha.printStartPoints <- function(jObject,startPoints){
 	width <- startPoints[[1]]@nPar + 1 + jObject@externalTheta
 	mat <- matrix(0,length(startPoints),width)
@@ -1135,6 +1144,7 @@ Jaatha.printStartPoints <- function(jObject,startPoints){
 	return(mat[perm,])
 }
 
+#' @export
 Jaatha.printLikelihoods <- function(jObject){
 	.log(jObject,"Called Jaatha.printLikelihoods")
 	lt <- jObject@likelihood.table

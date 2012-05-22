@@ -13,6 +13,7 @@
 <<foo,include=FALSE,echo=FALSE>>=
 options(keep.source = TRUE, width = 60)
 jinfo <- packageDescription("jaatha")
+load('startpoints.save')
 @
 
 \title{The Jaatha HowTo}
@@ -89,7 +90,12 @@ estimates in the end. Jaatha will always try to find the parameters that make th
 model fit best to the real data. If the model does not fit to the real data at all,
 also the estimates will not be related to the real situation.
 
-
+\section{Importing Your Data}
+<<Summary Statistics>>=
+pars 	<- c(1,1,10) 
+simSumStats <- dm.simSumStats(dm,pars)
+simSumStats
+@
 
 \section{Running Jaatha}
 
@@ -99,11 +105,55 @@ positions by simulating very coarsely across the entire parameter space. We call
 this part \emph{initial search}. Afterwards a more thorough \emph{refined search}
 is performed starting from the best positions of the first step.
 
-\subsection{Theoretical background}
+\subsection{Theoretical Background}
+- Parameter space
+- Blocks
+- SumStats
+- GLMs
 
-\subsection{The initial search}
+<<Initialize>>=
+j1 <- Jaatha.initialize(dm, simSumStats, resultFile='res.txt')
+@
+%startPoints <- Jaatha.initialSearch(j1,nSim=500,nBlocksPerPar=3,multiple=T)
+%save(startPoints,file='startpoints.save')
 
-\subsection{The refined search}
+\subsection{The Initial Search}
+
+\noindent
+For the initial search, we divide the parameter space into equally-sized blocks by dividing 
+each of the $n$ parameters ranges into \verb@nBlocksPerPar@ intervals such that we obtain 
+$($\verb@nBlocksPerPar@$)^n$ blocks. Within each block we simulate \verb@nSim@ data sets with 
+-- on the logarithmic scale -- uniformly drawn parameter values within each block. To ensure 
+a better sampling of the edges, we simulate in addition data sets for all corner points of 
+each parameter block.
+
+For these data sets we then fit the GLMs and estimate the parameter combination with the
+maximal score. Each of the blocks provides a single best parameter combination.
+
+In R, the initial search is performed with the command
+
+% Don't run a complete jaatha search; would take tooo long
+\vspace{0.5em}
+\noindent
+\verb@> startPoints <- Jaatha.initialSearch(j1,nSim=500,nBlocksPerPar=3)@
+\vspace{-0.6em}
+
+\noindent
+which takes a while, and finally returns a list of $3^3$ start points sorted by score:
+<<Initial Search>>=
+Jaatha.printStartPoints(j1,startPoints)
+@
+Here, there is a big reduction in the scores after the first five blocks, and a smaller one 
+after the first two. This is suggesting that we either use the first two or the first five 
+blocks as starting positions for the refined search, depending on how much time we want to
+spend. For now, we will just use the first two points.
+<<<Pick points>>=
+startPoints <- Jaatha.pickBestStartPoints(startPoints,2)
+@
+
+
+
+\subsection{The Refined Search}
 
 
 Taking a set of best starting points chosen by 
@@ -117,24 +167,6 @@ that can be specified by the user.
 
 \begin{enumerate}
   \item Initial Search: Finding good starting positions\\
-  First we divide the parameter
-  space into equally-sized blocks by dividing each parameter range into 
-  $\delta$ intervals such that we obtain $\delta^n$ blocks. Within each block
-  we simulate $s_{ini}$ data sets of $n_{loc}$ loci with, on the log scale 
-  uniformly (in the following simply uniformly drawn) drawn parameter 
-  values within each block. 
-  To ensure a better sampling of the edges, we simulate
-  in addition data sets for all corner points of each parameter block.
-  For these data sets we calculate 
-  $\widehat{\textbf{S}}$ and fit GLMs to them. 
-  With these GLMs within each block we can find the
-  parameter combination that maximizes the score of the observed SS. 
-  Thus, compared to the first Jaatha version, 
-  this step is not independent of the data set anymore. Each of the 
-  $\delta^n$ blocks provides a single best
-  parameter combination. Out of this list, the user choses $n_{RP}$ best points 
-  $\{\mathbf{\tilde{p}}_{1}, \ldots, \mathbf{\tilde{p}}_{n_{RP}}\}$ to run the 
-  in-depth-search on. 
   \item Refined search: Getting the point estimate\\
   For $b \in \left\{1,\ldots, n_{RP}\right\}$ do:
       \begin{enumerate}
