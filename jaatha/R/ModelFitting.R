@@ -175,8 +175,6 @@ setMethod("estimate",signature(bObject="Block",jObject="Jaatha"),
 		})
 
 
-## Function to calculate the likelihood of 'par' with the given modFeld
-## which includes the linear model coefficients of the simulated data.
 .calcLikelihoodWithModelfeld <- function(param, modelCoefficients, observedSS, 
 		jObject, bObject){
 	##modelCoefficients: +3 bc intercept, convergence, sumOfSumstat
@@ -185,6 +183,57 @@ setMethod("estimate",signature(bObject="Block",jObject="Jaatha"),
 		## middle point of current block
 		point <- (bObject@upperBound-bObject@lowerBound)/2 + bObject@lowerBound
 		#scale <- 5*bObject@nLoci
+		thetaTotal <- sum(observedSS)/sum(exp(
+					modelCoefficients[1:jObject@nTotalSumstat,1:(bObject@nPar+1)] 
+					%*%	c(1,point)))   
+
+		for (s in 1:jObject@nTotalSumstat) {     
+			##if glm did not converge, take sum(SS[s]) or a small number like 0.5
+			if (modelCoefficients[s,(bObject@nPar+2)]<0.5) {				  
+				loglambda <- max(0.5,modelCoefficients[s,(bObject@nPar+3)]) +
+							 log(thetaTotal) 
+				## 350 = 10 * 5 *7 = repetitions * no of loci * theta
+				##cat("theta=",theta,"\n")
+			} else {                        
+				## log(exp(modelC))=modelC; if scale is needed: - log(bObject@nLoci/jObject@nLoci)
+				loglambda <- (modelCoefficients[s,1:(bObject@nPar+1)]%*%
+						c(1,param)) + log(thetaTotal) 
+			}
+			score <- score + observedSS[s]*loglambda - exp(loglambda)
+		}
+	} 
+	else {  ##if NOT externalTheta		
+		point <- param
+		#scale <- bObject@nLoci/jObject@nLoci
+	
+		for (s in 1:jObject@nTotalSumstat) {     
+			##if glm did not converge, take sum(SS[s]) or a small number like 0.5
+			if (modelCoefficients[s,(bObject@nPar+2)]<0.5) {				  
+				loglambda <- max(0.5,modelCoefficients[s,(bObject@nPar+3)])	 
+				## 350 = 10 * 5 *7 = repetitions * no of loci * theta
+				##cat("theta=",theta,"\n")
+			} else {                        
+				## log(exp(modelC))=modelC; if scale is needed: - log(bObject@nLoci/jObject@nLoci)
+				loglambda <- (modelCoefficients[s,1:(bObject@nPar+1)]%*%c(1,param))
+			}
+			score <- score + observedSS[s]*loglambda - exp(loglambda)
+		}
+	}
+	##cat("score:",score,"\n")
+	return(score)
+}
+
+
+.calcLikelihoodWithModelfeld.old <- function(param, modelCoefficients, observedSS, 
+		jObject, bObject){
+	##modelCoefficients: +3 bc intercept, convergence, sumOfSumstat
+	score <- 0	
+	if (jObject@externalTheta){ ## theta gets only calculated for the middle 	
+		## middle point of current block
+		point <- (bObject@upperBound-bObject@lowerBound)/2 + bObject@lowerBound
+		#scale <- 5*bObject@nLoci
+
+
 	} else{  ##if NOT externalTheta		
 		point <- param
 		#scale <- bObject@nLoci/jObject@nLoci
@@ -207,6 +256,6 @@ setMethod("estimate",signature(bObject="Block",jObject="Jaatha"),
 		}
 		score <- score + observedSS[s]*loglambda - exp(loglambda)
 	}
-	##cat("score:",score,"\n")   
+	##cat("score:",score,"\n") 
 	return(score)
 }

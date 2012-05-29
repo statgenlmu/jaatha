@@ -51,7 +51,7 @@ rm(.init)
 # "Private" functions
 #-----------------------------------------------------------------------
 
-.appendFeature <- function(dm,type,parameter,population,
+.appendFeature <- function(dm,type,parameter,population=NA,
 			lowerRange,upperRange,
 			startsAtTime,timeLine){
 	
@@ -71,6 +71,7 @@ rm(.init)
 }
 
 .getFeature <- function(dm,type,population=NA){
+	.check.dm(dm)
 	if (is.na(population))
 		return(dm@features[dm@features$type == type 
 		       		   & is.na(dm@features$population),])
@@ -81,6 +82,7 @@ rm(.init)
 	
 
 .addParameter <- function(dm,parameterName){
+	.check.dm(dm)
 	if (any(dm@parameters == parameterName)) 
 		stop("parameter already exists")
 	dm@parameters <- c(dm@parameters,parameterName)
@@ -89,6 +91,8 @@ rm(.init)
 
 .addFeature <- function(dm,type,parName,lowerRange,upperRange,fixedValue,
 			   population=NA,startsAtTime=NA,timeLine=NA){
+
+	.check.dm(dm)
 
 	#Set range
 	if ( ( !missing(fixedValue) & !missing(lowerRange) & !missing(upperRange) ) |
@@ -112,16 +116,36 @@ rm(.init)
 		             lowerRange,upperRange,
 			     startsAtTime,timeLine)
 	
+	dm <- .makeThetaLast(dm)
+
 	return(dm)
 }
 
 
 .setSimProg <- function(dm){
+	.check.dm(dm)
 	if (dm@finiteSites) simProg <- "fsc"
 	else 		    simProg <- "ms"
 	return(simProg)
 }
 
+.makeThetaLast <- function(dm){
+	.check.dm(dm)
+	mut <- .getFeature(dm,"mutation",NA)
+	if ( dim(mut)[1] == 0 ) return(dm)	#Yet no mutation added
+	if ( dim(mut)[1] > 1  ) stop("Are there multiple mutation entries in your model?")
+	mutPar <- mut$parameter
+	if ( is.na(mutPar) ) return(dm)		#Looks like a fixed mutation rate
+	nPar <- length(dm@parameters)
+	if ( mutPar == nPar ) return(dm) 	#Already last parameter
+	#If we are here, theta should not be the last parameter
+	mutLine <-  dm@features$type == "mutation"
+	otherLine <- dm@features$parameter == nPar
+	dm@features$parameter[mutLine] <- nPar
+	dm@features$parameter[otherLine] <- mutPar
+	dm@parameters[c(mutPar,nPar)] <- dm@parameters[c(nPar,mutPar)]
+	return(dm)
+}
 
 #----------------------------------------------------------------
 # .getParameter
@@ -138,6 +162,7 @@ rm(.init)
 #		the parameter name 	otherwise
 #
 .getParameter <- function(dm,type,population=NA){
+	.check.dm(dm)
 	feature <- .getFeature(dm,type,population)
 	if ( dim(feature)[1] == 0 ) return(0)
 	if ( feature$lowerRange[1] == feature$upperRange[1] )
@@ -147,6 +172,7 @@ rm(.init)
 }
 
 .getNumOfHistoricalEvent <- function(dm){
+	.check.dm(dm)
 	return(sum(dm@features$type != "effPopSize" & dm@features$type != "mutation"))
 }
 
@@ -189,6 +215,48 @@ rm(.init)
 	return ( (is.numeric(x) || x == F) && length(x) == 1 )
 }
 
+.calcSizeChange <- function(dm,param,percentages){
+	.check.dm(dm)
+	pop <- dm@features[param,"population"]
+	q <- .calcAbsParamValue(dm,percentages[param],param)
+	
+	# get value of "size" parameter s for the population
+	sizeLine <- (1:dim(dm@features)[1])[dm@features$type=="size" & dm@features$population==pop]
+	if (sum(sizeLine) == 1) { 
+		s <- .calcAbsParamValue(dm,percentages[sizeLine],sizeLine) 
+	} else { 
+		s <- 1 
+	}
+	
+	# get tau (XXX GLOBAL TAU ONLY ATM XXX)
+	tauLine <- (1:dim(dm@features)[1])[dm@features$type=="mutation" & is.na(dm@features$population)]
+	tau <- .calcAbsParamValue(dm,percentages[tauLine],tauLine) 
+
+	return(log(q/s)/tau)
+}
+
+#.addNeIfMissing <- function(dm){
+#	.check.dm(dm)
+#	if (.getParameter(dm,"effPopSize",NA) == 0)
+#		dm <- dm.addAncPopSize(dm,NA,fixed=10000)
+#	return(dm)
+#}
+
+
+.dm.log <- function(dm,...){
+	.check.dm(dm)
+	if (!dm@debugMode) return()
+	cat(format(Sys.time(), "%Y-%m-%d %H:%M:%S"),...,"\n",sep=" ",file=dm@logFile,append=T)
+}
+
+.is.dm  <- function(dm){
+		return(class(dm)[1] == "DemographicModel")
+}
+
+.check.dm <- function(dm){
+	if (!.is.dm(dm)) stop("dm is no demographic model")
+}
+
 .calcAbsParamValue <- function(dm,percentage,param){
 
 	if (!is.matrix(percentage)) 
@@ -221,50 +289,25 @@ rm(.init)
 	
 	return( scaledValues )
 }
-
-.calcSizeChange <- function(dm,param,percentages){
-	pop <- dm@features[param,"population"]
-	q <- .calcAbsParamValue(dm,percentages[param],param)
-	
-	# get value of "size" parameter s for the population
-	sizeLine <- (1:dim(dm@features)[1])[dm@features$type=="size" & dm@features$population==pop]
-	if (sum(sizeLine) == 1) { 
-		s <- .calcAbsParamValue(dm,percentages[sizeLine],sizeLine) 
-	} else { 
-		s <- 1 
-	}
-	
-	# get tau (XXX GLOBAL TAU ONLY ATM XXX)
-	tauLine <- (1:dim(dm@features)[1])[dm@features$type=="mutation" & is.na(dm@features$population)]
-	tau <- .calcAbsParamValue(dm,percentages[tauLine],tauLine) 
-
-	return(log(q/s)/tau)
-}
-
-.addNeIfMissing <- function(dm){
-	if (.getParameter(dm,"effPopSize",NA) == 0)
-		dm <- dm.addAncPopSize(dm,NA,fixed=10000)
-	return(dm)
-}
-
-
-.dm.log <- function(dm,...){
-	if (!dm@debugMode) return()
-	cat(format(Sys.time(), "%Y-%m-%d %H:%M:%S"),...,"\n",sep=" ",file=dm@logFile,append=T)
-}
-
 #-----------------------------------------------------------------------
 # Public functions
 #-----------------------------------------------------------------------
 dm.setDebugMode <- function(dm,debugMode=T,logFile=""){
+	.check.dm(dm)
 	if (is.logical(debugMode)) dm@debugMode <- debugMode
-	if (is.character(logFile)) dm@logFile <- logFile
+	if (logFile != "") {
+		dm@logFile <- paste(getwd(),"/",logFile,sep="")
+		dm@debugMode <- T
+	}
 	return(dm)
 }
 
 dm.getParRanges <- function(dm){
+	#.check.dm(dm)
 	parMask <- !is.na(dm@features$parameter)
-	return( cbind(lower=dm@features$lowerRange[parMask],upper=dm@features$upperRange[parMask]) )
+	parRanges <- cbind(lower=dm@features$lowerRange[parMask],upper=dm@features$upperRange[parMask])
+	parRanges <- parRanges[sort.list(dm@features$parameter[parMask]),]
+	return( parRanges )
 }
 
 #' Create a basic demographic model
@@ -291,7 +334,7 @@ dm.getParRanges <- function(dm){
 #' dm <- dm.addSpeciationEvent(dm,0.01,5)
 #' dm <- dm.addMutation(dm,1,20)
 #' dm
-dm.createDemographicModel <- function(sampleSizes,nLoci,seqLength,
+dm.createDemographicModel <- function(sampleSizes,nLoci,seqLength=1000,
 				      finiteSites=F,tsTvRatio=.33,
 				      debugMode=F,logFile=""){
 	dm <- new("DemographicModel",sampleSizes,nLoci,seqLength,
@@ -300,6 +343,7 @@ dm.createDemographicModel <- function(sampleSizes,nLoci,seqLength,
 }
 
 dm.setExternalTheta <- function(dm){
+	.check.dm(dm)
 	 #newDm <- new("DemographicModel",dm@seqLength,dm@sampleSizes,dm@finiteSites)
 	 #newDm@features <- dm@features[dm@features$type != "mutation",]
 	 #newDm@parameters <- dm@parameters[dm@parameters != "theta"]
@@ -310,6 +354,7 @@ dm.setExternalTheta <- function(dm){
 
 
 dm.getNPar <- function(dm){
+	.check.dm(dm)
 	return(length(dm@parameters)-dm@externalTheta)
 }
 
@@ -408,8 +453,58 @@ dm.addEffectivePopSize <- function(dm,population,lowerRange,upperRange,fixedValu
 #' dm <- dm.addSpeciationEvent(dm,0.01,5)
 #' dm <- dm.addMutation(dm,1,20)
 #' dm
-dm.addSpeciationEvent <- function(dm,lowerRange,upperRange,fixedValue,population=1){
-	return(.addFeature(dm,"split","tau",lowerRange,upperRange,fixedValue,population=population))
+dm.addSpeciationEvent <- function(dm,lowerRange,upperRange,fixedValue){
+	return(.addFeature(dm,"split","tau",lowerRange,upperRange,fixedValue))
+}
+
+
+#' Adds a different present day population size of one population to a demographic model
+#' 
+#' @param dm	      The demographic model to which the speciation event should be added
+#' @param lowerRange  If you want to estimate the size parameter, this will be used 
+#'		      as the smallest possible value.
+#' @param upperRange  If you want to estimate the size parameter, this will be used 
+#'		      as the largest possible value.
+#' @param fixedValue  If specified, the size parameter will not be estimated, but assumend
+#'		      to be fixed at the given value.
+#' @param population  The population of which the size should change. Can be 1 or 2 at the moment.
+#' @return 	      The extended demographic model
+#' @export
+#'
+#' @examples
+#' dm <- dm.createDemographicModel(sampleSizes=c(25,25),nLoci=100)
+#' dm <- dm.addSpeciationEvent(dm,0.01,5)
+#' dm <- dm.addPresentSize(dm,2,3,population=2)
+#' dm <- dm.addMutation(dm,1,20)
+#' dm
+dm.addPresentSize <- function(dm,lowerRange,upperRange,fixedValue,population){
+	if (missing(population)) stop("No population given!")
+	return(.addFeature(dm,"presentSize","q",lowerRange,upperRange,fixedValue,population=population))
+}
+
+
+#' Adds a variable population size of one population at split time to a demographic model
+#' 
+#' @param dm	      The demographic model to which the speciation event should be added
+#' @param lowerRange  If you want to estimate the size parameter, this will be used 
+#'		      as the smallest possible value.
+#' @param upperRange  If you want to estimate the size parameter, this will be used 
+#'		      as the largest possible value.
+#' @param fixedValue  If specified, the size parameter will not be estimated, but assumend
+#'		      to be fixed at the given value.
+#' @param population  The population of which the size should change. Can be 1 or 2 at the moment.
+#' @return 	      The extended demographic model
+#' @export
+#'
+#' @examples
+#' dm <- dm.createDemographicModel(sampleSizes=c(25,25),nLoci=100)
+#' dm <- dm.addSpeciationEvent(dm,0.01,5)
+#' dm <- dm.addSplitSize(dm,.2,5,population=2)
+#' dm <- dm.addMutation(dm,1,20)
+#' dm
+dm.addSplitSize <- function(dm,lowerRange,upperRange,fixedValue,population){
+	if (missing(population)) stop("No population given!")
+	return(.addFeature(dm,"splitSize","s",lowerRange,upperRange,fixedValue,population=population))
 }
 
 

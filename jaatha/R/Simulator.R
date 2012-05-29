@@ -120,6 +120,6 @@ Jaatha.deNormalize01 <- function(oldRange,value){
 	}
 
 	#Add names
-	names(ret) <- dm@parameters[1:jObject@nPar]
+	names(ret) <- jObject@dm@parameters[1:jObject@nPar]
 	return(ret)
 }

@@ -11,32 +11,35 @@ dm.mscmd <- "ms"
 	cmd <- c(sum(nSample),dm@nLoci)                     #repetitions and number of loci
 	cmd <- c(cmd,"-I 2",nSample[1],nSample[2])            	 #two populations
 	
+	tau <-  .ms.getParameter(dm,parameters,"split")
+
 	for (i in 1:dim(dm@features)[1] ){
 		type <- as.character(dm@features[i,"type"])
-		#cat(i,":",type,"\n")
+		pop <- dm@features[i,"population"]
+		param <- .ms.getParameter(dm,parameters,type,pop)
 
 		if (type == "mutation"){ 
 			if (dm@externalTheta) cmd <- c(cmd,"-t 5") 
-			else cmd <- c(cmd,"-t",.ms.getParameter(dm,parameters,type))
+			else cmd <- c(cmd,"-t",param)
 		}
 		
 		if (type == "split") 
-			cmd <- c(cmd,"-ej",.ms.getParameter(dm,parameters,type,1),"2 1")
+			cmd <- c(cmd,"-ej",param,"2 1")
 		
 		if (type == "migration")
-			cmd <- c(cmd,"-m 1 2",.ms.getParameter(dm,parameters,type),
-				     "-m 2 1",.ms.getParameter(dm,parameters,type))
+			cmd <- c(cmd,"-m 1 2",param,"-m 2 1",param)
 		
 		if (type == "recombination") 
-			cmd <- c(cmd,"-r",.ms.getParameter(dm,parameters,type),dm@seqLength)
+			cmd <- c(cmd,"-r",param,dm@seqLength)
 
-		#if (type == "size")
-		#	cmd <- c(cmd,"-n",dm@features[i,"population"],
-		#		     parameters[i])
-		
-		#if (type == "sizeChange")
-		#	cmd <- c(cmd,"-g",dm@features[i,"population"],
-		#		     parameters[i])
+		if (type == "splitSize"){
+		        cmd <- c(cmd,"-g",pop,log(.ms.getPresentSize(dm,parameters,pop)/param)/tau)  
+			cmd <- c(cmd,"-eN",tau,1+param)               
+		}
+
+		if (type == "presentSize"){
+			cmd <- c(cmd,"-n",pop,param)
+		}
 	}
 
 	#if (outfile != F) cmd <- c(cmd,">",outfile)
@@ -49,6 +52,15 @@ dm.mscmd <- "ms"
 .ms.getParameter <- function(dm,parameters,type,population=NA){
 	feature <- .getFeature(dm,type,population)
 	if ( dim(feature)[1] != 1 ) stop("Error creating ms command")
+	if ( feature$lowerRange[1] == feature$upperRange[1] )
+		return(feature$lowerRange[1]) 
+	else
+		return(parameters[feature$parameter])
+}
+
+.ms.getPresentSize <- function(dm,parameters,population){
+	feature <- .getFeature(dm,"presentSize",population)
+	if ( dim(feature)[1] != 1 ) return(1)
 	if ( feature$lowerRange[1] == feature$upperRange[1] )
 		return(feature$lowerRange[1]) 
 	else
@@ -86,6 +98,7 @@ dm.mscmd <- "ms"
 	for ( n in 1:nSims ) {
 		suppressWarnings(ms <- system2(dm.mscmd,.ms.generateCmd(dm,parameters[n,]),stdout=T))
 		sumStats[n,] <- sumStatFunc(.ms.getJSFS(dm,ms))
+		.dm.log(dm,"SumStats:",sumStats[n,])
 	}
 
 	setwd(wd)

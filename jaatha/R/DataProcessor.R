@@ -103,13 +103,13 @@ setClass("DataProcessor",
 ## for the simulate-function (in Simulator.R).
 Jaatha.calcLikelihood <- function(jObject, nSimulations, par){
 	.log(jObject,"Called Jaatha.calcLikelihood()")
-	#cat("Composite-likelihood calculated with",nSimulations,"simulations for\n")
-	#print(.calcAbsParamValue(jObject@dm,par))
+	scaledPars <- .deNormalize(jObject,par)
+	.log(jObject,"par:",par," | Scaled: ",scaledPars)
 
-	pars <- matrix(par,nSimulations,length(par),byrow=T)
+	scaledPars <- matrix(scaledPars,nSimulations,length(scaledPars),byrow=T)
 
 	.log(jObject,"Simulating...")
-        simSS <- dm.simSumStats(dm,pars)
+        simSS <- dm.simSumStats(jObject@dm,scaledPars)
 	simSS <- apply(simSS,2,mean)
 
 	.log(jObject,"Calculating Likelihood...")

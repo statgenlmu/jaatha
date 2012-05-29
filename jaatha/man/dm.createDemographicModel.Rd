@@ -2,9 +2,9 @@
 \alias{dm.createDemographicModel}
 \title{Create a basic demographic model}
 \usage{
-  dm.createDemographicModel(sampleSizes, nLoci, seqLength,
-    finiteSites = F, tsTvRatio = 0.33, debugMode = F,
-    logFile = "")
+  dm.createDemographicModel(sampleSizes, nLoci,
+    seqLength = 1000, finiteSites = F, tsTvRatio = 0.33,
+    debugMode = F, logFile = "")
 }
 \arguments{
   \item{sampleSizes}{Number of individual that are sampled.

@@ -3,7 +3,7 @@
 \title{Adds a speciation event to a demographic model}
 \usage{
   dm.addSpeciationEvent(dm, lowerRange, upperRange,
-    fixedValue, population = 1)
+    fixedValue)
 }
 \arguments{
   \item{dm}{The demographic model to which the speciation

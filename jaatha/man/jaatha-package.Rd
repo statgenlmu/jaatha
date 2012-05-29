@@ -3,20 +3,16 @@
 \alias{jaatha-package}
 \title{Fast estimation of demographic parameters}
 \description{
-  Fast estimation of demographic parameters for two species
+  Fast estimation of demographic parameters
 }
 \details{
-  Roxygen is a Doxygen-like documentation system for R;
-  allowing in-source specification of Rd files, collation
-  and namespace directives.
-
-  If you have existing Rd files, check out the
-  \code{Rd2roxygen} package for a convenient way of
-  converting Rd files to roxygen comments.
+  Jaatha is a composite maximum likelihood method to
+  estimate parameters of a speciation model of closely
+  related biological species out of SNP data.
 
   \tabular{ll}{ Package: \tab jaatha\cr Type: \tab
-  Package\cr Version: \tab 0.9.1\cr Date: \tab
-  2012-05-10\cr License: \tab GPL (>= 2)\cr LazyLoad: \tab
+  Package\cr Version: \tab 0.9.4\cr Date: \tab
+  2012-05-29\cr License: \tab GPL (>= 2)\cr LazyLoad: \tab
   yes\cr }
 }
 \author{

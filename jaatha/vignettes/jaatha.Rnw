@@ -1,3 +1,7 @@
+% \VignetteIndexEntry{The Jaatha HowTo}
+% \VignetteDepends{jaatha}
+% \VignettePackage{jaatha}
+
 \documentclass{article}
 
 \usepackage{natbib}
@@ -5,8 +9,6 @@
 \usepackage{amsmath}
 \usepackage{indentfirst}
 \usepackage[utf8]{inputenc}
-
-%\VignetteIndexEntry{Jaatha Overview}
 
 \begin{document}
 

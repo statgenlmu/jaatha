@@ -1,17 +1,17 @@
-#' Fast estimation of demographic parameters for two species
+#' Fast estimation of demographic parameters
 #' 
-#' Roxygen is a Doxygen-like documentation system for R; allowing
-#' in-source specification of Rd files, collation and namespace
-#' directives.
-#'
-#' If you have existing Rd files, check out the \code{Rd2roxygen} package
-#' for a convenient way of converting Rd files to roxygen comments.
+#' Jaatha is a composite maximum likelihood method to estimate parameters
+#' of a speciation model of closely related biological species out of SNP
+#' data.
+#' 
+#' 
+#' 
 #'
 #' \tabular{ll}{
 #' Package: \tab jaatha\cr
 #' Type: \tab Package\cr
-#' Version: \tab 0.9.1\cr
-#' Date: \tab 2012-05-10\cr
+#' Version: \tab 0.9.4\cr
+#' Date: \tab 2012-05-29\cr
 #' License: \tab GPL (>= 2)\cr
 #' LazyLoad: \tab yes\cr
 #' }
@@ -43,7 +43,7 @@ NULL
 #'    \item{nLoci}{The number of loci}
 #'    \item{MLest}{ML estimations of parameters (transformed between 0 and 1)}
 #'    \item{seed}{Random seed for R}
-#'    \item{externalTheta}{If TRUE theta will estimated using Waterson-estimator}
+#'    \item{externalTheta}{If TRUE theta will estimated using Watersons-estimator}
 #'    \item{finiteSites}{If TRUE, we use a finite sites mutation model instead of an infinite sites one}
 #'    \item{parNames}{The name of the paramters we estimate}
 #'    \item{resultFile}{The name of a file in which the results will be written}
@@ -54,8 +54,8 @@ NULL
 #'	    coresponding parameters}
 #' }
 #'
-#' @name Jaatha
-#' @rdname Jaatha
+#' @name Jaatha-class
+#' @rdname Jaatha-class
 #' @exportClass Jaatha
 setClass("Jaatha",
 	representation=representation(
@@ -167,9 +167,6 @@ setClass("Jaatha",
 	seedfile <- paste(tempdir(),"/Rseed.txt",sep="")
 	if (length(seed)!=0){ # if seed was specified
 		cat(seed,"\n",file=seedfile)              
-	} else if (file.exists(seedfile)){ #if file exists
-		seed <- as.numeric(readLines("Rseed.txt"))
-		cat("R seed was read in from file:",seed, "\n")
 	} else {  #if no seed was specified and no file is available
 		seed <- sample(1:(2^20),size=1)
 		cat("R seed set to",seed,"\n")
@@ -259,15 +256,13 @@ setMethod("show","Jaatha",
 #' @param nSim The number of simulations that are performed in each bin
 #' @param nBlocksPerPar The number of block per parameter. 
 #'	                Will result in nPar^nBlocksPerPar blocks
-#' @param multiple If False only the best starting postions will be returned.
-#' 		   Otherwise it will be a list with all postitions.
 #'
-#' @return The best starting positions or a list of all starting positions (see "multiple" above)
+#' @return A list of all starting positions storted by score
 #'
 #' @export
-Jaatha.initialSearch <- function(jObject, nSim=200, nBlocksPerPar=3, multiple=F){
+Jaatha.initialSearch <- function(jObject, nSim=200, nBlocksPerPar=3){
 	.log(jObject,"Called Jaatha.initialSearch()")
-	.log(jObject,"nSim:",nSim,"| nBlocksPerPar:",nBlocksPerPar,"| multiple:",multiple)
+	.log(jObject,"nSim:",nSim,"| nBlocksPerPar:",nBlocksPerPar)
 	## change slot values of jObject locally, so that only  
 	## searches with externalTheta=T will be run for initial search
 	## if theta is included into parRange, exclude it and decrese nPar
@@ -347,8 +342,7 @@ Jaatha.initialSearch <- function(jObject, nSim=200, nBlocksPerPar=3, multiple=F)
 	
 	print(Jaatha.printStartPoints(jObject,firstBlocks))
 
-	if (multiple) return (firstBlocks)
-	else return (list(firstBlocks[[bestBlockIndex]]))
+	return (firstBlocks)
 }
 
 
@@ -391,7 +385,7 @@ Jaatha.refineSearch <- function(jObject,startPoints,nSim,
 						    weight=weight,nMaxStep=nMaxStep,blocknr=s)  
   		## print results in original parameter ranges into file
   		cat(s,jObject@logMLmax, sapply(1:(jObject@nPar),
-        		function(d) Jaatha.deNormalize01(dm.getParRanges(dm)[d,],jObject@MLest[d])),
+        		function(d) Jaatha.deNormalize01(dm.getParRanges(jObject@dm)[d,],jObject@MLest[d])),
         	jObject@MLest[jObject@nPar+1]/jObject@nLoci,
 		"\n",file=jObject@resultFile,append=T,sep="\t")
 	}
@@ -425,7 +419,7 @@ Jaatha.refineSearch <- function(jObject,startPoints,nSim,
 			            
 			## best ten parameters with score are kept for end evaluation
 			topTen <- array(0,dim=c(10,(1+nTotalPar)), #dim=(10,likelihood+pars)
-							dimnames= list(1:10, c("score",dm@parameters))) 		
+					dimnames= list(1:10, c("score",jObject@dm@parameters))) 		
 			
 			##repeat until likelihood improvement gets smaller than epsilon
 			## 5 times in a row or more than 200 steps used
@@ -545,9 +539,9 @@ Jaatha.refineSearch <- function(jObject,startPoints,nSim,
 
 			likelihoods <- c()
 			.log(jObject,"Starting final sim.")
-			.print(jObject,"Calulating composite log likelihoods for best blocks:")
+			.print(jObject,"Calulating composite log likelihoods for best estimates:")
 			for (t in 1:nBest){
-				.print(jObject,"Block",t,"of",nBest,"...")
+				.print(jObject,"Parameter combination",t,"of",nBest,"...")
 				topPar <- topTen[t,2:(nTotalPar+1)]    # in original parameter range
 				likelihoods[t] <- Jaatha.calcLikelihood( jObject, 
 									 nSimulations=nFinalSim, 
@@ -574,9 +568,8 @@ Jaatha.refineSearch <- function(jObject,startPoints,nSim,
 			#	system(paste("rm simOutput"))				
 			#}
 			## print results in original parameter ranges into file
-			cat(Jaatha.getMLmax(jObject), round(Jaatha.getMLest(jObject),6),
-					"\n", file=jObject@resultFile, append=T, sep="\t")
-
+			#cat(Jaatha.getMLmax(jObject), round(Jaatha.getMLest(jObject),6),
+			#		"\n", file=jObject@resultFile, append=T, sep="\t")
 
 			return (jObject)
 		}
@@ -616,27 +609,6 @@ Jaatha.pickBestStartPoints <- function(blocks, best){
 	}
 	
 	return(returnPoints)
-}
-
-
-## This function converts the vector in [0-1] to values of the
-## parameter ranges specified in 'jObject'. It returns the vector of
-## converted parameter values. In 'externalTheta' the last parameter is
-## theta and will be returned without any changes.
-Jaatha.convert2parRange <- function(bestEst,jObject){
-	numPar <- getnPar(jObject)
-	parRange <- getparRange(jObject)
-	
-	if (jObject@externalTheta){
-		back <- sapply(1:numPar,
-				function(d) Jaatha.deNormalize01(parRange[[d]],bestEst[d]))
-		back <- c(back,bestEst[numPar+1])
-	}
-	else{
-		back <- sapply(1:numPar,
-				function(d) Jaatha.deNormalize01(parRange[[d]],bestEst[d]))
-	}
-	return (back)
 }
 
 
@@ -1145,12 +1117,20 @@ Jaatha.printStartPoints <- function(jObject,startPoints){
 	return(mat[perm,])
 }
 
+#' Gives the best estimates after a Jaatha search
+#'
+#' This method extracts the best estimates with log composite likelihood
+#' vales from an Jaatha object.
+#'
+#' @param jObject The Jaatha options
+#' @return A matrix with log composite likelihoods and parameters of The
+#' best estimates
 #' @export
 Jaatha.printLikelihoods <- function(jObject){
 	.log(jObject,"Called Jaatha.printLikelihoods")
 	lt <- jObject@likelihood.table
 	lt[,-(1:2)] <- .deNormalize(jObject,lt[,-(1:2)])
-	perm <- sort.list(lt[,1],decreasing=F)	
+	perm <- sort.list(lt[,1],decreasing=T)	
 	.log(jObject,"Finished Jaatha.printLikelihoods")
 	return(lt[perm,])
 }
