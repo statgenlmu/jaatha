@@ -4,9 +4,6 @@
 #' of a speciation model of closely related biological species out of SNP
 #' data.
 #' 
-#' 
-#' 
-#'
 #' \tabular{ll}{
 #' Package: \tab jaatha\cr
 #' Type: \tab Package\cr
@@ -17,11 +14,11 @@
 #' }
 #'
 #' @author
-#' Lisha Naduvilezhath \email{lisha@@biologie.uni-muenchen.de},
-#' Paul R. Staab \email{staab@@biologie.uni-muenchen.de} and 
-#' Dirk Metzler \email{metzler@@biologie.uni-muenchen.de}
+#' Lisha Naduvilezhath \email{lisha (at) biologie.uni-muenchen.de},
+#' Paul R. Staab \email{staab (at) biologie.uni-muenchen.de} and 
+#' Dirk Metzler \email{metzler (at) biologie.uni-muenchen.de}
 #'
-#' Maintainer: Paul R. Staab \email{staab@@biologie.uni-muenchen.de}
+#' Maintainer: Paul R. Staab \email{staab (at) biologie.uni-muenchen.de}
 #' @name jaatha-package
 #' @docType package
 #' @title Fast estimation of demographic parameters

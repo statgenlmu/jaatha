@@ -34,9 +34,22 @@ as \verb@R@ package \verb@jaatha@.
 \section{A demographic model}
 \noindent
 Before we can apply Jaatha to estimate parameter, we first need to create a model
-of the demographic history of the species.
+of the demographic history of the species. 
 
-% insert model picture and description here
+For now, assume that we know that our two species are closely related; hence they must 
+have separated at a time in the past. There may be still gene flow between them, 
+which we will refer to as migration from one population into the other. We suppose that 
+mutations appear in the genome with a constant rate, which we don't know, and that 
+recombination events occur frequently. Hence, we could propose the following, simple model:
+
+\begin{center}
+\includegraphics[width=60mm]{dm.png}
+\end{center}
+
+\noindent
+The ancestral population spilt into our two populations $\tau$ time units ago, and afterwards
+individuals migrated from one population to the other with a migration rate $m$. Mutations are
+occurring with rate $\theta$ and recombination with a known rate $\rho$.
 
 To specify the above demographic model in \verb@R@, we first need to load \verb@jaatha@.
 <<Loading Jaatha>>=
@@ -92,6 +105,29 @@ estimates in the end. Jaatha will always try to find the parameters that make th
 model fit best to the real data. If the model does not fit to the real data at all,
 also the estimates will not be related to the real situation.
 
+\section{Theoretical Background}
+\noindent
+It is important to understand the key concepts behind Jaatha before we apply it. Like many
+estimation methods that rely on simulations, Jaatha tries to find the parameters that fits
+best\footnote{for Jaatha, the 'best' parameter combination is the one with the highest
+composite likelihood} to your data by simulating artificial data for many different parameter
+combinations. It uses a learning algorithm to determine how the different parameter
+values influence the data and uses that knowledge to find the best parameter combination for 
+your data. 
+
+You can imagine Jaatha as a method that runs through the parameter space -- the space
+of all possible parameter combinations, in our example a cube with borders from $0.1$ to $5$, 
+$0.01$ to $5$ and $1$ to $20$ -- 
+
+
+
+- Parameter space
+- Blocks
+- SumStats
+- GLMs
+
+
+
 \section{Importing Your Data}
 <<Summary Statistics>>=
 pars 	<- c(1,1,10) 
@@ -107,11 +143,6 @@ positions by simulating very coarsely across the entire parameter space. We call
 this part \emph{initial search}. Afterwards a more thorough \emph{refined search}
 is performed starting from the best positions of the first step.
 
-\subsection{Theoretical Background}
-- Parameter space
-- Blocks
-- SumStats
-- GLMs
 
 <<Initialize>>=
 j1 <- Jaatha.initialize(dm, simSumStats, resultFile='res.txt')
@@ -137,7 +168,7 @@ In R, the initial search is performed with the command
 % Don't run a complete jaatha search; would take tooo long
 \vspace{0.5em}
 \noindent
-\verb@> startPoints <- Jaatha.initialSearch(j1,nSim=500,nBlocksPerPar=3)@
+\verb@> startPoints <- Jaatha.initialSearch(j1,nSim=200,nBlocksPerPar=3)@
 \vspace{-0.6em}
 
 \noindent
@@ -156,7 +187,6 @@ startPoints <- Jaatha.pickBestStartPoints(startPoints,2)
 
 
 \subsection{The Refined Search}
-
 
 Taking a set of best starting points chosen by 
 their score we can then conduct a more thorough search to fit GLMs to the 
@@ -191,7 +221,7 @@ that can be specified by the user.
     Especially for the FSM runs this was necessary to reduce the amount of 
     memory usage.
     This procedure is iterated and the search stops
-    when the score of the new parameter combination failed to change over the last 
+when the score of the new parameter combination failed to change over the last 
     $t_{stop}$ steps by at least $\epsilon$. The maximum number of steps can be 
     specified as another stopping criterion ($t_{max}$) which was necessary in 
     particular when $\epsilon$ was small such
