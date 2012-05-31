@@ -53,7 +53,8 @@ setMethod("simulateWithinBlock", signature(bObject = "Block",
 
 	    #simulate a line of sum stats for each line in randompars
             paraNsumstat <- cbind( randompar , dm.simSumStats(jaathaObject@dm,
-							      .deNormalize(jaathaObject,randompar)) ) 
+							      .deNormalize(jaathaObject,randompar,
+							      withoutTheta=jaathaObject@externalTheta) )) 
 		    
             return (paraNsumstat)
           }
@@ -96,30 +97,38 @@ Jaatha.normalize01 <- function(oldRange,value){
 ##Function to map value between 0 and 1 to oldRange
 ## Returns single value (in oldRange).
 Jaatha.deNormalize01 <- function(oldRange,value){
+  if ( all(is.na(oldRange)) ) return(value) #external Theta
   oldRange <- log(oldRange)    
   return (exp(value*(max(oldRange)-min(oldRange))+min(oldRange)))
 }
 
-.deNormalize <- function(jObject,values){
+.deNormalize <- function(jObject,values,withoutTheta=F){
 	if (!is.jaatha(jObject)) stop("jObject is no Jaatha object")
 	if (!is.matrix(values)) values <- matrix(values,1)
 
-	return( t(apply(values,1,.deNormalizeVector,jObject=jObject)) )
+	return( t(apply(values,1,.deNormalizeVector,
+			jObject=jObject,withoutTheta=withoutTheta)) )
 }
 	
-.deNormalizeVector <- function(jObject,values){
+.deNormalizeVector <- function(jObject,values,withoutTheta){	
+	#.log(jObject,"Called .deNormalizeVector")
+	#.log(jObject,"values:",values,"| withoutTheta:",withoutTheta)
 	if (!is.jaatha(jObject)) stop("jObject is no Jaatha object!")
 	if (!is.numeric(values)) stop("trying to deNomalize non-numeric values")
 	if (!is.vector(values)) stop("trying to deNormalize non-vector values")
-	if (length(values) != jObject@nPar) stop("trying to deNormalize vector of wrong length")
+	nPar <- jObject@nPar+jObject@externalTheta-withoutTheta
+	#.log(jObject,"expecting",nPar,"parmeters")
+	if (length(values) != nPar)
+	    stop("trying to deNormalize vector of wrong length")
 
-	ret <- rep(0,jObject@nPar)
+	ret <- rep(0,nPar)
 	ranges <- dm.getParRanges(jObject@dm)
-	for (i in 1:jObject@nPar){
+	for (i in 1:nPar){
 		ret[i] <- Jaatha.deNormalize01(ranges[i,],values[i])
 	}
 
 	#Add names
 	names(ret) <- jObject@dm@parameters[1:jObject@nPar]
+	#.log(jObject,"Finished .deNormalizeVector. Result:",ret)
 	return(ret)
 }

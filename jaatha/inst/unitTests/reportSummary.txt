@@ -1,0 +1,9 @@
+RUNIT TEST PROTOCOL -- Wed May 30 21:47:23 2012 
+*********************************************** 
+Number of test functions: 5 
+Number of errors: 0 
+Number of failures: 0 
+
+ 
+1 Test Suite : 
+jaatha unit testing - 5 test functions, 0 errors, 0 failures

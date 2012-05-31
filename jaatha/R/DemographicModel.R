@@ -289,6 +289,16 @@ rm(.init)
 	
 	return( scaledValues )
 }
+
+.checkParInRange <- function(dm, param) {
+	ranges <- dm.getParRanges(dm,inklExtTheta=F)
+	#Seems there can be rounding errors during scalation
+	lower <- matrix(ranges[,1],dim(param)[1],dim(param)[2],byrow=T) - 1e-15
+	upper <- matrix(ranges[,2],dim(param)[1],dim(param)[2],byrow=T) + 1e-15
+	inRange <- lower <= param & param <= upper
+	return(all(inRange))
+}
+
 #-----------------------------------------------------------------------
 # Public functions
 #-----------------------------------------------------------------------
@@ -302,11 +312,12 @@ dm.setDebugMode <- function(dm,debugMode=T,logFile=""){
 	return(dm)
 }
 
-dm.getParRanges <- function(dm){
-	#.check.dm(dm)
+dm.getParRanges <- function(dm,inklExtTheta=T){
+	.check.dm(dm)
 	parMask <- !is.na(dm@features$parameter)
 	parRanges <- cbind(lower=dm@features$lowerRange[parMask],upper=dm@features$upperRange[parMask])
 	parRanges <- parRanges[sort.list(dm@features$parameter[parMask]),]
+	if (!inklExtTheta) parRanges <- parRanges[1:dm.getNPar(dm),]
 	return( parRanges )
 }
 
@@ -343,7 +354,7 @@ dm.createDemographicModel <- function(sampleSizes,nLoci,seqLength=1000,
 }
 
 dm.setExternalTheta <- function(dm){
-	.check.dm(dm)
+	 .check.dm(dm)
 	 #newDm <- new("DemographicModel",dm@seqLength,dm@sampleSizes,dm@finiteSites)
 	 #newDm@features <- dm@features[dm@features$type != "mutation",]
 	 #newDm@parameters <- dm@parameters[dm@parameters != "theta"]
@@ -380,8 +391,8 @@ dm.getNPar <- function(dm){
 dm.addMutation <- function(dm,lowerRange,upperRange,fixedValue){
 	if ( missing(lowerRange) & missing(upperRange) & missing(fixedValue) ){
 		dm@externalTheta <- T
-		upperRange <- 5
-		lowerRange <- 5
+		upperRange <- NA
+		lowerRange <- NA
 	}
 
 	return(.addFeature(dm,"mutation","theta",lowerRange,upperRange,fixedValue))
@@ -532,10 +543,15 @@ dm.simulationCmd <- function(dm,parameters){
 #' dm <- dm.createDemographicModel(sampleSizes=c(25,25),nLoci=100,seqLength=1000)
 #' dm <- dm.addSpeciationEvent(dm,0.01,5)
 #' dm <- dm.addMutation(dm,1,20)
-##' dm.simSumStats(dm,c(1,10))
+#' dm.simSumStats(dm,c(1,10))
 dm.simSumStats <- function(dm,parameters,sumStatFunc=dm.defaultSumStats){
 	.dm.log(dm,"Called dm.simSumStats()")
+
 	if (!is.matrix(parameters)) parameters <- matrix(parameters,1,length(parameters))
+
+	.check.dm(dm)
+	if (dim(parameters)[2] != dm.getNPar(dm)) stop("Wrong number of parameters")
+	if ( !.checkParInRange(dm,parameters) ) stop("Parameters out of range")
 
 	if 	(dm@simProg == "fsc") {
 		sumStats <- .fsc.simSumStats(dm,parameters,sumStatFunc)

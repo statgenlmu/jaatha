@@ -1,0 +1,26 @@
+RUNIT TEST PROTOCOL -- Wed May 30 21:47:23 2012 
+*********************************************** 
+Number of test functions: 5 
+Number of errors: 0 
+Number of failures: 0 
+
+ 
+1 Test Suite : 
+jaatha unit testing - 5 test functions, 0 errors, 0 failures
+
+
+
+Details 
+*************************** 
+Test Suite: jaatha unit testing 
+Test function regexp: ^test.+ 
+Test file regexp: ^runit.+\.[rR]$ 
+Involved directory: 
+/home/paul/Workspace/Jaatha-package/jaatha/tests/../inst/unitTests 
+--------------------------- 
+Test file: /home/paul/Workspace/Jaatha-package/jaatha/tests/../inst/unitTests/runit.test.R 
+test.dm.simSumStats: (5 checks) ... OK (0.04 seconds)
+test.initialSearch.extTheta: (1 checks) ... OK (2.39 seconds)
+test.initialSearch.extThetaPossible: (1 checks) ... OK (2.47 seconds)
+test.initialSearch.normal: (1 checks) ... OK (3.26 seconds)
+test.refineSearch: (1 checks) ... OK (21.91 seconds)

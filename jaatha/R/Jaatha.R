@@ -125,8 +125,8 @@ setClass("Jaatha",
 
 
 	#Number of parameters; dm@parameters always inculdes theta; 
-	if (.Object@externalTheta)  .Object@nPar <- length(dm@parameters) - 1
-	else 			    .Object@nPar <- length(dm@parameters)
+	if (.Object@externalTheta)  .Object@nPar <- length(.Object@dm@parameters) - 1
+	else 			    .Object@nPar <- length(.Object@dm@parameters)
 
 	.Object@likelihood.table <- matrix(0,0,.Object@nPar + 2)
 
@@ -290,8 +290,9 @@ Jaatha.initialSearch <- function(jObject, nSim=200, nBlocksPerPar=3){
 		boundry <- sapply(1:jObject@nPar, function(p) pRange[p,b[p],])  #dim=c(2,jObject@nPar)
 		#boundry
 		.print(jObject,"*** Block",i,
-			       " (lowerB:",round(.calcAbsParamValue(jObject@dm,boundry[1,]),3),
-			       " upperB:", round(.calcAbsParamValue(jObject@dm,boundry[2,]),3),")")
+			" (lowerB:",round(.deNormalize(jObject,boundry[1,],withoutTheta=jObject@externalTheta),3),
+			" upperB:", round(.deNormalize(jObject,boundry[2,],withoutTheta=jObject@externalTheta),3),
+			")")
 
 		.log(jObject,"Creating block",i)
 		firstBlocks[[i]] <- new("Block", nPar=jObject@nPar,
@@ -329,7 +330,7 @@ Jaatha.initialSearch <- function(jObject, nSim=200, nBlocksPerPar=3){
 		.emptyGarbage()
 	}
 	
-	if ( extThetaPossible ) jObject@nPar	<- jObject@nPar + 1	
+	#if ( extThetaPossible ) jObject@nPar <- jObject@nPar + 1
 
 	#bestBlockIndex <- which((function(x) max(x)==x)
 	#			(sapply(1:nTotalBlocks,function(x) firstBlocks[[x]]@score)))

@@ -52,6 +52,7 @@ dm.mscmd <- "ms"
 .ms.getParameter <- function(dm,parameters,type,population=NA){
 	feature <- .getFeature(dm,type,population)
 	if ( dim(feature)[1] != 1 ) stop("Error creating ms command")
+	if ( dm@externalTheta & type == "mutation") return(0)
 	if ( feature$lowerRange[1] == feature$upperRange[1] )
 		return(feature$lowerRange[1]) 
 	else
