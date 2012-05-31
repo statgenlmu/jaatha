@@ -4,11 +4,15 @@
 
 \documentclass{article}
 
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{textcomp}
+
+
 \usepackage{natbib}
 \usepackage{graphics}
 \usepackage{amsmath}
 \usepackage{indentfirst}
-\usepackage[utf8]{inputenc}
 
 \begin{document}
 
@@ -30,6 +34,11 @@ demographic history of (at the moment) two related species. To do so, it uses mo
 data from multiple individuals from both species.
 This HowTo describes the method and gives an example of using its implementation
 as \verb@R@ package \verb@jaatha@.
+
+A detailed (but a bit a outdated) description of Jaatha can be found in 
+\cite{naduvilezhath_jaatha_2011}, which also is the correct citation for Jaatha. 
+Further explanation of all functions used can be found in the R help pages of Jaatha
+as well as in the Jaatha manual.
 
 \section{A demographic model}
 \noindent
@@ -112,23 +121,28 @@ estimation methods that rely on simulations, Jaatha tries to find the parameters
 best\footnote{for Jaatha, the 'best' parameter combination is the one with the highest
 composite likelihood} to your data by simulating artificial data for many different parameter
 combinations. It uses a learning algorithm to determine how the different parameter
-values influence the data and uses that knowledge to find the best parameter combination for 
+values influence the simulated data and uses that knowledge to find the best parameter combination for 
 your data. 
 
 You can imagine Jaatha as a method that runs through the parameter space -- the space
 of all possible parameter combinations, in our example a cube with borders from $0.1$ to $5$, 
-$0.01$ to $5$ and $1$ to $20$ -- 
+$0.01$ to $5$ and $1$ to $20$ -- doing simulations for are small part of the parameter space
+around the current position (to which we refer as a \emph{block}). It then searches the new maximum
+of the current blocks and moves to it, builds a new block around it and so on. The search finally 
+stops when the likelihood cannot be improved anymore or a maximal number of steps has been reached.
 
-
-
-- Parameter space
-- Blocks
-- SumStats
-- GLMs
-
+To compare the simulated data to the real one, Jaatha uses \emph{summary statistics} of the data.
+As default, it calculates the Joint Site Frequency Spectrum (JSFS) of the data and further summaries
+this by taking different sums over the JSFS. Please refer to \cite{tellier_estimating_2011} for a detailed
+description.
 
 
 \section{Importing Your Data}
+\noindent
+To run Jaatha, you need to calculate the summary statistics of your data. We are currently working on 
+a convenient way to do so for popular formats.
+
+For the moment, let us use a simulated data set, for which we know the real parameter:
 <<Summary Statistics>>=
 pars 	<- c(1,1,10) 
 simSumStats <- dm.simSumStats(dm,pars)
@@ -141,14 +155,18 @@ simSumStats
 Jaatha is divided into two parts. First we find good starting
 positions by simulating very coarsely across the entire parameter space. We call
 this part \emph{initial search}. Afterwards a more thorough \emph{refined search}
-is performed starting from the best positions of the first step.
-
+is performed starting from the best positions of the first step. Before, we need
+to set some options like our demographic model and the summary statistics of the 
+real data:
 
 <<Initialize>>=
-j1 <- Jaatha.initialize(dm, simSumStats, resultFile='res.txt')
+jaatha <- Jaatha.initialize(dm, simSumStats)
 @
 %startPoints <- Jaatha.initialSearch(j1,nSim=500,nBlocksPerPar=3,multiple=T)
 %save(startPoints,file='startpoints.save')
+
+\noindent
+For more availbe options, please refer to \Verb@?Jaatha.initialize@ or the Jaatha manual.
 
 \subsection{The Initial Search}
 
@@ -168,13 +186,13 @@ In R, the initial search is performed with the command
 % Don't run a complete jaatha search; would take tooo long
 \vspace{0.5em}
 \noindent
-\verb@> startPoints <- Jaatha.initialSearch(j1,nSim=200,nBlocksPerPar=3)@
+\verb@> startPoints <- Jaatha.initialSearch(jaatha,nSim=200,nBlocksPerPar=3)@
 \vspace{-0.6em}
 
 \noindent
 which takes a while, and finally returns a list of $3^3$ start points sorted by score:
 <<Initial Search>>=
-Jaatha.printStartPoints(j1,startPoints)
+Jaatha.printStartPoints(jaatha,startPoints)
 @
 Here, there is a big reduction in the scores after the first five blocks, and a smaller one 
 after the first two. This is suggesting that we either use the first two or the first five 
@@ -188,79 +206,48 @@ startPoints <- Jaatha.pickBestStartPoints(startPoints,2)
 
 \subsection{The Refined Search}
 
-Taking a set of best starting points chosen by 
-their score we can then conduct a more thorough search to fit GLMs to the 
-simulated $\widehat{\textbf{S}}$ in smaller regions of the parameter space and 
-thus improving the fit of the GLMs and consequently the likelihood approximations. 
-The score is proportional to the likelihood and is defined as equation without the
-denumerator $s_i!$, since it does not change during the course of the Jaatha run.
-In the following paragraphs we will explain in more detail the two phases and the variables
-that can be specified by the user.
+\noindent
+Now we can conduct the more thorough refined search described above to improve the
+likelihood approximations. 
 
-\begin{enumerate}
-  \item Initial Search: Finding good starting positions\\
-  \item Refined search: Getting the point estimate\\
-  For $b \in \left\{1,\ldots, n_{RP}\right\}$ do:
-      \begin{enumerate}
-	\item 
-    Around $\mathbf{\tilde{p}}_{b}$ we perform a \textit{Jaatha step}: We define a block 
-    $\mathcal{B}_{\mathbf{\tilde{p}}_{b}}$ with middle point $\mathbf{\tilde{p}}_{b}$ 
-    and side length $r$ in all 
-    dimensions on the parameter range, simulate 
-    $s_{main}$ data sets of $n_{loc}$ loci with uniformly chosen parameters from within this 
-    block (corner points in addition), calculate $\widehat{\textbf{S}}$,
-    fit GLMs as described above, and estimate a new optimal parameter 
-    combination $\mathbf{\tilde{p}}_{b}^\prime$.  
-    Now around $\mathbf{\tilde{p}}_{b}^\prime$ we run a Jaatha step 
-    %$\mathcal{B}_{\mathbf{\tilde{p}}_{b}^\prime}$
-    to find $\mathbf{\tilde{p}}_{b}^{\prime\prime}$. 
-    For the GLM fitting to find $\mathbf{\tilde{p}}_{b}^{\prime\prime}$ we only 
-    reuse simulations of previous blocks if 
-    $\mathbf{\tilde{p}}_{b}^\prime$ falls within the 
-    block, otherwise the simulations are deleted from memory. 
-    Especially for the FSM runs this was necessary to reduce the amount of 
-    memory usage.
-    This procedure is iterated and the search stops
-when the score of the new parameter combination failed to change over the last 
-    $t_{stop}$ steps by at least $\epsilon$. The maximum number of steps can be 
-    specified as another stopping criterion ($t_{max}$) which was necessary in 
-    particular when $\epsilon$ was small such
-    that the score did not seem to converge. 
-    Throughout this phase we keep a list of $n_B$ 
-    parameter combinations with the highest scores ($\mathcal{L}$). 
+\noindent
+Important: Please note that the parameter values here will lead to a fast, but a bit 
+inaccurate search. For a typical usage, we recommend setting \verb@nSim=400@, 
+\verb@nFinalSim=200@ and \verb@epsilon=0.2@.
 
-    To avoid being trapped in local maxima there is an 
-    option to weigh simulations of previous blocks with $w \in [0,1]$.
-    Each time simulations of a block are kept, we multiply the weight of these simulations 
-    in the GLM fitting by $w$, such that if $w=1$ all simulation 
-    results have the same contribution in each step.
+<<seed,include=FALSE,echo=FALSE>>=
+set.seed(50)
+@
 
-	\item Evaluation of the parameter estimates in $\mathcal{L}$:\\
-    After the phase 2 (a) has finished, the parameter combinations which were stored in 
-    $\mathcal{L}$ will be used to simulate $s_{final}$ independent
-    simulations for each of them to calculate the (composite) likelihood of each parameter 
-    combination (using eqn.~\ref{PoissonApprox}). 
-    The combination with the highest likelihood will then be reported
-    as the result for $b$.
-        \end{enumerate}
-Since we start the detailed search for each of the $n_{RP}$ refine points,
-Jaatha will report $n_{RP}$ parameter combinations in total. 
-The Jaatha results in the following always represent the
-parameter combination with the highest likelihood.
-\end{enumerate}
+<<RefineSearch>>=
+#jaatha <- Jaatha.refineSearch(jaatha, startPoints,
+#                              nSim=50, nFinalSim=50,
+#			      epsilon=5, halfBlockSize=.05,
+#			      weight=.9, nMaxStep=200)
+@
 
-Another option that can be set by the user is $ext_\theta$, which specifies whether
-$\theta$ is excluded from the parameter range from which the random values are 
-chosen for the simulations. If this option is set, for the simulations $\theta$
-is fixed to the value of 5, which reduces the dimension of block $\mathcal{B}$ by one
-while the other parameters are calculated as described above.
-$\theta$ is then estimated separately of the other parameters with 
-\begin{equation} \label{eqn:extTheta}
-\widehat{\theta}_\mathcal{B} = \frac{\sum\limits_{i=0}^{n_{SS}}s_i}
-{\sum\limits_{j=0}^{n_{SS}}\widehat{\lambda_i}
-(\mathbf{\hat{p}}_\mathcal{B})/(5\cdot n_{loc})},
-\end{equation}
-where the parameter combination of the block center of $\mathcal{B}$ is denoted by
-$\mathbf{\hat{p}}_\mathcal{B}$. 
+\noindent
+Hence we perform two independent searches, starting in the two \verb@startPoints@ we choose before 
+and according to the general options we choose during initialization, which are now stored in the 
+\verb@jaatha@ object. In each step, we build a block with \verb@halfBlockSize@ in each direction
+(on a logarithmic scale) and perform simulations for \verb@nSim@ random parameter combinations within
+this block (plus one for very corner). We use this information to estimate the composite maximum 
+likelihood parameters within this block and take this value as new starting position for the next
+step. 
+
+The algorithm stop when the score has not changed more than \verb@epsilon@ for five consecutive 
+steps or step \verb@nMaxStep@ is reached. To avoid getting stuck in local maxima, 
+the \verb@weight@ option decreases the weigh of simulations of previous blocks.
+
+Finally the likelihoods for the best ten parameter combinations are approximated using \verb@nFinalSim@
+simulations. These are values printed at the end of the search. This matrix can also be accessed via
+
+<<printLT>>=
+#Jaatha.printLikelihoods(jaatha)
+@
+
+
+\bibliographystyle{plainnat}
+\bibliography{jaatha}
 
 \end{document}

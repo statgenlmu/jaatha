@@ -70,4 +70,3 @@ test.refineSearch <- function(){
 	#save(samples,file="samples.save")
 	checkEquals(lt, samples[["refineSearch.result"]])
 }
-
