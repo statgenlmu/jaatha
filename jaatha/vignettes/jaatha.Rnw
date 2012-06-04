@@ -36,7 +36,7 @@ This HowTo describes the method and gives an example of using its implementation
 as \verb@R@ package \verb@jaatha@.
 
 A detailed (but a bit a outdated) description of Jaatha can be found in 
-\cite{naduvilezhath_jaatha_2011}, which also is the correct citation for Jaatha. 
+\cite{naduvilezhath_jaatha:_2011}, which also is the correct citation for Jaatha. 
 Further explanation of all functions used can be found in the R help pages of Jaatha
 as well as in the Jaatha manual.
 
@@ -46,9 +46,9 @@ Before we can apply Jaatha to estimate parameter, we first need to create a mode
 of the demographic history of the species. 
 
 For now, assume that we know that our two species are closely related; hence they must 
-have separated at a time in the past. There may be still gene flow between them, 
+have separated at a certain time in the past. There may be still gene flow between them, 
 which we will refer to as migration from one population into the other. We suppose that 
-mutations appear in the genome with a constant rate, which we don't know, and that 
+mutations appear in the genome at a constant rate, which we don't know, and that 
 recombination events occur frequently. Hence, we could propose the following, simple model:
 
 \begin{center}
@@ -70,8 +70,8 @@ function:
 dm <- dm.createDemographicModel(sampleSizes=c(25,24),nLoci=100,
 						seqLength=10^3)
 @
-The parameter \verb@sampleSizes@ here states we have sampled molecular data from $25$ 
-individuals of the first population and $24$ individuals from the second one. The 
+The parameter \verb@sampleSizes@ here corresponds to the number of individuals we have
+sampled from the first population and second population respectively. The 
 second argument \verb@nLoci@ states are using data from $100$ independent loci in the
 genome while \verb@seqLength@ gives the (average) length of each loci\footnote{This 
 is only used when a finite sites model is assumed or if recombination is included.}.
@@ -96,9 +96,9 @@ that our parameter could have and the second number is the highest possible valu
 	which is given by $M=4N_1m$, where $m$ is the fraction of individuals of each 
 	population which are replaced by immigrants from the other population each
 	generation.
-\item The \emph{mutation} parameter $\theta$ is scaled with $4N_1$ times the neutral mutations
+\item The \emph{mutation} parameter $\theta$ is $4N_1$ times the neutral mutations
 	rate per locus.
-\item Finally, the \emph{recombination} parameter $\rho$ is scaled with $4N_1$ times
+\item Finally, the \emph{recombination} parameter $\rho$ is $4N_1$ times
 	the probability of recombination between the ends of the locus per generation.
 \end{itemize}
 
@@ -109,9 +109,9 @@ dm
 @
 
 Keep in mind that a `good' model -- which is one that approximates the real demographic
-history but is also as simple as possible -- is crucial for getting meaningful
+history but is also as simple as possible -- is crucial for obtaining meaningful
 estimates in the end. Jaatha will always try to find the parameters that make the
-model fit best to the real data. If the model does not fit to the real data at all,
+model fit best to your data. If the model does not fit to the data at all,
 also the estimates will not be related to the real situation.
 
 \section{Theoretical Background}
@@ -126,8 +126,8 @@ your data.
 
 You can imagine Jaatha as a method that runs through the parameter space -- the space
 of all possible parameter combinations, in our example a cube with borders from $0.1$ to $5$, 
-$0.01$ to $5$ and $1$ to $20$ -- doing simulations for are small part of the parameter space
-around the current position (to which we refer as a \emph{block}). It then searches the new maximum
+$0.01$ to $5$ and $1$ to $20$ -- doing simulations for a small part of the parameter space
+around the current position (we call this area a \emph{block}). It then searches the new maximum
 of the current blocks and moves to it, builds a new block around it and so on. The search finally 
 stops when the likelihood cannot be improved anymore or a maximal number of steps has been reached.
 
@@ -174,7 +174,7 @@ For more availbe options, please refer to \Verb@?Jaatha.initialize@ or the Jaath
 For the initial search, we divide the parameter space into equally-sized blocks by dividing 
 each of the $n$ parameters ranges into \verb@nBlocksPerPar@ intervals such that we obtain 
 $($\verb@nBlocksPerPar@$)^n$ blocks. Within each block we simulate \verb@nSim@ data sets with 
--- on the logarithmic scale -- uniformly drawn parameter values within each block. To ensure 
+-- on a logarithmic scale -- uniformly drawn parameter values within each block. To ensure 
 a better sampling of the edges, we simulate in addition data sets for all corner points of 
 each parameter block.
 
@@ -235,7 +235,7 @@ this block (plus one for very corner). We use this information to estimate the c
 likelihood parameters within this block and take this value as new starting position for the next
 step. 
 
-The algorithm stop when the score has not changed more than \verb@epsilon@ for five consecutive 
+The algorithm stops when the score has not changed more than \verb@epsilon@ for five consecutive 
 steps or step \verb@nMaxStep@ is reached. To avoid getting stuck in local maxima, 
 the \verb@weight@ option decreases the weigh of simulations of previous blocks.
 
