@@ -2,25 +2,36 @@
 % \VignetteDepends{jaatha}
 % \VignettePackage{jaatha}
 
-\documentclass{article}
+\documentclass[a4paper]{article}
 
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
 \usepackage{textcomp}
 
-
 \usepackage{natbib}
 \usepackage{graphics}
 \usepackage{amsmath}
 \usepackage{indentfirst}
-
-\begin{document}
+\usepackage{hyperref}
 
 <<foo,include=FALSE,echo=FALSE>>=
 options(keep.source = TRUE, width = 60)
 jinfo <- packageDescription("jaatha")
 load('startpoints.save')
 @
+
+\hypersetup{
+	pdftitle={The Jaatha HowTo \Sexpr{jinfo$Version}},
+	pdfauthor={\Sexpr{jinfo$Author}},
+	colorlinks=true,
+	linkcolor=black,          % color of internal links
+	citecolor=black,        % color of links to bibliography
+	filecolor=black,      % color of file links
+	urlcolor=blue           % color of external links
+}
+
+\begin{document}
+
 
 \title{The Jaatha HowTo}
 \author{\Sexpr{jinfo$Author}}
@@ -30,41 +41,44 @@ load('startpoints.save')
 \section{Introduction}
 \noindent
 Jaatha is a fast composite likelihood method to estimate model parameters of the 
-demographic history of (at the moment) two related species. To do so, it uses molecular
+demographic history of (at the moment) two related species. To do so, it uses SNP
 data from multiple individuals from both species.
 This HowTo describes the method and gives an example of using its implementation
-as \verb@R@ package \verb@jaatha@.
+as an \verb@R@ package \verb@jaatha@.
 
-A detailed (but a bit a outdated) description of Jaatha can be found in 
+A detailed description of Jaatha can be found in 
 \cite{naduvilezhath_jaatha:_2011}, which also is the correct citation for Jaatha. 
-Further explanation of all functions used can be found in the R help pages of Jaatha
-as well as in the Jaatha manual.
+Further explanations of all functions used can be found in the R help pages of Jaatha
+as well as in the Jaatha manual. The package itself can be obtained from CRAN
+using \verb@install.packages('jaatha')@ or downloaded from
+\url{http://evol.bio.lmu.de/_statgen/software/jaatha}.
 
 \section{A demographic model}
 \noindent
 Before we can apply Jaatha to estimate parameter, we first need to create a model
 of the demographic history of the species. 
-
 For now, assume that we know that our two species are closely related; hence they must 
 have separated at a certain time in the past. There may be still gene flow between them, 
-which we will refer to as migration from one population into the other. We suppose that 
-mutations appear in the genome at a constant rate, which we don't know, and that 
-recombination events occur frequently. Hence, we could propose the following, simple model:
+which we will refer to as migration from one population into the other. 
+Hence, we could propose the simple demographic model descriped in Figure~\ref{fig:dm}.
 
+\begin{figure}
 \begin{center}
 \includegraphics[width=60mm]{dm.png}
 \end{center}
+\caption{
+A simple demographic model: The ancestral population spilts into two populations $\tau$ time 
+units ago, and afterwards individuals migrated from one population to the other with a 
+migration rate $M$. Mutations are occurring with rate $\theta$ and recombination with a 
+known rate $\rho$.}
+\label{fig:dm}
+\end{figure}
 
-\noindent
-The ancestral population spilt into our two populations $\tau$ time units ago, and afterwards
-individuals migrated from one population to the other with a migration rate $m$. Mutations are
-occurring with rate $\theta$ and recombination with a known rate $\rho$.
-
-To specify the above demographic model in \verb@R@, we first need to load \verb@jaatha@.
+To specify the model in \verb@R@, we first need to load \verb@jaatha@.
 <<Loading Jaatha>>=
 library(jaatha)
 @
-We can now create an 'empty' model \verb@dm@ using the \verb@dm.createDemographicModel()@
+We can now create an 'empty' demographic model \verb@dm@ using the \verb@dm.createDemographicModel()@
 function:
 <<Creating a demographic model in R>>=
 dm <- dm.createDemographicModel(sampleSizes=c(25,24),nLoci=100,
@@ -72,8 +86,8 @@ dm <- dm.createDemographicModel(sampleSizes=c(25,24),nLoci=100,
 @
 The parameter \verb@sampleSizes@ here corresponds to the number of individuals we have
 sampled from the first population and second population respectively. The 
-second argument \verb@nLoci@ states are using data from $100$ independent loci in the
-genome while \verb@seqLength@ gives the (average) length of each loci\footnote{This 
+second argument \verb@nLoci@ states that we are using data from $100$ independent loci
+while \verb@seqLength@ gives the (average) length of each loci\footnote{This 
 is only used when a finite sites model is assumed or if recombination is included.}.
 
 We can now successively add the other assumptions of our model:
@@ -84,8 +98,10 @@ dm <- dm.addMutation(dm,1,20)
 dm <- dm.addRecombination(dm,fixed=5)
 @
 Here, the first parameter is always the demographic model to which we want to add
-an assumption/feature, while the first number is the lowest possible value we assume
-that our parameter could have and the second number is the highest possible value.
+an assumption/feature. The two following numbers represent the range for the parameter. 
+The lower border has to be greater the zero, as we are using a logarithmic transformation
+of the parameter space. The parameters are scaled as in the popular simulation program
+\verb@ms@ (\cite{hudson_generating_2002}) that we use for simulations:
 \begin{itemize}
 \item The parameter for the \emph{speciation} event is the split time $\tau$, which
 	states how many generations ago the split of the population has occurred.
@@ -112,13 +128,13 @@ Keep in mind that a `good' model -- which is one that approximates the real demo
 history but is also as simple as possible -- is crucial for obtaining meaningful
 estimates in the end. Jaatha will always try to find the parameters that make the
 model fit best to your data. If the model does not fit to the data at all,
-also the estimates will not be related to the real situation.
+Jaatha will still return estimates, but they will not be meaningful.
 
 \section{Theoretical Background}
 \noindent
-It is important to understand the key concepts behind Jaatha before we apply it. Like many
-estimation methods that rely on simulations, Jaatha tries to find the parameters that fits
-best\footnote{for Jaatha, the 'best' parameter combination is the one with the highest
+It is important to understand the key concepts behind Jaatha before we can apply it. Like many
+estimation methods that rely on simulations, Jaatha tries to find the parameters that best fits
+\footnote{for Jaatha, the 'best' parameter combination is the one with the highest
 composite likelihood} to your data by simulating artificial data for many different parameter
 combinations. It uses a learning algorithm to determine how the different parameter
 values influence the simulated data and uses that knowledge to find the best parameter combination for 
@@ -126,14 +142,14 @@ your data.
 
 You can imagine Jaatha as a method that runs through the parameter space -- the space
 of all possible parameter combinations, in our example a cube with borders from $0.1$ to $5$, 
-$0.01$ to $5$ and $1$ to $20$ -- doing simulations for a small part of the parameter space
+$0.01$ to $5$ and $1$ to $20$ -- simulating in a small part of the parameter space
 around the current position (we call this area a \emph{block}). It then searches the new maximum
 of the current blocks and moves to it, builds a new block around it and so on. The search finally 
 stops when the likelihood cannot be improved anymore or a maximal number of steps has been reached.
 
 To compare the simulated data to the real one, Jaatha uses \emph{summary statistics} of the data.
-As default, it calculates the Joint Site Frequency Spectrum (JSFS) of the data and further summaries
-this by taking different sums over the JSFS. Please refer to \cite{tellier_estimating_2011} for a detailed
+As default, it calculates the Joint Site Frequency Spectrum (JSFS) of the data and further summarizes
+it by evaluating different sums over the JSFS. Please refer to \cite{naduvilezhath_jaatha:_2011} for a detailed
 description.
 
 
@@ -166,7 +182,7 @@ jaatha <- Jaatha.initialize(dm, simSumStats)
 %save(startPoints,file='startpoints.save')
 
 \noindent
-For more availbe options, please refer to \Verb@?Jaatha.initialize@ or the Jaatha manual.
+For more options refer to \Verb@?Jaatha.initialize@ or the Jaatha manual.
 
 \subsection{The Initial Search}
 
@@ -190,7 +206,7 @@ In R, the initial search is performed with the command
 \vspace{-0.6em}
 
 \noindent
-which takes a while, and finally returns a list of $3^3$ start points sorted by score:
+which takes a while, and finally returns a list of start points sorted by score:
 <<Initial Search>>=
 Jaatha.printStartPoints(jaatha,startPoints)
 @
@@ -211,9 +227,8 @@ Now we can conduct the more thorough refined search described above to improve t
 likelihood approximations. 
 
 \noindent
-Important: Please note that the parameter values here will lead to a fast, but a bit 
-inaccurate search. For a typical usage, we recommend setting \verb@nSim=400@, 
-\verb@nFinalSim=200@ and \verb@epsilon=0.2@.
+Important: For a typical usage, we recommend setting \verb@nSim=400@, 
+\verb@nFinalSim=200@ and \verb@epsilon=2@.
 
 <<seed,include=FALSE,echo=FALSE>>=
 set.seed(50)
@@ -237,7 +252,7 @@ step.
 
 The algorithm stops when the score has not changed more than \verb@epsilon@ for five consecutive 
 steps or step \verb@nMaxStep@ is reached. To avoid getting stuck in local maxima, 
-the \verb@weight@ option decreases the weigh of simulations of previous blocks.
+the \verb@weight@ option decreases the weight of simulations of previous blocks.
 
 Finally the likelihoods for the best ten parameter combinations are approximated using \verb@nFinalSim@
 simulations. These are values printed at the end of the search. This matrix can also be accessed via
