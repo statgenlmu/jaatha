@@ -60,14 +60,14 @@ of the demographic history of the species.
 For now, assume that we know that our two species are closely related; hence they must 
 have separated at a certain time in the past. There may be still gene flow between them, 
 which we will refer to as migration from one population into the other. 
-Hence, we could propose the simple demographic model descriped in Figure~\ref{fig:dm}.
+Hence, we could propose the simple demographic model described in Figure~\ref{fig:dm}.
 
 \begin{figure}
 \begin{center}
 \includegraphics[width=60mm]{dm.png}
 \end{center}
 \caption{
-A simple demographic model: The ancestral population spilts into two populations $\tau$ time 
+A simple demographic model: The ancestral population splits into two populations $\tau$ time 
 units ago, and afterwards individuals migrated from one population to the other with a 
 migration rate $M$. Mutations are occurring with rate $\theta$ and recombination with a 
 known rate $\rho$.}

@@ -15,11 +15,14 @@
   \item{seed}{An integer used as seed for both Jaatha and
   the simulation software}
 
-  \item{resultFile}{ABC}
+  \item{resultFile}{A File in which the results of the
+  search will be written.}
 
-  \item{debugMode}{def}
+  \item{debugMode}{If TRUE, a debug output will be
+  produced}
 
-  \item{logFile}{geh}
+  \item{logFile}{If specified, the debug output will be
+  redirected to this file}
 }
 \value{
   A S4-Object of type jaatha containing the settings
