@@ -2,8 +2,7 @@
 \alias{dm.simSumStats}
 \title{Simulates data according to a demographic model and calculates summary statistics form it}
 \usage{
-  dm.simSumStats(dm, parameters,
-    sumStatFunc = dm.defaultSumStats)
+  dm.simSumStats(dm, parameters, sumStatFunc)
 }
 \arguments{
   \item{dm}{The demographic model according to which the

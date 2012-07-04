@@ -8,11 +8,16 @@ setClass("DemographicModel" ,
             externalTheta="logical",
             finiteSites="logical",
             profiled="logical",
-            simProg="character",
+            simProgs="list",
+            currentSimProg="SimProgram",
             debugMode="logical",
             logFile="character")
     )
 
+
+if(!exists("dm.defaultSimProgs")) {
+  dm.defaultSimProgs <- list()
+}
 
 #-----------------------------------------------------------------------
 # Initialization
@@ -21,10 +26,10 @@ setClass("DemographicModel" ,
 .init <- function(.Object,sampleSizes,nLoci,seqLength,finiteSites,tsTvRatio,debugMode,logFile){
     .Object@features <- data.frame( type=character(),
                         parameter=numeric(),
-                    population=numeric(),
-                            lowerRange=numeric(),
-                            upperRange=numeric(),
-                            startsAtTime=numeric(),
+                        population=numeric(),
+                        lowerRange=numeric(),
+                        upperRange=numeric(),
+                        startsAtTime=numeric(),
                         timeLine=numeric()
                       )
 
@@ -33,10 +38,11 @@ setClass("DemographicModel" ,
     .Object@profiled    <- F
     .Object@finiteSites     <- finiteSites
     .Object@sampleSizes     <- sampleSizes
-    .Object@seqLength   <- seqLength
-    .Object@tsTvRatio   <- tsTvRatio
-    .Object@nLoci       <- nLoci
-    .Object@simProg     <- .setSimProg(.Object) 
+    .Object@seqLength    <- seqLength
+    .Object@tsTvRatio    <- tsTvRatio
+    .Object@nLoci        <- nLoci
+
+    .Object@simProgs     <- dm.defaultSimProgs
 
     .Object <- dm.setDebugMode(.Object,debugMode,logFile)
 
@@ -156,6 +162,7 @@ rm(.show)
     if (any(dm@parameters == parameterName)) 
         stop("parameter already exists")
     dm@parameters <- c(dm@parameters,parameterName)
+    dm <- .dm.selectSimProg(dm)
     return(dm)
 }
 
@@ -191,13 +198,13 @@ rm(.show)
     return(dm)
 }
 
-
-.setSimProg <- function(dm){
-    .check.dm(dm)
-    if (dm@finiteSites) simProg <- "fsc"
-    else            simProg <- "ms"
-    return(simProg)
-}
+# 
+# .setSimProg <- function(dm){
+#     .check.dm(dm)
+#     if (dm@finiteSites) simProg <- "fsc"
+#     else            simProg <- "ms"
+#     return(simProg)
+# }
 
 .makeThetaLast <- function(dm){
     .check.dm(dm)
@@ -367,6 +374,12 @@ rm(.show)
     upper <- matrix(ranges[,2],dim(param)[1],dim(param)[2],byrow=T) + 1e-15
     inRange <- lower <= param & param <= upper
     return(all(inRange))
+}
+
+
+.dm.selectSimProg <- function(dm) {
+  dm@currentSimProg <- dm@simProgs[[1]]
+  return(dm)
 }
 
 #-----------------------------------------------------------------------
@@ -614,7 +627,7 @@ dm.simulationCmd <- function(dm,parameters){
 #' dm <- dm.addSpeciationEvent(dm,0.01,5)
 #' dm <- dm.addMutation(dm,1,20)
 #' dm.simSumStats(dm,c(1,10))
-dm.simSumStats <- function(dm,parameters,sumStatFunc=dm.defaultSumStats){
+dm.simSumStats <- function(dm, parameters, sumStatFunc){
     .dm.log(dm,"Called dm.simSumStats()")
 
     if (!is.matrix(parameters)) parameters <- matrix(parameters,1,length(parameters))
@@ -623,50 +636,31 @@ dm.simSumStats <- function(dm,parameters,sumStatFunc=dm.defaultSumStats){
     if (dim(parameters)[2] != dm.getNPar(dm)) stop("Wrong number of parameters")
     if ( !.checkParInRange(dm,parameters) ) stop("Parameters out of range")
 
-    if  (dm@simProg == "fsc") {
-        sumStats <- .fsc.simSumStats(dm,parameters,sumStatFunc)
-    }
-    else if (dm@simProg == "ms" ) {
-            sumStats <- .ms.simSumStats(dm,parameters,sumStatFunc)
-    }
-    else    message("ERROR: unkown simulation programm")
+    simProg   <- dm@currentSimProg
+    if (missing(sumStatFunc)) sumStatFunc <- simProg@sumStatFunc
+
+	nSumStats <- length(sumStatFunc(dm,jsfs=matrix(0,dm@sampleSizes[1],dm@sampleSizes[2])))
+    nSims	  <- max(dim(parameters)[1],1)
+	sumStats  <- matrix(0,nSims,nSumStats)
+   
+	.dm.log(dm,"Simulating",nSumStats,"summary statistics for",nSims,"parameter combination(s)")
+	
+	wd <- getwd()
+	setwd(tempdir())
+    simProg@initialSeedFunc()
+
+	for (n in 1:nSims) {
+		suppressWarnings(
+          simOutput <- system2(simProg@executable,
+                        simProg@simParFunc(dm,parameters[n,]),
+                        stdout=T))
+        jsfs <- simProg@calcJSFSFunc(dm,simOutput)
+		sumStats[n,] <- sumStatFunc(dm,jsfs,simOutput)
+		.dm.log(dm,"SumStats:",sumStats[n,])
+	}
+
+	setwd(wd)
+
     .dm.log(dm,"Finished dm.simSumStats()")
     return(sumStats)
-}
-
-#' These are the default summary statistics for Jaatha
-#' 
-#' @param jsfs        The joint site frequency spectrum of two populations
-#' @return        A vector with sums over different areas of the JSFS
-#' @export
-#'
-#' @examples
-#' jsfs <- matrix(rpois(26*26,5),26,26)
-#' dm.defaultSumStats(jsfs)
-dm.defaultSumStats <- function(jsfs) {
-  n <- nrow(jsfs)
-  m <- ncol(jsfs)
-  c(sum(jsfs[1,2:3]),
-    sum(jsfs[2:3,1]),
-    sum(jsfs[1,4:(m-3)]),
-    sum(jsfs[4:(n-3),1]),
-    sum(jsfs[1,(m-2):(m-1)]),
-    sum(jsfs[(n-2):(n-1),1]),
-    sum(jsfs[2:3,2:3]),
-    sum(jsfs[2:3,4:(m-3)]),
-    sum(jsfs[4:(n-3),2:3]),
-    sum(jsfs[(n-2):(n-1),4:(m-3)]),
-    sum(jsfs[4:(n-3),(m-2):(m-1)]),
-    sum(jsfs[2:3,(m-2):(m-1)]),
-    sum(jsfs[(n-2):(n-1),2:3]),
-    sum(jsfs[4:(n-3),4:(m-3)]),
-    sum(jsfs[(n-2):(n-1),(m-2):(m-1)]),
-    jsfs[1,m],
-    jsfs[n,1],
-    sum(jsfs[n,2:3]),
-    sum(jsfs[2:3,m]),
-    sum(jsfs[n,4:(m-3)]),
-    sum(jsfs[4:(n-3),m]),
-    sum(jsfs[n,(m-2):(m-1)]),
-    sum(jsfs[(n-2):(n-1),m]) )
 }

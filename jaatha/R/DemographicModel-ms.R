@@ -1,15 +1,12 @@
-dm.mscmd <- "ms"
+executable <- c("ms","hudsons_ms","/bin/ms","/usr/local/bin/ms","~/bin/ms")
+features <- c("mutation","split","recombination","splitSize","presentSize")
 
-.ms.outfile <- function() {
-	return( paste(tempdir(),"/ms.out",sep="") )
-}
-
-.ms.generateCmd <- function(dm,parameters,outfile=.ms.outfile()){
+.ms.generateCmd <- function(dm,parameters){
 	.dm.log(dm,"Called .ms.generateCmd()")
 
 	nSample <- dm@sampleSizes
 	cmd <- c(sum(nSample),dm@nLoci)                     #repetitions and number of loci
-	cmd <- c(cmd,"-I 2",nSample[1],nSample[2])            	 #two populations
+	cmd <- c(cmd,"-I 2",nSample[1],nSample[2])          #two populations
 	
 	tau <-  .ms.getParameter(dm,parameters,"split")
 
@@ -46,7 +43,9 @@ dm.mscmd <- "ms"
 	cmd <- paste(cmd,collapse=" ")
 	.dm.log(dm,"Generated simulation cmd:",cmd)
 	.dm.log(dm,"Finished .ms.generateCmd()")
-	return(cmd)
+
+
+    return(cmd)
 }
 
 .ms.getParameter <- function(dm,parameters,type,population=NA){
@@ -83,31 +82,57 @@ dm.mscmd <- "ms"
 	return(matrix(jsfs,dm@sampleSizes[1]+1,dm@sampleSizes[2]+1))
 }
 
-.ms.simSumStats <- function(dm,parameters,sumStatFunc){
-	.dm.log(dm,"Called .ms.simSumStats()")
 
-	nSumStats <- length(sumStatFunc(matrix(0,dm@sampleSizes[1],dm@sampleSizes[2])))
-        nSims	  <- max(dim(parameters)[1],1)
-	sumStats  <- matrix(0,nSims,nSumStats)
-
-	.dm.log(dm,"Simulating",nSumStats,"summary statistics for",nSims,"parameter combination(s)")
-	
-	wd <- getwd()
-	setwd(tempdir())
-	.ms.setSeed()
-
-	for ( n in 1:nSims ) {
-		suppressWarnings(ms <- system2(dm.mscmd,.ms.generateCmd(dm,parameters[n,]),stdout=T))
-		sumStats[n,] <- sumStatFunc(.ms.getJSFS(dm,ms))
-		.dm.log(dm,"SumStats:",sumStats[n,])
-	}
-
-	setwd(wd)
-	.dm.log(dm,"Finished .ms.simSumStats()")
-	return(sumStats)
+#' These are the default summary statistics for Jaatha
+#' 
+#' @param jsfs        The joint site frequency spectrum of two populations
+#' @return        A vector with sums over different areas of the JSFS
+##' @export
+#'
+#' @examples
+#' jsfs <- matrix(rpois(26*26,5),26,26)
+#' dm.defaultSumStats(jsfs)
+.ms.defaultSumStats <- function(jsfs) {
+  n <- nrow(jsfs)
+  m <- ncol(jsfs)
+  c(sum(jsfs[1,2:3]),
+    sum(jsfs[2:3,1]),
+    sum(jsfs[1,4:(m-3)]),
+    sum(jsfs[4:(n-3),1]),
+    sum(jsfs[1,(m-2):(m-1)]),
+    sum(jsfs[(n-2):(n-1),1]),
+    sum(jsfs[2:3,2:3]),
+    sum(jsfs[2:3,4:(m-3)]),
+    sum(jsfs[4:(n-3),2:3]),
+    sum(jsfs[(n-2):(n-1),4:(m-3)]),
+    sum(jsfs[4:(n-3),(m-2):(m-1)]),
+    sum(jsfs[2:3,(m-2):(m-1)]),
+    sum(jsfs[(n-2):(n-1),2:3]),
+    sum(jsfs[4:(n-3),4:(m-3)]),
+    sum(jsfs[(n-2):(n-1),(m-2):(m-1)]),
+    jsfs[1,m],
+    jsfs[n,1],
+    sum(jsfs[n,2:3]),
+    sum(jsfs[2:3,m]),
+    sum(jsfs[n,4:(m-3)]),
+    sum(jsfs[4:(n-3),m]),
+    sum(jsfs[n,(m-2):(m-1)]),
+    sum(jsfs[(n-2):(n-1),m]) )
 }
 
-.ms.setSeed <- function(){
+.ms.sumStatFunc <- function(dm,jsfs,simOutput){
+  return(.ms.defaultSumStats(jsfs))
+}
+
+.ms.seedFunc <- function(){
 	cat(sample(1:65525,3),"\n",file="seedms")
-	return(T)
+}
+
+ms <- new("SimProgram","ms",executable,features,.ms.generateCmd,
+          .ms.sumStatFunc,.ms.getJSFS,.ms.seedFunc)
+
+if(!exists("dm.defaultSimProgs")) {
+  dm.defaultSimProgs <- list(ms=ms)
+} else {
+  dm.defaultSimProgs[['ms']] <- ms
 }

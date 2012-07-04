@@ -63,10 +63,10 @@ test.initialSearch.extThetaPossible <- function(){
 test.refineSearch <- function(){
 	set.seed(1)
 	startPoints <- Jaatha.pickBestStartPoints(samples[["refineSearch.startpoints"]],best=2)
-	jaatha <- Jaatha.refineSearch(samples[["jaatha"]],startPoints,nSim=10,epsilon=.2,
+	jaatha <- Jaatha.initialize(dm.thetaTau, samples[["simSumStats"]], seed=1)
+	jaatha <- Jaatha.refineSearch(jaatha,startPoints,nSim=10,epsilon=.2,
 				      halfBlockSize=.05,weight=.9,nMaxStep=10)
 	lt <- Jaatha.printLikelihoods(jaatha)
-	#samples[["refineSearch.result"]] <- lt
-	#save(samples,file="samples.save")
+	#samples[["refineSearch.result"]] <- lt; save(samples,file="samples.save")
 	checkEquals(lt, samples[["refineSearch.result"]])
 }
