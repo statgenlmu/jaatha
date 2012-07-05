@@ -378,7 +378,14 @@ rm(.show)
 
 
 .dm.selectSimProg <- function(dm) {
-  dm@currentSimProg <- dm@simProgs[[1]]
+  for (i in seq(along = dm@simProgs)){
+    if (all(dm@features$type %in% dm@simProgs[[i]]@features)) {
+      dm@currentSimProg <- dm@simProgs[[i]]
+      .dm.log(dm,"Using",dm@simProgs[[i]]@name,"for simulations")
+      return(dm)
+    }
+  }
+  warning("No suitable simulation software found!")
   return(dm)
 }
 
@@ -435,6 +442,87 @@ dm.createDemographicModel <- function(sampleSizes,nLoci,seqLength=1000,
           finiteSites,tsTvRatio,debugMode,logFile)
     return(dm)
 }
+
+#' Creates a demographic model by giving the command line parameters 
+#' of a simulation program.
+#' 
+#' In case your model can not be described in terms of the demographic model
+#' class or you want to use a simulation program that is not yet supported, you
+#' can use this function to create a so called custom model. To do so, you have
+#' to state number (par.number) and ranges (par.ranges) of the parameters you
+#' want to estimate as well that the simulation program you want to use (sim.exe).
+#' Then, you have to create a function that generates the command-line options
+#' for the program (sim.options). Finally, you need a function that reads the output
+#' of your program and calculates the summary statistics (sumstats).
+#' 
+#' @param par.number   The number of parameters you want to estimate
+#' @param par.names    A character vector with names for your parameters
+#' @param par.ranges   The upper and lower boundaries for the values if your parameters.
+#'                     This should be a matrix with two columns for the lower and
+#'                     upper boundary respectively and a row for each parameter.
+#' @param sim.exe      The path of the executable of your simulation program. 
+#'                     E.g. "/usr/local/bin/ms" or "C:/msdir/ms.exe"
+#' @param sim.options  
+#' @param sumstats
+#' @return             A demographic model you can use for jaatha
+#' @export
+dm.createCustomModel <- function(par.number, par.names, par.ranges, sim.exe, 
+                                 sim.options, sumstats) {
+
+  checkType(par.number, "num")
+  checkType(par.names, c("char","vec"))
+  checkType(par.ranges, c("num","mat"))
+  checkType(sim.exe, "fun")
+  checkType(sim.options, "fun")
+  checkType(sumstats, "fun")
+
+  if (length(par.names) != par.number) stop("par.names has wrong length")
+  if (all(dim(par.ranges) != c(par.number,2)))
+    stop("par.ranges need to a ",par.number,"x2 matrix")
+
+  dm <- dm.createDemographicModel(0,0)
+  
+}
+
+
+checkType <- function(variable, type, required=T) {
+  if (missing(variable)) {
+    if (required) {
+      fun.name <- as.character(sys.call(-1)[[1]])
+      var.name <- deparse(substitute(variable))
+      stop(fun.name,": Required parameter \"",var.name,"\" is missing.",call.=F)
+    } else {
+      return()
+    }
+  }
+
+  for (i in seq(along=type)){
+    if (type[i] == "char" || type[i] == "character") {
+      func <- is.character
+      error <- "has to be of type character"
+    } else if (type[i] == "num" || type[i] == "numeric") {
+      func <- is.numeric
+      error <- "has to be of type numeric"
+    } else if (type[i]  == "vec" || type[i]  == "vector") {
+      func <- is.vector
+      error <- "has to be a vector"
+    } else if (type[i] == "mat" || type[i] == "matrix") {
+      func <- is.matrix
+      error <- "has to be a matrix"
+    } else if (type[i] == "fun" || type[i] == "function") {
+      func <- is.function
+      error <- "has to be a function"
+    } else {
+      stop("Unknown type: ",type[i])
+    }
+    if (!func(variable)) {
+      fun.name <- as.character(sys.call(-1)[[1]])
+      var.name <- deparse(substitute(variable))
+      stop(fun.name,": ",var.name," ",error,call.=F)
+    }
+  }
+}
+
 
 dm.setExternalTheta <- function(dm){
      .check.dm(dm)
