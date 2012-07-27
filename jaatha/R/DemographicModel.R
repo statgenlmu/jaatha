@@ -484,7 +484,6 @@ dm.createCustomModel <- function(par.number, par.names, par.ranges, sim.exe,
   
 }
 
-
 checkType <- function(variable, type, required=T) {
   if (missing(variable)) {
     if (required) {

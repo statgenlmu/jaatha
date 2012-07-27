@@ -1,5 +1,26 @@
-executable <- c("ms","hudsons_ms","/bin/ms","/usr/local/bin/ms","~/bin/ms")
-features <- c("mutation","split","recombination","splitSize","presentSize")
+executable <-
+  c("ms","hudsons_ms","/bin/ms","/usr/local/bin/ms","/usr/local/bin/hudsons_ms","~/bin/ms")
+features <- c("mutation","migration","split","recombination","splitSize","presentSize")
+
+# From phyclust package
+callMs <- function(nsam = NULL, nreps = 1, opts = NULL){
+  temp.file.ms <- tempfile("ms.")
+
+  if (is.null(nsam)) stop("No sample size given")
+  if (is.null(opts)) stop("No options for calling ms")
+    
+  nsam <- as.character(nsam)
+  nreps <- as.character(nreps)
+  argv <- c("ms", nsam, nreps, unlist(strsplit(opts, " ")))
+
+  .Call("R_ms_main", argv, temp.file.ms, PACKAGE = "jaatha")
+  ret <- scan(file = temp.file.ms,
+              what = "character", sep = "\n", quiet = TRUE)
+
+  unlink(temp.file.ms)
+  return(ret)
+}
+
 
 .ms.generateCmd <- function(dm,parameters){
 	.dm.log(dm,"Called .ms.generateCmd()")
@@ -43,7 +64,6 @@ features <- c("mutation","split","recombination","splitSize","presentSize")
 	cmd <- paste(cmd,collapse=" ")
 	.dm.log(dm,"Generated simulation cmd:",cmd)
 	.dm.log(dm,"Finished .ms.generateCmd()")
-
 
     return(cmd)
 }
@@ -125,7 +145,8 @@ features <- c("mutation","split","recombination","splitSize","presentSize")
 }
 
 .ms.seedFunc <- function(){
-	cat(sample(1:65525,3),"\n",file="seedms")
+  seedfile <- paste(tempdir(),"/","seedms",sep="")
+  cat(sample(1:65525,3), "\n", file=seedfile)
 }
 
 ms <- new("SimProgram","ms",executable,features,.ms.generateCmd,

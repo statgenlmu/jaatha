@@ -1,0 +1,16 @@
+# -*- Makefile -*-
+# Makefile suggested by Dr. Karin Dorman
+
+PKG_CFLAGS = -D__HAVE_R_
+
+SRCS = $(wildcard *.cc)
+MS_SRCS = $(wildcard ms/*.c) 
+OBJECTS = $(SRCS:.cc=.o) $(MS_SRCS:.c=.o)
+
+all: $(SHLIB)
+
+$(SHLIB): $(OBJECTS)
+
+clean:
+	@-rm -f $(OBJECTS) $(SHLIB)
+	@-rm -f *.o *.d *.rc Makedeps
