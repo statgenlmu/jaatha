@@ -34,9 +34,5 @@ Rseed.txt
 
 # Jaatha #
 tmp
-res.txt
-jaatha/vignettes/Makefile
-jaatha.Rcheck
-jaatha/src/symbols.rds
-.Rproj.user
-.Rd
+jaatha/man 
+jaatha/NAMESPACE
