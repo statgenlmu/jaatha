@@ -11,6 +11,7 @@ Depends:
     methods
 Collate:
     'aaa_SimProgram.R'
+    'awesome_helper_functions.R'
     'Block.R'
     'DataProcessor.R'
     'DemographicModel-fsc.R'

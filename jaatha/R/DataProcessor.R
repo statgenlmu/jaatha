@@ -102,23 +102,23 @@ setClass("DataProcessor",
 ## given parameters.  Order of parameters should be the same as needed
 ## for the simulate-function (in Simulator.R).
 Jaatha.calcLikelihood <- function(jObject, nSimulations, par){
-	.log(jObject,"Called Jaatha.calcLikelihood()")
+	.log2("Called Jaatha.calcLikelihood()")
 	scaledPars <- .deNormalize(jObject,par)
-	.log(jObject,"par:",par," | Scaled: ",scaledPars)
+	.log2("par:",par," | Scaled: ",scaledPars)
 
 	scaledPars <- matrix(scaledPars,nSimulations,length(scaledPars),byrow=T)
 
-	.log(jObject,"Simulating...")
+	.log2("Simulating...")
         simSS <- dm.simSumStats(jObject@dm,scaledPars)
 	simSS <- apply(simSS,2,mean)
 
-	.log(jObject,"Calculating Likelihood...")
+	.log2("Calculating Likelihood...")
 	logL <- 0
 	simSS[simSS==0] <- 0.5
 	for (s in 1:jObject@nTotalSumstat){
 		logL <- logL + jObject@sumStats[s] * log(simSS[s]) - simSS[s] - .logfac(jObject@sumStats[s])
 	}
-	.log(jObject,"Finished Jaatha.calcLikelihood(). Return:",logL)
+	.log2("Finished Jaatha.calcLikelihood(). Return:",logL)
 	return (logL)
 }
 

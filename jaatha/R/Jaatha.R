@@ -60,8 +60,6 @@ setClass("Jaatha",
       finiteSites= "logical",
       parNames = "character",
       resultFile = "character",
-      debugMode = "logical",
-      logFile = "character",
       sumStats = "numeric",
       likelihood.table = "matrix"
     ),
@@ -102,18 +100,15 @@ setClass("Jaatha",
 )
 
 ## constructor method for Jaatha object
-.init <- function(.Object, demographicModel, sumStats, seed=numeric(), resultFile, debugMode, logFile){
+.init <- function(.Object, demographicModel, sumStats, seed=numeric(), resultFile) {
   #.Object@nBlocksPerPar <- nBlocksPerPar         
-  #.Object@nTotalSumstat <- length(ssFunc(matrix(0,popSampleSizes[1]+1,popSampleSizes[2]+1)))
-  .Object@debugMode <- debugMode
-  .Object@logFile   <- logFile
-  .log(.Object,"Starting initialization")
+  .log3("Starting initialization")
   .Object@dm    <- demographicModel
 
   # sumStats
   if ( is.matrix(sumStats) && dim(sumStats)[1] == 1) sumStats <- as.vector(sumStats)
   if ( !is.numeric(sumStats) ) stop("'sumStats' must be a numeric vector.")
-  .log(.Object,"sumStats:",sumStats)
+  .log2("sumStats:",sumStats)
   .Object@sumStats <- sumStats
   .Object@nTotalSumstat <- length(sumStats)
 
@@ -173,7 +168,7 @@ setClass("Jaatha",
   #cat("Initial msSeeds set to ",msSeeds,"\n")            
   #validObject(.Object)
   show(.Object)      
-  .log(.Object,"Finished initialization")
+  .log3("Finished initialization")
   return (.Object)
 }
 
@@ -194,14 +189,14 @@ rm(.init)
 #' @return A S4-Object of type jaatha containing the settings
 #' @export
 Jaatha.initialize <- function(demographicModel, sumStats, seed=numeric(), 
-                              resultFile="", debugMode=F, logFile=""){
+                              resultFile="", log.level, log.file){
+
+  setLogging(log.level, log.file)
   jaatha <- new("Jaatha",
                 demographicModel=demographicModel,
                 sumStats=sumStats,
                 seed=seed,
-                resultFile=resultFile,
-                debugMode=debugMode,
-                logFile=logFile)
+                resultFile=resultFile)
   return(jaatha)
 }
 
@@ -248,59 +243,59 @@ rm(.show)
 #'
 #' @export
 Jaatha.initialSearch <- function(jObject, nSim=200, nBlocksPerPar=3){
-  .log(jObject,"Called Jaatha.initialSearch()")
-  .log(jObject,"nSim:",nSim,"| nBlocksPerPar:",nBlocksPerPar)
+  .log2("Called Jaatha.initialSearch()")
+  .log2("nSim:",nSim,"| nBlocksPerPar:",nBlocksPerPar)
   ## change slot values of jObject locally, so that only  
   ## searches with externalTheta=T will be run for initial search
   ## if theta is included into parRange, exclude it and decrese nPar
   extThetaPossible <- !jObject@externalTheta & !jObject@finiteSites & jObject@nPar > 2
-  .log(jObject, "extThetaPossible:",extThetaPossible)
+  .log2( "extThetaPossible:",extThetaPossible)
   if ( extThetaPossible ){
     #origParRange <- jObject@parRange
     #jObject@parRange <- jObject@parRange[-jObject@nPar]
     jObject@dm <- dm.setExternalTheta(jObject@dm)
     jObject@nPar <- jObject@nPar - 1
     jObject@externalTheta <- TRUE
-    .print(jObject,"externalTheta set to TRUE for initial search.")
+    .print("externalTheta set to TRUE for initial search.")
   }
   #print(jObject)
       
   firstBlocks <- list() ## list blocks with simulated summary stats
   ## pRange contains the boarders of all starting blocks
   ## dim=c(#parameter,#blocks per dimension, start&end)
-  .log(jObject,"Calculation block sizes")
+  .log2("Calculation block sizes")
   pRange <- .calcBlockParRanges01(jObject@nPar,nBlocksPerPar)  
   nTotalBlocks <- (nBlocksPerPar^jObject@nPar)
-  .print(jObject,"*** Starting position is being determined ***")
-  .print(jObject,"Creating",nTotalBlocks,"initial blocks ... ")
+  .print("*** Starting position is being determined ***")
+  .print("Creating",nTotalBlocks,"initial blocks ... ")
   for (i in 1:nTotalBlocks){
     ## 'b' determines which block-index for each parameter
     ## is being considered; dim=#nPar
     b <- .index2blocks(value=i-1, newBase=nBlocksPerPar,expo=jObject@nPar) + 1  ##+1 bc R indices start with 0
     boundry <- sapply(1:jObject@nPar, function(p) pRange[p,b[p],])  #dim=c(2,jObject@nPar)
     #boundry
-    .print(jObject,"*** Block",i,
+    .print("*** Block",i,
       " (lowerB:",round(.deNormalize(jObject,boundry[1,],withoutTheta=jObject@externalTheta),3),
       " upperB:", round(.deNormalize(jObject,boundry[2,],withoutTheta=jObject@externalTheta),3),
       ")")
 
-    .log(jObject,"Creating block",i)
+    .log3("Creating block",i)
     firstBlocks[[i]] <- new("Block", nPar=jObject@nPar,
             lowerBound= boundry[1,], nLoci=70, weight=1,
             upperBound= boundry[2,],
             nSamp=nSim) 
 
-    .log(jObject,"Simulating in block",i)
+    .log3("Simulating in block",i)
     firstBlocks[[i]]@parNsumstat <- simulateWithinBlock(bObject=firstBlocks[[i]],
                     jaathaObject=jObject)       
     #print(firstBlocks[[i]]@parNsumstat[,1:jObject@nPar])
 
-    .log(jObject,"Fitting GLM in block",i)        
+    .log3("Fitting GLM in block",i)        
     glm <- glmFitting(bObject=firstBlocks[[i]],
           nTotalSumstat=jObject@nTotalSumstat,
           weighting=rep(1, dim(firstBlocks[[i]]@parNsumstat)[1]))
 
-    .log(jObject,"Searching optimal values in block",i)
+    .log3("Searching optimal values in block",i)
     optimal <- estimate(bObject=firstBlocks[[i]],jObject=jObject,
             modFeld=glm, ssData=jObject@sumStats, boarder=0, opt=3)
     ##boarder of 0 is important! (otherwise not all param
@@ -324,7 +319,7 @@ Jaatha.initialSearch <- function(jObject, nSim=200, nBlocksPerPar=3){
 
   #bestBlockIndex <- which((function(x) max(x)==x)
   #     (sapply(1:nTotalBlocks,function(x) firstBlocks[[x]]@score)))
-  #.print(jObject,"=> Best Block is:",bestBlockIndex,"with score:",
+  #.print("=> Best Block is:",bestBlockIndex,"with score:",
   #     firstBlocks[[bestBlockIndex]]@score,"with\n estimates:\n")
   #print( round( .deNormalize(jObject,firstBlocks[[bestBlockIndex]]@MLest), 3 ) )
   
@@ -361,13 +356,13 @@ Jaatha.refineSearch <- function(jObject,startPoints,nSim,
         nFinalSim,epsilon=.2,halfBlockSize=.05,
         weight=.9,nMaxStep=200) {
   if (!is.jaatha(jObject)) stop("jObject is not of type Jaatha")
-  .log(jObject,"Called function Jaatha.refineSearch()")
+  .log2("Called function Jaatha.refineSearch()")
   if (missing(nFinalSim)) nFinalSim <- nSim
   if (!is.list(startPoints)) stop("startPoints is no list!")
 
   for (s in 1:length(startPoints)){
     jObject@MLest <- startPoints[[s]]@MLest
-      .print(jObject,"*** Search with starting Point in Block",s,"of",length(startPoints),"****")
+      .print("*** Search with starting Point in Block",s,"of",length(startPoints),"****")
       jObject <- .refineSearchSingleBlock(jObject,nSim=nSim,nFinalSim=nFinalSim,
                 epsilon=epsilon,halfBlockSize=halfBlockSize,
                 weight=weight,nMaxStep=nMaxStep,blocknr=s)  
@@ -390,7 +385,7 @@ Jaatha.refineSearch <- function(jObject,startPoints,nSim,
                                      epsilon,halfBlockSize,weight=weight,
                                      nMaxStep=nMaxStep,blocknr){
   ## initialize values 
-  .log(jObject,"Initializing")
+  .log3("Initializing")
   currentBlocks <- list()
   nSteps <- 1
   noLchangeCount <- 0
@@ -412,8 +407,8 @@ Jaatha.refineSearch <- function(jObject,startPoints,nSim,
   ##repeat until likelihood improvement gets smaller than epsilon
   ## 5 times in a row or more than 200 steps used
   repeat{
-    .print(jObject,"-----------------")
-    .print(jObject,"Step No",nSteps)
+    .print("-----------------")
+    .print("Step No",nSteps)
 
     ## define parameter range for new block and simulate
     ## within that block newBoarder[1,]=lower und [2,]=upper
@@ -481,7 +476,7 @@ Jaatha.refineSearch <- function(jObject,startPoints,nSim,
         noLchangeCount <- noLchangeCount +1           
         ## if there has been no change 5 times in a row, stop 
         if (noLchangeCount>4){
-          .print(jObject,"Likelihood value has not change much in the last 5 steps. Exiting search.")
+          .print("Likelihood value has not change much in the last 5 steps. Exiting search.")
           break
         } else{}
       } else{ # if first noChange, save old estimates
@@ -526,17 +521,17 @@ Jaatha.refineSearch <- function(jObject,startPoints,nSim,
   #     .calcAbsParamValue(jObject@dm,topTen[1:nBest,-1]) ))
 
   likelihoods <- c()
-  .log(jObject,"Starting final sim.")
-  .print(jObject,"Calulating composite log likelihoods for best estimates:")
+  .log3("Starting final sim.")
+  .print("Calulating composite log likelihoods for best estimates:")
   for (t in 1:nBest){
-    .print(jObject,"Parameter combination",t,"of",nBest,"...")
+    .print("Parameter combination",t,"of",nBest,"...")
     topPar <- topTen[t,2:(nTotalPar+1)]    # in original parameter range
     likelihoods[t] <- Jaatha.calcLikelihood( jObject, 
                                             nSimulations=nFinalSim, 
                                             par=topPar )
     #cat(t,likelihoods[t],"\n")
   }
-  .log(jObject,"Finished final sim.")
+  .log3("Finished final sim.")
 
 
   likelihood.table <- cbind(log.cl=likelihoods,block=blocknr,topTen[topTen[,1]!=0,-1])
@@ -1067,19 +1062,6 @@ Jaatha.setssFunc <- function(jObject,newFunc){
   return(list(reusableBlocks,data))
 }
 
-.log <- function(jObject,...){
-  if (!jObject@debugMode) return()
-  cat(format(Sys.time(), "%Y-%m-%d %H:%M:%S"),...,"\n",sep=" ",file=jObject@logFile,append=T)
-}
-
-.print <- function(jObject,...){
-  if ( !jObject@debugMode )  cat(...,"\n",sep=" ")
-  else {
-    .log(jObject,...)
-    if (jObject@logFile != "") cat(...,"\n",sep=" ")
-  }
-}
-
 is.jaatha <- function(jObject){
   return(class(jObject)[1] == "Jaatha")
 }
@@ -1115,10 +1097,10 @@ Jaatha.printStartPoints <- function(jObject,startPoints){
 #' best estimates
 #' @export
 Jaatha.printLikelihoods <- function(jObject){
-  .log(jObject,"Called Jaatha.printLikelihoods")
+  .log3("Called Jaatha.printLikelihoods")
   lt <- jObject@likelihood.table
   lt[,-(1:2)] <- .deNormalize(jObject,lt[,-(1:2)])
   perm <- sort.list(lt[,1],decreasing=T)  
-  .log(jObject,"Finished Jaatha.printLikelihoods")
+  .log3("Finished Jaatha.printLikelihoods")
   return(lt[perm,])
 }

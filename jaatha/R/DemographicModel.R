@@ -9,9 +9,7 @@ setClass("DemographicModel" ,
             finiteSites="logical",
             profiled="logical",
             simProgs="list",
-            currentSimProg="SimProgram",
-            debugMode="logical",
-            logFile="character")
+            currentSimProg="SimProgram")
     )
 
 
@@ -23,7 +21,8 @@ if(!exists("dm.defaultSimProgs")) {
 # Initialization
 #-----------------------------------------------------------------------
 
-.init <- function(.Object,sampleSizes,nLoci,seqLength,finiteSites,tsTvRatio,debugMode,logFile){
+.init <- function(.Object, sampleSizes, nLoci, seqLength,
+                  finiteSites, tsTvRatio){
     .Object@features <- data.frame( type=character(),
                         parameter=numeric(),
                         population=numeric(),
@@ -33,19 +32,17 @@ if(!exists("dm.defaultSimProgs")) {
                         timeLine=numeric()
                       )
 
-    .Object@parameters  <- character()
+    .Object@parameters      <- character()
     .Object@externalTheta   <- F
-    .Object@profiled    <- F
+    .Object@profiled        <- F
     .Object@finiteSites     <- finiteSites
     .Object@sampleSizes     <- sampleSizes
-    .Object@seqLength    <- seqLength
-    .Object@tsTvRatio    <- tsTvRatio
-    .Object@nLoci        <- nLoci
+    .Object@seqLength       <- seqLength
+    .Object@tsTvRatio       <- tsTvRatio
+    .Object@nLoci           <- nLoci
 
-    .Object@simProgs     <- dm.defaultSimProgs
-
-    .Object <- dm.setDebugMode(.Object,debugMode,logFile)
-
+    .Object@simProgs        <- dm.defaultSimProgs
+    
     return(.Object)
 }
 
@@ -328,12 +325,6 @@ rm(.show)
 #}
 
 
-.dm.log <- function(dm,...){
-    .check.dm(dm)
-    if (!dm@debugMode) return()
-    cat(format(Sys.time(), "%Y-%m-%d %H:%M:%S"),...,"\n",sep=" ",file=dm@logFile,append=T)
-}
-
 .is.dm  <- function(dm){
         return(class(dm)[1] == "DemographicModel")
 }
@@ -389,7 +380,7 @@ rm(.show)
   for (i in seq(along = dm@simProgs)){
     if (all(dm@features$type %in% dm@simProgs[[i]]@features)) {
       dm@currentSimProg <- dm@simProgs[[i]]
-      .dm.log(dm,"Using",dm@simProgs[[i]]@name,"for simulations")
+      .log1("Using",dm@simProgs[[i]]@name,"for simulations")
       return(dm)
     }
   }
@@ -400,15 +391,6 @@ rm(.show)
 #-----------------------------------------------------------------------
 # Public functions
 #-----------------------------------------------------------------------
-dm.setDebugMode <- function(dm,debugMode=T,logFile=""){
-    .check.dm(dm)
-    if (is.logical(debugMode)) dm@debugMode <- debugMode
-    if (logFile != "") {
-        dm@logFile <- paste(getwd(),"/",logFile,sep="")
-        dm@debugMode <- T
-    }
-    return(dm)
-}
 
 dm.getParRanges <- function(dm,inklExtTheta=T){
     .check.dm(dm)
@@ -433,9 +415,11 @@ dm.getParRanges <- function(dm,inklExtTheta=T){
 #' @param finiteSites If 'TRUE', a finite sites mutation model is assumed
 #'            instead of an infinite sites one.
 #' @param tsTvRatio   Transition transversion ratio
-#' @param debugMode   If 'TRUE', a debug output will be produced
-#' @param logFile     If set, the debug output will be written into the given file
-#' @return        The demographic model
+#' @param log.level   An integer specifing the verbosity of the object.
+#'                    0 = no output, 1 = normal verbosity, ..., 
+#'                    3 = maximal verbosity.
+#' @param log.file    If set, the debug output will be written into the given file
+#' @return            The demographic model
 #' @export
 #'
 #' @examples
@@ -443,11 +427,12 @@ dm.getParRanges <- function(dm,inklExtTheta=T){
 #' dm <- dm.addSpeciationEvent(dm,0.01,5)
 #' dm <- dm.addMutation(dm,1,20)
 #' dm
-dm.createDemographicModel <- function(sampleSizes,nLoci,seqLength=1000,
-                      finiteSites=F,tsTvRatio=.33,
-                      debugMode=F,logFile=""){
+dm.createDemographicModel <- 
+  function(sampleSizes, nLoci, seqLength=1000, finiteSites=F,
+           tsTvRatio=.33, log.level, log.file){
+    setLogging(log.level, log.file)
     dm <- new("DemographicModel",sampleSizes,nLoci,seqLength,
-          finiteSites,tsTvRatio,debugMode,logFile)
+          finiteSites,tsTvRatio)
     return(dm)
 }
 
@@ -492,43 +477,6 @@ dm.createCustomModel <- function(par.number, par.names, par.ranges, sim.exe,
   
 }
 
-checkType <- function(variable, type, required=T) {
-  if (missing(variable)) {
-    if (required) {
-      fun.name <- as.character(sys.call(-1)[[1]])
-      var.name <- deparse(substitute(variable))
-      stop(fun.name,": Required parameter \"",var.name,"\" is missing.",call.=F)
-    } else {
-      return()
-    }
-  }
-
-  for (i in seq(along=type)){
-    if (type[i] == "char" || type[i] == "character") {
-      func <- is.character
-      error <- "has to be of type character"
-    } else if (type[i] == "num" || type[i] == "numeric") {
-      func <- is.numeric
-      error <- "has to be of type numeric"
-    } else if (type[i]  == "vec" || type[i]  == "vector") {
-      func <- is.vector
-      error <- "has to be a vector"
-    } else if (type[i] == "mat" || type[i] == "matrix") {
-      func <- is.matrix
-      error <- "has to be a matrix"
-    } else if (type[i] == "fun" || type[i] == "function") {
-      func <- is.function
-      error <- "has to be a function"
-    } else {
-      stop("Unknown type: ",type[i])
-    }
-    if (!func(variable)) {
-      fun.name <- as.character(sys.call(-1)[[1]])
-      var.name <- deparse(substitute(variable))
-      stop(fun.name,": ",var.name," ",error,call.=F)
-    }
-  }
-}
 
 
 dm.setExternalTheta <- function(dm){
@@ -698,12 +646,12 @@ dm.addSplitSize <- function(dm,lowerRange,upperRange,fixedValue,population){
 
 
 dm.simulationCmd <- function(dm,parameters){
-    .dm.log(dm,"Called dm.simulationCmd()")
-    .dm.log(dm,"Using simulation program",dm@simProg)
+    .log3(3,"Called dm.simulationCmd()")
+    .log3("Using simulation program",dm@simProg)
     if  (dm@simProg == "fsc") .fsc.generateCmd(dm,parameters)
     else if (dm@simProg == "ms" ) .ms.generateCmd(dm,parameters)
     else    message("ERROR: unkown simulation programm")
-    .dm.log(dm,"Finished dm.simulationCmd()")
+    .log3("Finished dm.simulationCmd()")
 }
 
 #' Simulates data according to a demographic model and calculates summary statistics form it
@@ -723,7 +671,7 @@ dm.simulationCmd <- function(dm,parameters){
 #' dm <- dm.addMutation(dm,1,20)
 #' dm.simSumStats(dm,c(1,10))
 dm.simSumStats <- function(dm, parameters, sumStatFunc){
-    .dm.log(dm,"Called dm.simSumStats()")
+    .log3("Called dm.simSumStats()")
 
     if (!is.matrix(parameters)) parameters <- matrix(parameters,1,length(parameters))
 
@@ -738,7 +686,7 @@ dm.simSumStats <- function(dm, parameters, sumStatFunc){
     nSims	  <- max(dim(parameters)[1],1)
 	sumStats  <- matrix(0,nSims,nSumStats)
    
-	.dm.log(dm,"Simulating",nSumStats,"summary statistics for",nSims,"parameter combination(s)")
+	.log2("Simulating",nSumStats,"summary statistics for",nSims,"parameter combination(s)")
 	
 	wd <- getwd()
 	setwd(tempdir())
@@ -751,11 +699,11 @@ dm.simSumStats <- function(dm, parameters, sumStatFunc){
                         stdout=T))
         jsfs <- simProg@calcJSFSFunc(dm,simOutput)
 		sumStats[n,] <- sumStatFunc(dm,jsfs,simOutput)
-		.dm.log(dm,"SumStats:",sumStats[n,])
+		.log2("SumStats:",sumStats[n,])
 	}
 
 	setwd(wd)
 
-    .dm.log(dm,"Finished dm.simSumStats()")
+    .log3(dm,"Finished dm.simSumStats()")
     return(sumStats)
 }

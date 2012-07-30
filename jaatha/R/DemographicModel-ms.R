@@ -23,7 +23,7 @@ callMs <- function(nsam = NULL, nreps = 1, opts = NULL){
 
 
 .ms.generateCmd <- function(dm,parameters){
-	.dm.log(dm,"Called .ms.generateCmd()")
+	.log3("Called .ms.generateCmd()")
 
 	nSample <- dm@sampleSizes
 	cmd <- c(sum(nSample),dm@nLoci)                     #repetitions and number of loci
@@ -62,8 +62,8 @@ callMs <- function(nsam = NULL, nreps = 1, opts = NULL){
 
 	#if (outfile != F) cmd <- c(cmd,">",outfile)
 	cmd <- paste(cmd,collapse=" ")
-	.dm.log(dm,"Generated simulation cmd:",cmd)
-	.dm.log(dm,"Finished .ms.generateCmd()")
+	.log3("Generated simulation cmd:",cmd)
+	.log3("Finished .ms.generateCmd()")
 
     return(cmd)
 }
@@ -88,7 +88,7 @@ callMs <- function(nsam = NULL, nreps = 1, opts = NULL){
 }
 
 .ms.getJSFS <- function(dm,msOut){
-	.dm.log(dm,"Called .ms.getJSFS()")
+	.log3("Called .ms.getJSFS()")
 	resultSize <- (dm@sampleSizes[1]+1)*(dm@sampleSizes[2]+1)
 	jsfs <- ( .C("ms2jsfs",
 		as.character(msOut),
@@ -98,7 +98,7 @@ callMs <- function(nsam = NULL, nreps = 1, opts = NULL){
 		res=integer(resultSize),
 	        PACKAGE="jaatha")$res )
 	#unlink(.ms.outfile())
-	.dm.log(dm,"Finished .ms.getJSFS()")
+	.log3("Finished .ms.getJSFS()")
 	return(matrix(jsfs,dm@sampleSizes[1]+1,dm@sampleSizes[2]+1))
 }
 
