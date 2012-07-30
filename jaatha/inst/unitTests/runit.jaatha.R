@@ -70,3 +70,10 @@ test.refineSearch <- function(){
 	#samples[["refineSearch.result"]] <- lt; save(samples,file="samples.save")
 	checkEquals(lt, samples[["refineSearch.result"]])
 }
+
+## -- Fixed bugs ----------------------------------------
+#print() failed for empty demographic models
+test.showEmptyModel <- function() {
+  dm <- dm.createDemographicModel(25:26, 100)
+  print(dm)
+}

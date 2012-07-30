@@ -58,9 +58,16 @@ rm(.init)
 
 .show <- function(object){
   dm <- object
-  cat("Your demographic model has the following parameters:\n")
+
   features <- dm@features[!is.na(dm@features$parameter),]
-  for (rw in 1:(dim(features)[1])) {
+
+  if (nrow(features) == 0) {
+    cat("Your demographic model has no features so far.\n")
+    return()
+  }
+
+  cat("Your demographic model has the following parameters:\n")
+  for (rw in 1:nrow(features)) {
     type <- features[rw,'type'] 
     lR <- as.character(features[rw,'lowerRange']) 
     uR <- as.character(features[rw,'upperRange'])
@@ -88,6 +95,7 @@ rm(.init)
       print(dm@features[rw,])
     }
   }
+
 
   features <- dm@features[is.na(dm@features$parameter),]
   if (dim(features)[1] > 0){

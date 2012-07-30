@@ -39,3 +39,4 @@ jaatha/vignettes/Makefile
 jaatha.Rcheck
 jaatha/src/symbols.rds
 .Rproj.user
+.Rd

@@ -235,10 +235,10 @@ set.seed(50)
 @
 
 <<RefineSearch>>=
-#jaatha <- Jaatha.refineSearch(jaatha, startPoints,
-#                              nSim=50, nFinalSim=50,
-#			      epsilon=5, halfBlockSize=.05,
-#			      weight=.9, nMaxStep=200)
+jaatha <- Jaatha.refineSearch(jaatha, startPoints,
+                              nSim=50, nFinalSim=50,
+			      epsilon=5, halfBlockSize=.05,
+			      weight=.9, nMaxStep=200)
 @
 
 \noindent
@@ -258,7 +258,7 @@ Finally the likelihoods for the best ten parameter combinations are approximated
 simulations. These are values printed at the end of the search. This matrix can also be accessed via
 
 <<printLT>>=
-#Jaatha.printLikelihoods(jaatha)
+Jaatha.printLikelihoods(jaatha)
 @
 
 
