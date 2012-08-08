@@ -1,55 +1,119 @@
 #include <R.h>	
-#include<fstream>
-#include<string>
-#include<cstring>
-#include<vector>
+#include <stdlib.h>
+#include <fstream>
+#include <iostream>
+#include <vector>
 
+using namespace std;
 
+int L=0;
+vector<int> MutOfSitePop1(0), MutOfSitePop2(0);
+int individual = 0;
+bool insideSite = 0;
+
+void printjsfs(int *jsfs, const int &s1, const int &s2);
+void parseLine(string line, int *jsfs, const int &s1, const int &s2);
+
+//The function to be called from R
 extern "C"{
-  using namespace std;
-  
-  //usage: msFile2jsfs msoutput samplesize1 samplesize2 anzLoci jsfsArray
-  void msFile2jsfs(char **filename, int *ps1, int *ps2, int *pnloc, int *jsfs) {
-    int s1=*ps1, s2=*ps2, nloc=*pnloc, loc=0, z=4;
-    
-    //initialize jsfs
-    for(int i=0; i<=s1; ++i){
-      for(int j=0; j<=s2; ++j){
-	jsfs[j*(s1+1)+i]=0;
-      }
-    }
-    
-    ifstream datei;   
-    datei.open(filename[0]);
-    string msout[(nloc)*(4+s1+s2)+2];
+  void msFile2jsfs(char **filename, int *ps1, int *ps2, int *jsfs) {
+    int s1=*ps1, s2=*ps2;
 
-    //read in entire file
-    int i=0;
-    while(i< ((nloc)*(4+s1+s2)+2) & !datei.eof()){
-      getline(datei,msout[i]);
-      ++i;
-    }
-    
-    //read in locus by locus if there are >0 segsites 
-    while (loc < nloc){ 
-      if (strcmp(msout[z].c_str(),"segsites: 0")){
-	int line=z+2;
-	int L=strlen(msout[line].c_str()); //number of segsites
-	for(int p=0; p<L; ++p) {  // go through position by position
-	  int x=0, y=0;
-	  for(int j=0; j<s1; ++j) {  //pop1
-	    x+=(msout[j+line][p]=='1');
-	  }
-	  for(int j=s1; j<s1+s2; ++j) {  //pop2
-	    y+=(msout[j+line][p]=='1');
-	  }
-	  ++jsfs[y*(s1+1)+x];
-	}
-	z+=s1+s2+4;
-      }
-      ++loc;
+    string line;
+    //Rprintf("Filename: %s \n",*filename);
+    ifstream myfile (*filename);
+
+    if (!myfile.is_open()) {
+      error("File %s not found!",*filename);
     }
 
-    datei.close();
+    while ( myfile.good() ) {
+        getline(myfile, line);
+        parseLine(line, jsfs, s1, s2);
+    }   
+
+    myfile.close();
   }
+}
+
+void parseLine(string line, int *jsfs, const int &s1, const int &s2) {
+  //cout << line << endl;
+  if (line == "") {
+      //cout << "> Empty line detected" << endl;
+      if (insideSite){
+          //Site ended
+          insideSite = 0;
+          
+          //Calc JSFS
+          for(int i=0; i<L; ++i){
+              //cout << MutOfSitePop1[i] << " : " << MutOfSitePop2[i] << endl;
+              jsfs[ MutOfSitePop1[i] * (s1+1) + MutOfSitePop2[i] ]++;
+          }
+
+          //printjsfs(jsfs);
+
+          //Unset Site spezific variables
+          individual = 0;
+          L = 0;
+          //cout << "> Site ended detected" << endl;
+      }
+  }
+  else if (line == "//") {
+      insideSite = 1;
+      //cout << "> New Site detected" << endl;
+  }
+  else if ( (line.substr(0,1) == "0" || line.substr(0,1) == "1") && insideSite){
+      //cout << "> Data line detected" << endl;
+
+      //Initialize per site variables on first data line
+      if (L == 0) {
+          L = line.length();
+          MutOfSitePop1.resize(L);
+          MutOfSitePop2.resize(L);
+          for (int i=0; i<L; i++) {
+              MutOfSitePop1[i] = 0;
+              MutOfSitePop2[i] = 0;
+          }
+      }
+
+      //cout << "> Individual " << individual << "| Population " << individual / s1 << endl;
+
+      //Parse the individual
+      if (individual / s1 == 0){
+          //we are in population 1 here
+          for(int p=0; p<L; ++p) { 
+                  if (line[p] == '1') MutOfSitePop1[p]++;
+          }
+
+      }
+      else {
+          //we are in population 2 here
+          for(int p=0; p<L; ++p) {
+                  if (line[p] == '1') MutOfSitePop2[p]++;
+          }
+      }
+          
+      individual++;
+  }
+}
+
+void printjsfs(int *jsfs, const int &s1, const int &s2) {
+  for (int i=0; i<=s1; i++) {
+      for (int j=0; j<=s2; j++) {
+            cout << jsfs[ i * (s1 + 1) + j ] << " ";
+      }
+          cout << endl;
+  }
+}
+
+int main() {
+  int s1=10, s2=15;
+  int jsfs[176] = {0};
+  char filename[] = "msoutput";
+  char* pfilename = filename;
+
+  msFile2jsfs(&pfilename, &s1, &s2, jsfs);
+  printjsfs(jsfs, s1, s2);
+
+  return(0);
 }

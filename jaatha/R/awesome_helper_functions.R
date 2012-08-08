@@ -14,8 +14,11 @@
 # Functions for easy log creation
 #-----------------------------------------------------------------------
 
-log.level <- 1
-log.file  <- ""
+# Create a new enviroment for local variables that won't be looked after package
+# loading like jaathas enviroment is.
+if (!exists(".local")) .local <- new.env()
+if (!exists('.local$log.level')) .local$log.level <- 1
+if (!exists('.local$log.file'))  .local$log.file  <- ""
 
 #' A helper function for easy creation of logging output
 #'
@@ -26,9 +29,9 @@ log.file  <- ""
 #' @param ...   One or more strings/variables to be written to the log stream
 #' @return      nothing
 .log <- function(level, ...) {
-  if (level > log.level) return()
+  if (level > .local$log.level) return()
 
-  if ( log.level == 1 )  {
+  if ( .local$log.level == 1 )  {
     # Normal output without dates
     cat(...,"\n",sep=" ")
     return()
@@ -37,7 +40,7 @@ log.file  <- ""
   cat(format(Sys.time(), "%Y-%m-%d %H:%M:%S"), ..., "\n", sep=" ",
       file=log.file, append=T)
 
-  if (log.file != "" && level == 1) {
+  if (.local$log.file != "" && level == 1) {
     # Also print normal output when logging to file
     cat(...,"\n",sep=" ")
   }
@@ -64,13 +67,13 @@ setLogging <- function(log.level, log.file) {
   checkType(log.level, c("num", "s"), F)
   checkType(log.file, c("char", "s"), F)
 
-  if (!missing(log.level)) log.level <<- log.level
-  if (!missing(log.file)) log.file <<- log.file
+  if (!missing(log.level)) .local$log.level <- log.level
+  if (!missing(log.file)) .local$log.file <- log.file
 }
 
 #' Getters for log.level and log.file
-getLogLevel <- function() return(log.level)
-getLogLife  <- function() return(log.file)
+getLogLevel <- function() return(.local$log.level)
+getLogLife  <- function() return(.local$log.file)
 
 #-----------------------------------------------------------------------
 # Function to conveniently check the type of user inputs
@@ -87,16 +90,28 @@ getLogLife  <- function() return(log.file)
 #'             must be a vector of length one . 
 #'             If a vector of type names is given, the variable must be of all types.
 #' @param required A boolean that indicates whether the variable must be
-#'             specified or can be missing.
+#'             specified or can be missing. Value of NULL also counts as missing.
 #' @return nothing
-checkType <- function(variable, type, required=T) {
+checkType <- function(variable, type, required=T, allow.na=T) {
   if (missing(variable)) {
-    if (required) {
+    if (!required) return()
+    fun.name <- as.character(sys.call(-1)[[1]])
+    var.name <- deparse(substitute(variable))
+    stop(fun.name,": Required parameter \"",var.name,"\" is missing.",call.=F)
+  } 
+      
+  if (is.null(variable)) {
+    if (!required) return()
+    fun.name <- as.character(sys.call(-1)[[1]])
+    var.name <- deparse(substitute(variable))
+    stop(fun.name,": Required parameter \"",var.name,"\" is NULL.",call.=F)
+  } 
+  
+  if (is.vector(variable) & !allow.na){  
+    if (any(sapply(variable, is.na))) {
       fun.name <- as.character(sys.call(-1)[[1]])
       var.name <- deparse(substitute(variable))
-      stop(fun.name,": Required parameter \"",var.name,"\" is missing.",call.=F)
-    } else {
-      return()
+      stop(fun.name,": Required parameter \"",var.name,"\" has NA value(s).",call.=F)
     }
   }
 

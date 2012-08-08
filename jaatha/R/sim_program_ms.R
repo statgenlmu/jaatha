@@ -1,28 +1,21 @@
-executable <-
-  c("ms","hudsons_ms","/bin/ms","/usr/local/bin/ms","/usr/local/bin/hudsons_ms","~/bin/ms")
-features <- c("mutation","migration","split","recombination","splitSize","presentSize")
+possible.features  <- c("mutation","migration","split",
+                        "recombination","splitSize","presentSize")
+possible.sum.stats <- c("jsfs")
 
-# From phyclust package
-callMs <- function(nsam = NULL, nreps = 1, opts = NULL){
-  temp.file.ms <- tempfile("ms.")
+#' Function to perform simulation using ms 
+#' 
+#' Taken from the phyclust package.
+callMs <- function(opts){
+  if (missing(opts)) stop("No options given!")
 
-  if (is.null(nsam)) stop("No sample size given")
-  if (is.null(opts)) stop("No options for calling ms")
-    
-  nsam <- as.character(nsam)
-  nreps <- as.character(nreps)
-  argv <- c("ms", nsam, nreps, unlist(strsplit(opts, " ")))
+  ms.file <- tempfile("ms.")
+  argv <- c("ms", unlist(strsplit(opts, " ")))
 
-  .Call("R_ms_main", argv, temp.file.ms, PACKAGE = "jaatha")
-  ret <- scan(file = temp.file.ms,
-              what = "character", sep = "\n", quiet = TRUE)
-
-  unlink(temp.file.ms)
-  return(ret)
+  .Call("R_ms_main", argv, ms.file, PACKAGE = "jaatha")
+  return(ms.file)
 }
 
-
-.ms.generateCmd <- function(dm,parameters){
+generateMsOptions <- function(dm, parameters) {
 	.log3("Called .ms.generateCmd()")
 
 	nSample <- dm@sampleSizes
@@ -61,8 +54,8 @@ callMs <- function(nsam = NULL, nreps = 1, opts = NULL){
 	}
 
 	#if (outfile != F) cmd <- c(cmd,">",outfile)
-	cmd <- paste(cmd,collapse=" ")
-	.log3("Generated simulation cmd:",cmd)
+	#cmd <- paste(cmd,collapse=" ")
+	#.log3("Generated simulation cmd:",cmd)
 	.log3("Finished .ms.generateCmd()")
 
     return(cmd)
@@ -87,21 +80,52 @@ callMs <- function(nsam = NULL, nreps = 1, opts = NULL){
 		return(parameters[feature$parameter])
 }
 
-.ms.getJSFS <- function(dm,msOut){
-	.log3("Called .ms.getJSFS()")
-	resultSize <- (dm@sampleSizes[1]+1)*(dm@sampleSizes[2]+1)
-	jsfs <- ( .C("ms2jsfs",
-		as.character(msOut),
-		as.integer(dm@sampleSizes[1]),
-		as.integer(dm@sampleSizes[2]),
-		as.integer(dm@nLoci),
-		res=integer(resultSize),
-	        PACKAGE="jaatha")$res )
-	#unlink(.ms.outfile())
-	.log3("Finished .ms.getJSFS()")
-	return(matrix(jsfs,dm@sampleSizes[1]+1,dm@sampleSizes[2]+1))
+msOut2Jsfs <- function(dm, ms.out) {
+  .log3("Called .ms.getJSFS()")
+  jsfs <- rep(0,(dm@sampleSizes[1]+1)*(dm@sampleSizes[2]+1))
+  jsfs <- matrix( .C("msFile2jsfs",
+                     as.character(ms.out),
+                     as.integer(dm@sampleSizes[1]),
+                     as.integer(dm@sampleSizes[2]),
+                     res=as.integer(jsfs),
+                     PACKAGE="jaatha")$res,
+                 dm@sampleSizes[1] + 1 ,
+                 dm@sampleSizes[2] + 1 )
+  .log3("Finished .ms.getJSFS()")
+  return(jsfs)
 }
 
+# calcJsfsOfMsFile <- function(dm, ms.file) {
+#   if (!file.exists(ms.file)) stop("ms output not found!")
+#   resultSize <- (dm@sampleSizes[1]+1)*(dm@sampleSizes[2]+1)
+#   jsfs <- .C("msFile2jsfs", 
+#              as.character(ms.file),
+#              as.integer(dm@sampleSizes[1]),
+#              as.integer(dm@sampleSizes[2]),
+#              as.integer(dm@nLoci),
+#              as.integer(resultSize),
+#              res=integer(resultSize),
+#              PACKAGE="jaatha")$res
+#   return(jsfs)
+# }
+
+msSingleSimFunc <- function(dm, parameters) {
+  .log3("Called msSumSunc()")
+  .check.dm(dm)
+  checkType(parameters, "num")
+  if (length(parameters) != dm.getNPar(dm)) 
+    stop("Wrong number of parameters!")
+
+  .log3("Calling ms.")
+  ms.options <- generateMsOptions(dm, parameters)
+  ms.out  <- callMs(ms.options)
+  .log3("Simulation output in file", ms.out)
+  
+  .log3("Calculation jsfs...")
+  jsfs  <- msOut2Jsfs(dm, ms.out) 
+  unlink(ms.out)
+  return(jsfs)
+}
 
 #' These are the default summary statistics for Jaatha
 #' 
@@ -112,7 +136,7 @@ callMs <- function(nsam = NULL, nreps = 1, opts = NULL){
 #' @examples
 #' jsfs <- matrix(rpois(26*26,5),26,26)
 #' dm.defaultSumStats(jsfs)
-.ms.defaultSumStats <- function(jsfs) {
+ms.defaultSumStats <- function(dm, jsfs) {
   n <- nrow(jsfs)
   m <- ncol(jsfs)
   c(sum(jsfs[1,2:3]),
@@ -140,20 +164,13 @@ callMs <- function(nsam = NULL, nreps = 1, opts = NULL){
     sum(jsfs[(n-2):(n-1),m]) )
 }
 
-.ms.sumStatFunc <- function(dm,jsfs,simOutput){
-  return(.ms.defaultSumStats(jsfs))
-}
+# .ms.seedFunc <- function(){
+#   seedfile <- paste(tempdir(),"/","seedms",sep="")
+#   cat(sample(1:65525,3), "\n", file=seedfile)
+# }
 
-.ms.seedFunc <- function(){
-  seedfile <- paste(tempdir(),"/","seedms",sep="")
-  cat(sample(1:65525,3), "\n", file=seedfile)
-}
-
-ms <- new("SimProgram","ms",executable,features,.ms.generateCmd,
-          .ms.sumStatFunc,.ms.getJSFS,.ms.seedFunc)
-
-if(!exists("dm.defaultSimProgs")) {
-  dm.defaultSimProgs <- list(ms=ms)
-} else {
-  dm.defaultSimProgs[['ms']] <- ms
-}
+createSimProgram("ms", "",
+                 possible.features,
+                 possible.sum.stats,
+                 singleSimFunc=msSingleSimFunc,
+                 defaultSumStatFunc=ms.defaultSumStats)

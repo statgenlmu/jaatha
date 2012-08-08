@@ -8,14 +8,9 @@ setClass("DemographicModel" ,
             externalTheta="logical",
             finiteSites="logical",
             profiled="logical",
-            simProgs="list",
             currentSimProg="SimProgram")
     )
 
-
-if(!exists("dm.defaultSimProgs")) {
-  dm.defaultSimProgs <- list()
-}
 
 #-----------------------------------------------------------------------
 # Initialization
@@ -41,8 +36,6 @@ if(!exists("dm.defaultSimProgs")) {
     .Object@tsTvRatio       <- tsTvRatio
     .Object@nLoci           <- nLoci
 
-    .Object@simProgs        <- dm.defaultSimProgs
-    
     return(.Object)
 }
 
@@ -377,10 +370,10 @@ rm(.show)
 
 
 .dm.selectSimProg <- function(dm) {
-  for (i in seq(along = dm@simProgs)){
-    if (all(dm@features$type %in% dm@simProgs[[i]]@features)) {
-      dm@currentSimProg <- dm@simProgs[[i]]
-      .log1("Using",dm@simProgs[[i]]@name,"for simulations")
+  for (i in seq(along = .local$simProgs)){
+    if (all(dm@features$type %in% .local$simProgs[[i]]@possible.features)) {
+      dm@currentSimProg <- .local$simProgs[[i]]
+      .log1("Using",dm@currentSimProg@name,"for simulations")
       return(dm)
     }
   }
@@ -572,7 +565,6 @@ dm.addEffectivePopSize <- function(dm,population,lowerRange,upperRange,fixedValu
     return(.addFeature(dm,"effPopSize",paste("Ne",population,sep=""),lowerRange,upperRange,fixedValue))
 }
 
-
 #' Adds a speciation event to a demographic model
 #' 
 #' @param dm          The demographic model to which the speciation event should be added
@@ -645,14 +637,22 @@ dm.addSplitSize <- function(dm,lowerRange,upperRange,fixedValue,population){
 }
 
 
-dm.simulationCmd <- function(dm,parameters){
-    .log3(3,"Called dm.simulationCmd()")
-    .log3("Using simulation program",dm@simProg)
-    if  (dm@simProg == "fsc") .fsc.generateCmd(dm,parameters)
-    else if (dm@simProg == "ms" ) .ms.generateCmd(dm,parameters)
-    else    message("ERROR: unkown simulation programm")
-    .log3("Finished dm.simulationCmd()")
+#' Creates a standard "Theta/Tau" demopraphic model.
+#' 
+#' @param sampleSizes   A numeric vector with the sampleSizes of the two populations.
+#' @param nLoci         The number of Loci to simulate.
+#' @return              A Theta/Tau Model
+#' @export
+#'
+#' @examples
+#' dm.createThetaTauModel(c(20,25), 100)
+dm.createThetaTauModel <- function(sampleSizes, nLoci) {
+  dm <- dm.createDemographicModel(sampleSizes=sampleSizes, nLoci=nLoci, seqLength=1000)
+  dm <- dm.addSpeciationEvent(dm,0.01,5)
+  dm <- dm.addMutation(dm,1,20)
+  return(dm)
 }
+
 
 #' Simulates data according to a demographic model and calculates summary statistics form it
 #' 
@@ -680,29 +680,31 @@ dm.simSumStats <- function(dm, parameters, sumStatFunc){
     if ( !.checkParInRange(dm,parameters) ) stop("Parameters out of range")
 
     simProg   <- dm@currentSimProg
-    if (missing(sumStatFunc)) sumStatFunc <- simProg@sumStatFunc
+    if (missing(sumStatFunc)) sumStatFunc <- simProg@defaultSumStatFunc
 
-	nSumStats <- length(sumStatFunc(dm,jsfs=matrix(0,dm@sampleSizes[1],dm@sampleSizes[2])))
-    nSims	  <- max(dim(parameters)[1],1)
-	sumStats  <- matrix(0,nSims,nSumStats)
+    # nSumStats <- length(sumStatFunc(dm,jsfs=matrix(0,dm@sampleSizes[1],dm@sampleSizes[2])))
+    # nSims	  <- max(dim(parameters)[1],1)
+    # sumStats  <- matrix(0,nSims,nSumStats)
    
-	.log2("Simulating",nSumStats,"summary statistics for",nSims,"parameter combination(s)")
+	#.log2("Simulating",nSumStats,"summary statistics for",nSims,"parameter combination(s)")
 	
-	wd <- getwd()
-	setwd(tempdir())
-    simProg@initialSeedFunc()
+    if (!simProg@useSingleSimFunc) {
+      # Use the simFunc to simulate all parameter combinations at once.
+      # Still needs some thought about how to combine with the
+      # defaultSumStatFunc.
+      sumStats <- 0
 
-	for (n in 1:nSims) {
-		suppressWarnings(
-          simOutput <- system2(simProg@executable,
-                        simProg@simParFunc(dm,parameters[n,]),
-                        stdout=T))
-        jsfs <- simProg@calcJSFSFunc(dm,simOutput)
-		sumStats[n,] <- sumStatFunc(dm,jsfs,simOutput)
-		.log2("SumStats:",sumStats[n,])
-	}
-
-	setwd(wd)
+    } else {
+      # Use the singleSimFunc to simulate each of the parameter combinations
+      sumStats <- 
+        apply(parameters, 1,
+              function(parameter.combination){
+                sim.out <- simProg@singleSimFunc(dm, parameter.combination)
+                return(sumStatFunc(dm, sim.out))
+              }) 
+      
+      sumStats <- t(sumStats)
+    }
 
     .log3(dm,"Finished dm.simSumStats()")
     return(sumStats)
