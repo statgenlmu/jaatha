@@ -61,7 +61,8 @@ setClass("Jaatha",
       parNames = "character",
       resultFile = "character",
       sumStats = "numeric",
-      likelihood.table = "matrix"
+      likelihood.table = "matrix",
+      sim.package.size = "numeric"
     ),
     #validity = function(object){
       #iniBlocks <- object@nBlocksPerPar   
@@ -167,7 +168,8 @@ setClass("Jaatha",
   set.seed(seed)      
   #cat("Initial msSeeds set to ",msSeeds,"\n")            
   #validObject(.Object)
-  show(.Object)      
+  #show(.Object)   
+  .Object@sim.package.size <- 100  
   .log3("Finished initialization")
   return (.Object)
 }

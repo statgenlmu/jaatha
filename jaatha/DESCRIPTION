@@ -1,5 +1,5 @@
 Package: jaatha
-Version: 1.9.8
+Version: 1.9.9
 Date: 2012-07-27
 License: GPL (>= 2)
 Title: Jaatha - Fast estimation of demographic parameters
@@ -8,16 +8,21 @@ Maintainer: Paul R. Staab <staab@bio.lmu.de>
 Description: A method for estimating parameters of the demographic history of
     two closely related species out of SNP data.
 Depends:
-    methods
+    methods,
+    foreach
+Suggests:
+    multicore,
+    doMC
 Collate:
+    'aaa_SimProgram.R'
+    'awesome_helper_functions.R'
     'Block.R'
     'DataProcessor.R'
     'DemographicModel-fsc.R'
     'DemographicModel.R'
     'Jaatha.R'
     'ModelFitting.R'
-    'Simulator.R'
-    'aaa_SimProgram.R'
-    'awesome_helper_functions.R'
     'sim_program_ms.R'
+    'Simulator.R'
     'zzz.R'
+    'parallelization.R'
