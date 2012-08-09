@@ -4,7 +4,10 @@ possible.sum.stats <- c("jsfs")
 
 #' Function to perform simulation using ms 
 #' 
-#' Taken from the phyclust package.
+#' Copyright note: Originally taken from 'phyclust' package and modified.
+#'
+#' @param opts The options to pass to ms. Must either be a character or character
+#' vector.
 callMs <- function(opts){
   if (missing(opts)) stop("No options given!")
   opts <- unlist(strsplit(opts, " "))
@@ -118,14 +121,15 @@ msSingleSimFunc <- function(dm, parameters) {
 
 #' These are the default summary statistics for Jaatha
 #' 
-#' @param jsfs        The joint site frequency spectrum of two populations
+#' @param jsfs    The joint site frequency spectrum of two populations
+#' @param dm      The corresponding demographic model. Not needed at the moment.
 #' @return        A vector with sums over different areas of the JSFS
 #' @export
 #'
 #' @examples
 #' jsfs <- matrix(rpois(26*26,5),26,26)
 #' ms.defaultSumStats(jsfs = jsfs)
-ms.defaultSumStats <- function(dm, jsfs) {
+ms.defaultSumStats <- function(dm = NULL, jsfs) {
   n <- nrow(jsfs)
   m <- ncol(jsfs)
   c(sum(jsfs[1,2:3]),

@@ -20,14 +20,14 @@ if (!exists(".local")) .local <- new.env()
 if (!exists('.local$log.level')) .local$log.level <- 1
 if (!exists('.local$log.file'))  .local$log.file  <- ""
 
-#' A helper function for easy creation of logging output
-#'
-#' @param level An integer indicating the level of the log output.
-#'              If the level is smaller or equal to the log level stored in
-#'              'log.level', than the output is printed, otherwise it is
-#'              discarded. 0 is the default level.
-#' @param ...   One or more strings/variables to be written to the log stream
-#' @return      nothing
+# A helper function for easy creation of logging output
+#
+# @param level An integer indicating the level of the log output.
+#              If the level is smaller or equal to the log level stored in
+#              'log.level', than the output is printed, otherwise it is
+#              discarded. 0 is the default level.
+# @param ...   One or more strings/variables to be written to the log stream
+# @return      nothing
 .log <- function(level, ...) {
   if (level > .local$log.level) return()
 
@@ -46,23 +46,30 @@ if (!exists('.local$log.file'))  .local$log.file  <- ""
   }
 }
 
-#' Function for creating normal user output 
+# Function for creating normal user output 
 .print <- function(...){
     .log(0,...)
 }
 .log1 <- .print
 
-#' Creates lvl-2 logging output
+# Creates lvl-2 logging output
 .log2 <- function(...) {
   .log(2, ...)
 }
 
-#' Creates lvl-3 logging output
+# Creates lvl-3 logging output
 .log3 <- function(...) {
   .log(3, ...)
 }
 
 #' Function to activate/change logging
+#'
+#' @param log.level An integer indicating the level of the log output.
+#'              If the level is smaller or equal to the log level stored in
+#'              'log.level', than the output is printed, otherwise it is
+#'              discarded. 0 is the default level.
+#' @param log.file If given, the logging output will be written into this file.
+#' @return      nothing
 setLogging <- function(log.level, log.file) {
   checkType(log.level, c("num", "s"), F)
   checkType(log.file, c("char", "s"), F)
@@ -71,9 +78,12 @@ setLogging <- function(log.level, log.file) {
   if (!missing(log.file)) .local$log.file <- log.file
 }
 
-#' Getters for log.level and log.file
+#' Gets the current logging level
 getLogLevel <- function() return(.local$log.level)
-getLogLife  <- function() return(.local$log.file)
+#' Gets the current logging file
+getLogFile  <- function() return(.local$log.file)
+
+
 
 #-----------------------------------------------------------------------
 # Function to conveniently check the type of user inputs
@@ -91,6 +101,9 @@ getLogLife  <- function() return(.local$log.file)
 #'             If a vector of type names is given, the variable must be of all types.
 #' @param required A boolean that indicates whether the variable must be
 #'             specified or can be missing. Value of NULL also counts as missing.
+#' @param allow.na If FALSE, an error is returned if the variable contains NA
+#'             values. Only works for vectors.
+#'
 #' @return nothing
 checkType <- function(variable, type, required=T, allow.na=T) {
   if (missing(variable)) {

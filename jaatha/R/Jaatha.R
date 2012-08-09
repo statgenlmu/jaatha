@@ -184,8 +184,10 @@ rm(.init)
 #' @param sumStats The summary statistics calculated from the real data
 #' @param seed An integer used as seed for both Jaatha and the simulation software
 #' @param resultFile A File in which the results of the search will be written. 
-#' @param debugMode If TRUE, a debug output will be produced
-#' @param logFile If specified, the debug output will be redirected to this file
+#' @param log.level An integer from 0 to 3 indicating Jaatha's verbosity. 0 is
+#' (almost) no output, 1 is normal output, and 2 and 3 are some and heavy debug
+#' output respectively
+#' @param log.file If specified, the output will be redirected to this file
 #' @return A S4-Object of type jaatha containing the settings
 #' @export
 Jaatha.initialize <- function(demographicModel, sumStats, seed=numeric(), 
