@@ -7,11 +7,16 @@ possible.sum.stats <- c("jsfs")
 #' Taken from the phyclust package.
 callMs <- function(opts){
   if (missing(opts)) stop("No options given!")
+  opts <- unlist(strsplit(opts, " "))
+  .log3("Called callMs")
+  .log3("Options:", opts)
 
   ms.file <- tempfile("ms.")
-  argv <- c("ms", unlist(strsplit(opts, " ")))
-
+  argv <- c("ms", opts)
+  
+  .log3("Calling ms...")
   .Call("R_ms_main", argv, ms.file, PACKAGE = "jaatha")
+  .log3("ms finished. Finished callMs()")
   return(ms.file)
 }
 
@@ -53,9 +58,6 @@ generateMsOptions <- function(dm, parameters) {
 		}
 	}
 
-	#if (outfile != F) cmd <- c(cmd,">",outfile)
-	#cmd <- paste(cmd,collapse=" ")
-	#.log3("Generated simulation cmd:",cmd)
 	.log3("Finished .ms.generateCmd()")
 
     return(cmd)
@@ -90,24 +92,11 @@ msOut2Jsfs <- function(dm, ms.out) {
                      res=as.integer(jsfs),
                      PACKAGE="jaatha")$res,
                  dm@sampleSizes[1] + 1 ,
-                 dm@sampleSizes[2] + 1 )
+                 dm@sampleSizes[2] + 1 ,
+                 byrow=T)
   .log3("Finished .ms.getJSFS()")
   return(jsfs)
 }
-
-# calcJsfsOfMsFile <- function(dm, ms.file) {
-#   if (!file.exists(ms.file)) stop("ms output not found!")
-#   resultSize <- (dm@sampleSizes[1]+1)*(dm@sampleSizes[2]+1)
-#   jsfs <- .C("msFile2jsfs", 
-#              as.character(ms.file),
-#              as.integer(dm@sampleSizes[1]),
-#              as.integer(dm@sampleSizes[2]),
-#              as.integer(dm@nLoci),
-#              as.integer(resultSize),
-#              res=integer(resultSize),
-#              PACKAGE="jaatha")$res
-#   return(jsfs)
-# }
 
 msSingleSimFunc <- function(dm, parameters) {
   .log3("Called msSumSunc()")
@@ -131,11 +120,11 @@ msSingleSimFunc <- function(dm, parameters) {
 #' 
 #' @param jsfs        The joint site frequency spectrum of two populations
 #' @return        A vector with sums over different areas of the JSFS
-##' @export
+#' @export
 #'
 #' @examples
 #' jsfs <- matrix(rpois(26*26,5),26,26)
-#' dm.defaultSumStats(jsfs)
+#' ms.defaultSumStats(jsfs = jsfs)
 ms.defaultSumStats <- function(dm, jsfs) {
   n <- nrow(jsfs)
   m <- ncol(jsfs)
@@ -163,11 +152,6 @@ ms.defaultSumStats <- function(dm, jsfs) {
     sum(jsfs[n,(m-2):(m-1)]),
     sum(jsfs[(n-2):(n-1),m]) )
 }
-
-# .ms.seedFunc <- function(){
-#   seedfile <- paste(tempdir(),"/","seedms",sep="")
-#   cat(sample(1:65525,3), "\n", file=seedfile)
-# }
 
 createSimProgram("ms", "",
                  possible.features,

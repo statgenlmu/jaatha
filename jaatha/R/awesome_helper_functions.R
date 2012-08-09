@@ -38,7 +38,7 @@ if (!exists('.local$log.file'))  .local$log.file  <- ""
   }
 
   cat(format(Sys.time(), "%Y-%m-%d %H:%M:%S"), ..., "\n", sep=" ",
-      file=log.file, append=T)
+      file=.local$log.file, append=T)
 
   if (.local$log.file != "" && level == 1) {
     # Also print normal output when logging to file

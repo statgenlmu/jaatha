@@ -699,13 +699,16 @@ dm.simSumStats <- function(dm, parameters, sumStatFunc){
       sumStats <- 
         apply(parameters, 1,
               function(parameter.combination){
+                .log3("Simulating for pars:",parameter.combination)
                 sim.out <- simProg@singleSimFunc(dm, parameter.combination)
-                return(sumStatFunc(dm, sim.out))
+                sumStats <- sumStatFunc(dm, sim.out)
+                .log3("SumStats:", sumStats)
+                return(sumStats)
               }) 
       
       sumStats <- t(sumStats)
     }
 
-    .log3(dm,"Finished dm.simSumStats()")
+    .log3("Finished dm.simSumStats()")
     return(sumStats)
 }

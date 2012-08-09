@@ -27,7 +27,7 @@ test.msSingleSimFunc <- function(){
   set.seed(100)
   jsfs <- msSingleSimFunc(dm, c(1,10))
   print(jsfs[1, 2])
-  checkEquals(jsfs[1, 2], 1058)
+  checkEquals(jsfs[1, 2], 991)
 }
 
 test.simProg <- function(){
