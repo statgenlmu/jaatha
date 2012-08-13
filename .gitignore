@@ -34,5 +34,6 @@ Rseed.txt
 
 # Jaatha #
 tmp
-*.Rd
+jaatha/man/*
+jaatha.Rcheck
 jaatha/NAMESPACE
