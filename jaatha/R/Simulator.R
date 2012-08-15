@@ -42,14 +42,19 @@ simulateWithinBlock<- function(bObject, jaathaObject) {
   sim.packages <- createSimulationPackages(randompar,
                                            jaathaObject@sim.package.size)
 
+  seeds <- generateSeeds(length(sim.packages)+1)
+
   # Simulate each package, maybe on different cores
   sumStats <- foreach(i = seq(along = sim.packages), .combine='rbind') %dopar% {
+    set.seed(seeds[i])
     sim.pars <- .deNormalize(jaathaObject, 
                              sim.packages[[i]],
                              withoutTheta=jaathaObject@externalTheta)
     sumStats <- dm.simSumStats(jaathaObject@dm, sim.pars)
     return(sumStats)
   }
+
+  set.seed(seeds[length(seeds)])
   
   # Create combined output
   paraNsumstat <- cbind(randompar, sumStats) 
@@ -58,6 +63,8 @@ simulateWithinBlock<- function(bObject, jaathaObject) {
 }
 
 createSimulationPackages <- function(random.par, package.size) {
+  if (package.size == 0) return(list(random.par))
+
   sim.packages <- list()
   num.pars <- nrow(random.par)
   i <- 0

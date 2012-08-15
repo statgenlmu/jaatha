@@ -5,16 +5,16 @@ rerecord.results = F
 library("RUnit")
 library("jaatha")
 
-dm.thetaTau <- dm.createDemographicModel(c(20,25),nLoci=20)
+dm.thetaTau <- dm.createDemographicModel(c(15,20),nLoci=20)
 dm.thetaTau <- dm.addSpeciationEvent(dm.thetaTau,0.1,5)
 dm.thetaTau <- dm.addMutation(dm.thetaTau,5,20)
 
-dm.extTheta <- dm.createDemographicModel(c(25,15),nLoci=80)
+dm.extTheta <- dm.createDemographicModel(c(15,15),nLoci=25)
 dm.extTheta <- dm.addSpeciationEvent(dm.extTheta,0.1,5)
 dm.extTheta <- dm.addSymmetricMigration(dm.extTheta,1,5)
 dm.extTheta <- dm.addMutation(dm.extTheta)
 
-dm.eTp <- dm.createDemographicModel(c(20,40),nLoci=50)
+dm.eTp <- dm.createDemographicModel(c(20,15),nLoci=20)
 dm.eTp <- dm.addSpeciationEvent(dm.eTp,0.1,5)
 dm.eTp <- dm.addSymmetricMigration(dm.eTp,1,5)
 dm.eTp <- dm.addMutation(dm.eTp,1,5)
@@ -28,24 +28,37 @@ test.dm.simSumStats <- function(){
 	checkException( dm.simSumStats(dm.thetaTau, 1 ) )
 	checkException( dm.simSumStats(dm.thetaTau, 1:3 ) )
 	checkException( dm.simSumStats(dm.thetaTau, c(2,50)) )
-	set.seed(1)
+	set.seed(1234)
 	sim <- dm.simSumStats(dm.thetaTau, c(2,10))
 	if (rerecord.results) samples[["simSumStats"]] <- sim
 	checkEquals( sim , samples[["simSumStats"]] )
     if (rerecord.results) save(samples,file="samples.save")
 }
 
+test.dm.simSumStats.reproducible <- function(){
+    load("samples.save")
+	set.seed(1234)
+	sim <- dm.simSumStats(dm.thetaTau, c(2,10))
+	checkEquals( sim , samples[["simSumStats"]] )
+}
+
 test.initialSearch.normal <- function(){
     load("samples.save")
-	jaatha <- Jaatha.initialize(dm.thetaTau, samples[["simSumStats"]], seed=1)
-	startPoints <- Jaatha.initialSearch(jaatha,nSim=10,nBlocksPerPar=2)
+	jaatha <- Jaatha.initialize(dm.thetaTau, samples[["simSumStats"]], seed=1,
+                                sim.package.size=3)
+	startPoints <- Jaatha.initialSearch(jaatha, nSim=10, nBlocksPerPar=2)
 	pStartPoints <- Jaatha.printStartPoints(jaatha,startPoints)
 	if (rerecord.results) samples[["initialSearch.normal"]] <- pStartPoints
 	checkEquals(pStartPoints, samples[["initialSearch.normal"]])
     if (rerecord.results) save(samples,file="samples.save")
+
+    # Test reproducibility
+	startPoints2 <- Jaatha.initialSearch(jaatha, nSim=10, nBlocksPerPar=2)
+	pStartPoints2 <- Jaatha.printStartPoints(jaatha, startPoints2)
+	checkEquals(pStartPoints, pStartPoints2)
 }
 
-test.initialSearch.extTheta <- function(){
+test.initialSearch.extThet <- function(){
     load("samples.save")
 	jaatha <- Jaatha.initialize(dm.extTheta, samples[["sumStats.extTheta"]], seed=1)
 	startPoints <- Jaatha.initialSearch(jaatha,nSim=10,nBlocksPerPar=2)

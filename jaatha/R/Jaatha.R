@@ -55,13 +55,14 @@ setClass("Jaatha",
       popSampleSizes= "numeric", 
       nLoci = "numeric",
       MLest="numeric", 
-      seed="numeric",
+      seeds="numeric",
       externalTheta= "logical", 
       finiteSites= "logical",
       parNames = "character",
       resultFile = "character",
       sumStats = "numeric",
       likelihood.table = "matrix",
+      parallelization.model = "character",
       sim.package.size = "numeric"
     ),
     #validity = function(object){
@@ -101,7 +102,8 @@ setClass("Jaatha",
 )
 
 ## constructor method for Jaatha object
-.init <- function(.Object, demographicModel, sumStats, seed=numeric(), resultFile) {
+.init <- function(.Object, demographicModel, sumStats, seed=numeric(),
+                  resultFile="", parallelization.model, sim.package.size) {
   #.Object@nBlocksPerPar <- nBlocksPerPar         
   .log3("Starting initialization")
   .Object@dm    <- demographicModel
@@ -125,7 +127,7 @@ setClass("Jaatha",
 
   .Object@likelihood.table <- matrix(0,0,.Object@nPar + 2)
 
-  if (!missing(resultFile)){
+  if (resultFile != ""){
     .Object@resultFile <- resultFile
   } else{
     .Object@resultFile <- "JaathaResult.txt" 
@@ -160,16 +162,28 @@ setClass("Jaatha",
   if (length(seed)!=0){ # if seed was specified
     cat(seed,"\n",file=seedfile)              
   } else {  #if no seed was specified and no file is available
-    seed <- sample(1:(2^20),size=1)
+    seed <- generateSeeds()
     cat("R seed set to",seed,"\n")
     cat(seed,"\n",file=seedfile)
   } 
-  .Object@seed <- seed
-  set.seed(seed)      
-  #cat("Initial msSeeds set to ",msSeeds,"\n")            
-  #validObject(.Object)
-  #show(.Object)   
-  .Object@sim.package.size <- 100  
+  set.seed(seed)
+  .Object@seeds <- c(jaatha=seed,
+                     initialSearch=generateSeeds(),
+                     refinedSearch=generateSeeds() )  
+
+  #--------------------------------------------------------------------------
+  # Parallelization options
+  #--------------------------------------------------------------------------
+  if (missing(parallelization.model)) parallelization.model <- "none"
+  checkType(parallelization.model, c("char","single"))
+  if (!parallelization.model %in% c("none","simple","nodes"))
+    stop('parallelization.model need to be "none", "simple" or "nodes"')
+  .Object@parallelization.model <- parallelization.model
+
+  if (missing(sim.package.size)) sim.package.size <- 100
+  checkType(sim.package.size, c("num","single"))
+  .Object@sim.package.size <- sim.package.size
+  
   .log3("Finished initialization")
   return (.Object)
 }
@@ -187,20 +201,38 @@ rm(.init)
 #' @param seed An integer used as seed for both Jaatha and the simulation software
 #' @param resultFile A File in which the results of the search will be written. 
 #' @param log.level An integer from 0 to 3 indicating Jaatha's verbosity. 0 is
-#' (almost) no output, 1 is normal output, and 2 and 3 are some and heavy debug
-#' output respectively
+#'              (almost) no output, 1 is normal output, and 2 and 3 are some and heavy debug
+#'              output respectively
 #' @param log.file If specified, the output will be redirected to this file
+#' @param parallelization.model Jaatha can use multiple CPU cores to speedup the
+#'              estimation. When this is set to "simple" Jaatha uses R's
+#'              'multicore' package to distribute just the simulations over different
+#'              cores, while the basic flow of the program is not changed.
+#'              You can also set this to "nodes" to use a more sophisticated way
+#'              of parallelization, which is designed to run grids and
+#'              supercomputers. This requires the 'doRedis' package and a running redis
+#'              database. See the description in Jaatha's vignette if you want
+#'              to use this.
+#'              Can also be "none" for no parallelization.
+#' @param sim.package.size When running Jaatha on multiple cores, a singe core
+#'              will always execute a whole "package" of simulations the reduce
+#'              the inter thread communication overhead. This gives the number
+#'              of simulations in such a package. Choose a number such that the
+#'              execution of the simulations takes at least 15 seconds.
 #' @return A S4-Object of type jaatha containing the settings
 #' @export
-Jaatha.initialize <- function(demographicModel, sumStats, seed=numeric(), 
-                              resultFile="", log.level, log.file){
+Jaatha.initialize <- function(demographicModel, sumStats, seed=numeric(),
+                              resultFile="", log.level=1, log.file="", 
+                              parallelization.model="none", sim.package.size=100){
 
   setLogging(log.level, log.file)
   jaatha <- new("Jaatha",
                 demographicModel=demographicModel,
                 sumStats=sumStats,
                 seed=seed,
-                resultFile=resultFile)
+                resultFile=resultFile,
+                parallelization.model=parallelization.model,
+                sim.package.size=sim.package.size)
   return(jaatha)
 }
 
@@ -213,7 +245,7 @@ Jaatha.initialize <- function(demographicModel, sumStats, seed=numeric(),
   cat(" nPar =",object@nPar,"\n")   
   cat(" parNames =",object@parNames,"\n") 
   cat(" resultFile =",object@resultFile,"\n")
-  cat(" random seed =",object@seed,"\n")                  
+  cat(" random seed =",object@seeds,"\n")                  
   cat(" popSampleSizes =",object@popSampleSizes,"\n")                
   cat(" nLoci in observed data =",object@nLoci,"\n")               
   cat(" summary statistics of observed data =",object@sumStats,"\n")               
@@ -249,6 +281,8 @@ rm(.show)
 Jaatha.initialSearch <- function(jObject, nSim=200, nBlocksPerPar=3){
   .log2("Called Jaatha.initialSearch()")
   .log2("nSim:",nSim,"| nBlocksPerPar:",nBlocksPerPar)
+  set.seed(jObject@seeds[2])
+  .log2("Seeting seed to", jObject@seeds[2])
   ## change slot values of jObject locally, so that only  
   ## searches with externalTheta=T will be run for initial search
   ## if theta is included into parRange, exclude it and decrese nPar
@@ -263,6 +297,8 @@ Jaatha.initialSearch <- function(jObject, nSim=200, nBlocksPerPar=3){
     .print("externalTheta set to TRUE for initial search.")
   }
   #print(jObject)
+
+  setParrallelizationForInitialSearch(jObject)
       
   firstBlocks <- list() ## list blocks with simulated summary stats
   ## pRange contains the boarders of all starting blocks
@@ -363,6 +399,9 @@ Jaatha.refineSearch <- function(jObject,startPoints,nSim,
   .log2("Called function Jaatha.refineSearch()")
   if (missing(nFinalSim)) nFinalSim <- nSim
   if (!is.list(startPoints)) stop("startPoints is no list!")
+
+  set.seed(jObject@seeds[3])
+  .log2("Seeting seed to", jObject@seeds[3])
 
   for (s in 1:length(startPoints)){
     jObject@MLest <- startPoints[[s]]@MLest

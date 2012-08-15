@@ -157,3 +157,8 @@ checkType <- function(variable, type, required=T, allow.na=T) {
     }
   }
 }
+
+
+generateSeeds <- function(n=1) {
+  return(sample.int(2^20,n))
+}
