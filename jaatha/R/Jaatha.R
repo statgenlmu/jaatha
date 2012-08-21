@@ -118,9 +118,9 @@ setClass("Jaatha",
   .Object@finiteSites <- demographicModel@finiteSites
 
 
-  #Number of parameters; dm@parameters always inculdes theta; 
-  if (.Object@externalTheta)  .Object@nPar <- length(.Object@dm@parameters) - 1
-  else          .Object@nPar <- length(.Object@dm@parameters)
+  #Number of parameters; dm.getParameters always inculdes theta; 
+  if (.Object@externalTheta)  .Object@nPar <- length(dm.getParameters(.Object@dm)) - 1
+  else          .Object@nPar <- length(dm.getParameters(.Object@dm))
 
   .Object@likelihood.table <- matrix(0,0,.Object@nPar + 2)
 
@@ -304,12 +304,11 @@ Jaatha.initialSearch <- function(jObject, nSim=200, nBlocksPerPar=3){
     ##under consideration)
     firstBlocks[[i]]@score <- optimal$score
     
-    #Normalize theta to 0-1 range and ensure that it is inside its parameter range 
-    if ( extThetaPossible )
+    #Normalize theta to 0-1 range and ensure that it is inside its parameter range
+    if (extThetaPossible) {
       optimal$theta <- min(max(Jaatha.normalize01(dm.getParRanges(jObject@dm)[jObject@nPar+1,],
-                    optimal$theta)
-             ,0)
-                                ,1)         
+                                                  optimal$theta),0),1)
+    }      
     firstBlocks[[i]]@MLest <- c(optimal$est, optimal$theta)
     ## parNsumstat will not be needed anymore -> can be
     ## deleted to save memory
@@ -324,8 +323,7 @@ Jaatha.initialSearch <- function(jObject, nSim=200, nBlocksPerPar=3){
   #.print("=> Best Block is:",bestBlockIndex,"with score:",
   #     firstBlocks[[bestBlockIndex]]@score,"with\n estimates:\n")
   #print( round( .deNormalize(jObject,firstBlocks[[bestBlockIndex]]@MLest), 3 ) )
-  
-  print(Jaatha.printStartPoints(jObject,firstBlocks))
+  print(Jaatha.printStartPoints(jObject, firstBlocks, extThetaPossible))
 
   return (firstBlocks)
 }
@@ -404,7 +402,7 @@ Jaatha.refineSearch <- function(jObject,startPoints,nSim,
 
   ## best ten parameters with score are kept for end evaluation
   topTen <- array(0,dim=c(10,(1+nTotalPar)), #dim=(10,likelihood+pars)
-                  dimnames= list(1:10, c("score",jObject@dm@parameters)))     
+                  dimnames= list(1:10, c("score",dm.getParameters(jObject@dm))))     
 
   ##repeat until likelihood improvement gets smaller than epsilon
   ## 5 times in a row or more than 200 steps used
@@ -796,7 +794,7 @@ Jaatha.getMLest <- function(jObject){
     #if(length(getparRange(jObject))!=estLen){
     # stop("Dimensions of parameter range and MLest are not matching!")
     #} else{
-      return (.calcAbsParamValue(jObject@dm,est))
+      return (.deNormalize(jObject, est))
     #}
   }
 }
@@ -1077,13 +1075,15 @@ is.jaatha <- function(jObject){
 #' @param startPoints The list of startPoints which will be printed
 #' @return a matrix with score and parameters of each start point
 #' @export
-Jaatha.printStartPoints <- function(jObject,startPoints){
+Jaatha.printStartPoints <- function(jObject, startPoints, extThetaPossible=F){
   width <- startPoints[[1]]@nPar + 1 + jObject@externalTheta
   mat <- matrix(0,length(startPoints),width)
-  colnames(mat) <- c("score",jObject@dm@parameters)[1:width]
+  colnames(mat) <- c("score",dm.getParameters(jObject@dm))[1:width]
   for (i in 1:length(startPoints)){
+    if (jObject@externalTheta & !extThetaPossible) theta <- startPoints[[i]]@MLest[width-1]
     mat[i,1] <- round(startPoints[[i]]@score,2)
     mat[i,-1] <- round(.deNormalize(jObject,startPoints[[i]]@MLest)[1:(width-1)], 3)
+    if (jObject@externalTheta & !extThetaPossible) mat[i, width] <- round(theta,3)
   }
   perm <- sort.list(mat[,1],decreasing=T) 
   return(mat[perm,])

@@ -1,25 +1,54 @@
-### --- Test setup ---
- 
 library("RUnit")
 library("jaatha")
 
-# dm.thetaTau <- dm.createDemographicModel(c(20,25),nLoci=100)
-# dm.thetaTau <- dm.addSpeciationEvent(dm.thetaTau,0.1,5)
-# dm.thetaTau <- dm.addMutation(dm.thetaTau,5,20)
-# 
-# dm.extTheta <- dm.createDemographicModel(c(20,25),nLoci=100)
-# dm.extTheta <- dm.addSpeciationEvent(dm.extTheta,0.1,5)
-# dm.extTheta <- dm.addSymmetricMigration(dm.extTheta,1,5)
-# dm.extTheta <- dm.addMutation(dm.extTheta)
-# 
-# dm.eTp <- dm.createDemographicModel(c(20,25),nLoci=100)
-# dm.eTp <- dm.addSpeciationEvent(dm.eTp,0.1,5)
-# dm.eTp <- dm.addSymmetricMigration(dm.eTp,1,5)
-# dm.eTp <- dm.addMutation(dm.eTp,1,5)
-# 
-# load("samples.save")
+dm <- dm.createDemographicModel(c(20,25),nLoci=100)
+dm <- dm.addSpeciationEvent(dm,0.1,5)
+dm <- dm.addMutation(dm,5,20)
 
-### --- Test functions ---
+#------------------------------------------------------------------
+# Tests 
+#------------------------------------------------------------------
+
+test.getFeature <- function() {
+  checkEquals(nrow(getFeature(dm, "split")), 1)  
+  checkEquals(nrow(getFeature(dm, "split", NA, NA, NA, NA)), 1)
+  checkEquals(nrow(getFeature(dm, "mutation")), 1)
+}
+
+test.appendFeature <- function() {
+  dm <- dm.createDemographicModel(11:12, 100)
+  dm <- appendFeature(dm, "split", 1, 1, 1)
+  checkEquals(nrow(dm@features), 1)
+  dm <- appendFeature(dm, "mut", 2, 1, 5, 1, 2, "t1", 1)
+  checkEquals(nrow(dm@features), 2)
+}
+
+test.addParameter <- function() {
+  dm <- dm.createDemographicModel(11:12, 100)
+  dm <- addParameter(dm, "theta")
+  dm <- addParameter(dm, "rho")
+  checkEquals(dm@parameters, c("theta","rho"))
+  checkException(addParameter(dm, "theta"))
+  checkEquals(dm@parameters, c("theta","rho"))
+}
+
+test.addFeature <- function() {
+  dm <- dm.createDemographicModel(11:12, 100)
+  dm <- addFeature(dm, "split", "tau", 1, 10)
+  checkEquals(nrow(dm@features), 1)
+  dm <- addFeature(dm, "mutation", "theta", fixed.value=5,
+                   pop.source=1, pop.sink=2,
+                   time.point="t2", group=3)
+  checkEquals(nrow(dm@features), 2)
+}
+
+test.makeThetaLast <- function() {
+  dm <- dm.createDemographicModel(11:12, 100)
+  dm <- dm.addMutation(dm,5,20)
+  dm <- dm.addSpeciationEvent(dm,0.1,5)
+  checkEquals(dm@parameters[length(dm@parameters)], "theta")
+}
+
 
 
 ## -- Fixed bugs ----------------------------------------

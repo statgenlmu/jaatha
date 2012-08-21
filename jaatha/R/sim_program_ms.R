@@ -1,11 +1,10 @@
 possible.features  <- c("mutation","migration","split",
-                        "recombination","splitSize","presentSize")
+                        "recombination","splitSize","presentSize",
+                        "time.point")
 possible.sum.stats <- c("jsfs")
 
 #' Function to perform simulation using ms 
 #' 
-#' Copyright note: Originally taken from 'phyclust' package and modified.
-#'
 #' @param opts The options to pass to ms. Must either be a character or character
 #' vector.
 callMs <- function(opts){
@@ -15,10 +14,9 @@ callMs <- function(opts){
   .log3("Options:", opts)
 
   ms.file <- tempfile("ms.")
-  argv <- c("ms", opts)
   
   .log3("Calling ms...")
-  .Call("R_ms_main", argv, ms.file, PACKAGE = "jaatha")
+  .Call("R_ms_main", opts, ms.file, PACKAGE = "jaatha")
   .log3("ms finished. Finished callMs()")
   return(ms.file)
 }
@@ -26,61 +24,85 @@ callMs <- function(opts){
 generateMsOptions <- function(dm, parameters) {
 	.log3("Called .ms.generateCmd()")
 
-	nSample <- dm@sampleSizes
-	cmd <- c(sum(nSample),dm@nLoci)                     #repetitions and number of loci
-	cmd <- c(cmd,"-I 2",nSample[1],nSample[2])          #two populations
-	
-	tau <-  .ms.getParameter(dm,parameters,"split")
+    par.names <- unique(dm.getParameters(dm, include.fixed=F))
+    for (i in seq(along = par.names)){
+      eval(parse(text=paste(par.names[i],"<-",parameters[i])))
+    }
 
-	for (i in 1:dim(dm@features)[1] ){
+    fixed.features <- dm@features[dm@features$fixed & !is.na(dm@features$parameter), ]
+    if (nrow(fixed.features) > 0) {
+      for (i in 1:nrow(fixed.features)){
+        eval(parse(text=paste(fixed.features$parameter[i],"<-",fixed.features$lower.range[i])))
+      }
+    }
+
+    print(ls())
+
+    nSample <- dm@sampleSizes
+	cmd <- c('c(', '"ms"', ",", sum(nSample), ",", dm@nLoci , ",")
+	cmd <- c(cmd,'"-I 2"', ",", nSample[1], ",", nSample[2], ",")
+
+    par.names <- dm@features$parameter
+
+	for (i in 1:dim(dm@features)[1] ) {
 		type <- as.character(dm@features[i,"type"])
-		pop <- dm@features[i,"population"]
-		param <- .ms.getParameter(dm,parameters,type,pop)
+        feat <- unlist(dm@features[i, ])
+        
+        if (type == "time.point") next
 
-		if (type == "mutation"){ 
-			if (dm@externalTheta) cmd <- c(cmd,"-t 5") 
-			else cmd <- c(cmd,"-t",param)
+		if (type == "mutation") {
+			if (dm@externalTheta) cmd <- c(cmd,'"-t 5"', ",") 
+			else cmd <- c(cmd,'"-t"', ',', par.names[i], ',')
 		}
 		
-		if (type == "split") 
-			cmd <- c(cmd,"-ej",param,"2 1")
+		if (type == "split") {
+			cmd <- c(cmd, '"-ej"', ',', feat["time.point"], ',',
+                     feat["pop.sink"], ',', feat["pop.source"], ',')
+        }
 		
 		if (type == "migration")
-			cmd <- c(cmd,"-m 1 2",param,"-m 2 1",param)
+			cmd <- c(cmd, '"-m 1 2"', ',', feat['parameter'], ',',
+                          '"-m 2 1"', ',', feat['parameter'], ',')
 		
 		if (type == "recombination") 
 			cmd <- c(cmd,"-r",param,dm@seqLength)
 
 		if (type == "splitSize"){
-		        cmd <- c(cmd,"-g",pop,log(.ms.getPresentSize(dm,parameters,pop)/param)/tau)  
+		        cmd <- c(cmd,"-g",feat["pop.source"],
+                         log(.ms.getPresentSize(dm,parameters,feat["pop.source"])/param)/tau)  
 			cmd <- c(cmd,"-eN",tau,1+param)               
 		}
 
 		if (type == "presentSize"){
-			cmd <- c(cmd,"-n",pop,param)
+			cmd <- c(cmd,"-n",feat["pop.source"],param)
 		}
 	}
+
+    cmd <- c(cmd, '"")')
+    
+    cmd <-  eval(parse(text=cmd))
 
 	.log3("Finished .ms.generateCmd()")
 
     return(cmd)
 }
 
-.ms.getParameter <- function(dm,parameters,type,population=NA){
-	feature <- .getFeature(dm,type,population)
-	if ( dim(feature)[1] != 1 ) stop("Error creating ms command")
-	if ( dm@externalTheta & type == "mutation") return(0)
-	if ( feature$lowerRange[1] == feature$upperRange[1] )
-		return(feature$lowerRange[1]) 
-	else
-		return(parameters[feature$parameter])
+.ms.getParameter <- function(dm, parameters, row.nr, par.name=NA) {
+    # Calling with row.nr instead of par name
+    if (is.na(par.name)) par.name <- dm@features$parameter[row.nr]
+    # Calling with row.nr and the par is fixed
+    if (is.na(par.name)) return(dm@features$lower.range[row.nr])
+    #par.name <- unlist(par.name)
+    par.mask <- dm.getParameters(dm) == par.name
+    par.nr <- seq(along = par.mask)[par.mask]
+    return(parameters[par.nr])
 }
 
-.ms.getPresentSize <- function(dm,parameters,population){
-	feature <- .getFeature(dm,"presentSize",population)
+.ms.getPresentSize <- function(dm, parameters, pop.source){
+	feature <- getFeature(dm, "presentSize", pop.source)
 	if ( dim(feature)[1] != 1 ) return(1)
-	if ( feature$lowerRange[1] == feature$upperRange[1] )
-		return(feature$lowerRange[1]) 
+	if ( feature$lower.range[1] == feature$upper.range[1] )
+		return(feature$lower.range[1]) 
 	else
 		return(parameters[feature$parameter])
 }
@@ -103,7 +125,7 @@ msOut2Jsfs <- function(dm, ms.out) {
 
 msSingleSimFunc <- function(dm, parameters) {
   .log3("Called msSumSunc()")
-  .check.dm(dm)
+  checkType(dm, "dm")
   checkType(parameters, "num")
   if (length(parameters) != dm.getNPar(dm)) 
     stop("Wrong number of parameters!")

@@ -120,8 +120,11 @@ checkType <- function(variable, type, required=T, allow.na=T) {
     stop(fun.name,": Required parameter \"",var.name,"\" is NULL.",call.=F)
   } 
   
-  if (is.vector(variable) & !allow.na){  
-    if (any(sapply(variable, is.na))) {
+  if (is.vector(variable)) {
+    if (allow.na) {
+      variable <- variable[!is.na(variable)]
+      if (length(variable) == 0) return()
+    } else if (any(sapply(variable, is.na))) {
       fun.name <- as.character(sys.call(-1)[[1]])
       var.name <- deparse(substitute(variable))
       stop(fun.name,": Required parameter \"",var.name,"\" has NA value(s).",call.=F)
@@ -132,6 +135,9 @@ checkType <- function(variable, type, required=T, allow.na=T) {
     if (type[i] == "char" || type[i] == "character") {
       func <- is.character
       error <- "has to be of type character"
+    } else if (type[i] == "bool" || type[i] == "boolean") {
+      func <- is.logical
+      error <- "has to be of type boolean"
     } else if (type[i] == "num" || type[i] == "numeric") {
       func <- is.numeric
       error <- "has to be of type numeric"
@@ -147,6 +153,12 @@ checkType <- function(variable, type, required=T, allow.na=T) {
     } else if (type[i] == "s" || type[i] == "single") {
       func <- function(var) {length(var) == 1}
       error <- "must have length one."
+    } else if (type[i] == "dm" || type[i] == "demographicModel") {
+      func <- function(dm) {class(dm)[1] == "DemographicModel"}
+      error <- "is no demographic Model"
+    } else if (type[i] == "jat" || type[i] == "jaatha") {
+      func <- function(jaatha) {class(jaatha)[1] == "Jaatha"}
+      error <- "is no Jaatha object"
     } else {
       stop("Unknown type: ",type[i])
     }

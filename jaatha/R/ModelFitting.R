@@ -125,8 +125,8 @@ setMethod("estimate",signature(bObject="Block",jObject="Jaatha"),
 									score= slL))
 				}
 				else{
-					cat("-> best score:",round(score,2),"param:",
-					    round(.calcAbsParamValue(jObject@dm,mitte),3),"\n")
+					#cat("-> best score:",round(score,2),"param:",
+					#    round(.calcAbsParamValue(jObject@dm,mitte),3),"\n")
 					return (list(est = mitte,
 						     theta = theta/jObject@nLoci,
 						     score = score))            
@@ -168,8 +168,8 @@ setMethod("estimate",signature(bObject="Block",jObject="Jaatha"),
 					score <- -OOO$value  
 				}
 			
-				cat("-> best score:",round(score,2),
-					"par:",round(.calcAbsParamValue(jObject@dm,mitte),3),"\n")
+				#cat("-> best score:",round(score,2),
+				#	"par:",round(.calcAbsParamValue(jObject@dm,mitte),3),"\n")
 				return (list(est= mitte, score= score))                   
 			}            
 		})
