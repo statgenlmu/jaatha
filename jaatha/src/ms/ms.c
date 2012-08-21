@@ -1,3 +1,5 @@
+// Copyright: copied (without a change) from the phyclust package
+
 /***** ms.c     ************************************************
 *
 *       Generates samples of gametes ( theta given or fixed number 

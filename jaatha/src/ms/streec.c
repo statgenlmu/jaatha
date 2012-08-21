@@ -1,3 +1,5 @@
+// Copyright: copied (without a change) from the phyclust package
+
 /**********  segtre_mig.c **********************************
 *
 *	This subroutine uses a Monte Carlo algorithm described in

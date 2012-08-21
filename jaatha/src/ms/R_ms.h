@@ -1,3 +1,6 @@
+// Copyright: copied (without a change) from the phyclust package
+
+
 //WCC:add
 #ifdef __HAVE_R_ 
 

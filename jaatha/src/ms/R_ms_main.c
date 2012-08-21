@@ -1,3 +1,5 @@
+// Copyright: copied (without a change) from the phyclust package
+
 /* This file contains a wrap for R to call ms_main() in "ms.c". */
 
 #include <R.h>

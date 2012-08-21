@@ -1,3 +1,5 @@
+// Copyright: copied (without a change) from the phyclust package
+
 /* This file contains a function, ran1(), to replace the original random
  * number generation in "ms", instead of R function runif().
  * The seed should be preset and reset in R.

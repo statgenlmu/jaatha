@@ -1,3 +1,5 @@
+// Copyright: copied (without a change) from the phyclust package
+
 #ifndef __MS_
 #define __MS_
 
