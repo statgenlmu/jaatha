@@ -116,11 +116,7 @@ setClass("Jaatha",
   .Object@popSampleSizes <- demographicModel@sampleSizes
   .Object@externalTheta <- demographicModel@externalTheta
   .Object@finiteSites <- demographicModel@finiteSites
-
-
-  #Number of parameters; dm.getParameters always inculdes theta; 
-  if (.Object@externalTheta)  .Object@nPar <- length(dm.getParameters(.Object@dm)) - 1
-  else          .Object@nPar <- length(dm.getParameters(.Object@dm))
+  .Object@nPar <- dm.getNPar(.Object@dm)
 
   .Object@likelihood.table <- matrix(0,0,.Object@nPar + 2)
 
@@ -306,9 +302,9 @@ Jaatha.initialSearch <- function(jObject, nSim=200, nBlocksPerPar=3){
     
     #Normalize theta to 0-1 range and ensure that it is inside its parameter range
     if (extThetaPossible) {
-      optimal$theta <- min(max(Jaatha.normalize01(dm.getParRanges(jObject@dm)[jObject@nPar+1,],
+      optimal$theta <- min(max(Jaatha.normalize01(getThetaRange(jObject@dm),
                                                   optimal$theta),0),1)
-    }      
+    }
     firstBlocks[[i]]@MLest <- c(optimal$est, optimal$theta)
     ## parNsumstat will not be needed anymore -> can be
     ## deleted to save memory
@@ -1076,9 +1072,13 @@ is.jaatha <- function(jObject){
 #' @return a matrix with score and parameters of each start point
 #' @export
 Jaatha.printStartPoints <- function(jObject, startPoints, extThetaPossible=F){
-  width <- startPoints[[1]]@nPar + 1 + jObject@externalTheta
+  width <- dm.getNPar(jObject@dm) + 1 + jObject@externalTheta
   mat <- matrix(0,length(startPoints),width)
-  colnames(mat) <- c("score",dm.getParameters(jObject@dm))[1:width]
+  col.names <- c("score", dm.getParameters(jObject@dm))
+  if (jObject@externalTheta)
+    col.names <- c(col.names, getThetaName(jObject@dm))
+  colnames(mat) <- col.names
+
   for (i in 1:length(startPoints)){
     if (jObject@externalTheta & !extThetaPossible) theta <- startPoints[[i]]@MLest[width-1]
     mat[i,1] <- round(startPoints[[i]]@score,2)

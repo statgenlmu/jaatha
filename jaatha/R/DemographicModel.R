@@ -7,7 +7,6 @@ setClass("DemographicModel" ,
                         tsTvRatio="numeric",
                         externalTheta="logical",
                         finiteSites="logical",
-                        profiled="logical",
                         currentSimProg="SimProgram")
          )
 
@@ -35,7 +34,6 @@ setClass("DemographicModel" ,
 
 
   .Object@externalTheta   <- F
-  .Object@profiled        <- F
   .Object@finiteSites     <- finiteSites
   .Object@sampleSizes     <- sampleSizes
   .Object@seqLength       <- seqLength
@@ -127,42 +125,67 @@ rm(.show)
 
 
 
-#-----------------------------------------------------------------------
+#------------------------------------------------------------------------------
 # Private functions
-#-----------------------------------------------------------------------
+#------------------------------------------------------------------------------
 
-dm.addParameter <- function(dm, par.name, lower.range, upper.range, fixed.value) {
+#---------------------------------------------------------------------
+# dm.addParameter()
+#---------------------------------------------------------------------
+#' Create a parameter that can be used for one or more features
+#'
+#' The function creates a new model parameter. It can either have a fixed value
+#' or you can enter a range of possible values if you want to estimate it.
+#'
+#' @param dm    The demographic model to which the parameter will be added
+#' @param par.name The name of the parameter. You can use this name later to
+#'                 access the parameter from a model feature
+#' @param lower.boundary The lower boundary of the range within which the
+#'                       parameter value will be estimated. Don't specify
+#'                       'fixed.value' if you want to do so.
+#' @param upper.boundary Like 'lower.boundary', but the upper end of the
+#'                       parameter range.
+#' @param fixed.value    If this argument is given, than rather than being estimated 
+#'                       a fixed value will be used.
+#' @return The original model extended with the new parameter.
+#' @export
+#' @examples
+#' dm <- dm.createThetaTauModel(c(15,23), 100)
+#' dm <- dm.addParameter(dm, "mig", 0.1, 5)
+#' dm <- dm.addMigration(dm, par.new=FALSE, parameter="mig", pop.from=1, pop.to=2)
+#' dm <- dm.addMigration(dm, par.new=FALSE, parameter="2*mig", pop.from=2, pop.to=1)
+dm.addParameter <- function(dm, par.name, lower.boundary, upper.boundary, fixed.value) {
 
-  if (missing(lower.range)) lower.range <- NA
-  if (missing(upper.range)) upper.range <- NA
+  if (missing(lower.boundary)) lower.boundary <- NA
+  if (missing(upper.boundary)) upper.boundary <- NA
   if (missing(fixed.value)) fixed.value <- NA
 
   checkType(dm,          c("dm",   "s"), T, F)
   checkType(par.name,    c("char", "s"), T, F)
-  checkType(lower.range, c("num",  "s"), T, T)
-  checkType(upper.range, c("num",  "s"), T, T)
+  checkType(lower.boundary, c("num",  "s"), T, T)
+  checkType(upper.boundary, c("num",  "s"), T, T)
   checkType(fixed.value, c("num",  "s"), T, T)
 
   if (par.name %in% dm.getParameters(dm, T))
     stop("There is already a parameter with name ",par.name)
 
   if ( !is.na(fixed.value) ) {
-    lower.range <- fixed.value
-    upper.range <- fixed.value
+    lower.boundary <- fixed.value
+    upper.boundary <- fixed.value
   }
 
   fixed <- F
-  if (is.na(lower.range) | is.na(upper.range)) {
+  if (is.na(lower.boundary) | is.na(upper.boundary)) {
     fixed <- T
   } else {
-    if (lower.range == upper.range) {
+    if (lower.boundary == upper.boundary) {
       fixed <- T
     }
   }
  
-  dm <- appendToParameters(dm, par.name, fixed, lower.range, upper.range)
+  dm <- appendToParameters(dm, par.name, fixed, lower.boundary, upper.boundary)
 
-  #dm <- makeThetaLast(dm)
+  dm <- makeThetaLast(dm)
   return(dm)
 }
 
@@ -258,31 +281,6 @@ appendToParameters <- function(dm, name, fixed, lower.range, upper.range) {
 }
 
 
-# Function that returns all features with the given criteria in the model.
-# Also returns a data.frame.
-getFeature <- function(dm, type, pop.source=NA, 
-                       pop.sink=NA, time.point=NA, group=NA ){
-
-  checkType(dm, c("dm", "s"), T, F)
-  
-  feat <- dm@features
-  good.rows <- feat$type == type
-
-  if (is.na(pop.source)) good.rows <- good.rows & is.na(feat$pop.source)
-  else good.rows <- good.rows & (feat$pop.source == pop.source)
-
-  if (is.na(pop.sink)) good.rows <- good.rows & is.na(feat$pop.sink)
-  else good.rows <- good.rows & (feat$pop.sink == pop.sink)
-
-  if (is.na(time.point)) good.rows <- good.rows & is.na(feat$time.point)
-  else good.rows <- good.rows & (feat$time.point == time.point)
-
-  if (is.na(group)) good.rows <- good.rows & is.na(feat$group)
-  else good.rows <- good.rows & (feat$group == group)
-
-  return(feat[good.rows, ])
-}
-
 # Gets the availible populations
 getPopulations <- function(dm){
   # Every population other than the ancestral (=0) should be listed
@@ -291,165 +289,40 @@ getPopulations <- function(dm){
   populations <- unique(populations[!is.na(populations)])
 }
 
-# Adds an parameter to the parameter list
-# This should only be used by addFeature().
-# addParameter <- function(dm, parameter.name){
-#   checkType(dm, c("dm", "s"), T, F)
-#   checkType(parameter.name, c("char", "s"), T, F)
-#   if (any(dm.getParameters(dm) == parameter.name)) 
-#     stop("parameter name already exists")
-#   dm.getParameters <- c(dm.getParameters, parameter.name)
-#   return(dm)
-# }
 
 # To use Watersons estimator, Jaatha requires that the mutation parameter
 # is the last parameter. This swishes it to the end.
 makeThetaLast <- function(dm) {
   checkType(dm, c("dm", "s"), T, F)
-  feat <- dm@features
-  mut.line <- (1:nrow(feat))[feat$type == "mutation"]
-  last.line <- nrow(feat)
-  if (length(mut.line) != 1) return(dm)
+  
+  par.name <- dm@features$parameter[dm@features$type == "mutation"]
+  if (length(par.name) == 0) return(dm)
+  if (length(par.name) > 1) stop("Multiple Mutations features found")
+
+  pars <- dm@parameters
+  mut.line <- (1:nrow(pars))[pars$name == par.name]
+  last.line <- nrow(pars)
   if (mut.line == last.line) return(dm)
+
   new.order <- 1:last.line
   new.order[c(mut.line, last.line)] <- c(last.line, mut.line)
-  dm@features <- feat[new.order, ]
+
+  dm@parameters <- pars[new.order, ]
   return(dm)
 }
 
-# returns the parameter that belong to a feature specified via 
-# type and pop.source
-#
-# @param dm           the demographic model
-# @param type         the type of the feature
-# @param pop.source   the pop.source if the feature or NA
-# 
-# @returns  0                   if feature is not in the model,
-#           the fixed Value     if the feature has a "fixed.value" or
-#           the parameter name  otherwise
-# getParameter <- function(dm, type, pop.source=NA, pop.sink=NA,
-#                          time.point=NA, group=NA) {
-# 
-#   checkType(dm, c("dm", "s"), T, F)
-#   feature <- getFeature(dm, type, pop.source, pop.sink,
-#                         time.point, group)
-# 
-#   if ( dim(feature)[1] == 0 ) return(0)
-#   if ( feature$lower.range[1] == feature$upper.range[1] )
-#     return(feature$lower.range[1])
-#   else
-#     return(dm.getParameters[feature$parameter[1]])
-# }
 
-# .getNumOfHistoricalEvent <- function(dm){
-#   .check.dm(dm)
-#   return(sum(dm@features$type != "effPopSize" & dm@features$type != "mutation"))
-# }
-
-
-#.isFixedFeature <- function(dm,type,pop.source=NA){
-#   feature <- getFeature(dm,type,pop.source)
-#   return(feature@lower.range == feature@upper.range)
-#}
-
-# .checkFeatureParameters <- function(lower.range,upper.range,fixed.value,time.point,timeLine){
-#   if (! .is.NumericOrFalse(lower.range) ) cat("Wrong value for 'lower.range'\n")
-#   if (! .is.NumericOrFalse(upper.range) ) cat("Wrong value for 'upper.range'\n")
-# if (! .is.NumericOrFalse(time.point) ) cat("Wrong value for 'time.point'\n")
-# if (! .is.NumericOrFalse(timeLine) ) cat("Wrong value for 'timeLine'\n")
-#   if (! .is.NumericOrFalse(fixed.value) ) cat("Wrong value for 'fixed.value'\n")
-# 
-# 
-#   if ( fixed.value == F & ( lower.range == F | upper.range == F ) )
-#     cat("Wrong parameters. Either both lower.range and upper.range 
-#         or fixed.value must be specified\n")
-# 
-#         if ( fixed.value != F && lower.range != F && upper.range != F ) 
-#           cat("Wrong parameters. Either enter a fixed value or a range for this parameter \n")
-# }
-
-
-# .parseFeatureParametes <- function(lower.range,upper.range,fixed.value,time.point,timeLine){
-#   if ( time.point == F ) time.point <<- Inf
-#   if ( timeLine == F ) timeLine <<- Inf
-# 
-#   if ( is.numeric(fixed.value) ) {
-#     lower.range <<- fixed.value
-#     upper.range <<- fixed.value
-#   }
-#   return(c(lower.range,upper.range,fixed.value,time.point,timeLine))
-# }
-
-
-# .is.NumericOrFalse <- function(x){
-#   return ( (is.numeric(x) || x == F) && length(x) == 1 )
-# }
-
-# .calcSizeChange <- function(dm, param, percentages){
-#   checkType(dm, "dm")
-# 
-#   pop <- dm@features[param,"pop.source"]
-#   q <- .calcAbsParamValue(dm,percentages[param],param)
-# 
-# get value of "size" parameter s for the pop.source
-#   sizeLine <- (1:dim(dm@features)[1])[dm@features$type=="size" & dm@features$pop.source==pop]
-#   if (sum(sizeLine) == 1) { 
-#     s <- .calcAbsParamValue(dm,percentages[sizeLine],sizeLine) 
-#   } else { 
-#     s <- 1 
-#   }
-# 
-# get tau (XXX GLOBAL TAU ONLY ATM XXX)
-#   tauLine <- (1:dim(dm@features)[1])[dm@features$type=="mutation" & is.na(dm@features$pop.source)]
-#   tau <- .calcAbsParamValue(dm,percentages[tauLine],tauLine) 
-# 
-#   return(log(q/s)/tau)
-# }
-
-
-# .calcAbsParamValue <- function(dm,percentage,param){
-# 
-#   if (!is.matrix(percentage)) 
-#     percentage <- matrix(percentage,1)
-# 
-#   return( t(apply(percentage,1,.calcAbsParamValueLine,dm=dm)) )
-# }
-# 
-# .calcAbsParamValueLine <- function(dm,percentage,param){
-#   features <- dm@features[!is.na(dm@features$parameter),]
-# 
-# If not specified which param to convert, use the first length(percentage) ones
-#   if ( missing(param) ) param <- 1:length(percentage)
-# 
-# Calculate scaledValues
-#   scaledValues <- exp ( percentage * 
-#                        ( log(features[param,"upper.range"]) 
-#                         - log(features[param,"lower.range"]) )) * 
-#         features[param,"lower.range"]
-# 
-# Add names
-#         names(scaledValues) <- dm.getParameters[param]
-# 
-# Do not scale theta if externalTheta = T
-#          if ( dm@externalTheta ) {
-# TRUE iff param[.] links to theta
-#           theta.mask <- param == (1:length(dm.getParameters))[dm.getParameters == "theta"]
-#           if (any(theta.mask)) scaledValues[theta.mask] <- percentage[theta.mask]
-#         }
-# 
-#         return( scaledValues )
-# }
-
+# Checks if a vector of parameters is within the ranges of the model
 .checkParInRange <- function(dm, param) {
   ranges <- dm.getParRanges(dm,inklExtTheta=F)
-  #Seems there can be rounding errors during scalation
-  lower <- matrix(ranges[,1],dim(param)[1],dim(param)[2],byrow=T) - 1e-15
-  upper <- matrix(ranges[,2],dim(param)[1],dim(param)[2],byrow=T) + 1e-15
+  #Seems there can be rounding errors during scaling
+  lower <- t(ranges[, rep("lower.range", nrow(param))]) - 1e-15
+  upper <- t(ranges[, rep("upper.range", nrow(param))]) + 1e-15
   inRange <- lower <= param & param <= upper
   return(all(inRange))
 }
 
-
+# Selects a program for simulation that is capable of all current features
 .dm.selectSimProg <- function(dm) {
   for (i in seq(along = .local$simProgs)){
     if (all(dm@features$type %in% .local$simProgs[[i]]@possible.features)) {
@@ -462,9 +335,13 @@ makeThetaLast <- function(dm) {
   return(dm)
 }
 
-#-----------------------------------------------------------------------
-# Public functions
-#-----------------------------------------------------------------------
+
+
+
+
+#------------------------------------------------------------------------------
+# Getters & Setters for Jaatha
+#------------------------------------------------------------------------------
 dm.getParameters <- function(dm, fixed=F) {
   checkType(dm,"dm")
   param <- dm@parameters$name
@@ -474,17 +351,50 @@ dm.getParameters <- function(dm, fixed=F) {
 
 dm.getNPar <- function(dm){
   checkType(dm, "dm")
-  return(length(dm.getParameters(dm))-dm@externalTheta)
+  return(length(dm.getParameters(dm)))
 }
 
 dm.getParRanges <- function(dm, inklExtTheta=T){
   #checkType(dm,"dm")
-  par.ranges <- dm@parameters[, c("lower.range","upper.range")]
-  rownames(par.ranges) <- dm@parameters[,"name"]
+  par.ranges <- dm@parameters[!dm@parameters$fixed, c("lower.range","upper.range")]
+  rownames(par.ranges) <- dm@parameters[!dm@parameters$fixed,"name"]
   if (!inklExtTheta) par.ranges <- par.ranges[1:dm.getNPar(dm),]
   return(par.ranges)
 }
 
+dm.setExternalTheta <- function(dm){
+  checkType(dm, "dm")
+  dm@externalTheta = T
+  dm <- fixTheta(dm)
+  return(dm)
+}
+
+fixTheta <- function(dm) {
+  param <- dm@parameters
+  param[nrow(param), "fixed"] <- T
+  dm@parameters <- param
+  return(dm)
+}
+
+getThetaName <- function(dm){
+  return(dm@parameters[nrow(dm@parameters), 'name'])
+}
+
+getThetaRange <- function(dm){
+  return(dm@parameters[nrow(dm@parameters),c('lower.range', 'upper.range')])
+}
+
+
+
+
+
+#------------------------------------------------------------------------------
+# Creation new models
+#------------------------------------------------------------------------------
+
+#---------------------------------------------------------------------
+# dm.createDemographicModel()
+#---------------------------------------------------------------------
 #' Create a basic demographic model
 #' 
 #' This function creates a basic empty demographic model, which
@@ -516,10 +426,14 @@ dm.createDemographicModel <-
            tsTvRatio=.33, log.level, log.file){
     setLogging(log.level, log.file)
     dm <- new("DemographicModel",sampleSizes,nLoci,seqLength,
-              finiteSites,tsTvRatio)
+              finiteSites, tsTvRatio)
     return(dm)
   }
 
+
+#---------------------------------------------------------------------
+# dm.createCustomModel()
+#---------------------------------------------------------------------
 #' Creates a demographic model by giving the command line parameters 
 #' of a simulation program.
 #' 
@@ -563,48 +477,74 @@ dm.createCustomModel <- function(par.number, par.names, par.ranges, sim.exe,
 
 }
 
-dm.setExternalTheta <- function(dm){
-  checkType(dm, "dm")
-  dm@externalTheta = T
-  return(dm)
-}
 
 
 
+#---------------------------------------------------------------------------------
+# Front end functions for adding features
+#---------------------------------------------------------------------------------
 
+#--------------------------------------------------------------------
+# dm.addMutation()
+#--------------------------------------------------------------------
 #' Adds mutations to a demographic model
 #' 
-#' @param dm          The demographic model to which mutations should be added
-#' @param lower.range  If you want to estimate the mutation rate, this will be used 
-#'            as the smallest possible value.
-#' @param upper.range  If you want to estimate the mutation rate, this will be used 
-#'            as the largest possible value.
-#' @param fixed.value  If specified, the mutation rate will not be estimated, but assumend
-#'            to be fixed at the given value.
-#' @return        The demographic model with mutation
+#' @param dm  The demographic model to which mutations should be added
+#' @param par.new  If 'TRUE' a new parameter will be created using the
+#'            arguments 'lower.range' and 'upper.range' or 
+#'            'fixed.value'. It will be named 'new.par.name'.
+#'            If 'FALSE' the argument 'parameter' 
+#'            will be evaluated instead.
+#' @param lower.range  If you want to estimate the mutation rate, this 
+#'            will be used as the smallest possible value.
+#' @param upper.range  If you want to estimate the mutation rate, this 
+#'            will be used as the largest possible value.
+#' @param fixed.value  If specified, the mutation rate will not be 
+#'            estimated, but assumed to be fixed at the given value.
+#' @param parameter  Instead of creating a new parameter, you can also
+#'            set the mutation rate to an expression based on existing
+#'            parameters. For example setting this to "theta" will use
+#'            an parameter with name theta that you have previously 
+#'            created. You can also use R expression here, so "2*theta"
+#'            or "5*theta+2*tau" (if tau is another parameter) will also
+#'            work.
+#' @return    The demographic model with mutation.
 #' @export
 #'
 #' @examples
+#' # Create a new parameter
 #' dm <- dm.createDemographicModel(sampleSizes=c(25,25),nLoci=100,seqLength=1000)
 #' dm <- dm.addSpeciationEvent(dm,0.01,5)
 #' dm <- dm.addMutation(dm,1,20)
-#' dm
-dm.addMutation <- function(dm, lower.range, upper.range, fixed.value, 
-                           par.new=T, new.par.name="theta", parameter,
-                           time.start="0") {
+#'
+#' # Create a new fixed parameter
+#' dm <- dm.createDemographicModel(sampleSizes=c(25,25),nLoci=100,seqLength=1000)
+#' dm <- dm.addSpeciationEvent(dm, 0.01,5)
+#' dm <- dm.addMutation(dm, fixed.value=7)
+#'
+#' # Use an existing parameter
+#' dm <- dm.createDemographicModel(sampleSizes=c(25,25),nLoci=100,seqLength=1000)
+#' dm <- dm.addParameter(dm, "theta", 0.01, 5)
+#' dm <- dm.addMutation(dm, par.new=FALSE, parameter="2*log(theta)+1")
+dm.addMutation <- function(dm, lower.range, upper.range, fixed.value,
+                           par.new=T, new.par.name="theta", parameter) {
 
   if ( missing(lower.range) & missing(upper.range) & missing(fixed.value) ){
-    dm <- dm.setExternalTheta(dm)
+    dm@externalTheta <- T
     upper.range <- 0
     lower.range <- 0
   }
 
   if (par.new) parameter <- new.par.name
   dm <- addFeature(dm, "mutation", parameter, lower.range, upper.range,
-                   fixed.value, par.new=par.new, time.point=time.start)
+                   fixed.value, par.new=par.new, time.point=NA)
   return(dm)
 }
 
+
+#-------------------------------------------------------------------
+#  dm.addRecombination()
+#-------------------------------------------------------------------
 #' Adds recombination events to a demographic model
 #' 
 #' @param dm          The demographic model to which recombination events should be added
@@ -633,6 +573,28 @@ dm.addRecombination <- function(dm, lower.range, upper.range, fixed.value,
   return(dm)
 }
 
+#-------------------------------------------------------------------
+#  dm.addMigration
+#-------------------------------------------------------------------
+#' @export
+dm.addMigration <- function(dm, lower.range, upper.range, fixed.value,
+                            pop.from, pop.to, time.start="0",
+                            par.new=T, new.par.name="M",
+                            parameter) {
+
+  checkType(pop.from, "num", T, F)
+  checkType(pop.to,   "num", T, F)
+
+  if (par.new) parameter <- new.par.name
+  dm <- addFeature(dm, "migration", parameter, lower.range, upper.range,
+                   fixed.value, par.new, pop.from, pop.to, time.start)
+  return(dm)
+}
+
+
+#-------------------------------------------------------------------
+#  dm.addSymmetricMigration
+#-------------------------------------------------------------------
 #' Adds symmetric migration to a demographic model
 #' 
 #' @param dm           The demographic model to which the migration should be added
@@ -667,25 +629,10 @@ dm.addSymmetricMigration <- function(dm, lower.range, upper.range, fixed.value,
   return(dm)
 }
 
-#' @export
-dm.addMigration <- function(dm, lower.range, upper.range, fixed.value,
-                            pop.from, pop.to, time.start="0",
-                            par.new=T, new.par.name="M",
-                            parameter) {
 
-  checkType(pop.from, "num", T, F)
-  checkType(pop.to,   "num", T, F)
-
-  if (par.new) parameter <- new.par.name
-  dm <- addFeature(dm, "migration", parameter, lower.range, upper.range,
-                   fixed.value, par.new, pop.from, pop.to, time.start)
-  return(dm)
-}
-
-# dm.addEffectivePopSize <- function(dm,pop.source,lower.range,upper.range,fixed.value){
-#   return(addFeature(dm,"effPopSize",paste("Ne",pop.source,sep=""),lower.range,upper.range,fixed.value))
-# }
-
+#-------------------------------------------------------------------
+# dm.addSpeciationEvent
+#-------------------------------------------------------------------
 #' Adds a speciation event to a demographic model
 #' 
 #' @param dm          The demographic model to which the speciation event should be added
@@ -741,55 +688,49 @@ dm.addSpeciationEvent <- function(dm, min.time, max.time, fixed.time,
 }
 
 
-#' Adds a different present day pop.source size of one pop.source to a demographic model
-#' 
-#' @param dm          The demographic model to which the speciation event should be added
-#' @param lower.range  If you want to estimate the size parameter, this will be used 
-#'            as the smallest possible value.
-#' @param upper.range  If you want to estimate the size parameter, this will be used 
-#'            as the largest possible value.
-#' @param fixed.value  If specified, the size parameter will not be estimated, but assumend
-#'            to be fixed at the given value.
-#' @param pop.source  The pop.source of which the size should change. Can be 1 or 2 at the moment.
-#' @return        The extended demographic model
+#-------------------------------------------------------------------
+# dm.addSizeChange
+#-------------------------------------------------------------------
 #' @export
-#'
-#' @examples
-#' dm <- dm.createDemographicModel(sampleSizes=c(25,25),nLoci=100)
-#' dm <- dm.addSpeciationEvent(dm,0.01,5)
-#' dm <- dm.addPresentSize(dm,2,3,pop.source=2)
-#' dm <- dm.addMutation(dm,1,20)
-#' dm
-dm.addPresentSize <- function(dm,lower.range,upper.range,fixed.value,pop.source){
-  if (missing(pop.source)) stop("No pop.source given!")
-  return(addFeature(dm,"presentSize","q",lower.range,upper.range,fixed.value,pop.source=pop.source))
+dm.addSizeChange <- function(dm, min.size.factor, max.size.factor,
+                             fixed.size.factor, par.new=T, new.par.name="q",
+                             parameter, 
+                             population, at.time="0") {
+
+  checkType(population, c("num",  "s"), T, F)
+  checkType(at.time,    c("char", "s"), T, F)
+
+  if (par.new) parameter <- new.par.name
+
+  dm <- addFeature(dm, "size.change", parameter, min.size.factor, max.size.factor,
+                   fixed.size.factor, par.new, population, NA, at.time)
+
+  return(dm)
+}
+
+#-------------------------------------------------------------------
+# dm.addGrowth
+#-------------------------------------------------------------------
+#' @export
+dm.addGrowth <- function(dm, min.groth.rate, max.groth.rate, fixed.groth.rate, 
+                         par.new=T, new.par.name="alpha", parameter, 
+                         population, at.time="0") {
+
+  checkType(population, c("num",  "s"), T, F)
+  checkType(at.time,    c("char", "s"), T, F)
+
+  if (par.new) parameter <- new.par.name
+
+  dm <- addFeature(dm, "growth", parameter, min.groth.rate, max.groth.rate,
+                   fixed.groth.rate, par.new, population, NA, at.time)
+
+  return(dm)
 }
 
 
-#' Adds a variable pop.source size of one pop.source at split time to a demographic model
-#' 
-#' @param dm          The demographic model to which the speciation event should be added
-#' @param lower.range  If you want to estimate the size parameter, this will be used 
-#'            as the smallest possible value.
-#' @param upper.range  If you want to estimate the size parameter, this will be used 
-#'            as the largest possible value.
-#' @param fixed.value  If specified, the size parameter will not be estimated, but assumend
-#'            to be fixed at the given value.
-#' @param pop.source  The pop.source of which the size should change. Can be 1 or 2 at the moment.
-#' @return        The extended demographic model
-#' @export
-#'
-#' @examples
-#' dm <- dm.createDemographicModel(sampleSizes=c(25,25),nLoci=100)
-#' dm <- dm.addSpeciationEvent(dm,0.01,5)
-#' dm <- dm.addSplitSize(dm,.2,5,pop.source=2)
-#' dm <- dm.addMutation(dm,1,20)
-#' dm
-dm.addSplitSize <- function(dm,lower.range,upper.range,fixed.value,pop.source){
-  if (missing(pop.source)) stop("No pop.source given!")
-  return(addFeature(dm,"splitSize","s",lower.range,upper.range,fixed.value,pop.source=pop.source))
-}
-
+#-------------------------------------------------------------------
+# dm.createThetaTauModel
+#-------------------------------------------------------------------
 #' Creates a standard "Theta/Tau" demopraphic model.
 #' 
 #' @param sample.sizes   A numeric vector with the sampleSizes of the two pop.sources.
@@ -857,12 +798,12 @@ dm.simSumStats <- function(dm, parameters, sumStatFunc){
     sumStats <- 
       apply(parameters, 1,
             function(parameter.combination){
-              .log3("Simulating for pars:",parameter.combination)
+              .log3("Simulating for pars:", parameter.combination)
               sim.out <- simProg@singleSimFunc(dm, parameter.combination)
               sumStats <- sumStatFunc(dm, sim.out)
               .log3("SumStats:", sumStats)
               return(sumStats)
-            }) 
+            })
 
     sumStats <- t(sumStats)
   }

@@ -1,6 +1,5 @@
 possible.features  <- c("mutation","migration","split",
-                        "recombination","splitSize","presentSize",
-                        "time.point")
+                        "recombination","size.change","growth")
 possible.sum.stats <- c("jsfs")
 
 #' Function to perform simulation using ms 
@@ -21,38 +20,21 @@ callMs <- function(opts){
   return(ms.file)
 }
 
-generateMsOptions <- function(dm, parameters) {
-	.log3("Called .ms.generateCmd()")
-
-    par.names <- unique(dm.getParameters(dm, include.fixed=F))
-    for (i in seq(along = par.names)){
-      eval(parse(text=paste(par.names[i],"<-",parameters[i])))
-    }
-
-    fixed.features <- dm@features[dm@features$fixed & !is.na(dm@features$parameter), ]
-    if (nrow(fixed.features) > 0) {
-      for (i in 1:nrow(fixed.features)){
-        eval(parse(text=paste(fixed.features$parameter[i],"<-",fixed.features$lower.range[i])))
-      }
-    }
-
-    print(ls())
-
+# This function generates an string that contains an R command for generating
+# an ms call to the current model.
+generateMsOptionsCommand <- function(dm) {
     nSample <- dm@sampleSizes
 	cmd <- c('c(', '"ms"', ",", sum(nSample), ",", dm@nLoci , ",")
 	cmd <- c(cmd,'"-I 2"', ",", nSample[1], ",", nSample[2], ",")
-
-    par.names <- dm@features$parameter
 
 	for (i in 1:dim(dm@features)[1] ) {
 		type <- as.character(dm@features[i,"type"])
         feat <- unlist(dm@features[i, ])
         
-        if (type == "time.point") next
-
 		if (type == "mutation") {
-			if (dm@externalTheta) cmd <- c(cmd,'"-t 5"', ",") 
-			else cmd <- c(cmd,'"-t"', ',', par.names[i], ',')
+			if (dm@externalTheta) cmd <- c(cmd,'"-t 5"', ",")
+            else 
+              cmd <- c(cmd,'"-t"', ',', feat["parameter"], ',')
 		}
 		
 		if (type == "split") {
@@ -61,50 +43,61 @@ generateMsOptions <- function(dm, parameters) {
         }
 		
 		if (type == "migration")
-			cmd <- c(cmd, '"-m 1 2"', ',', feat['parameter'], ',',
-                          '"-m 2 1"', ',', feat['parameter'], ',')
+			cmd <- c(cmd, '"-em"', ',', feat['time.point'], ',',
+                     feat['pop.sink'], ',', feat['pop.source']  , ',',
+                     feat['parameter'], ',')
 		
 		if (type == "recombination") 
-			cmd <- c(cmd,"-r",param,dm@seqLength)
+			cmd <- c(cmd, '"-r"', ',', feat['parameter'], ',', dm@seqLength, ',')
 
-		if (type == "splitSize"){
-		        cmd <- c(cmd,"-g",feat["pop.source"],
-                         log(.ms.getPresentSize(dm,parameters,feat["pop.source"])/param)/tau)  
-			cmd <- c(cmd,"-eN",tau,1+param)               
+		if (type == "size.change"){
+		        cmd <- c(cmd, '"-en"', ',', feat['time.point'], ',',
+                         feat["pop.source"], ',', feat['parameter'], ',')
 		}
 
-		if (type == "presentSize"){
-			cmd <- c(cmd,"-n",feat["pop.source"],param)
+		if (type == "growth"){
+			cmd <- c(cmd, '"-eg"', ',' , feat["time.point"], ',',
+                     feat["pop.source"], ',', feat["parameter"], ',')
 		}
 	}
 
     cmd <- c(cmd, '"")')
-    
-    cmd <-  eval(parse(text=cmd))
+}
+
+generateMsOptions <- function(dm, parameters) {
+	.log3("Called .ms.generateCmd()")
+
+    par.names <- dm.getParameters(dm)
+    for (i in seq(along = par.names)){
+      eval(parse(text=paste(par.names[i],"<-",parameters[i])))
+    }
+
+    fixed.pars <- dm@parameters[dm@parameters$fixed, ]
+    if (nrow(fixed.pars) > 0) {
+      for (i in 1:nrow(fixed.pars)){
+        eval(parse(text=paste(fixed.pars$name[i],"<-",fixed.pars$lower.range[i])))
+      }
+    }
+
+    cmd <- generateMsOptionsCommand(dm)
+    cmd <- eval(parse(text=cmd))
 
 	.log3("Finished .ms.generateCmd()")
 
     return(cmd)
 }
 
-.ms.getParameter <- function(dm, parameters, row.nr, par.name=NA) {
-    # Calling with row.nr instead of par name
-    if (is.na(par.name)) par.name <- dm@features$parameter[row.nr]
-    # Calling with row.nr and the par is fixed
-    if (is.na(par.name)) return(dm@features$lower.range[row.nr])
-    #par.name <- unlist(par.name)
-    par.mask <- dm.getParameters(dm) == par.name
-    par.nr <- seq(along = par.mask)[par.mask]
-    return(parameters[par.nr])
-}
+printMsCommand <- function(dm) {
+  for (i in 1:nrow(dm@parameters)) {
+    eval(parse(text=paste(dm@parameters[i, "name"],
+                          "<-",'\"',dm@parameters[i, "name"],'\"',sep="")))
+  }
 
-.ms.getPresentSize <- function(dm, parameters, pop.source){
-	feature <- getFeature(dm, "presentSize", pop.source)
-	if ( dim(feature)[1] != 1 ) return(1)
-	if ( feature$lower.range[1] == feature$upper.range[1] )
-		return(feature$lower.range[1]) 
-	else
-		return(parameters[feature$parameter])
+  cmd <- generateMsOptionsCommand(dm)
+  cmd <- eval(parse(text=cmd))
+  cmd <- paste(cmd, collapse=" ")
+
+  return(cmd)
 }
 
 msOut2Jsfs <- function(dm, ms.out) {
@@ -124,7 +117,8 @@ msOut2Jsfs <- function(dm, ms.out) {
 }
 
 msSingleSimFunc <- function(dm, parameters) {
-  .log3("Called msSumSunc()")
+  .log3("Called msSingleSimFunc()")
+  .log3("parameter:",parameters)
   checkType(dm, "dm")
   checkType(parameters, "num")
   if (length(parameters) != dm.getNPar(dm)) 

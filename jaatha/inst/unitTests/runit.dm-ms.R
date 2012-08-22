@@ -12,7 +12,6 @@
 # - Test setup -----------------------------------
  
 library("RUnit")
-library("jaatha")
 
 # ------------------------------------------------
 
@@ -20,14 +19,14 @@ dm <- dm.createThetaTauModel(c(10,25), 100)
 
 test.callMS <- function() {
   checkException(callMs())
-  checkTrue(file.exists(callMs("2 1 -t 5")))
+  checkTrue(file.exists(callMs("ms 2 1 -t 5")))
 }
 
-test.msSingleSimFunc <- function(){
+test.msSingleSimFunc <- function() {
   set.seed(100)
   jsfs <- msSingleSimFunc(dm, c(1,10))
   print(jsfs[1, 2])
-  checkEquals(jsfs[1, 2], 991)
+  checkEquals(jsfs[1, 2], 1042)
 }
 
 test.simProg <- function(){

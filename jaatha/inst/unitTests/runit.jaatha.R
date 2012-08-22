@@ -3,7 +3,6 @@
 rerecord.results = F
  
 library("RUnit")
-library("jaatha")
 
 dm.thetaTau <- dm.createDemographicModel(c(20,25),nLoci=20)
 dm.thetaTau <- dm.addSpeciationEvent(dm.thetaTau,0.1,5)
@@ -59,7 +58,7 @@ test.initialSearch.extThetaPossible <- function(){
     load("samples.save")
 	jaatha <- Jaatha.initialize(dm.eTp, samples[["sumStats.extTheta"]], seed=1)
 	startPoints <- Jaatha.initialSearch(jaatha,nSim=10,nBlocksPerPar=2)
-	pStartPoints <- Jaatha.printStartPoints(jaatha,startPoints)
+	pStartPoints <- Jaatha.printStartPoints(jaatha, startPoints)
 	if (rerecord.results) samples[["initialSearch.eTp"]] <- pStartPoints
 	checkEquals(pStartPoints, samples[["initialSearch.eTp"]])
     if (rerecord.results) save(samples,file="samples.save")
