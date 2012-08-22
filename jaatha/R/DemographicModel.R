@@ -293,14 +293,14 @@ getPopulations <- function(dm){
 
 # Adds an parameter to the parameter list
 # This should only be used by addFeature().
-addParameter <- function(dm, parameter.name){
-  checkType(dm, c("dm", "s"), T, F)
-  checkType(parameter.name, c("char", "s"), T, F)
-  if (any(dm.getParameters(dm) == parameter.name)) 
-    stop("parameter name already exists")
-  dm.getParameters <- c(dm.getParameters, parameter.name)
-  return(dm)
-}
+# addParameter <- function(dm, parameter.name){
+#   checkType(dm, c("dm", "s"), T, F)
+#   checkType(parameter.name, c("char", "s"), T, F)
+#   if (any(dm.getParameters(dm) == parameter.name)) 
+#     stop("parameter name already exists")
+#   dm.getParameters <- c(dm.getParameters, parameter.name)
+#   return(dm)
+# }
 
 # To use Watersons estimator, Jaatha requires that the mutation parameter
 # is the last parameter. This swishes it to the end.
@@ -327,19 +327,19 @@ makeThetaLast <- function(dm) {
 # @returns  0                   if feature is not in the model,
 #           the fixed Value     if the feature has a "fixed.value" or
 #           the parameter name  otherwise
-getParameter <- function(dm, type, pop.source=NA, pop.sink=NA,
-                         time.point=NA, group=NA) {
-
-  checkType(dm, c("dm", "s"), T, F)
-  feature <- getFeature(dm, type, pop.source, pop.sink,
-                        time.point, group)
-
-  if ( dim(feature)[1] == 0 ) return(0)
-  if ( feature$lower.range[1] == feature$upper.range[1] )
-    return(feature$lower.range[1])
-  else
-    return(dm.getParameters[feature$parameter[1]])
-}
+# getParameter <- function(dm, type, pop.source=NA, pop.sink=NA,
+#                          time.point=NA, group=NA) {
+# 
+#   checkType(dm, c("dm", "s"), T, F)
+#   feature <- getFeature(dm, type, pop.source, pop.sink,
+#                         time.point, group)
+# 
+#   if ( dim(feature)[1] == 0 ) return(0)
+#   if ( feature$lower.range[1] == feature$upper.range[1] )
+#     return(feature$lower.range[1])
+#   else
+#     return(dm.getParameters[feature$parameter[1]])
+# }
 
 # .getNumOfHistoricalEvent <- function(dm){
 #   .check.dm(dm)
@@ -465,19 +465,24 @@ getParameter <- function(dm, type, pop.source=NA, pop.sink=NA,
 #-----------------------------------------------------------------------
 # Public functions
 #-----------------------------------------------------------------------
-dm.getParameters <- function(dm, include.fixed=F) {
-  param <- dm@features$parameter
-  if (!include.fixed) param <- param[!dm@features$fixed]
-  return(param[!is.na(param)])
+dm.getParameters <- function(dm, fixed=F) {
+  checkType(dm,"dm")
+  param <- dm@parameters$name
+  param <- param[dm@parameters$fixed == fixed]
+  return(param)
 }
 
-dm.getParRanges <- function(dm,inklExtTheta=T){
-  checkType(dm,"dm")
-  parMask <- !is.na(dm@features$parameter)
-  parRanges <- cbind(lower=dm@features$lower.range[parMask],upper=dm@features$upper.range[parMask])
-  parRanges <- parRanges[sort.list(dm@features$parameter[parMask]),]
-  if (!inklExtTheta) parRanges <- parRanges[1:dm.getNPar(dm),]
-  return( parRanges )
+dm.getNPar <- function(dm){
+  checkType(dm, "dm")
+  return(length(dm.getParameters(dm))-dm@externalTheta)
+}
+
+dm.getParRanges <- function(dm, inklExtTheta=T){
+  #checkType(dm,"dm")
+  par.ranges <- dm@parameters[, c("lower.range","upper.range")]
+  rownames(par.ranges) <- dm@parameters[,"name"]
+  if (!inklExtTheta) par.ranges <- par.ranges[1:dm.getNPar(dm),]
+  return(par.ranges)
 }
 
 #' Create a basic demographic model
@@ -558,23 +563,12 @@ dm.createCustomModel <- function(par.number, par.names, par.ranges, sim.exe,
 
 }
 
-
-
 dm.setExternalTheta <- function(dm){
   checkType(dm, "dm")
-  #newDm <- new("DemographicModel",dm@seqLength,dm@sampleSizes,dm@finiteSites)
-  #newDm@features <- dm@features[dm@features$type != "mutation",]
-  #newDm@parameters <- dm.getParameters[dm.getParameters != "theta"]
-  #newDm <- dm.addMutation(newDm)
   dm@externalTheta = T
   return(dm)
 }
 
-
-dm.getNPar <- function(dm){
-  checkType(dm, "dm")
-  return(length(dm.getParameters(dm))-dm@externalTheta)
-}
 
 
 
@@ -595,14 +589,20 @@ dm.getNPar <- function(dm){
 #' dm <- dm.addSpeciationEvent(dm,0.01,5)
 #' dm <- dm.addMutation(dm,1,20)
 #' dm
-dm.addMutation <- function(dm,lower.range,upper.range,fixed.value){
+dm.addMutation <- function(dm, lower.range, upper.range, fixed.value, 
+                           par.new=T, new.par.name="theta", parameter,
+                           time.start="0") {
+
   if ( missing(lower.range) & missing(upper.range) & missing(fixed.value) ){
-    dm@externalTheta <- T
+    dm <- dm.setExternalTheta(dm)
     upper.range <- 0
     lower.range <- 0
   }
 
-  return(addFeature(dm,"mutation","theta",lower.range,upper.range,fixed.value))
+  if (par.new) parameter <- new.par.name
+  dm <- addFeature(dm, "mutation", parameter, lower.range, upper.range,
+                   fixed.value, par.new=par.new, time.point=time.start)
+  return(dm)
 }
 
 #' Adds recombination events to a demographic model
@@ -623,15 +623,21 @@ dm.addMutation <- function(dm,lower.range,upper.range,fixed.value){
 #' dm <- dm.addRecombination(dm,fixed=5)
 #' dm <- dm.addMutation(dm,1,20)
 #' dm
-dm.addRecombination <- function(dm,lower.range,upper.range,fixed.value){
-  return(addFeature(dm,"recombination","rho",lower.range,upper.range,fixed.value))
+dm.addRecombination <- function(dm, lower.range, upper.range, fixed.value,
+                                par.new=T, new.par.name="rho", parameter,
+                                time.start="0") {
+
+  if (par.new) parameter <- new.par.name
+  dm <- addFeature(dm, "recombination", parameter, lower.range, upper.range,
+                   fixed.value, par.new=par.new, time.point=time.start)
+  return(dm)
 }
 
 #' Adds symmetric migration to a demographic model
 #' 
-#' @param dm          The demographic model to which the migration should be added
+#' @param dm           The demographic model to which the migration should be added
 #' @param lower.range  If you want to estimate the mutation rate, this will be used 
-#'            as the smallest possible value.
+#'                     as the smallest possible value.
 #' @param upper.range  If you want to estimate the mutation rate, this will be used 
 #'            as the largest possible value.
 #' @param fixed.value  If specified, the mutation rate will not be estimated, but assumend
@@ -640,18 +646,45 @@ dm.addRecombination <- function(dm,lower.range,upper.range,fixed.value){
 #' @export
 #'
 #' @examples
-#' dm <- dm.createDemographicModel(sampleSizes=c(25,25),nLoci=100,seqLength=1000)
-#' dm <- dm.addSpeciationEvent(dm,0.01,5)
-#' dm <- dm.addSymmetricMigration(dm,0.1,5)
-#' dm <- dm.addMutation(dm,1,20)
+#' dm <- dm.createThetaTauModel(sample.sizes=c(21,25), loci.num=100, seq.length=950)
+#' dm <- dm.addSymmetricMigration(dm, 0.1, 5)
 #' dm
-dm.addSymmetricMigration <- function(dm,lower.range,upper.range,fixed.value){
-  return(addFeature(dm,"migration","m",lower.range,upper.range,fixed.value))
+dm.addSymmetricMigration <- function(dm, lower.range, upper.range, fixed.value,
+                                     par.new=T, new.par.name="M", parameter, 
+                                     time.start="0") {
+
+  if (par.new) dm <- dm.addParameter(dm, new.par.name, lower.range, upper.range, fixed.value)
+  if (par.new) parameter <- new.par.name
+
+  for (i in getPopulations(dm)) {
+    for (j in getPopulations(dm)) {
+      if (i==j) next
+      dm <- dm.addMigration(dm, par.new=F, parameter=parameter, time.start=time.start,
+                            pop.from=i, pop.to=j)
+    }
+  }
+
+  return(dm)
 }
 
-dm.addEffectivePopSize <- function(dm,pop.source,lower.range,upper.range,fixed.value){
-  return(addFeature(dm,"effPopSize",paste("Ne",pop.source,sep=""),lower.range,upper.range,fixed.value))
+#' @export
+dm.addMigration <- function(dm, lower.range, upper.range, fixed.value,
+                            pop.from, pop.to, time.start="0",
+                            par.new=T, new.par.name="M",
+                            parameter) {
+
+  checkType(pop.from, "num", T, F)
+  checkType(pop.to,   "num", T, F)
+
+  if (par.new) parameter <- new.par.name
+  dm <- addFeature(dm, "migration", parameter, lower.range, upper.range,
+                   fixed.value, par.new, pop.from, pop.to, time.start)
+  return(dm)
 }
+
+# dm.addEffectivePopSize <- function(dm,pop.source,lower.range,upper.range,fixed.value){
+#   return(addFeature(dm,"effPopSize",paste("Ne",pop.source,sep=""),lower.range,upper.range,fixed.value))
+# }
 
 #' Adds a speciation event to a demographic model
 #' 
@@ -759,17 +792,22 @@ dm.addSplitSize <- function(dm,lower.range,upper.range,fixed.value,pop.source){
 
 #' Creates a standard "Theta/Tau" demopraphic model.
 #' 
-#' @param sampleSizes   A numeric vector with the sampleSizes of the two pop.sources.
-#' @param nLoci         The number of Loci to simulate.
-#' @return              A Theta/Tau Model
+#' @param sample.sizes   A numeric vector with the sampleSizes of the two pop.sources.
+#' @param loci.num       The number of Loci to simulate.
+#' @param seq.length     For recombination, each locus is assumed to be of this
+#'                       length
+#' @return               A Theta/Tau Model
 #' @export
 #'
 #' @examples
-#' dm.createThetaTauModel(c(20,25), 100)
-dm.createThetaTauModel <- function(sampleSizes, nLoci) {
-  dm <- dm.createDemographicModel(sampleSizes=sampleSizes, nLoci=nLoci, seqLength=1000)
-  dm <- dm.addSpeciationEvent(dm,0.01,5)
-  dm <- dm.addMutation(dm,1,20)
+#' dm <- dm.createThetaTauModel(c(20,25), 100)
+#' dm
+dm.createThetaTauModel <- function(sample.sizes, loci.num, seq.length=1000) {
+  dm <- dm.createDemographicModel(sampleSizes=sample.sizes, nLoci=loci.num,
+                                  seq.length)
+  dm <- dm.addSpeciationEvent(dm, 0.01, 5)
+  dm <- dm.addRecombination(dm, fixed=20)
+  dm <- dm.addMutation(dm, 1, 20)
   return(dm)
 }
 
