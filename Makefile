@@ -50,4 +50,4 @@ commit: clean-package
 	# Makes a git commit
 	git add jaatha/R/*.R jaatha/src jaatha/inst/unitTests jaatha/DESCRIPTION Makefile
 	git commit
-	git push origin master
+	git push 

@@ -401,15 +401,16 @@ getThetaRange <- function(dm){
 #' is returned. Features like mutation, pop.source splits and 
 #' migration can be added afterwards.
 #'
-#' @param sampleSizes Number of individual that are sampled. If your model 
-#'            has multiple pop.sources, this needs to be a vector
-#'            containing the sample sizes from each pop.source.
-#' @param nLoci       Number of loci that will be simulated
-#' @param seqLength   Number of bases for each locus
-#' @param finiteSites If 'TRUE', a finite sites mutation model is assumed
-#'            instead of an infinite sites one.
-#' @param tsTvRatio   Transition transversion ratio
-#' @param log.level   An integer specifing the verbosity of the object.
+#' @param sample.sizes Number of individuals that are sampled. If your model 
+#'            consists of multiple populations, this needs to be a vector
+#'            containing the sample sizes from each population.
+#' @param loci.num     Number of loci that will be simulated
+#' @param seq.length   (Average) number of bases for each locus
+##' @param finiteSites If 'TRUE', a finite sites mutation model is assumed
+##'            instead of an infinite sites one.
+##' @param tsTvRatio   Transition transversion ratio
+#' @param log.level   An integer specifing the amount of user readable output 
+#'                    that will be produced.
 #'                    0 = no output, 1 = normal verbosity, ..., 
 #'                    3 = maximal verbosity.
 #' @param log.file    If set, the debug output will be written into the given file
@@ -417,18 +418,17 @@ getThetaRange <- function(dm){
 #' @export
 #'
 #' @examples
-#' dm <- dm.createDemographicModel(sampleSizes=c(25,25),nLoci=100,seqLength=1000)
+#' dm <- dm.createDemographicModel(sample.sizes=c(25,25), loci.num=100)
 #' dm <- dm.addSpeciationEvent(dm,0.01,5)
 #' dm <- dm.addMutation(dm,1,20)
 #' dm
-dm.createDemographicModel <- 
-  function(sampleSizes, nLoci, seqLength=1000, finiteSites=F,
-           tsTvRatio=.33, log.level, log.file){
-    setLogging(log.level, log.file)
-    dm <- new("DemographicModel",sampleSizes,nLoci,seqLength,
-              finiteSites, tsTvRatio)
-    return(dm)
-  }
+dm.createDemographicModel <- function(sample.sizes, loci.num, seq.length=1000, 
+                                      #finiteSites=F, tsTvRatio=.33, 
+                                      log.level, log.file) {
+  setLogging(log.level, log.file)
+  dm <- new("DemographicModel", sample.sizes, loci.num, seqLength, F, .33)
+  return(dm)
+}
 
 
 #---------------------------------------------------------------------
@@ -489,6 +489,12 @@ dm.createCustomModel <- function(par.number, par.names, par.ranges, sim.exe,
 #--------------------------------------------------------------------
 #' Adds mutations to a demographic model
 #' 
+#' This functions adds the assumption to the model that neutral mutations
+#' occur in the genomes at a constant rate. The rate is quantified through
+#' a parameter usually named theta in population genetics. It equals 4*Ne*mu,
+#' where Ne is the (effective) number of diploid individuals in the ancestral
+#' population and mu is the neutral mutation rate for an entire locus.
+#'
 #' @param dm  The demographic model to which mutations should be added
 #' @param par.new  If 'TRUE' a new parameter will be created using the
 #'            arguments 'lower.range' and 'upper.range' or 
@@ -501,29 +507,30 @@ dm.createCustomModel <- function(par.number, par.names, par.ranges, sim.exe,
 #'            will be used as the largest possible value.
 #' @param fixed.value  If specified, the mutation rate will not be 
 #'            estimated, but assumed to be fixed at the given value.
+#' @param new.par.name The name for the new parameter.
 #' @param parameter  Instead of creating a new parameter, you can also
 #'            set the mutation rate to an expression based on existing
 #'            parameters. For example setting this to "theta" will use
 #'            an parameter with name theta that you have previously 
 #'            created. You can also use R expression here, so "2*theta"
 #'            or "5*theta+2*tau" (if tau is another parameter) will also
-#'            work.
+#'            work (also it does not make much sense).
 #' @return    The demographic model with mutation.
 #' @export
 #'
 #' @examples
 #' # Create a new parameter
-#' dm <- dm.createDemographicModel(sampleSizes=c(25,25),nLoci=100,seqLength=1000)
-#' dm <- dm.addSpeciationEvent(dm,0.01,5)
-#' dm <- dm.addMutation(dm,1,20)
+#' dm <- dm.createDemographicModel(c(25,25), 100)
+#' dm <- dm.addSpeciationEvent(dm, 0.01, 5)
+#' dm <- dm.addMutation(dm, 1, 20)
 #'
 #' # Create a new fixed parameter
-#' dm <- dm.createDemographicModel(sampleSizes=c(25,25),nLoci=100,seqLength=1000)
+#' dm <- dm.createDemographicModel(c(25,25), 100)
 #' dm <- dm.addSpeciationEvent(dm, 0.01,5)
 #' dm <- dm.addMutation(dm, fixed.value=7)
 #'
 #' # Use an existing parameter
-#' dm <- dm.createDemographicModel(sampleSizes=c(25,25),nLoci=100,seqLength=1000)
+#' dm <- dm.createDemographicModel(c(25,25), 100)
 #' dm <- dm.addParameter(dm, "theta", 0.01, 5)
 #' dm <- dm.addMutation(dm, par.new=FALSE, parameter="2*log(theta)+1")
 dm.addMutation <- function(dm, lower.range, upper.range, fixed.value,
@@ -546,37 +553,118 @@ dm.addMutation <- function(dm, lower.range, upper.range, fixed.value,
 #  dm.addRecombination()
 #-------------------------------------------------------------------
 #' Adds recombination events to a demographic model
+#'
+#' This function add the assumption to the model that recombination
+#' events may occur within each locus. The corresponding parameter
+#' - usually name rho - equals 4*Ne*r, where Ne is the number of
+#' diploid individuals in the ancestral population and r is the 
+#' probability that a recombination event within the locus will
+#' occur in one generation. Even when using an infinite sites
+#' mutation model, this assumes an finite locus length which is given
+#' by the 'seq.length' parameter of the demographic model.
+#'
+#' Please note that it does not make sense to estimate recombination
+#' rates with Jaatha because it assumes unlinked loci.
 #' 
-#' @param dm          The demographic model to which recombination events should be added
-#' @param lower.range  If you want to estimate the recombination rate, this will be used 
-#'            as the smallest possible value.
-#' @param upper.range  If you want to estimate the recombination rate, this will be used 
-#'            as the largest possible value.
-#' @param fixed.value  If specified, the mutation rate will not be estimated, but assumend
-#'            to be fixed at the given value.
-#' @return        The demographic model with recombination
+#' @param dm  The demographic model to which recombination events should be added.
+#' @param par.new  If 'TRUE' a new parameter will be created using the
+#'            arguments 'lower.range' and 'upper.range' or 
+#'            'fixed.value'. It will be named 'new.par.name'.
+#'            If 'FALSE' the argument 'parameter' 
+#'            will be evaluated instead.
+#' @param lower.range  If you want to estimate the recombination rate (see note
+#             above), this will be used as the smallest possible value.
+#' @param upper.range  Same as lower.range, but the largest possible value.
+#' @param fixed.value  If specified, the mutation rate will not be estimated,
+#'                     but assumed to have the given value.
+#' @param new.par.name The name for the new parameter.
+#' @param parameter  Instead of creating a new parameter, you can also
+#'            set the mutation rate to an expression based on existing
+#'            parameters. For example setting this to "rho" will use
+#'            an parameter with name theta that you have previously 
+#'            created. You can also use R expression here, so "2*rho"
+#'            or "5*rho+2*tau" (if tau is another parameter) will also
+#'            work (also it does not make much sense).
+#' @return    The demographic model with recombination
 #' @export
 #'
 #' @examples
-#' dm <- dm.createDemographicModel(sampleSizes=c(25,25),nLoci=100,seqLength=1000)
-#' dm <- dm.addSpeciationEvent(dm,0.01,5)
-#' dm <- dm.addRecombination(dm,fixed=5)
-#' dm <- dm.addMutation(dm,1,20)
-#' dm
+#' dm <- dm.createDemographicModel(c(25,25), 100)
+#' dm <- dm.addSpeciationEvent(dm, 0.01, 5)
+#' dm <- dm.addRecombination(dm, fixed=20)
+#' dm <- dm.addMutation(dm, 1, 20)
 dm.addRecombination <- function(dm, lower.range, upper.range, fixed.value,
-                                par.new=T, new.par.name="rho", parameter,
-                                time.start="0") {
+                                par.new=T, new.par.name="rho", parameter) {
 
   if (par.new) parameter <- new.par.name
   dm <- addFeature(dm, "recombination", parameter, lower.range, upper.range,
-                   fixed.value, par.new=par.new, time.point=time.start)
+                   fixed.value, par.new=par.new, time.point="0")
   return(dm)
 }
+
 
 #-------------------------------------------------------------------
 #  dm.addMigration
 #-------------------------------------------------------------------
+#' Add migration/gene flow between two populations to a demographic model
+#'
+#' This function adds the assumption to the model that some individuals
+#' 'migrate' from one sub-population to another, i.e. they leave the one
+#' and become a member of the other. This is usually used to model ongoing
+#' gene flow through hybridisation after the populations separated. 
+#'
+#' You can enter a time ('time.start') at which the migration is 
+#' assumed to start (looking backwards in time). From that time on, a 
+#' fixed number of migrants move from population 'pop.from' to
+#' population 'pop.to' each generation. This number is given via this 
+#' feature's parameter, which equals 4*Ne*m,  where Ne is the number of
+#' diploid individuals in the ancestral population and m is the 
+#' fraction of 'pop.to' that is replaced with migrants each generation. 
+#' If 'pop.to' has also size Ne, than this is just the
+#' expected number of individuals that migrate each generation.
+#' 
+#' You can add different mutation rates at different times to your model.
+#' Then each rate will be used for the period from its time point to
+#' the next. Migration from and to an population always ends with the 
+#' speciation event in which the population is created.
+#'
+#' @param dm  The demographic model to which recombination events should be added.
+#' @param par.new  If 'TRUE' a new parameter will be created using the
+#'            arguments 'lower.range' and 'upper.range' or 
+#'            'fixed.value'. It will be named 'new.par.name'.
+#'            If 'FALSE' the argument 'parameter' 
+#'            will be evaluated instead.
+#' @param lower.range  If you want to estimate the migration parameter (see note
+#             above), this will be used as the smallest possible value.
+#' @param upper.range  Same as lower.range, but the largest possible value.
+#' @param fixed.value  If specified, the migration rate will not be estimated,
+#'                     but assumed to have the given value.
+#' @param new.par.name The name for the new parameter.
+#' @param parameter  Instead of creating a new parameter, you can also
+#'            set the mutation rate to an expression based on existing
+#'            parameters. For example setting this to "M" will use
+#'            an parameter with name M that you have previously 
+#'            created. You can also use R expression here, so "2*M"
+#'            or "5*M+2*tau" (if tau is another parameter) will also
+#'            work (also this does not make much sense).
+#' @param pop.from The population from which the individuals leave.
+#' @param pop.to The population to which the individuals move.
+#' @param time.start The time point at which the migration with this rate
+#'            starts.
+#' @return    The demographic model with migration
 #' @export
+#'
+#' @examples
+#' # Constant asymmetric migration
+#' dm <- dm.createThetaTauModel(c(25,25), 100)
+#' dm <- dm.addMigration(dm, 0.01, 5, pop.from=1, pop.to=2, time.start="0")
+#'
+#' # Stepwise decreasing mutation
+#' dm <- dm.createThetaTauModel(c(25,25), 100)
+#' dm <- dm.addMigration(dm, 0.01, 5, pop.from=1, pop.to=2, new.par.name="M", 
+#'                       time.start="0")
+#' dm <- dm.addMigration(dm, pop.from=1, pop.to=2, par.new=FALSE, 
+#'                       parameter="0.5*M", time.start="0.5*tau")
 dm.addMigration <- function(dm, lower.range, upper.range, fixed.value,
                             pop.from, pop.to, time.start="0",
                             par.new=T, new.par.name="M",
@@ -595,22 +683,39 @@ dm.addMigration <- function(dm, lower.range, upper.range, fixed.value,
 #-------------------------------------------------------------------
 #  dm.addSymmetricMigration
 #-------------------------------------------------------------------
-#' Adds symmetric migration to a demographic model
+#' Adds symmetric migration between all populations
+#'
+#' This adds migration between all subpopulation, all with the same
+#' rate. Please look at the documentation for \link{dm.addMigration} for 
+#' detailed information about migration.
 #' 
-#' @param dm           The demographic model to which the migration should be added
-#' @param lower.range  If you want to estimate the mutation rate, this will be used 
-#'                     as the smallest possible value.
-#' @param upper.range  If you want to estimate the mutation rate, this will be used 
-#'            as the largest possible value.
-#' @param fixed.value  If specified, the mutation rate will not be estimated, but assumend
-#'            to be fixed at the given value.
-#' @return        The demographic model with symmetric migration
+#' @param dm  The demographic model to which migration events should be added.
+#' @param par.new  If 'TRUE' a new parameter will be created using the
+#'            arguments 'lower.range' and 'upper.range' or 
+#'            'fixed.value'. It will be named 'new.par.name'.
+#'            If 'FALSE' the argument 'parameter' 
+#'            will be evaluated instead.
+#' @param lower.range  If you want to estimate the migration parameter (see note
+#             above), this will be used as the smallest possible value.
+#' @param upper.range  Same as lower.range, but the largest possible value.
+#' @param fixed.value  If specified, the migration rate will not be estimated,
+#'                     but assumed to have the given value.
+#' @param new.par.name The name for the new parameter.
+#' @param parameter  Instead of creating a new parameter, you can also
+#'            set the mutation rate to an expression based on existing
+#'            parameters. For example setting this to "M" will use
+#'            an parameter with name M that you have previously 
+#'            created. You can also use R expression here, so "2*M"
+#'            or "5*M+2*tau" (if tau is another parameter) will also
+#'            work (also this does not make much sense).
+#' @param time.start The time point at which the migration with this rate
+#'            starts.
+#' @return    The demographic model with migration
 #' @export
 #'
 #' @examples
-#' dm <- dm.createThetaTauModel(sample.sizes=c(21,25), loci.num=100, seq.length=950)
-#' dm <- dm.addSymmetricMigration(dm, 0.1, 5)
-#' dm
+#' dm <- dm.createThetaTauModel(c(25,25), 100)
+#' dm <- dm.addSymmetricMigration(dm, 0.01, 5, time.start="0.5*tau")
 dm.addSymmetricMigration <- function(dm, lower.range, upper.range, fixed.value,
                                      par.new=T, new.par.name="M", parameter, 
                                      time.start="0") {
@@ -634,24 +739,49 @@ dm.addSymmetricMigration <- function(dm, lower.range, upper.range, fixed.value,
 # dm.addSpeciationEvent
 #-------------------------------------------------------------------
 #' Adds a speciation event to a demographic model
-#' 
-#' @param dm          The demographic model to which the speciation event should be added
-#' @param lower.range  If you want to estimate the mutation rate, this will be used 
-#'            as the smallest possible value.
-#' @param upper.range  If you want to estimate the mutation rate, this will be used 
-#'            as the largest possible value.
-#' @param fixed.value  If specified, the mutation rate will not be estimated, but assumend
-#'            to be fixed at the given value.
-#' @return        The extended demographic model
-#' @export
 #'
+#' You can use this function the create a new population that splits 
+#' of from an existing population at a given time in the past. The time
+#' can be given as parameter or as an expression based on previously
+#' generated time points.
+#'
+#' As always, time in measured in Number of 4Ne generations in the past,
+#' where Ne is the (effective) size of the ancestral population.
+#'
+#' The command will print the number of the new population, which will
+#' be the number of previously existing populations plus one. The ancestral
+#' population has number "1".
+#'
+#' @param dm  The demographic model to which the split should be added.
+#' @param new.time.point  If 'TRUE' a new parameter will be created using the
+#'            arguments 'min.time' and 'max.time' or 
+#'            'fixed.time'. It will be named 'new.time.point.name'.
+#'            If 'FALSE' the argument 'time.point' 
+#'            will be evaluated instead.
+#' @param min.time  If you want to estimate the time point, this will be 
+#'            used as the smallest possible value.
+#' @param max.time  Same as min.time, but the largest possible value.
+#' @param fixed.time  If specified, the time.point will not be estimated,
+#'            but assumed to have the given value.
+#' @param new.time.point.name The name for the new time point.
+#' @param in.population The number of the population in which the spilt
+#'            occurs. See above for more information.
+#' @param parameter  Instead of creating a new parameter, you can also
+#'            set the mutation rate to an expression based on existing
+#'            parameters. For example setting this to "tau" will use
+#'            an parameter with name tau that you have previously 
+#'            created. You can also use R expression here, i.e. "2*tau"
+#'            or "5*M+2*tau" (if M is another parameter) will also
+#'            work (also this does not make much sense).
+#' @return    The demographic model with a split.
+#' @export
 #' @examples
 #' dm <- dm.createDemographicModel(sampleSizes=c(25,25),nLoci=100,seqLength=1000)
 #' dm <- dm.addSpeciationEvent(dm,0.01,5)
 #' dm <- dm.addMutation(dm,1,20)
-#' dm
 dm.addSpeciationEvent <- function(dm, min.time, max.time, fixed.time, 
-                                  in.population=1, new.time.point.name=NA,
+                                  in.population=1, 
+                                  new.time.point=T, new.time.point.name=NA,
                                   time.point=NA){
 
   checkType(dm,                  c("dm",  "s"),  T, F)
@@ -668,7 +798,7 @@ dm.addSpeciationEvent <- function(dm, min.time, max.time, fixed.time,
     stop("Population", in.population, "not known")
 
   # time.points
-  if (is.na(time.point)) {
+  if (new.time.point.name) {
     if(is.na(new.time.point.name)) 
       new.time.point.name <- paste("t_split_", in.population, sep="")
     dm <- dm.addParameter(dm, new.time.point.name, min.time, 
@@ -691,6 +821,13 @@ dm.addSpeciationEvent <- function(dm, min.time, max.time, fixed.time,
 #-------------------------------------------------------------------
 # dm.addSizeChange
 #-------------------------------------------------------------------
+#' Adds an instantaneous change of the population size of one 
+#' population to a model.
+#'
+#' 
+#'
+#' @param time.start The time point at which the migration with this rate
+#'            starts.
 #' @export
 dm.addSizeChange <- function(dm, min.size.factor, max.size.factor,
                              fixed.size.factor, par.new=T, new.par.name="q",
@@ -708,9 +845,15 @@ dm.addSizeChange <- function(dm, min.size.factor, max.size.factor,
   return(dm)
 }
 
+
 #-------------------------------------------------------------------
 # dm.addGrowth
 #-------------------------------------------------------------------
+#' @param par.new  If 'TRUE' a new parameter will be created using the
+#'            arguments 'min.groth.rate' and 'max.groth.rate' or 
+#'            'fixed.groth.rate'. It will be named 'new.par.name'.
+#'            If 'FALSE' the argument 'parameter' 
+#'            will be evaluated instead.
 #' @export
 dm.addGrowth <- function(dm, min.groth.rate, max.groth.rate, fixed.groth.rate, 
                          par.new=T, new.par.name="alpha", parameter, 
