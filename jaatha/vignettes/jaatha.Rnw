@@ -81,8 +81,8 @@ library(jaatha)
 We can now create an 'empty' demographic model \verb@dm@ using the \verb@dm.createDemographicModel()@
 function:
 <<Creating a demographic model in R>>=
-dm <- dm.createDemographicModel(sampleSizes=c(25,24),nLoci=100,
-						seqLength=10^3)
+dm <- dm.createDemographicModel(sample.sizes=c(25,24), loci.num=100,
+						seq.length=10^3)
 @
 The parameter \verb@sampleSizes@ here corresponds to the number of individuals we have
 sampled from the first population and second population respectively. The 
@@ -95,7 +95,7 @@ We can now successively add the other assumptions of our model:
 dm <- dm.addSpeciationEvent(dm,.1,5)
 dm <- dm.addSymmetricMigration(dm,.01,5)
 dm <- dm.addMutation(dm,1,20)
-dm <- dm.addRecombination(dm,fixed=5)
+dm <- dm.addRecombination(dm,fixed=20)
 @
 Here, the first parameter is always the demographic model to which we want to add
 an assumption/feature. The two following numbers represent the range for the parameter. 
