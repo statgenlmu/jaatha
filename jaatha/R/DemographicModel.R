@@ -196,7 +196,6 @@ dm.addParameter <- function(dm, par.name, lower.boundary, upper.boundary, fixed.
 #'
 #' @param dm       The demographic model to which the feature will be added 
 #' @param type     The type of the feature coded as a character
-#' @param par.name The name of the correspondig parameter (also a character)
 #' @param lower.range The lower boundary for the value of the parameter
 #' @param upper.range The upper boundary for the value of the parameter
 #' @param fixed.value If given, the parameter will be set to a fixed value. This
@@ -204,7 +203,15 @@ dm.addParameter <- function(dm, par.name, lower.boundary, upper.boundary, fixed.
 #' @param pop.source The source population if availible (think e.g. of migration)
 #' @param pop.sink   The target or "sink" population if availible (think e.g. of migration)
 #' @param time.point Normally the point in backwards time where the feature
-#'                   starts. 
+#'                   starts.
+#' @param par.new  If 'TRUE' a new parameter will be created using the
+#'            arguments 'lower.range' and 'upper.range' or 
+#'            'fixed.value'. It will be named 'parameter'.
+#'            If 'FALSE' the argument 'parameter' 
+#'            will be evaluated instead.
+#' @param parameter Either the name of the parameter (par.new=TRUE), or an R expression
+#'            possibly containing one or more previously created parameter
+#'            names.
 #' @param group     For genomic features, different groups can be created.
 #' @return          The extended demographic model.
 addFeature <- function(dm, type, parameter=NA,
@@ -316,10 +323,19 @@ makeThetaLast <- function(dm) {
 .checkParInRange <- function(dm, param) {
   ranges <- dm.getParRanges(dm,inklExtTheta=F)
   #Seems there can be rounding errors during scaling
-  lower <- t(ranges[, rep("lower.range", nrow(param))]) - 1e-15
-  upper <- t(ranges[, rep("upper.range", nrow(param))]) + 1e-15
+  lower <- t(ranges[, rep("lower.range", nrow(param))]) - 1e-5
+  upper <- t(ranges[, rep("upper.range", nrow(param))]) + 1e-5
   inRange <- lower <= param & param <= upper
-  return(all(inRange))
+  all.in.range <- all(inRange)
+  if (!all.in.range) {
+    inRange <- inRange[, 1] & inRange[, 2]
+    .print("The following parameter combinations are out of range:")
+    out.of.range <- param[!inRange, ]
+    for (i in 1:nrow(out.of.range)) {
+      .print(out.of.range[i, ])
+    }
+  }
+  return(all.in.range)
 }
 
 # Selects a program for simulation that is capable of all current features
@@ -406,9 +422,9 @@ getThetaRange <- function(dm){
 #'            containing the sample sizes from each population.
 #' @param loci.num     Number of loci that will be simulated
 #' @param seq.length   (Average) number of bases for each locus
-##' @param finiteSites If 'TRUE', a finite sites mutation model is assumed
-##'            instead of an infinite sites one.
-##' @param tsTvRatio   Transition transversion ratio
+# @param finiteSites If 'TRUE', a finite sites mutation model is assumed
+#            instead of an infinite sites one.
+# @param tsTvRatio   Transition transversion ratio
 #' @param log.level   An integer specifing the amount of user readable output 
 #'                    that will be produced.
 #'                    0 = no output, 1 = normal verbosity, ..., 
@@ -426,7 +442,7 @@ dm.createDemographicModel <- function(sample.sizes, loci.num, seq.length=1000,
                                       #finiteSites=F, tsTvRatio=.33, 
                                       log.level, log.file) {
   setLogging(log.level, log.file)
-  dm <- new("DemographicModel", sample.sizes, loci.num, seqLength, F, .33)
+  dm <- new("DemographicModel", sample.sizes, loci.num, seq.length, F, .33)
   return(dm)
 }
 
@@ -434,29 +450,29 @@ dm.createDemographicModel <- function(sample.sizes, loci.num, seq.length=1000,
 #---------------------------------------------------------------------
 # dm.createCustomModel()
 #---------------------------------------------------------------------
-#' Creates a demographic model by giving the command line parameters 
-#' of a simulation program.
-#' 
-#' In case your model can not be described in terms of the demographic model
-#' class or you want to use a simulation program that is not yet supported, you
-#' can use this function to create a so called custom model. To do so, you have
-#' to state number (par.number) and ranges (par.ranges) of the parameters you
-#' want to estimate as well that the simulation program you want to use (sim.exe).
-#' Then, you have to create a function that generates the command-line options
-#' for the program (sim.options). Finally, you need a function that reads the output
-#' of your program and calculates the summary statistics (sumstats).
-#' 
-#' @param par.number   The number of parameters you want to estimate
-#' @param par.names    A character vector with names for your parameters
-#' @param par.ranges   The upper and lower boundaries for the values if your parameters.
-#'                     This should be a matrix with two columns for the lower and
-#'                     upper boundary respectively and a row for each parameter.
-#' @param sim.exe      The path of the executable of your simulation program. 
-#'                     E.g. "/usr/local/bin/ms" or "C:/msdir/ms.exe"
-#' @param sim.options  
-#' @param sumstats
-#' @return             A demographic model you can use for jaatha
-##' @export
+# Creates a demographic model by giving the command line parameters 
+# of a simulation program.
+# 
+# In case your model can not be described in terms of the demographic model
+# class or you want to use a simulation program that is not yet supported, you
+# can use this function to create a so called custom model. To do so, you have
+# to state number (par.number) and ranges (par.ranges) of the parameters you
+# want to estimate as well that the simulation program you want to use (sim.exe).
+# Then, you have to create a function that generates the command-line options
+# for the program (sim.options). Finally, you need a function that reads the output
+# of your program and calculates the summary statistics (sumstats).
+# 
+# @param par.number   The number of parameters you want to estimate
+# @param par.names    A character vector with names for your parameters
+# @param par.ranges   The upper and lower boundaries for the values if your parameters.
+#                     This should be a matrix with two columns for the lower and
+#                     upper boundary respectively and a row for each parameter.
+# @param sim.exe      The path of the executable of your simulation program. 
+#                     E.g. "/usr/local/bin/ms" or "C:/msdir/ms.exe"
+# @param sim.options  
+# @param sumstats
+# @return             A demographic model you can use for jaatha
+# @export
 dm.createCustomModel <- function(par.number, par.names, par.ranges, sim.exe, 
                                  sim.options, sumstats) {
 
@@ -766,7 +782,7 @@ dm.addSymmetricMigration <- function(dm, lower.range, upper.range, fixed.value,
 #' @param new.time.point.name The name for the new time point.
 #' @param in.population The number of the population in which the spilt
 #'            occurs. See above for more information.
-#' @param parameter  Instead of creating a new parameter, you can also
+#' @param time.point  Instead of creating a new parameter, you can also
 #'            set the mutation rate to an expression based on existing
 #'            parameters. For example setting this to "tau" will use
 #'            an parameter with name tau that you have previously 
@@ -776,7 +792,7 @@ dm.addSymmetricMigration <- function(dm, lower.range, upper.range, fixed.value,
 #' @return    The demographic model with a split.
 #' @export
 #' @examples
-#' dm <- dm.createDemographicModel(sampleSizes=c(25,25),nLoci=100,seqLength=1000)
+#' dm <- dm.createDemographicModel(c(25,25), 100)
 #' dm <- dm.addSpeciationEvent(dm,0.01,5)
 #' dm <- dm.addMutation(dm,1,20)
 dm.addSpeciationEvent <- function(dm, min.time, max.time, fixed.time, 
@@ -798,7 +814,7 @@ dm.addSpeciationEvent <- function(dm, min.time, max.time, fixed.time,
     stop("Population", in.population, "not known")
 
   # time.points
-  if (new.time.point.name) {
+  if (new.time.point) {
     if(is.na(new.time.point.name)) 
       new.time.point.name <- paste("t_split_", in.population, sep="")
     dm <- dm.addParameter(dm, new.time.point.name, min.time, 
@@ -824,11 +840,43 @@ dm.addSpeciationEvent <- function(dm, min.time, max.time, fixed.time,
 #' Adds an instantaneous change of the population size of one 
 #' population to a model.
 #'
-#' 
+#' This function changes the effective population size of one 
+#' population. The change is performed at a given time point
+#' ('at.time') and applies to the time interval farther into 
+#' the past from this point. The population size is set to a
+#' factor of the size of the ancestral population Ne.
 #'
-#' @param time.start The time point at which the migration with this rate
-#'            starts.
+#' If you want to add a slow, continuous change over some time,
+#' then use the \link{dm.addGrowth} function.
+#' 
+#' @param dm  The demographic model to which the size change should be added.
+#' @param par.new  If 'TRUE' a new parameter will be created using the
+#'            arguments 'min.size.factor' and 'max.size.factor' or 
+#'            'fixed.size.factor'. It will be named 'new.time.point.name'
+#'            If 'FALSE' the argument 'parameter' 
+#'            will be evaluated instead.
+#' @param min.size.factor  If you want to estimate the size factor, this will be 
+#'            used as the smallest possible value.
+#' @param max.size.factor  Same as min.size.factor, but the largest possible value.
+#' @param fixed.size.factor  If specified, the size factor not be estimated,
+#'            but assumed to have the given value.
+#' @param new.par.name Name for the new parameter.
+#' @param population The number of the population in which the spilt
+#'            occurs. See \link{dm.addSpeciationEvent} for more information.
+#' @param parameter  Instead of creating a new parameter, you can also
+#'            set the mutation rate to an expression based on existing
+#'            parameters. For example setting this to "tau" will use
+#'            an parameter with name tau that you have previously 
+#'            created. You can also use R expression here, i.e. "2*tau"
+#'            or "5*M+2*tau" (if M is another parameter) will also
+#'            work (also this does not make much sense).
+#' @param at.time The time point at which the size changes.
+#' @return    The demographic model with a size change.
 #' @export
+#' @examples
+#' # A model with one smaller population
+#' dm <- dm.createThetaTauModel(c(20,37), 88)
+#' dm <- dm.addSizeChange(dm, 0.1, 1, population=2, at.time="0")
 dm.addSizeChange <- function(dm, min.size.factor, max.size.factor,
                              fixed.size.factor, par.new=T, new.par.name="q",
                              parameter, 
@@ -849,13 +897,51 @@ dm.addSizeChange <- function(dm, min.size.factor, max.size.factor,
 #-------------------------------------------------------------------
 # dm.addGrowth
 #-------------------------------------------------------------------
+#' Adds an growth or decline of the population size of one 
+#' population to a model.
+#'
+#' This function changes the growth factor of a population at given 
+#' point in time ('at.time'). This factor than applies to the time 
+#' interval farther into the past from this point. 
+#'
+#' The population size changes by factor exp(-alpha*t), where alpha
+#' is the growth parameter and t is the time since the growth has 
+#' started. Hence, for positive alpha, the population will 'decline 
+#' backwards in time' or grow forwards in time. Similar, will decline
+#' in forwards time for a negative value of alpha.
+#'
+#' If you want to add an instantaneous change of the population size,
+#' then use the \link{dm.addSizeChange} function.
+#' 
+#' @param dm  The demographic model to which the size change should be added.
 #' @param par.new  If 'TRUE' a new parameter will be created using the
-#'            arguments 'min.groth.rate' and 'max.groth.rate' or 
-#'            'fixed.groth.rate'. It will be named 'new.par.name'.
+#'            arguments 'min.growth.rate' and 'max.growth.rate' or 
+#'            'fixed.growth.rate'. It will be named 'new.par.name'
 #'            If 'FALSE' the argument 'parameter' 
 #'            will be evaluated instead.
+#' @param min.growth.rate  If you want to estimate the growth rate, this will be 
+#'            used as the smallest possible value.
+#' @param max.growth.rate  Same as min.growth.rate, but the largest possible value.
+#' @param fixed.growth.rate  If specified, the growth rate will not be estimated,
+#'            but assumed to have the given value.
+#' @param new.par.name Name for the new parameter.
+#' @param population The number of the population in which the spilt
+#'            occurs. See \link{dm.addSpeciationEvent} for more information.
+#' @param parameter  Instead of creating a new parameter, you can also
+#'            set the mutation rate to an expression based on existing
+#'            parameters. For example setting this to "alpha" will use
+#'            an parameter with name tau that you have previously 
+#'            created. You can also use R expression here, i.e. "2*alpha"
+#'            or "5*M+2*alpha" (if M is another parameter) will also
+#'            work (also the latter does not make much sense).
+#' @param at.time The time point at which the size changes.
+#' @return    The demographic model with a size change.
 #' @export
-dm.addGrowth <- function(dm, min.groth.rate, max.groth.rate, fixed.groth.rate, 
+#' @examples
+#' # A model with one smaller population
+#' dm <- dm.createThetaTauModel(c(20,37), 88)
+#' dm <- dm.addGrowth(dm, 0.1, 2, population=2, at.time="0")
+dm.addGrowth <- function(dm, min.growth.rate, max.growth.rate, fixed.growth.rate, 
                          par.new=T, new.par.name="alpha", parameter, 
                          population, at.time="0") {
 
@@ -864,8 +950,8 @@ dm.addGrowth <- function(dm, min.groth.rate, max.groth.rate, fixed.groth.rate,
 
   if (par.new) parameter <- new.par.name
 
-  dm <- addFeature(dm, "growth", parameter, min.groth.rate, max.groth.rate,
-                   fixed.groth.rate, par.new, population, NA, at.time)
+  dm <- addFeature(dm, "growth", parameter, min.growth.rate, max.growth.rate,
+                   fixed.growth.rate, par.new, population, NA, at.time)
 
   return(dm)
 }
@@ -876,7 +962,7 @@ dm.addGrowth <- function(dm, min.groth.rate, max.groth.rate, fixed.groth.rate,
 #-------------------------------------------------------------------
 #' Creates a standard "Theta/Tau" demopraphic model.
 #' 
-#' @param sample.sizes   A numeric vector with the sampleSizes of the two pop.sources.
+#' @param sample.sizes   A numeric vector with the sample sizes of the two pop.sources.
 #' @param loci.num       The number of Loci to simulate.
 #' @param seq.length     For recombination, each locus is assumed to be of this
 #'                       length
@@ -887,10 +973,9 @@ dm.addGrowth <- function(dm, min.groth.rate, max.groth.rate, fixed.groth.rate,
 #' dm <- dm.createThetaTauModel(c(20,25), 100)
 #' dm
 dm.createThetaTauModel <- function(sample.sizes, loci.num, seq.length=1000) {
-  dm <- dm.createDemographicModel(sampleSizes=sample.sizes, nLoci=loci.num,
-                                  seq.length)
+  dm <- dm.createDemographicModel(sample.sizes, loci.num, seq.length)
   dm <- dm.addSpeciationEvent(dm, 0.01, 5)
-  dm <- dm.addRecombination(dm, fixed=20)
+  dm <- dm.addRecombination(dm, fixed.value=20)
   dm <- dm.addMutation(dm, 1, 20)
   return(dm)
 }
@@ -908,7 +993,7 @@ dm.createThetaTauModel <- function(sample.sizes, loci.num, seq.length=1000) {
 #' @export
 #'
 #' @examples
-#' dm <- dm.createDemographicModel(sampleSizes=c(25,25),nLoci=100,seqLength=1000)
+#' dm <- dm.createDemographicModel(c(25,25), 100)
 #' dm <- dm.addSpeciationEvent(dm,0.01,5)
 #' dm <- dm.addMutation(dm,1,20)
 #' dm.simSumStats(dm,c(1,10))

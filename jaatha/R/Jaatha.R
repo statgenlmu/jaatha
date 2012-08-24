@@ -1069,6 +1069,7 @@ is.jaatha <- function(jObject){
 #'
 #' @param jObject The Jaatha options
 #' @param startPoints The list of startPoints which will be printed
+#' @param extThetaPossible For internal use only.
 #' @return a matrix with score and parameters of each start point
 #' @export
 Jaatha.printStartPoints <- function(jObject, startPoints, extThetaPossible=F){

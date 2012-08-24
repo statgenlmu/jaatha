@@ -10,6 +10,7 @@ Description: A method for estimating parameters of the demographic history of
 Depends:
     methods
 Collate:
+    'aaa_SimProgram.R'
     'Block.R'
     'DataProcessor.R'
     'DemographicModel-fsc.R'
@@ -17,7 +18,6 @@ Collate:
     'Jaatha.R'
     'ModelFitting.R'
     'Simulator.R'
-    'aaa_SimProgram.R'
     'awesome_helper_functions.R'
     'sim_program_ms.R'
     'zzz.R'
