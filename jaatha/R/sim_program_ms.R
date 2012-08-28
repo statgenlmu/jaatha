@@ -173,8 +173,34 @@ ms.defaultSumStats <- function(dm = NULL, jsfs) {
     sum(jsfs[(n-2):(n-1),m]) )
 }
 
+ms.foldedSumStats <- function(dm = NULL, jsfs) {
+  n <- nrow(jsfs)
+  m <- ncol(jsfs)
+
+  sumstats <- 
+    c(sum(jsfs[1, 2:3], jsfs[n, (m-2)]:(m-1)),
+      sum(jsfs[1, 4:(m-3)], jsfs[n, 4:(m-3)]),
+      sum(jsfs[1, (m-2):(m-1)], jsfs[n, 2:3]),
+      sum(jsfs[1, m], jsfs[n, 1]),
+      sum(jsfs[2:3,1], jsfs[(n-2):(n-1),m]),
+      sum(jsfs[2:3,2:3], jsfs[(n-2):(n-1),(m-2):(m-1)]),
+      sum(jsfs[2:3,4:(m-3)], jsfs[(n-2):(n-1),4:(m-3)]),
+      sum(jsfs[2:3,(m-2):(m-1)], jsfs[(n-2):(n-1),2:3]),
+      sum(jsfs[n,2:3], jsfs[(n-2):(n-1),1]),
+    
+      # ToDo: take care of "middle" elements
+      sum(jsfs[4:(n-3),1]),
+      sum(jsfs[4:(n-3),2:3]),
+      sum(jsfs[4:(n-3),(m-2):(m-1)]),
+      sum(jsfs[4:(n-3),4:(m-3)]),
+      sum(jsfs[4:(n-3),m])              )
+
+  return(sumstats)
+}
+
+
 createSimProgram("ms", "",
                  possible.features,
                  possible.sum.stats,
                  singleSimFunc=msSingleSimFunc,
-                 defaultSumStatFunc=ms.defaultSumStats)
+                 defaultSumStatFunc=ms.foldedSumStats)
