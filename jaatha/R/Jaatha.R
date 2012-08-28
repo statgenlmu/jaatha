@@ -100,17 +100,18 @@ setClass("Jaatha",
 )
 
 ## constructor method for Jaatha object
-.init <- function(.Object, demographicModel, sumStats, seed=numeric(), resultFile) {
+.init <- function(.Object, demographicModel, summary.statistics, jsfs, seed=numeric(), resultFile) {
   #.Object@nBlocksPerPar <- nBlocksPerPar         
   .log3("Starting initialization")
   .Object@dm    <- demographicModel
 
-  # sumStats
-  if ( is.matrix(sumStats) && dim(sumStats)[1] == 1) sumStats <- as.vector(sumStats)
-  if ( !is.numeric(sumStats) ) stop("'sumStats' must be a numeric vector.")
-  .log2("sumStats:",sumStats)
-  .Object@sumStats <- sumStats
-  .Object@nTotalSumstat <- length(sumStats)
+  # summary.statistics
+  if ( is.matrix(summary.statistics) && dim(summary.statistics)[1] == 1) 
+    summary.statistics <- as.vector(summary.statistics)
+
+  .log2("summary.statistics:",summary.statistics)
+  .Object@sumStats <- summary.statistics
+  .Object@nTotalSumstat <- length(summary.statistics)
 
   .Object@nLoci <- demographicModel@nLoci
   .Object@popSampleSizes <- demographicModel@sampleSizes
@@ -177,7 +178,10 @@ rm(.init)
 #' Jaatha and is the first step for each application of it.
 #'
 #' @param demographicModel The demographic model to use
-#' @param sumStats The summary statistics calculated from the real data
+#' @param summary.statistics The summary statistics calculated from the real data
+#' @param jsfs Instead of summary.statistics, you can also input the joint site
+#'             fequency spectrum of your data. Jaatha will then automatically
+#'             calulate summary statistics out of it.
 #' @param seed An integer used as seed for both Jaatha and the simulation software
 #' @param resultFile A File in which the results of the search will be written. 
 #' @param log.level An integer from 0 to 3 indicating Jaatha's verbosity. 0 is
@@ -186,13 +190,21 @@ rm(.init)
 #' @param log.file If specified, the output will be redirected to this file
 #' @return A S4-Object of type jaatha containing the settings
 #' @export
-Jaatha.initialize <- function(demographicModel, sumStats, seed=numeric(), 
+Jaatha.initialize <- function(demographicModel, summary.statistics, jsfs, seed=numeric(), 
                               resultFile="", log.level, log.file){
 
   setLogging(log.level, log.file)
+
+  if (missing(summary.statistics) & missing(jsfs)) 
+    stop("Either summary.statistics or jsfs must be given")
+  if (!missing(summary.statistics) & !missing(jsfs)) 
+    stop("Only either summary.statistics or jsfs can be used, but not both")
+  if (!missing(jsfs))
+    summary.statistics <- getDefaultSumStatFunc(demographicModel)(jsfs = jsfs)
+
   jaatha <- new("Jaatha",
                 demographicModel=demographicModel,
-                sumStats=sumStats,
+                summary.statistics=summary.statistics,
                 seed=seed,
                 resultFile=resultFile)
   return(jaatha)

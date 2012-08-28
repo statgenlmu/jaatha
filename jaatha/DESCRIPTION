@@ -1,6 +1,6 @@
 Package: jaatha
-Version: 1.9.9
-Date: 2012-07-27
+Version: 1.9.9.1
+Date: 2012-08-28
 License: GPL (>= 3)
 Title: Jaatha - Fast estimation of demographic parameters
 Author: Lisha Naduvilezhath, Paul R. Staab and Dirk Metzler
@@ -11,13 +11,14 @@ Depends:
     methods
 Collate:
     'aaa_SimProgram.R'
+    'awesome_helper_functions.R'
     'Block.R'
     'DataProcessor.R'
     'DemographicModel-fsc.R'
     'DemographicModel.R'
     'Jaatha.R'
     'ModelFitting.R'
-    'Simulator.R'
-    'awesome_helper_functions.R'
+    'readFasta.R'
     'sim_program_ms.R'
+    'Simulator.R'
     'zzz.R'

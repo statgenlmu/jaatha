@@ -1039,3 +1039,7 @@ dm.simSumStats <- function(dm, parameters, sumStatFunc){
   .log3("Finished dm.simSumStats()")
   return(sumStats)
 }
+
+getDefaultSumStatFunc <- function(dm){
+  return(dm@currentSimProg@defaultSumStatFunc)
+}
