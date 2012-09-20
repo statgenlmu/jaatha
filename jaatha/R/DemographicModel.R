@@ -997,10 +997,17 @@ dm.createThetaTauModel <- function(sample.sizes, loci.num, seq.length=1000) {
 #' dm <- dm.addSpeciationEvent(dm,0.01,5)
 #' dm <- dm.addMutation(dm,1,20)
 #' dm.simSumStats(dm,c(1,10))
-dm.simSumStats <- function(dm, parameters, sumStatFunc=Jaatha.defaultSumStats){
+dm.simSumStats <- function(dm, parameters, sumStatFunc){
   .log3("Called dm.simSumStats()")
 
+  jsfs <- F
   if (!is.matrix(parameters)) parameters <- matrix(parameters,1,length(parameters))
+  if (missing(sumStatFunc)) {
+    if (nrow(parameters) > 1) stop("Only one parameter combination is allow,
+                                   when not providing sumStatFunc.")
+    jsfs <- T
+    sumStatFunc  <- function(dm, jsfs){ return(as.vector(jsfs)) }
+  }
 
   checkType(dm, "dm")
   if (dim(parameters)[2] != dm.getNPar(dm)) stop("Wrong number of parameters")
@@ -1032,9 +1039,12 @@ dm.simSumStats <- function(dm, parameters, sumStatFunc=Jaatha.defaultSumStats){
               return(sumStats)
             })
 
+    
     sumStats <- t(sumStats)
+    if (jsfs) sumStats <- matrix(sumStats, dm@sampleSizes[1]+1,
+                                 dm@sampleSizes[2]+1)
   }
-
+  
   .log3("Finished dm.simSumStats()")
   return(sumStats)
 }

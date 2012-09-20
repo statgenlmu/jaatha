@@ -109,7 +109,8 @@ Jaatha.calcLikelihood <- function(jObject, nSimulations, par){
 	scaledPars <- matrix(scaledPars,nSimulations,length(scaledPars),byrow=T)
 
 	.log2("Simulating...")
-        simSS <- dm.simSumStats(jObject@dm,scaledPars)
+        simSS <- dm.simSumStats(jObject@dm, scaledPars,
+                                jObject@sum.stats.func)
 	simSS <- apply(simSS,2,mean)
 
 	.log2("Calculating Likelihood...")

@@ -155,14 +155,49 @@ description.
 
 \section{Importing Your Data}
 \noindent
-To run Jaatha, you need to calculate the summary statistics of your data. We are currently working on 
-a convenient way to do so for popular formats.
+To run Jaatha, you need to calculate the JSFS of your data. At the moment we
+provide a function to do so from aligned fasta files. We are working on
+including functions for more formats. 
 
-For the moment, let us use a simulated data set, for which we know the real parameter:
+To load the fasta files, you can use the \verb@fasta2Jsfs()@ function. We will
+now use it to calculate the JSFS of fasta files included in the package:
+
+<<Load Fasta files>>=
+pop1.file <- system.file('example_fasta_files/pop1.fasta', 
+                         package='jaatha')
+pop2.file <- system.file('example_fasta_files/pop2.fasta', 
+                         package='jaatha')
+outgroup.file <- system.file('example_fasta_files/outgroup.fasta', 
+                             package='jaatha')
+fasta2Jsfs(pop1.file, pop2.file, outgroup.file)
+@
+
+\noindent
+You can also use this function to calculate to folded JSFS in case you have no
+outgroup sequence available. However, using the folded JSFS, you will get
+significant worser estimates the with the unfolded one.
+
+<<Calc folded JSFS>>=
+fasta2Jsfs(pop1.file, pop2.file)
+@
+
+\noindent
+We strongly recommend to use an outgroup sequence and the unfolded JSFS!
+
+\vspace{1em}
+\noindent
+For the purpose of this HowTo, we will use a simulated JSFS, for which we 
+know the real parameter and hence see how well Jaatha performs:
+
 <<Summary Statistics>>=
-pars 	<- c(1,1,10) 
-simSumStats <- dm.simSumStats(dm,pars)
-simSumStats
+# Real parameters: M = 1, tau = 1 and theta = 10
+real.pars <- c(1,1,10) 
+
+# Simulate a JSFS with this parameters
+jsfs <- dm.simSumStats(dm, real.pars)
+
+# Print the upper left part of the JSFS
+jsfs[1:10, 1:10]
 @
 
 \section{Running Jaatha}
@@ -176,7 +211,7 @@ to set some options like our demographic model and the summary statistics of the
 real data:
 
 <<Initialize>>=
-jaatha <- Jaatha.initialize(dm, simSumStats)
+jaatha <- Jaatha.initialize(dm, jsfs=jsfs)
 @
 %startPoints <- Jaatha.initialSearch(j1,nSim=500,nBlocksPerPar=3,multiple=T)
 %save(startPoints,file='startpoints.save')

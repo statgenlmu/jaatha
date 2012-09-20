@@ -27,7 +27,7 @@ test.isSNP <- function(){
 }
 
 test.getSnpTypes <- function() {
-  snp.types <- getSNPTypes(marker.table[1:3, ], pop1.mask, pop2.mask)
+  snp.types <- getSNPTypes(marker.table[1:3, ], pop1.mask, pop2.mask, folded=F)
   checkEquals(snp.types[1, ], c(1, 0))
   checkEquals(snp.types[2, ], c(1, 2))
   checkEquals(snp.types[3, ], c(2, 2))

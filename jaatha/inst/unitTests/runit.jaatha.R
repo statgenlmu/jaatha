@@ -28,7 +28,7 @@ test.dm.simSumStats <- function(){
 	checkException( dm.simSumStats(dm.thetaTau, 1:3 ) )
 	checkException( dm.simSumStats(dm.thetaTau, c(2,50)) )
 	set.seed(1)
-	sim <- dm.simSumStats(dm.thetaTau, c(2,10))
+	sim <- dm.simSumStats(dm.thetaTau, c(2,10), Jaatha.defaultSumStats )
 	if (rerecord.results) samples[["simSumStats"]] <- sim
 	checkEquals( sim , samples[["simSumStats"]] )
     if (rerecord.results) save(samples,file="samples.save")

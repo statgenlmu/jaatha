@@ -117,8 +117,9 @@ setClass("Jaatha",
     message("File ",.Object@resultFile,
         " already exists. It will be appended!")
   }
-  cat("block","likelihood",.Object@parNames,"\n",sep="\t",
-      file=.Object@resultFile,append=TRUE)
+  if (.Object@resultFile != "")
+    cat("block","likelihood",.Object@parNames,"\n",sep="\t",
+        file=.Object@resultFile,append=TRUE)
       
   # Seeds
   if (length(seed) == 0) seed <- sample(1:(2^20),size=1)
