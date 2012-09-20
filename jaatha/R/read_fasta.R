@@ -1,15 +1,30 @@
-#!/usr/bin/Rscript --vanilla
-#
-# readFasta
-# %DESCRIPTION%
+#-------------------------------------------------------------------------------
+# read_fasta.R
+# Methodes for calculating the JSFS of two species based on (aligned) sequences
+# stored in fasta format.
 # 
 # Author:   Paul R. Staab 
 # Email:    staab (at) bio.lmu.de
-# Date:     2012-08-14
+# Date:     2012-09-20
 # Licence:  GPLv3 or later
-#
+#-------------------------------------------------------------------------------
 
-#' reads three 
+#' Calculates the JSFS out of fasta files
+#'
+#' This function parses the three fasta file provided as input - one for each 
+#' population and one for the outgroup - and calculates the Joint Site 
+#' Frequency Spectrum (JSFS) of the sequences.
+#' @param population1 The path to the fasta file which contains the aligned 
+#'                    sequences of the first population.
+#' @param population2 The path to the fasta file which contains the aligned 
+#'                    sequences of the second population.
+#' @param population2 The path to the fasta file which contains the aligned 
+#'                    sequences of outgroup sequences. This file can contain 
+#'                    multiple sequences to account for ancestral
+#'                    misidentification. In this case, only positions in which
+#'                    all outgroup sequences are identically are considered.
+#' @return            The JSFS, as matrix.
+#' @export
 fasta2Jsfs <- function(population1, population2, outgroup) {
   pop1 <- readFasta(population1)
   pop2 <- readFasta(population2)
@@ -23,6 +38,7 @@ fasta2Jsfs <- function(population1, population2, outgroup) {
   jsfs <- markerTableToJsfs(mat, pop1.cols, pop2.cols, outg.cols)
   return(jsfs)
 }
+
 
 markerTableToJsfs <- function(marker.table, pop1.cols, pop2.cols,
                               outgroup.cols){
@@ -60,6 +76,7 @@ readFasta <- function(fasta.file) {
   return(sapply(sequences, function(x){return(x)}))
 }
 
+
 isSnp <- function(gene.row, outg.mask) {
   # Filter out bad positions
   if (!all(gene.row %in% c("A","C","T","G"))) return(F)
@@ -73,6 +90,7 @@ isSnp <- function(gene.row, outg.mask) {
   return(T)
 }
 
+
 getSNPTypes <- function(snps, pop1.mask, pop2.mask){
   snp.type <- matrix(0, nrow(snps), 2)
 
@@ -84,6 +102,7 @@ getSNPTypes <- function(snps, pop1.mask, pop2.mask){
   }
   return(snp.type)	
 }
+
 
 calcJSFS <- function(snp.types, sample.sizes) {
   jsfs <- matrix(0, sample.sizes[1] + 1, sample.sizes[2] + 1)
