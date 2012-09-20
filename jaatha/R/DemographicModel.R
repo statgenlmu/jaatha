@@ -997,7 +997,7 @@ dm.createThetaTauModel <- function(sample.sizes, loci.num, seq.length=1000) {
 #' dm <- dm.addSpeciationEvent(dm,0.01,5)
 #' dm <- dm.addMutation(dm,1,20)
 #' dm.simSumStats(dm,c(1,10))
-dm.simSumStats <- function(dm, parameters, sumStatFunc){
+dm.simSumStats <- function(dm, parameters, sumStatFunc=Jaatha.defaultSumStats){
   .log3("Called dm.simSumStats()")
 
   if (!is.matrix(parameters)) parameters <- matrix(parameters,1,length(parameters))
@@ -1007,7 +1007,6 @@ dm.simSumStats <- function(dm, parameters, sumStatFunc){
   if ( !.checkParInRange(dm,parameters) ) stop("Parameters out of range")
 
   simProg   <- dm@currentSimProg
-  if (missing(sumStatFunc)) sumStatFunc <- simProg@defaultSumStatFunc
 
   # nSumStats <- length(sumStatFunc(dm,jsfs=matrix(0,dm@sampleSizes[1],dm@sampleSizes[2])))
   # nSims	  <- max(dim(parameters)[1],1)
@@ -1038,8 +1037,4 @@ dm.simSumStats <- function(dm, parameters, sumStatFunc){
 
   .log3("Finished dm.simSumStats()")
   return(sumStats)
-}
-
-getDefaultSumStatFunc <- function(dm){
-  return(dm@currentSimProg@defaultSumStatFunc)
 }

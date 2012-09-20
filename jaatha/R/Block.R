@@ -42,9 +42,6 @@ setMethod("show","Block",
 ##of the given block. Bounds and point are rounded to the 5th decimal
 ##place.
 isInBlock <- function(object,point) {
-	print(list(ERROR="just called generic isInBlock \n"))}
-setMethod("isInBlock",signature(object="Block"),
-		function(object,point){
 			if(length(point)!=object@nPar) {
 				print(list(ERROR="Parameter dimensions unequal to block dimensions! \n")) 
 			} else{}
@@ -52,7 +49,7 @@ setMethod("isInBlock",signature(object="Block"),
 			upper <- round(object@upperBound,5)
 			point <- round(point,5)
 			return(all(c(lower<=point,point<=upper)))
-		})
+		}
 
 
 ## Function to determine the (starting) blockIndex of a given point in

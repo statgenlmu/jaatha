@@ -5,7 +5,7 @@
 # 
 # Author:   Paul R. Staab 
 # Email:    staab (at) bio.lmu.de
-# Date:     2012-07-30
+# Date:     2012-09-14
 # Licence:  GPLv3 or later
 #
 
@@ -17,8 +17,8 @@
 # Create a new enviroment for local variables that won't be looked after package
 # loading like jaathas enviroment is.
 if (!exists(".local")) .local <- new.env()
-if (!exists('.local$log.level')) .local$log.level <- 1
-if (!exists('.local$log.file'))  .local$log.file  <- ""
+if (!exists('log.level', envir=.local)) .local$log.level <- 1
+if (!exists('log.file', envir=.local))  .local$log.file  <- ""
 
 # A helper function for easy creation of logging output
 #
@@ -167,5 +167,52 @@ checkType <- function(variable, type, required=T, allow.na=T) {
       var.name <- deparse(substitute(variable))
       stop(fun.name,": ",var.name," ",error,call.=F)
     }
+  }
+}
+
+
+activateCompiler <- function() {
+  if ("compiler" %in% rownames(installed.packages())){
+    library("compiler")
+#    .local$compile.level <- compiler::enableJIT(3)
+  }
+}
+
+
+deactivateCompiler <- function() {
+  if (exists("compile.level", envir=.local)) {
+    compiler::enableJIT(.local$compile.level)
+  }
+}
+
+getTempDir <- function() {
+  if (exists("temp.dir", envir=.local)) {
+    return(.local$temp.dir)
+  }
+
+  if (file.exists("/dev/shm")) tmp.dir <- "/dev/shm/jaatha"
+  else tmp.dir <- paste(tempdir(), "/jaatha", sep="")
+  
+  i <- 1
+  while (file.exists(paste(tmp.dir, "-", i, sep="")))
+    i <- i + 1
+
+  .local$temp.dir <- paste(tmp.dir, "-", i, sep="") 
+  dir.create(.local$temp.dir)
+  return(.local$temp.dir)
+}
+
+getTempFile <- function(file.name="file"){
+  if (!exists("temp.file.count", envir=.local))
+      .local$temp.file.count <- 0
+
+  .local$temp.file.count <- .local$temp.file.count + 1 %% 1000000
+  return(paste(getTempDir(), "/", file.name, "_", Sys.getpid(), "_", .local$temp.file.count, sep=""))
+}
+
+removeTempFiles <- function() {
+  if (exists("temp.dir", envir=.local)) {
+    unlink(.local$temp.dir, recursive=T)
+    rm(temp.dir, envir=.local)
   }
 }

@@ -23,16 +23,14 @@ test.InstanceCreation <- function() {
             executable="ms",
             possible.features="feature",
             possible.sum.stats="sum.stat",
-            simFunc=sin,
-            defaultSumStatFunc=tan) 
+            simFunc=sin) 
 
   s2 <- new("SimProgram",
             name="name",
             executable="",
             possible.features="feature",
             possible.sum.stats="sum.stat",
-            singleSimFunc=sin,
-            defaultSumStatFunc=tan) 
+            singleSimFunc=sin) 
 
   #Print working?
   print(s1)
@@ -43,33 +41,23 @@ test.InstanceCreation <- function() {
     new("SimProgram", name="name", executable="ms", possible.features="feature",
         possible.sum.stats="sum.stat",
         simFunc=sin,
-        singleSimFunc=cos,
-        defaultSumStatFunc=tan) 
+        singleSimFunc=cos) 
   )
 
   checkException(
     new("SimProgram", executable="ms", possible.features="feature",
-        simFunc=sin,
-        possible.sum.stats="sum.stat",
-        defaultSumStatFunc=tan) 
-  )
-  
-  checkException(
-    new("SimProgram", name="name", executable="ms", possible.features="feature",
-        possible.sum.stats="sum.stat",
-        defaultSumStatFunc=tan) 
-  )
-  
-  checkException(
-    new("SimProgram", name="name", executable="ms", possible.features="feature",
         simFunc=sin,
         possible.sum.stats="sum.stat") 
   )
   
   checkException(
     new("SimProgram", name="name", executable="ms", possible.features="feature",
-        simFunc=sin,
-        defaultSumStatFunc=tan) 
+        possible.sum.stats="sum.stat") 
+  )
+  
+  checkException(
+    new("SimProgram", name="name", executable="ms", possible.features="feature",
+        simFunc=sin) 
   )
 }
 

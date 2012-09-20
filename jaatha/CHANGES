@@ -1,2 +1,6 @@
+Version 1.9.10:
++ Use /dev/shm for temp files if available
++ Added "folded" option to use a folded JSFS
+
 Version 1.9.9:
-- Reworked the demographic model class to be more flexible and consistent.
++ Reworked the demographic model class to be more flexible and consistent.

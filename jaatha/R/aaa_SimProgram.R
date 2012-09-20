@@ -1,7 +1,7 @@
 # Keep a user modifiable list of availible simulation programs in a private
 # enviroment (jaatha's own env is read-only after package load)
 if (!exists(".local")) .local <- new.env()
-if (!exists(".local$simProgs")) .local$simProgs <- list()
+if (!exists("simProgs", envir=.local)) .local$simProgs <- list()
 
 slots <- representation(name="character",
                         executable="character",
@@ -9,7 +9,6 @@ slots <- representation(name="character",
                         possible.sum.stats="character",
                         simFunc="function",
                         singleSimFunc="function",
-                        defaultSumStatFunc="function",
                         useSingleSimFunc="logical"
                        )
 
@@ -28,8 +27,7 @@ emptyFunc <- function(){}
                   possible.features=NULL,
                   possible.sum.stats=NULL, 
                   simFunc=NULL,
-                  singleSimFunc=NULL,
-                  defaultSumStatFunc=NULL ) {
+                  singleSimFunc=NULL) {
 
   if (is.null(simFunc) & is.null(singleSimFunc))
       stop("One of simFunc and singleSimFunc must be given.")
@@ -44,7 +42,6 @@ emptyFunc <- function(){}
   .Object <- sp.setExecutable(.Object, executable)
   .Object <- sp.setPossibleFeatures(.Object, possible.features)
   .Object <- sp.setPossibleSumStats(.Object, possible.sum.stats)
-  .Object <- sp.setDefaultSumStatFunc(.Object, defaultSumStatFunc)
   return(.Object)
 }
 
@@ -108,40 +105,19 @@ sp.setSingleSimFunc <- function(simProg, simFunc){
   return(simProg)
 }
 
-sp.setDefaultSumStatFunc <- function(simProg, sumStatFunc){
-  checkType(sumStatFunc, "fun")  
-  simProg@defaultSumStatFunc <- sumStatFunc
-  return(simProg)
-}
-
-# sp.setCalcJSFSFunc <- function(simProg, calcJSFSFunc){
-#   if(!is.function(calcJSFSFunc)) stop("calcJSFSFunc must be of type function")
-#   simProg@calcJSFSFunc <- calcJSFSFunc
-#   return(simProg)
-# }
-# 
-# sp.setInitialSeedFunc <- function(simProg, initialSeedFunc){
-#   if(!is.function(initialSeedFunc)) stop("initialSeedFunc must be of type function")
-#   simProg@initialSeedFunc <- initialSeedFunc
-#   return(simProg)
-# }
-
-
 createSimProgram <- function(name, executable,
                              possible.features,
                              possible.sum.stats,
                              simFunc=NULL,
-                             singleSimFunc=NULL,
-                             defaultSumStatFunc) {
+                             singleSimFunc=NULL) {
   
-  simProg <- new("SimProgram", 
+  simProg <- new("SimProgram",
                  name = name, 
                  executable = executable,
                  possible.features = possible.features,
                  possible.sum.stats = possible.sum.stats,
                  simFunc = simFunc,
-                 singleSimFunc = singleSimFunc,
-                 defaultSumStatFunc = defaultSumStatFunc) 
+                 singleSimFunc = singleSimFunc) 
 
   .local$simProgs[[name]] <- simProg
 }

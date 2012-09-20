@@ -45,7 +45,8 @@ simulateWithinBlock<- function(bObject,jaathaObject){
   #simulate a line of sum stats for each line in randompars
   sumStats <- dm.simSumStats(jaathaObject@dm,
                              .deNormalize(jaathaObject,randompar,
-                                          withoutTheta=jaathaObject@externalTheta))
+                                          withoutTheta=jaathaObject@externalTheta),
+                             jaathaObject@sum.stats.func)
   paraNsumstat <- cbind(randompar, sumStats) 
 
   return (paraNsumstat)

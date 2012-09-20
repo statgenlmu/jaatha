@@ -6,9 +6,6 @@ setClass("ModelFitting")
 ## following 'nTotalSumstat' colums contain the results for the summary
 ## statistic.
 glmFitting <- function(bObject,nTotalSumstat,weighting){ 
-	print(list(ERROR="just called generic glmFitting \n"))}
-setMethod("glmFitting",signature(bObject="Block"),
-		function(bObject,nTotalSumstat,weighting){ 
 			#cat("Fitting model ... \n")
 			##+3 bc intercept, convergence, sumOfSumstat
 			modFeld <- array(-1,dim=c(nTotalSumstat,(bObject@nPar+3)))
@@ -39,7 +36,7 @@ setMethod("glmFitting",signature(bObject="Block"),
 				} else{}
 			}  
 			return (modFeld)
-		})
+		}
 
 
 ## Function to estimate the best parameters within the block and for
@@ -54,9 +51,6 @@ setMethod("glmFitting",signature(bObject="Block"),
 ## optimization procedure. With 'opt' the optimization strategie can
 ## be chosen: 1=fast, 2=vote,3=medium.
 estimate <- function(bObject,jObject,modFeld,ssData,boarder=0.25,opt=3){
-	print(list(ERROR="just called generic estimate \n"))}
-setMethod("estimate",signature(bObject="Block",jObject="Jaatha"),
-		function(bObject,jObject,modFeld,ssData,boarder=0.25,opt=3){
 			dimSize <- bObject@upperBound-bObject@lowerBound
 			mitte <- dimSize/2 + bObject@lowerBound
 			## all dimensions are assumed to be of same length
@@ -172,7 +166,7 @@ setMethod("estimate",signature(bObject="Block",jObject="Jaatha"),
 				#	"par:",round(.calcAbsParamValue(jObject@dm,mitte),3),"\n")
 				return (list(est= mitte, score= score))                   
 			}            
-		})
+		}
 
 
 .calcLikelihoodWithModelfeld <- function(param, modelCoefficients, observedSS, 

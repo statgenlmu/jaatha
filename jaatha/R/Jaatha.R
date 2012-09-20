@@ -61,51 +61,40 @@ setClass("Jaatha",
       parNames = "character",
       resultFile = "character",
       sumStats = "numeric",
-      likelihood.table = "matrix"
+      likelihood.table = "matrix",
+      sum.stats.func = "function"
     ),
-    #validity = function(object){
-      #iniBlocks <- object@nBlocksPerPar   
-    # if (object@nPar<1){
-    #   stop("Validation-ERROR: Number of parameters should be at least 1. Got:",
-      #     object@nPar,"!")
-      #}
-      # The 3 cases below will be checked in DemographicModel.R
-      #else if (  length(object@parNames)!=object@nPar & externalTheta=F ) ){
-      # stop("Validation-ERROR: number of parameter names (parNames) is ",
-      #     length(object@parNames), " not as needed ",object@nPar,"!")
-      #}
-      #else if (! all(sapply(1:length(range), function(d) 
-      #         all(range[[d]]>=0))) ){  ##if values are less than 0
-      # stop("Validation-ERROR: Values of parameter range must be >=0. Got ",
-      #     range," instead!")
-      #}
-      #else if (! all(sapply(1:length(range), function(d) range[[d]][2]>=range[[d]][1])) ){
-      # ## if upperrange is smaller than lower range
-      # stop("Validation-ERROR: Lower Bounds must be less than or equal to upper bounds! Got ",
-      #     range," instead!")
-      #}
-      #else if (length(object@popSampleSizes) != 2){
-      # stop("Validation-ERROR: We need sample sizes for two populations!Got ",
-      #     length(object@popSampleSizes), " instead!")
-      #}
-      #else if (length(unlist(as.list(object@ssFunc)))==0){ ##checks just the length of given fuction
-        #print(length(unlist(as.list(object@ssFunc))))
-      # stop("You did not specify the summary statistic function (ssFunc) with has the JSFS-Array as input!")
-      #}
-      #else  if (object@nTotalSumstat <=0 || object@nTotalSumstat < object@nNonJsfsSumstat){
-      # stop("nTotalSumstat has to be bigger than 0 and >= nNonJsfsSumstat! Got", object@nTotalSumstat,"!" )
-      #}
-      #return (TRUE)
-    #}
 )
 
 ## constructor method for Jaatha object
-.init <- function(.Object, demographicModel, summary.statistics, jsfs, seed=numeric(), resultFile) {
-  #.Object@nBlocksPerPar <- nBlocksPerPar         
-  .log3("Starting initialization")
-  .Object@dm    <- demographicModel
+.init <- function(.Object, demographicModel=NA, jsfs=NA, folded=F, seed=numeric(),
+                  summary.statistics=NA, resultFile=NA) {
 
-  # summary.statistics
+  .log3("Starting initialization")
+  .Object@dm <- demographicModel
+  # Model parameters
+  # TODO: remove.
+  .Object@nLoci <- demographicModel@nLoci
+  .Object@popSampleSizes <- demographicModel@sampleSizes
+  .Object@externalTheta <- demographicModel@externalTheta
+  .Object@finiteSites <- demographicModel@finiteSites
+  .Object@nPar <- dm.getNPar(.Object@dm)
+
+  # Use summary statistics for folded JSFS?
+  if (folded) .Object@sum.stats.func <- Jaatha.defaultFoldedSumStats 
+  else        .Object@sum.stats.func <- Jaatha.defaultSumStats 
+
+  # Calculate summary statistics of real data if needed
+  if (any(is.na(summary.statistics)) & any(is.na(jsfs))) 
+    stop("Either summary.statistics or jsfs must be given")
+  if (any(!is.na(summary.statistics)) & any(!is.na(jsfs))) 
+    stop("Only summary.statistics or jsfs can be used, but not both")
+
+  if (!any(is.na(jsfs))) {
+    .log2("JSFS given. Calculating summary statistics")
+    summary.statistics <- .Object@sum.stats.func(jsfs = jsfs)
+  }
+
   if ( is.matrix(summary.statistics) && dim(summary.statistics)[1] == 1) 
     summary.statistics <- as.vector(summary.statistics)
 
@@ -113,15 +102,9 @@ setClass("Jaatha",
   .Object@sumStats <- summary.statistics
   .Object@nTotalSumstat <- length(summary.statistics)
 
-  .Object@nLoci <- demographicModel@nLoci
-  .Object@popSampleSizes <- demographicModel@sampleSizes
-  .Object@externalTheta <- demographicModel@externalTheta
-  .Object@finiteSites <- demographicModel@finiteSites
-  .Object@nPar <- dm.getNPar(.Object@dm)
-
   .Object@likelihood.table <- matrix(0,0,.Object@nPar + 2)
 
-  if (!missing(resultFile)){
+  if (!is.na(resultFile)){
     .Object@resultFile <- resultFile
   } else{
     .Object@resultFile <- "JaathaResult.txt" 
@@ -137,34 +120,11 @@ setClass("Jaatha",
   cat("block","likelihood",.Object@parNames,"\n",sep="\t",
       file=.Object@resultFile,append=TRUE)
       
-  #if (!missing(nNonJsfsSumstat)) .Object@nNonJsfsSumstat <- nNonJsfsSumstat
-  # } else{
-  #     .Object@nNonJsfsSumstat <- 0
-  #   }
-  
-  #if (.Object@nLoci==0){
-  #cat("Please specify nLoci-slot of the Jaatha-object! This will be the number of loci generated for each simulation.")
-  #} else{
-  #.Object@nLoci <- nLoci
-  #}
-
-  ## If 'seed' is specified Rseed will be set to that value
-  ## and file "Rseed.txt" overwritten. If no 'seed' is
-  ## specied but 'Rseed.txt' exists seed will be read from
-  ## file, otherwise 'seed' will be set.
-  seedfile <- paste(tempdir(),"/Rseed.txt",sep="")
-  if (length(seed)!=0){ # if seed was specified
-    cat(seed,"\n",file=seedfile)              
-  } else {  #if no seed was specified and no file is available
-    seed <- sample(1:(2^20),size=1)
-    cat("R seed set to",seed,"\n")
-    cat(seed,"\n",file=seedfile)
-  } 
+  # Seeds
+  if (length(seed) == 0) seed <- sample(1:(2^20),size=1)
   .Object@seed <- seed
-  set.seed(seed)      
-  #cat("Initial msSeeds set to ",msSeeds,"\n")            
-  #validObject(.Object)
-  show(.Object)      
+  set.seed(seed)
+
   .log3("Finished initialization")
   return (.Object)
 }
@@ -182,6 +142,7 @@ rm(.init)
 #' @param jsfs Instead of summary.statistics, you can also input the joint site
 #'             fequency spectrum of your data. Jaatha will then automatically
 #'             calulate summary statistics out of it.
+#' @param folded If 'TRUE', Jaatha will assume that the JSFS is folded.
 #' @param seed An integer used as seed for both Jaatha and the simulation software
 #' @param resultFile A File in which the results of the search will be written. 
 #' @param log.level An integer from 0 to 3 indicating Jaatha's verbosity. 0 is
@@ -190,23 +151,23 @@ rm(.init)
 #' @param log.file If specified, the output will be redirected to this file
 #' @return A S4-Object of type jaatha containing the settings
 #' @export
-Jaatha.initialize <- function(demographicModel, summary.statistics, jsfs, seed=numeric(), 
-                              resultFile="", log.level, log.file){
+Jaatha.initialize <- function(demographicModel, summary.statistics, jsfs,
+                              folded=F, seed=numeric(), 
+                              resultFile="", log.level, log.file) {
 
   setLogging(log.level, log.file)
 
-  if (missing(summary.statistics) & missing(jsfs)) 
-    stop("Either summary.statistics or jsfs must be given")
-  if (!missing(summary.statistics) & !missing(jsfs)) 
-    stop("Only either summary.statistics or jsfs can be used, but not both")
-  if (!missing(jsfs))
-    summary.statistics <- getDefaultSumStatFunc(demographicModel)(jsfs = jsfs)
+  if (missing(summary.statistics)) summary.statistics <- NA
+  if (missing(jsfs)) jsfs <- NA
 
   jaatha <- new("Jaatha",
                 demographicModel=demographicModel,
                 summary.statistics=summary.statistics,
+                jsfs=jsfs,
+                folded=folded,
                 seed=seed,
                 resultFile=resultFile)
+
   return(jaatha)
 }
 
@@ -333,6 +294,7 @@ Jaatha.initialSearch <- function(jObject, nSim=200, nBlocksPerPar=3){
   #print( round( .deNormalize(jObject,firstBlocks[[bestBlockIndex]]@MLest), 3 ) )
   print(Jaatha.printStartPoints(jObject, firstBlocks, extThetaPossible))
 
+  removeTempFiles()
   return (firstBlocks)
 }
 
@@ -384,6 +346,7 @@ Jaatha.refineSearch <- function(jObject,startPoints,nSim,
   cat("Best log-composite-likelihood values are:\n")
   print(Jaatha.printLikelihoods(jObject))
 
+  removeTempFiles()
   return(jObject)
 }
 

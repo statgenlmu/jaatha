@@ -64,6 +64,17 @@ test.initialSearch.extThetaPossible <- function(){
     if (rerecord.results) save(samples,file="samples.save")
 }
 
+test.initialSearch.folded <- function() {
+    load("samples.save")
+    jsfs <- matrix(1, 21, 26)
+	jaatha <- Jaatha.initialize(dm.thetaTau, jsfs=jsfs, folded=T, seed=1)
+	startPoints <- Jaatha.initialSearch(jaatha, nSim=10, nBlocksPerPar=2)
+	pStartPoints <- Jaatha.printStartPoints(jaatha, startPoints)
+	if (rerecord.results) samples[["initialSearch.folded"]] <- pStartPoints
+	checkEquals(pStartPoints, samples[["initialSearch.folded"]])
+    if (rerecord.results) save(samples,file="samples.save")
+}
+
 test.refineSearch <- function(){
     load("samples.save")
 	set.seed(1)
