@@ -4,7 +4,7 @@
 # This file contains the default summary statistic functions for jaatha,
 # which take sums over different areas of the jsfs.
 # 
-# Author:   Paul R. Staab 
+# Author:   Lisha Naduvilezhath & Paul R. Staab 
 # Email:    staab (at) bio.lmu.de
 # Date:     2012-09-14
 # Licence:  GPLv3 or later

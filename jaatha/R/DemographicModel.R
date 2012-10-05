@@ -3,7 +3,7 @@
 # Class for representing a model of the evolutionary development
 # of two different species.
 # 
-# Authors:  Paul R. Staab
+# Authors:  Paul R. Staab & Lisha Naduvilezhath
 # Email:    staab ( at ) bio.lmu.de
 # Date:     2012-10-05
 # Licence:  GPLv3 or later

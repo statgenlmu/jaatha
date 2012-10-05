@@ -4,7 +4,7 @@
 # to the Demographic Model class. Needs to be loaded as first source
 # file in the package, hence the "aaa".
 # 
-# Author:   Paul R. Staab
+# Author:   Paul R. Staab & Lisha Naduvilezhath 
 # Email:    staab (at) bio.lmu.de
 # Date:     2012-10-05
 # Licence:  GPLv3 or later

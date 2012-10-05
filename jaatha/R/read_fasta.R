@@ -3,7 +3,7 @@
 # Methodes for calculating the JSFS of two species based on (aligned) sequences
 # stored in fasta format.
 # 
-# Author:   Paul R. Staab 
+# Author:   Paul R. Staab & Lisha Naduvilezhath 
 # Email:    staab (at) bio.lmu.de
 # Date:     2012-09-20
 # Licence:  GPLv3 or later
