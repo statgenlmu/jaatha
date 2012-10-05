@@ -24,7 +24,7 @@ test: doc
 	# Runs the unit tests in inst/unitTests
 	cd jaatha/inst/unitTests; make
 
-check: doc
+check: doc clean-package
 	# Runs an R CMD check
 	R CMD check --no-vignettes jaatha
 	make clean-package

@@ -1,3 +1,8 @@
+Version 1.9.11:
++ Added a "simple" parallelization using doMC.
++ Some improfments to the UI.
++ Updated copyright information.
+
 Version 1.9.10:
 + Use /dev/shm for temp files if available
 + Added "folded" option to use a folded JSFS

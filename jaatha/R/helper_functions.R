@@ -1,13 +1,12 @@
-#!/usr/bin/Rscript --vanilla
-#
-# awesome_helper_functions
-# A collection of nice litte helper functions
+# ------------------------------------------------------------
+# helper_functions.R
+# A collection of litte helper functions
 # 
 # Author:   Paul R. Staab 
 # Email:    staab (at) bio.lmu.de
-# Date:     2012-09-14
+# Date:     2012-10-05
 # Licence:  GPLv3 or later
-#
+# ------------------------------------------------------------
 
 
 #-----------------------------------------------------------------------
@@ -16,9 +15,9 @@
 
 # Create a new enviroment for local variables that won't be looked after package
 # loading like jaathas enviroment is.
-if (!exists(".local")) .local <- new.env()
-if (!exists('log.level', envir=.local)) .local$log.level <- 1
-if (!exists('log.file', envir=.local))  .local$log.file  <- ""
+if (!exists(".jaatha")) .jaatha <- new.env()
+if (!exists('log.level', envir=.jaatha)) .jaatha$log.level <- 1
+if (!exists('log.file', envir=.jaatha))  .jaatha$log.file  <- ""
 
 # A helper function for easy creation of logging output
 #
@@ -29,18 +28,18 @@ if (!exists('log.file', envir=.local))  .local$log.file  <- ""
 # @param ...   One or more strings/variables to be written to the log stream
 # @return      nothing
 .log <- function(level, ...) {
-  if (level > .local$log.level) return()
+  if (level > .jaatha$log.level) return()
 
-  if ( .local$log.level == 1 )  {
+  if ( .jaatha$log.level == 1 )  {
     # Normal output without dates
     cat(...,"\n",sep=" ")
     return()
   }
 
   cat(format(Sys.time(), "%Y-%m-%d %H:%M:%S"), ..., "\n", sep=" ",
-      file=.local$log.file, append=T)
+      file=.jaatha$log.file, append=T)
 
-  if (.local$log.file != "" && level == 1) {
+  if (.jaatha$log.file != "" && level == 1) {
     # Also print normal output when logging to file
     cat(...,"\n",sep=" ")
   }
@@ -74,14 +73,14 @@ setLogging <- function(log.level, log.file) {
   checkType(log.level, c("num", "s"), F)
   checkType(log.file, c("char", "s"), F)
 
-  if (!missing(log.level)) .local$log.level <- log.level
-  if (!missing(log.file)) .local$log.file <- log.file
+  if (!missing(log.level)) .jaatha$log.level <- log.level
+  if (!missing(log.file)) .jaatha$log.file <- log.file
 }
 
 #' Gets the current logging level
-getLogLevel <- function() return(.local$log.level)
+getLogLevel <- function() return(.jaatha$log.level)
 #' Gets the current logging file
-getLogFile  <- function() return(.local$log.file)
+getLogFile  <- function() return(.jaatha$log.file)
 
 
 
@@ -171,23 +170,31 @@ checkType <- function(variable, type, required=T, allow.na=T) {
 }
 
 
+#-----------------------------------------------------------------------
+# Functions to use R's just-in-time compiler
+#-----------------------------------------------------------------------
 activateCompiler <- function() {
   if ("compiler" %in% rownames(installed.packages())){
     library("compiler")
-#    .local$compile.level <- compiler::enableJIT(3)
+    .jaatha$compile.level <- compiler::enableJIT(3)
   }
 }
 
 
 deactivateCompiler <- function() {
-  if (exists("compile.level", envir=.local)) {
-    compiler::enableJIT(.local$compile.level)
+  if (exists("compile.level", envir=.jaatha)) {
+    compiler::enableJIT(.jaatha$compile.level)
   }
 }
 
+
+
+#-----------------------------------------------------------------------
+# Functions to deal with temporary files
+#-----------------------------------------------------------------------
 getTempDir <- function() {
-  if (exists("temp.dir", envir=.local)) {
-    return(.local$temp.dir)
+  if (exists("temp.dir", envir=.jaatha)) {
+    return(.jaatha$temp.dir)
   }
 
   if (file.exists("/dev/shm")) tmp.dir <- "/dev/shm/jaatha"
@@ -197,22 +204,31 @@ getTempDir <- function() {
   while (file.exists(paste(tmp.dir, "-", i, sep="")))
     i <- i + 1
 
-  .local$temp.dir <- paste(tmp.dir, "-", i, sep="") 
-  dir.create(.local$temp.dir)
-  return(.local$temp.dir)
+  .jaatha$temp.dir <- paste(tmp.dir, "-", i, sep="") 
+  dir.create(.jaatha$temp.dir)
+  return(.jaatha$temp.dir)
 }
 
 getTempFile <- function(file.name="file"){
-  if (!exists("temp.file.count", envir=.local))
-      .local$temp.file.count <- 0
+  if (!exists("temp.file.count", envir=.jaatha))
+      .jaatha$temp.file.count <- 0
 
-  .local$temp.file.count <- .local$temp.file.count + 1 %% 1000000
-  return(paste(getTempDir(), "/", file.name, "_", Sys.getpid(), "_", .local$temp.file.count, sep=""))
+  .jaatha$temp.file.count <- .jaatha$temp.file.count + 1 %% 1000000
+  return(paste(getTempDir(), "/", file.name, "_", Sys.getpid(), "_", .jaatha$temp.file.count, sep=""))
 }
 
 removeTempFiles <- function() {
-  if (exists("temp.dir", envir=.local)) {
-    unlink(.local$temp.dir, recursive=T)
-    rm(temp.dir, envir=.local)
+  if (exists("temp.dir", envir=.jaatha)) {
+    unlink(.jaatha$temp.dir, recursive=T)
+    rm(temp.dir, envir=.jaatha)
   }
+}
+
+
+
+#-----------------------------------------------------------------------
+# Function to generate seeds
+#-----------------------------------------------------------------------
+generateSeeds <- function(n=1) {
+  return(sample.int(2^20,n))
 }

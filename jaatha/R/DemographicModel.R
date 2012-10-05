@@ -1,3 +1,14 @@
+#---------------------------------------------------------------
+# DemographicModel.R
+# Class for representing a model of the evolutionary development
+# of two different species.
+# 
+# Authors:  Paul R. Staab
+# Email:    staab ( at ) bio.lmu.de
+# Date:     2012-10-05
+# Licence:  GPLv3 or later
+#--------------------------------------------------------------
+
 setClass("DemographicModel" ,
          representation(features="data.frame",
                         parameters="data.frame",
@@ -340,9 +351,9 @@ makeThetaLast <- function(dm) {
 
 # Selects a program for simulation that is capable of all current features
 .dm.selectSimProg <- function(dm) {
-  for (i in seq(along = .local$simProgs)){
-    if (all(dm@features$type %in% .local$simProgs[[i]]@possible.features)) {
-      dm@currentSimProg <- .local$simProgs[[i]]
+  for (i in seq(along = .jaatha$simProgs)){
+    if (all(dm@features$type %in% .jaatha$simProgs[[i]]@possible.features)) {
+      dm@currentSimProg <- .jaatha$simProgs[[i]]
       .log2("Using",dm@currentSimProg@name,"for simulations")
       return(dm)
     }
@@ -1003,7 +1014,7 @@ dm.simSumStats <- function(dm, parameters, sumStatFunc){
   jsfs <- F
   if (!is.matrix(parameters)) parameters <- matrix(parameters,1,length(parameters))
   if (missing(sumStatFunc)) {
-    if (nrow(parameters) > 1) stop("Only one parameter combination is allow,
+    if (nrow(parameters) > 1) stop("Only one parameter combination is allowed
                                    when not providing sumStatFunc.")
     jsfs <- T
     sumStatFunc  <- function(dm, jsfs){ return(as.vector(jsfs)) }

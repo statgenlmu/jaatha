@@ -1,4 +1,11 @@
-setClass("ModelFitting") 
+# --------------------------------------------------------------
+# ModelFitting.R
+# Functions for the machine learning part of Jaatha. 
+# 
+# Authors:  Lisha Naduvilezhath & Paul R. Staab
+# Date:     2012-10-05
+# Licence:  GPLv3 or later
+# --------------------------------------------------------------
 
 ## Function to fit a glm for each summary statistic with the generated
 ## parameter combinations in the block. The first 'bObject@nPar'

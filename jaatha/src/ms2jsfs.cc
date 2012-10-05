@@ -1,3 +1,12 @@
+/*****************************************************
+ *  msFile2jsfs.cc
+ *  Calculates the JSFS out of a piped ms output.
+ *  
+ *  Author:     Lisha Naduvilezhath
+ *  Date:       2012-10-05
+ *  Licence:    GNU GPLv3 (or later)
+ *****************************************************/
+
 #include <R.h>
 #include<string>
 #include<cstring>
@@ -40,5 +49,3 @@ extern "C"{
     }
   }
 }
-
-

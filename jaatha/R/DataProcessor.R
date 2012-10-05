@@ -1,18 +1,12 @@
-## DataProcessor reads all files in the specified folder of the specified
-## filetype (currently only .nex, .phy, msoutput), calculates the jsfs and
-## returns the summary statistics for the entire data set. All loci are
-## concatenated and only positions without "-","_" nor "?" are
-## considered.
-
-setClass("DataProcessor",
-		representation= representation(
-				fileFolder="character", # name of folder which contains all files to be read in
-				fileType="character", # type of files, e.g. nex; all files of that type in the folder will be read in
-				nLoci ="numeric", # number of files that will be read in = number of files, each loci is assumed to be in a seperate file
-				popSampleSizes="numeric" # vector of number of individuals sampled from each population
-		)
-)
-
+# --------------------------------------------------------------
+# DataProcessor.R
+# Various functions for importing and processing data from external 
+# sources.
+# 
+# Authors:  Lisha Naduvilezhath & Paul R. Staab
+# Date:     2012-10-05
+# Licence:  GPLv3 or later
+# --------------------------------------------------------------
 
 ##Function to generate new msoutput file with given parameter values,
 ##calculate its jsfs and return its summary statistics. Command for ms
@@ -103,15 +97,24 @@ setClass("DataProcessor",
 ## for the simulate-function (in Simulator.R).
 Jaatha.calcLikelihood <- function(jObject, nSimulations, par){
 	.log2("Called Jaatha.calcLikelihood()")
-	scaledPars <- .deNormalize(jObject,par)
-	.log2("par:",par," | Scaled: ",scaledPars)
+    par <- matrix(rep(par, each=nSimulations), nrow=nSimulations)
 
-	scaledPars <- matrix(scaledPars,nSimulations,length(scaledPars),byrow=T)
+    sim.packages <- createSimulationPackages(par, jObject@sim.package.size)
+    seeds <- generateSeeds(length(sim.packages)+1)
 
-	.log2("Simulating...")
-        simSS <- dm.simSumStats(jObject@dm, scaledPars,
-                                jObject@sum.stats.func)
-	simSS <- apply(simSS,2,mean)
+    # Simulate each package, maybe on different cores
+    simSS  <- foreach(i = seq(along = sim.packages), .combine='rbind') %dopar% {
+      set.seed(seeds[i])
+      sim.pars <- .deNormalize(jObject,
+                               sim.packages[[i]],
+                               withoutTheta=jObject@externalTheta)
+      sumStats <- dm.simSumStats(jObject@dm, sim.pars, jObject@sum.stats.func)
+      return(sumStats)
+    }
+    set.seed(seeds[length(seeds)])
+
+    # Average the values of each summary statistic
+    simSS <- apply(simSS, 2, mean)
 
 	.log2("Calculating Likelihood...")
 	logL <- 0
@@ -120,7 +123,7 @@ Jaatha.calcLikelihood <- function(jObject, nSimulations, par){
 		logL <- logL + jObject@sumStats[s] * log(simSS[s]) - simSS[s] - .logfac(jObject@sumStats[s])
 	}
 	.log2("Finished Jaatha.calcLikelihood(). Return:",logL)
-	return (logL)
+	return(logL)
 }
 
 ## Reads msout from internal memory and calculates jsfs with use of the C++

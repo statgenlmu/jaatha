@@ -1,3 +1,15 @@
+/*-------------------------------------------------
+ *  msFile2jsfs.cc
+ *  Calculates the JSFS out of a ms output file.
+ *  
+ *  Author:     Paul R. Staab
+ *  Email:      staab ( at ) bio.lmu.de
+ *  Date:       2012-10-05
+ *  Licence:    GNU GPLv3 (or later)
+ *-------------------------------------------------
+ */
+
+
 #include <R.h>	
 #include <stdlib.h>
 #include <fstream>
@@ -20,8 +32,8 @@ extern "C"{
   void msFile2jsfs(char **filename, int *ps1, int *ps2, int *jsfs) {
     const int s1=*ps1, s2=*ps2;
 
-    if (debug) cout << "Size of JSFS: " << sizeof(jsfs) / sizeof(jsfs[0]) << endl;
-    if (debug) printjsfs(jsfs, s1, s2);
+    //if (debug) cout << "Size of JSFS: " << sizeof(jsfs) / sizeof(jsfs[0]) << endl;
+    //if (debug) printjsfs(jsfs, s1, s2);
 
     string line;
     //Rprintf("Filename: %s \n",*filename);
@@ -41,9 +53,9 @@ extern "C"{
 }
 
 void parseLine(string line, int *jsfs, const int &s1, const int &s2) {
-  if (debug) cout << line << endl;
+  //if (debug) cout << line << endl;
   if (line == "") {
-      if (debug) cout << "> Empty line detected" << endl;
+      //if (debug) cout << "> Empty line detected" << endl;
       if (insideSite){
           //Site ended
           insideSite = 0;
@@ -67,10 +79,10 @@ void parseLine(string line, int *jsfs, const int &s1, const int &s2) {
   }
   else if (line == "//") {
       insideSite = 1;
-      if (debug) cout << "> New Site detected" << endl;
+      //if (debug) cout << "> New Site detected" << endl;
   }
   else if ( (line.substr(0,1) == "0" || line.substr(0,1) == "1") && insideSite){
-      if (debug) cout << "> Data line detected" << endl;
+      //if (debug) cout << "> Data line detected" << endl;
 
       //Initialize per site variables on first data line
       if (L == 0) {
@@ -107,9 +119,9 @@ void parseLine(string line, int *jsfs, const int &s1, const int &s2) {
 void printjsfs(int *jsfs, const int &s1, const int &s2) {
   for (int i=0; i<=s1; i++) {
       for (int j=0; j<=s2; j++) {
-            cout << jsfs[ i * (s2 + 1) + j ] << " ";
+            //cout << jsfs[ i * (s2 + 1) + j ] << " ";
       }
-          cout << endl;
+          //cout << endl;
   }
 }
 

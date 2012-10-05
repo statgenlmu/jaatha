@@ -1,4 +1,9 @@
-// Copyright: copied (without a change) from the phyclust package
+/*********************************************************************
+ * License information: 
+ * copied (without a change) from the phyclust package.
+ * http://cran.r-project.org/web/packages/phyclust/index.html
+ * The phyclust package is shipped under the GNU GPLv2 (or later).
+ *********************************************************************/
 
 /* This file contains a wrap for R to call ms_main() in "ms.c". */
 

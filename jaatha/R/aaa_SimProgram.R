@@ -1,7 +1,19 @@
+#---------------------------------------------------------------
+# aaa_SimProgram.R
+# Abstract class used for connecting a sequence simulation program 
+# to the Demographic Model class. Needs to be loaded as first source
+# file in the package, hence the "aaa".
+# 
+# Author:   Paul R. Staab
+# Email:    staab (at) bio.lmu.de
+# Date:     2012-10-05
+# Licence:  GPLv3 or later
+#----------------------------------------------------------------
+
 # Keep a user modifiable list of availible simulation programs in a private
 # enviroment (jaatha's own env is read-only after package load)
-if (!exists(".local")) .local <- new.env()
-if (!exists("simProgs", envir=.local)) .local$simProgs <- list()
+if (!exists(".jaatha")) .jaatha <- new.env()
+if (!exists("simProgs", envir=.jaatha)) .jaatha$simProgs <- list()
 
 slots <- representation(name="character",
                         executable="character",
@@ -119,5 +131,5 @@ createSimProgram <- function(name, executable,
                  simFunc = simFunc,
                  singleSimFunc = singleSimFunc) 
 
-  .local$simProgs[[name]] <- simProg
+  .jaatha$simProgs[[name]] <- simProg
 }

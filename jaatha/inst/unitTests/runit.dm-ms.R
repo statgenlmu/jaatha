@@ -30,5 +30,5 @@ test.msSingleSimFunc <- function() {
 }
 
 test.simProg <- function(){
-  checkTrue(!is.null(.local$simProgs[["ms"]]))
+  checkTrue(!is.null(.jaatha$simProgs[["ms"]]))
 }

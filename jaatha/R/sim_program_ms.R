@@ -1,3 +1,12 @@
+# --------------------------------------------------------------
+# sim_prog_ms.R
+# Adaptor to calling ms from a demographic model.
+# 
+# Authors:  Lisha Naduvilezhath & Paul R. Staab
+# Date:     2012-10-05
+# Licence:  GPLv3 or later
+# --------------------------------------------------------------
+
 possible.features  <- c("mutation","migration","split",
                         "recombination","size.change","growth")
 possible.sum.stats <- c("jsfs")

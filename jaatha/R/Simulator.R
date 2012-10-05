@@ -1,9 +1,18 @@
+# --------------------------------------------------------------
+# Simulator.R
+# Functions related to the simulation of DNA sequence data.
+# 
+# Authors:  Lisha Naduvilezhath & Paul R. Staab
+# Date:     2012-10-05
+# Licence:  GPLv3 or later
+# --------------------------------------------------------------
+
 ## This function simulates nSamp random parameter combinations within
 ## lower and upper bounds for each parameter (boarders values
 ## needed to be between 0 and 1!!) and with the demographic
 ## model specified in simulate() with theta=5.  Returns the
 ## random parameters and the corresponding summary statistics. 
-simulateWithinBlock<- function(bObject,jaathaObject){
+simulateWithinBlock<- function(bObject, jaathaObject) {
   #time1<-Sys.time()
   ##values in [0-1]
   ##dim=c(lower /upper Boundry, #parameters)
@@ -15,9 +24,8 @@ simulateWithinBlock<- function(bObject,jaathaObject){
                                  min=allBoundry[1,],
                                  max=allBoundry[2,]),
                            dim=c(bObject@nPar,bObject@nSamp)))
-  ##This are the random samples #aperm transposes matrices
 
-  ## include corner points into simulation as well
+  #Include corner points into simulation as well
   ##print(allBoundry)
   nCorners <- 2^bObject@nPar
   ##number of corners, corners will also be simulated
@@ -36,47 +44,46 @@ simulateWithinBlock<- function(bObject,jaathaObject){
     ##deparse.level=0 makes no labels
   }
 
-  ## dim= c(#repetitions, parameters +sumstats)
-  ## random values between 0 and 1 will be 'saved' in paraNsumstat
+  # Create "packages" of parameters combinations for possible parallelization.
+  sim.packages <- createSimulationPackages(randompar,
+                                           jaathaObject@sim.package.size)
 
-  #used fixed value for theta if we are estimating it externally
-  #if (jaathaObject@externalTheta) randompar <- cbind(randompar,5)
+  seeds <- generateSeeds(length(sim.packages)+1)
 
-  #simulate a line of sum stats for each line in randompars
-  sumStats <- dm.simSumStats(jaathaObject@dm,
-                             .deNormalize(jaathaObject,randompar,
-                                          withoutTheta=jaathaObject@externalTheta),
-                             jaathaObject@sum.stats.func)
+  # Simulate each package, maybe on different cores
+  sumStats <- foreach(i = seq(along = sim.packages), .combine='rbind') %dopar% {
+    set.seed(seeds[i])
+    sim.pars <- .deNormalize(jaathaObject, 
+                             sim.packages[[i]],
+                             withoutTheta=jaathaObject@externalTheta)
+    sumStats <- dm.simSumStats(jaathaObject@dm, sim.pars, jaathaObject@sum.stats.func)
+    return(sumStats)
+  }
+
+  set.seed(seeds[length(seeds)])
+  
+  # Create combined output
   paraNsumstat <- cbind(randompar, sumStats) 
 
   return (paraNsumstat)
 }
 
+createSimulationPackages <- function(random.par, package.size) {
+  if (package.size == 0) return(list(random.par))
 
+  sim.packages <- list()
+  num.pars <- nrow(random.par)
+  i <- 0
+  
+  while (i < num.pars/package.size) {
+    i <- i + 1
+    lower <- (i-1)*package.size+1
+    upper <-  min(i*package.size, num.pars)
+    sim.packages[[i]] <- random.par[lower:upper, ]
+  }
 
-## Function that calls Hudson's ms (and/or seq-gen) with the given parameters. 
-## Output
-## is written to file called 'simOutput', if not specified.  
-## Each parameter needs to be entered as par["paramIndex"] (each
-## parameter has its number; needs to be the same order as in
-## parameter ranges) To keep the order for the other functions: last
-## parameter should be theta!!!
-## If finiteSites version is used: 
-## Each demo-model needs to be specified in 2 ways, an infinite sites way (i.e.
-## as the ms command) and as a finite sites way (i.e. first call ms that 
-## generates treeFile which will be read in by seq-gen.)  
-#Jaatha.simulate <- function(dm,par,nLoci,fileName="simOutput",
-#			    nSample=NA,finite=FALSE # unused
-#			   )
-#{
-#       if (missing(par)) {
-#		cat("No model parametes given. Using random values:\n")
-#		par <- runif(dm.getNPar(dm))
-#		print( .calcAbsParamValue(dm,par) )  
-#       }
-#	system( dm.simulationCmd(dm,relParamValue=par,nLoci=nLoci,fileName) )
-#} 
-
+  return(sim.packages)  
+}
 
 ##Function to map 'value' in oldRange to values between 0 and
 ##1. Returned will be a value between 0 and 1.
@@ -89,7 +96,7 @@ Jaatha.normalize01 <- function(oldRange, value){
 
 ##Function to map value between 0 and 1 to oldRange
 ## Returns single value (in oldRange).
-Jaatha.deNormalize01 <- function(oldRange,value){
+Jaatha.deNormalize01 <- function(oldRange, value){
   if ( all(is.na(oldRange)) ) return(value) #external Theta
   oldRange <- log(oldRange)    
   return (exp(value*(max(oldRange)-min(oldRange))+min(oldRange)))
