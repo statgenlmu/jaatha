@@ -24,7 +24,7 @@ callMs <- function(opts){
   ms.file <- getTempFile("ms")
   
   .log3("Calling ms...")
-  .Call("R_ms_main", opts, ms.file, PACKAGE = "jaatha")
+  .Call("R_ms_main", opts, ms.file, PACKAGE = "phyclust")
   .log3("ms finished. Finished callMs()")
   return(ms.file)
 }

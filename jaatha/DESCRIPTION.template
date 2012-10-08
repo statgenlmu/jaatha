@@ -8,6 +8,6 @@ Maintainer: Paul R. Staab <staab@bio.lmu.de>
 Description: A method for estimating parameters of the demographic history of
     two closely related species out of SNP data.
 Depends:
-    methods, foreach
+    methods, foreach, phyclust
 Suggests:
     doMC, RUnit
