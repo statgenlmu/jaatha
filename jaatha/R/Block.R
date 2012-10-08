@@ -25,24 +25,24 @@ setClass("Block" , representation=slots)
 
 
 ## Shows the content of the slots of the Block object.
-showBlock <- function(block) {
+showBlock <- function(object) {
   cat("*** Object of class BLOCK ***\n")           
-  cat(" nPar =",block@nPar,"\n")            
-  cat(" lowerBound =",block@lowerBound,"\n")           
-  cat(" upperBound =",block@upperBound,"\n")
-  cat(" nSamp =",block@nSamp,"\n")             
-  cat(" nLoci =",block@nLoci,"\n")             
-  cat(" weight =",block@weight,"\n")                      
+  cat(" nPar =",object@nPar,"\n")            
+  cat(" lowerBound =",object@lowerBound,"\n")           
+  cat(" upperBound =",object@upperBound,"\n")
+  cat(" nSamp =",object@nSamp,"\n")             
+  cat(" nLoci =",object@nLoci,"\n")             
+  cat(" weight =",object@weight,"\n")                      
   cat(" dimensions of parNsumstat =",
-      dim(block@parNsumstat)," ")
-  if (dim(block@parNsumstat)[1]!=0) {
-    cat(block@parNsumstat[1,1],block@parNsumstat[2,1]," ...\n")
+      dim(object@parNsumstat)," ")
+  if (dim(object@parNsumstat)[1]!=0) {
+    cat(object@parNsumstat[1,1],object@parNsumstat[2,1]," ...\n")
   } else {
     cat("\n")
   }
-  if (length(block@MLest)!=0){
-    cat(" MLest [0..1]=", round(block@MLest,6),
-        "with score",block@score,"\n")
+  if (length(object@MLest)!=0){
+    cat(" MLest [0..1]=", round(object@MLest,6),
+        "with score",object@score,"\n")
   } else{}
   cat("*** End of Object of class BLOCK ***\n")   
 }

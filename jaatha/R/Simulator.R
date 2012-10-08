@@ -50,6 +50,7 @@ simulateWithinBlock<- function(bObject, jaathaObject) {
 
   seeds <- generateSeeds(length(sim.packages)+1)
 
+  i <- NULL # To make R CMD check stop complaining
   # Simulate each package, maybe on different cores
   sumStats <- foreach(i = seq(along = sim.packages), .combine='rbind') %dopar% {
     set.seed(seeds[i])

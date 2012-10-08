@@ -132,31 +132,31 @@ checkType <- function(variable, type, required=T, allow.na=T) {
 
   for (i in seq(along=type)){
     if (type[i] == "char" || type[i] == "character") {
-      func <- is.character
+      func <- function(x) { is.character(x) }
       error <- "has to be of type character"
     } else if (type[i] == "bool" || type[i] == "boolean") {
-      func <- is.logical
+      func <- function(x) { is.logical(x) }
       error <- "has to be of type boolean"
     } else if (type[i] == "num" || type[i] == "numeric") {
-      func <- is.numeric
+      func <- function(x) { is.numeric(x) }
       error <- "has to be of type numeric"
     } else if (type[i]  == "vec" || type[i]  == "vector") {
-      func <- is.vector
+      func <- function(x) { is.vector(x) }
       error <- "has to be a vector"
     } else if (type[i] == "mat" || type[i] == "matrix") {
-      func <- is.matrix
+      func <- function(x) { is.matrix(x) }
       error <- "has to be a matrix"
     } else if (type[i] == "fun" || type[i] == "function") {
-      func <- is.function
+      func <- function(x) { is.function(x) }
       error <- "has to be a function"
     } else if (type[i] == "s" || type[i] == "single") {
-      func <- function(var) {length(var) == 1}
+      func <- function(x) {length(x) == 1}
       error <- "must have length one."
     } else if (type[i] == "dm" || type[i] == "demographicModel") {
-      func <- function(dm) {class(dm)[1] == "DemographicModel"}
+      func <- function(x) {class(x)[1] == "DemographicModel"}
       error <- "is no demographic Model"
     } else if (type[i] == "jat" || type[i] == "jaatha") {
-      func <- function(jaatha) {class(jaatha)[1] == "Jaatha"}
+      func <- function(x) {class(x)[1] == "Jaatha"}
       error <- "is no Jaatha object"
     } else {
       stop("Unknown type: ",type[i])
@@ -218,6 +218,7 @@ getTempFile <- function(file.name="file"){
 }
 
 removeTempFiles <- function() {
+  temp.dir <- NULL
   if (exists("temp.dir", envir=.jaatha)) {
     unlink(.jaatha$temp.dir, recursive=T)
     rm(temp.dir, envir=.jaatha)

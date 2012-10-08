@@ -96,6 +96,8 @@
 ## given parameters.  Order of parameters should be the same as needed
 ## for the simulate-function (in Simulator.R).
 Jaatha.calcLikelihood <- function(jObject, nSimulations, par){
+    i <- NULL   # To make R CMD check stop complaining
+
 	.log2("Called Jaatha.calcLikelihood()")
     par <- matrix(rep(par, each=nSimulations), nrow=nSimulations)
 

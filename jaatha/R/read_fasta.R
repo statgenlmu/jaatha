@@ -9,40 +9,40 @@
 # Licence:  GPLv3 or later
 #-------------------------------------------------------------------------------
 
-#' Calculates the JSFS out of fasta files
+#' Calculates the JSFS for data imported with ape
 #'
-#' This function parses the three fasta file provided as input - one for each 
-#' population and one for the outgroup - and calculates the Joint Site 
-#' Frequency Spectrum (JSFS) of the sequences.
-#' @param population1 The path to the fasta file which contains the aligned 
-#'                    sequences of the first population.
-#' @param population2 The path to the fasta file which contains the aligned 
-#'                    sequences of the second population.
-#' @param outgroup    The path to the fasta file which contains the aligned 
-#'                    sequences of outgroup sequences. This file can contain 
-#'                    multiple sequences to account for ancestral
+#' The function 'read.dna' of package 'ape' allows you do import DNA data from
+#' various formats into R. This function calculates the JSFS of such imported
+#' data which can then be used as input for a Jaatha search. Please note that
+#' the data must be aligned.
+#'
+#' @param ape.data    DNA sequence data of multiple individuals from two populations
+#'                    and an optional outgroup sequence. It should be in a
+#'                    format as returned by ape's 'read.dna' function. Please
+#'                    refer to ape's manual for further details.
+#' @param pop1.rows   A numeric vector indicating which individuals of your
+#'                    dataset belong to the first population. The individuals
+#'                    are revered by their position in the dataset/their row
+#'                    number in 'ape.data'.
+#' @param pop2.rows   Same as 'pop1.rows', but for the individuals of the second
+#'                    population. 
+#' @param outgroup.rows  Same as 'pop1.rows', but for the individuals of the
+#'                    outgroup (if any). The outgroup can consist of more than
+#'                    one individual to account for ancestral
 #'                    misidentification. In this case, only positions in which
 #'                    all outgroup sequences are identically are considered.
-#'                    If no outgroup file is given a folded JSFS is calculated.
-#' @return            The JSFS, as matrix.
+#'                    If no outgroup is given a folded JSFS is calculated.
+#' @return            The calculated JSFS, as matrix.
 #' @export
-fasta2Jsfs <- function(population1, population2, outgroup=NA) {
-  jaatha:::checkType(population1, "char", T, F)
-  jaatha:::checkType(population1, "char", T, F)
-  jaatha:::checkType(population1, "char", T, T)
+calculateJsfs <- function(ape.data, pop1.rows, pop2.rows, outgroup.rows=NA) {
+  jaatha:::checkType(pop1.rows, c("num", "vec"), T, F)
+  jaatha:::checkType(pop2.rows, c("num", "vec"), T, F)
+  jaatha:::checkType(outgroup.rows, c("num", "vec"), F, T)
 
-  pop1 <- readFasta(population1)
-  pop2 <- readFasta(population2)
-  if (!is.na(outgroup)) outg <- readFasta(outgroup)
-  else outg <- matrix(0, nrow(pop1), 0)
+  if (all(is(ape.data) == "DNAbin")) ape.data <- as.character(ape.data)
+  jaatha:::checkType(ape.data, c("mat"), F, T)
 
-  mat <- cbind(outg, pop1, pop2)
-  if (!is.na(outgroup)) outg.cols <- 1:ncol(outg)
-  else                 outg.cols <- NA
-  pop1.cols <- 1:ncol(pop1) + ncol(outg)
-  pop2.cols <- 1:ncol(pop2) + ncol(outg) + ncol(pop1)
-
-  jsfs <- markerTableToJsfs(mat, pop1.cols, pop2.cols, outg.cols)
+  jsfs <- markerTableToJsfs(t(ape.data), pop1.rows, pop2.rows, outgroup.rows)
   return(jsfs)
 }
 
@@ -63,28 +63,6 @@ markerTableToJsfs <- function(marker.table, pop1.cols, pop2.cols,
   snp.types <- getSNPTypes(snps, pop1.mask, pop2.mask, folded)
   jsfs <- calcJSFS(snp.types, c(length(pop1.cols),length(pop2.cols)))
   return(jsfs)
-}
-
-
-readFasta <- function(fasta.file) {
-  seq.data <- scan(fasta.file, character(), quiet=T)
-  seq.data <- toupper(seq.data)
-  first.char <- substr(seq.data,1,1)
-
-  sequences <- list()
-  individual <- 0
-
-  for (i in seq(along = seq.data)) {
-    if (first.char[i] == ">") {
-      individual <- individual + 1
-      sequences[[individual]] <- character()
-    } else if (!first.char[i] %in% c("A","C","G","T")) { }
-    else {
-      seq.vector <- unlist(strsplit(seq.data[i], ""))
-      sequences[[individual]] <- c(sequences[[individual]], seq.vector)
-    }
-  }
-  return(sapply(sequences, function(x){return(x)}))
 }
 
 
@@ -111,6 +89,8 @@ getSNPTypes <- function(snps, pop1.mask, pop2.mask, folded){
   snp.type <- matrix(0, nrow(snps), 2)
   pops.size <- c(sum(pop1.mask), sum(pop2.mask))
 
+  if (nrow(snps) == 0) return(snp.type)
+
   for (i in 1:nrow(snps)){
     snp.row <- unlist(snps[i, ])
     derived <- snp.row != snp.row[1]
@@ -127,6 +107,8 @@ getSNPTypes <- function(snps, pop1.mask, pop2.mask, folded){
 
 calcJSFS <- function(snp.types, sample.sizes) {
   jsfs <- matrix(0, sample.sizes[1] + 1, sample.sizes[2] + 1)
+  
+  if (nrow(snp.types) == 0) return(jsfs)
 
     for (j in 1:nrow(snp.types)) {
       jsfs <- jsfs + (row(jsfs) == (snp.types[j, 1] + 1) 

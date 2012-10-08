@@ -169,7 +169,7 @@ pop2.file <- system.file('example_fasta_files/pop2.fasta',
                          package='jaatha')
 outgroup.file <- system.file('example_fasta_files/outgroup.fasta', 
                              package='jaatha')
-fasta2Jsfs(pop1.file, pop2.file, outgroup.file)
+#fasta2Jsfs(pop1.file, pop2.file, outgroup.file)
 @
 
 \noindent
@@ -178,7 +178,7 @@ outgroup sequence available. However, using the folded JSFS, you will get
 significant worser estimates the with the unfolded one.
 
 <<Calc folded JSFS>>=
-fasta2Jsfs(pop1.file, pop2.file)
+#fasta2Jsfs(pop1.file, pop2.file)
 @
 
 \noindent

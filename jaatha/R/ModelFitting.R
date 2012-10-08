@@ -122,7 +122,7 @@ estimate <- function(bObject,jObject,modFeld,ssData,boarder=0.25,opt=3){
 					} else{}
 					#cat(" opt2: best par:",parEst,exp(LogThetaEst/wsum),"\n")
 					return (list(est= parEst,
-									theta= exp(LogThetaEst/wsum), 
+									theta= exp(logThetaEst/wsum), 
 									score= slL))
 				}
 				else{
