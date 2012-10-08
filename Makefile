@@ -21,8 +21,9 @@ doc: clean-doc
 	Rscript -e 'library(roxygen2); roxygenise("jaatha")'
 
 test: doc
-	# Runs the unit tests in inst/unitTests
-	cd jaatha/inst/unitTests; make
+	# Runs the unit tests
+	R CMD INSTALL jaatha
+	cd unitTests; ./doRUnit.R
 
 check: doc clean-package
 	# Runs an R CMD check

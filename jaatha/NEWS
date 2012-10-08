@@ -1,13 +1,13 @@
 Version 1.9.11:
 + Added a "simple" parallelization using doMC.
-+ Some improfments to the UI.
++ Some improvements to the UI.
 + Updated copyright information.
 
 Version 1.9.10:
 + Use /dev/shm for temp files if available
 + Added "folded" option to use a folded JSFS
 + Added documentation for fasta2jsfs()
-+ Made fasta2jsfs calc the folded JSFS if no outgroup is given.
++ Made fasta2jsfs calculate the folded JSFS if no outgroup is given.
 
 Version 1.9.9:
 + Reworked the demographic model class to be more flexible and consistent.

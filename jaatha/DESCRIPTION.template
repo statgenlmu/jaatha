@@ -10,4 +10,4 @@ Description: A method for estimating parameters of the demographic history of
 Depends:
     methods, foreach, phyclust
 Suggests:
-    doMC, RUnit
+    doMC
