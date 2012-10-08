@@ -31,6 +31,7 @@ tests <- runTestSuite(testSuite)
 
 ## Default report name
 pathReport <- file.path("./results/")
+if (!file.exists(pathReport)) dir.create(pathReport)
 
 ## Report to stdout and text files
 cat("------------------- UNIT TEST SUMMARY ---------------------\n\n")

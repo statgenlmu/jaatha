@@ -37,10 +37,10 @@ package: check
 clean:
 	# Deletes temoral output
 	-rm -rv $(output) jaatha.Rcheck
+	-rm -rv unitTests/results
 
 clean-package:
 	# Deletes temorary files, which tends to accumulate in the package
-	- cd jaatha/inst/unitTests; rm report* 2> /dev/null
 	- cd jaatha/src/; rm *.so *.o *.rds ms/*.o 2> /dev/null
 
 clean-doc:
