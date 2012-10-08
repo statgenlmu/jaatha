@@ -1,13 +1,14 @@
-Package: jaatha
-Version: 1.9.11
-Date:    2012-10-04
-License: GPL (>= 3)
-Title:   Jaatha - Fast estimation of demographic parameters
-Author:  Lisha Naduvilezhath, Paul R. Staab and Dirk Metzler
+Package:    jaatha
+Version:    1.9.11
+Date:       2012-10-08
+License:    GPL (>= 3)
+Title:      Jaatha - Fast Estimation of Model Parameters in Population Genetics
+Author:     Lisha Naduvilezhath, Paul R. Staab and Dirk Metzler
 Maintainer: Paul R. Staab <staab@bio.lmu.de>
-Description: A method for estimating parameters of the demographic history of
+Description:
+    A method for estimating parameters of the demographic history of
     two closely related species out of SNP data.
 Depends:
-    methods, foreach, phyclust
+    methods, foreach, phyclust, ape
 Suggests:
     doMC

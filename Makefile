@@ -30,7 +30,7 @@ check: doc clean-package
 	R CMD check --no-vignettes jaatha
 	make clean-package
 
-package: check
+package: test check
 	# Build the R package out of the sources
 	R CMD build jaatha
 
