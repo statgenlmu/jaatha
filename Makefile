@@ -6,15 +6,20 @@ default: package
 
 howto:
 	# Builds and opens Jaatha's vignette 
-	- mkdir $(output)
-	cd $(output); R CMD Sweave ../$(docPath)/$(rnwfile).Rnw
-	- mv $(docPath)/*.tex $(docPath)/*.pdf $(docPath)/*.eps $(output)
-	- cd $(docPath); cp *.png *.bib ../../$(output)/
-	cd $(output); pdflatex $(rnwfile).tex
-	cd $(output); bibtex $(rnwfile)
-	cd $(output); pdflatex $(rnwfile).tex
-	cd $(output); pdflatex $(rnwfile).tex
-	cd $(output); evince $(rnwfile).pdf &
+	- mkdir $(output); cp -r $(docPath)/* $(output)/
+	cd $(output); R CMD Sweave $(rnwfile).Rnw;\
+				  pdflatex $(rnwfile).tex;\
+				  bibtex $(rnwfile);\
+				  pdflatex $(rnwfile).tex;\
+				  pdflatex $(rnwfile).tex;\
+				  evince $(rnwfile).pdf &
+
+howto-cache:
+	cd $(docPath); R CMD Sweave jaatha.Rnw
+	cd $(docPath)/cache; R CMD Sweave initialSearch.Rnw
+	cd $(docPath); R CMD Sweave jaatha.Rnw
+	cd $(docPath)/cache; R CMD Sweave refineSearch.Rnw
+	rm $(docPath)/jaatha.tex
 
 doc: clean-doc
 	# Builds the roxygen2 documentation of Jaatha
@@ -27,10 +32,10 @@ test: doc
 
 check: doc clean-package
 	# Runs an R CMD check
-	R CMD check --no-vignettes jaatha
+	R CMD check jaatha
 	make clean-package
 
-package: test check
+package: test howto-cache check
 	# Build the R package out of the sources
 	R CMD build jaatha
 
@@ -48,9 +53,3 @@ clean-doc:
 	- rm jaatha/man/*.Rd 2> /dev/null
 	- rm jaatha/DESCRIPTION 2> /dev/null 
 	cp jaatha/DESCRIPTION.template jaatha/DESCRIPTION
-
-commit: clean-package
-	# Makes a git commit
-	git add jaatha/R/*.R jaatha/src jaatha/inst/unitTests jaatha/DESCRIPTION Makefile
-	git commit
-	git push 

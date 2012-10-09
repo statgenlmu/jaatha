@@ -17,7 +17,6 @@
 <<foo,include=FALSE,echo=FALSE>>=
 options(keep.source = TRUE, width = 60)
 jinfo <- packageDescription("jaatha")
-load('startpoints.save')
 @
 
 \hypersetup{
@@ -64,7 +63,7 @@ Hence, we could propose the simple demographic model described in Figure~\ref{fi
 
 \begin{figure}
 \begin{center}
-\includegraphics[width=60mm]{dm.png}
+\includegraphics[width=60mm]{img/dm.png}
 \end{center}
 \caption{
 A simple demographic model: The ancestral population splits into two populations $\tau$ time 
@@ -119,10 +118,10 @@ of the parameter space. The parameters are scaled as in the popular simulation p
 \end{itemize}
 
 \noindent
-Finally we can check your model using
-<<Checking the model>>=
-dm
-@
+%Finally we can check your model using
+%<<Checking the model>>=
+%dm
+%@
 
 Keep in mind that a `good' model -- which is one that approximates the real demographic
 history but is also as simple as possible -- is crucial for obtaining meaningful
@@ -155,12 +154,7 @@ description.
 
 \section{Importing Your Data}
 \noindent
-To run Jaatha, you need to calculate the JSFS of your data. At the moment we
-provide a function to do so from aligned fasta files. We are working on
-including functions for more formats. 
-
-To load the fasta files, you can use the \verb@fasta2Jsfs()@ function. We will
-now use it to calculate the JSFS of fasta files included in the package:
+To run Jaatha, you need to calculate the JSFS of your data. 
 
 <<Load Fasta files>>=
 pop1.file <- system.file('example_fasta_files/pop1.fasta', 
@@ -213,8 +207,10 @@ real data:
 <<Initialize>>=
 jaatha <- Jaatha.initialize(dm, jsfs=jsfs)
 @
-%startPoints <- Jaatha.initialSearch(j1,nSim=500,nBlocksPerPar=3,multiple=T)
-%save(startPoints,file='startpoints.save')
+
+<<SaveJaatha, include=FALSE, echo=FALSE>>=
+save(jaatha, file='cache/saved_objects/jaatha.Rsave')
+@
 
 \noindent
 For more options refer to \Verb@?Jaatha.initialize@ or the Jaatha manual.
@@ -235,46 +231,40 @@ maximal score. Each of the blocks provides a single best parameter combination.
 In R, the initial search is performed with the command
 
 % Don't run a complete jaatha search; would take tooo long
-\vspace{0.5em}
-\noindent
-\verb@> startPoints <- Jaatha.initialSearch(jaatha,nSim=200,nBlocksPerPar=3)@
-\vspace{-0.6em}
+\input{cache/initialSearch}
+
+<<LoadStartPoints, include=FALSE, echo=FALSE>>=
+load('cache/saved_objects/start-points.Rsave')
+@
 
 \noindent
 which takes a while, and finally returns a list of start points sorted by score:
-<<Initial Search>>=
-Jaatha.printStartPoints(jaatha,startPoints)
+<<PrintStartPoints>>=
+Jaatha.printStartPoints(jaatha, start.points)
 @
 Here, there is a big reduction in the scores after the first five blocks, and a smaller one 
 after the first two. This is suggesting that we either use the first two or the first five 
 blocks as starting positions for the refined search, depending on how much time we want to
 spend. For now, we will just use the first two points.
-<<<Pick points>>=
-startPoints <- Jaatha.pickBestStartPoints(startPoints,2)
+<<Pick points>>=
+picked.points <- Jaatha.pickBestStartPoints(start.points, 2)
 @
 
-
+<<SavePickedPoints, include=FALSE, echo=FALSE>>=
+save(picked.points, file='cache/saved_objects/picked-points.Rsave')
+@
 
 \subsection{The Refined Search}
+
+<<LoadFinalResults, include=FALSE, echo=FALSE>>=
+load('cache/saved_objects/jaatha-complete.Rsave')
+@
 
 \noindent
 Now we can conduct the more thorough refined search described above to improve the
 likelihood approximations. 
 
-\noindent
-Important: For a typical usage, we recommend setting \verb@nSim=400@, 
-\verb@nFinalSim=200@ and \verb@epsilon=2@.
-
-<<seed,include=FALSE,echo=FALSE>>=
-set.seed(50)
-@
-
-<<RefineSearch>>=
-jaatha <- Jaatha.refineSearch(jaatha, startPoints,
-                              nSim=50, nFinalSim=50,
-			      epsilon=5, halfBlockSize=.05,
-			      weight=.9, nMaxStep=200)
-@
+\input{cache/refineSearch}
 
 \noindent
 Hence we perform two independent searches, starting in the two \verb@startPoints@ we choose before 

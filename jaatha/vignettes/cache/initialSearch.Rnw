@@ -1,0 +1,12 @@
+<<saveInitialSearchResults, include=FALSE, echo=FALSE>>=
+library(jaatha)
+load('saved_objects/jaatha.Rsave')
+@
+
+<<initialSearch>>=
+start.points <- Jaatha.initialSearch(jaatha, nSim=100, nBlocksPerPar=3)
+@
+
+<<saveInitialSearchResults, include=FALSE, echo=FALSE>>=
+save(start.points, file='saved_objects/start-points.Rsave')
+@
