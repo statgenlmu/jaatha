@@ -11,11 +11,11 @@
 
 # Load required packages
 require("RUnit", quietly=TRUE)
-# require("devtools", quietly=TRUE)
+require("devtools", quietly=TRUE)
 
 # Install the current version of Jaatha
-# install("../jaatha", quick=T, args="--no-docs")
-require("jaatha")
+install("../jaatha", quick=T)
+# require("jaatha")
 
 # Load Package Namespace
 if (is.element("jaatha", loadedNamespaces()))

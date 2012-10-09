@@ -27,7 +27,6 @@ doc: clean-doc
 
 test: doc
 	# Runs the unit tests
-	R CMD INSTALL jaatha
 	cd unit_tests; ./doRUnit.R
 
 check: doc clean-package
