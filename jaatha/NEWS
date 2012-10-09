@@ -2,6 +2,8 @@ Version 1.9.11:
 + Added a "simple" parallelization using doMC.
 + Some improvements to the UI.
 + Updated copyright information.
++ Added import from ape.
++ Updated the vignette.
 
 Version 1.9.10:
 + Use /dev/shm for temp files if available

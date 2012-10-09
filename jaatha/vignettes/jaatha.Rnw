@@ -77,12 +77,15 @@ To specify the model in \verb@R@, we first need to load \verb@jaatha@.
 <<Loading Jaatha>>=
 library(jaatha)
 @
-We can now create an 'empty' demographic model \verb@dm@ using the \verb@dm.createDemographicModel()@
-function:
+We can now create an 'empty' demographic model \verb@dm@ using the\\ 
+\verb@dm.createDemographicModel()@ function:
+
 <<Creating a demographic model in R>>=
-dm <- dm.createDemographicModel(sample.sizes=c(25,24), loci.num=100,
-						seq.length=10^3)
+dm <- dm.createDemographicModel(sample.sizes=c(25,24), 
+                                loci.num=100,
+                                seq.length=10^3)
 @
+
 The parameter \verb@sampleSizes@ here corresponds to the number of individuals we have
 sampled from the first population and second population respectively. The 
 second argument \verb@nLoci@ states that we are using data from $100$ independent loci
@@ -91,10 +94,10 @@ is only used when a finite sites model is assumed or if recombination is include
 
 We can now successively add the other assumptions of our model:
 <<Creating a demographic model in R>>=
-dm <- dm.addSpeciationEvent(dm,.1,5)
-dm <- dm.addSymmetricMigration(dm,.01,5)
-dm <- dm.addMutation(dm,1,20)
-dm <- dm.addRecombination(dm,fixed=20)
+dm <- dm.addSpeciationEvent(dm, .1, 5)
+dm <- dm.addSymmetricMigration(dm, .01, 5)
+dm <- dm.addMutation(dm, 1, 20)
+dm <- dm.addRecombination(dm, fixed=20)
 @
 Here, the first parameter is always the demographic model to which we want to add
 an assumption/feature. The two following numbers represent the range for the parameter. 
@@ -213,6 +216,10 @@ real data:
 jaatha <- Jaatha.initialize(dm, jsfs=jsfs)
 @
 
+<<Initialize-with-seed, include=FALSE, echo=FALSE>>=
+jaatha <- Jaatha.initialize(dm, jsfs=jsfs, seed=50)
+@
+
 <<SaveJaatha, include=FALSE, echo=FALSE>>=
 save(jaatha, file='cache/saved_objects/jaatha.Rsave')
 @
@@ -288,8 +295,19 @@ Finally the likelihoods for the best ten parameter combinations are approximated
 simulations. These are values printed at the end of the search. This matrix can also be accessed via
 
 <<printLT>>=
-Jaatha.printLikelihoods(jaatha)
+likelihoods <- Jaatha.printLikelihoods(jaatha)
+print(likelihoods[1:3, ])
 @
+
+%\begin{figure}
+%  \begin{center}
+%<<<label=fig1,fig=TRUE,echo=FALSE>>=
+%<<printLT>>
+%@
+%  \end{center}
+%  \caption{Likelihoods sorted by value}
+%  \label{fig:one}
+%\end{figure}
 
 
 \bibliographystyle{plainnat}

@@ -143,6 +143,8 @@ setClass("Jaatha",
 
   if (missing(cores)) cores <- 0
   checkType(cores, c("num","single"))
+  if (cores > 0 & parallelization.model == "none")
+    .Object@parallelization.model <- "simple"
   .Object@cores <- cores
   
   .log3("Finished initialization")
