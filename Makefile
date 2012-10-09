@@ -7,12 +7,12 @@ default: package
 howto:
 	# Builds and opens Jaatha's vignette 
 	- mkdir $(output); cp -r $(docPath)/* $(output)/
-	cd $(output); R CMD Sweave $(rnwfile).Rnw;\
-				  pdflatex $(rnwfile).tex;\
-				  bibtex $(rnwfile);\
-				  pdflatex $(rnwfile).tex;\
-				  pdflatex $(rnwfile).tex;\
-				  evince $(rnwfile).pdf &
+	cd $(output); R CMD Sweave $(rnwfile).Rnw;
+	cd $(output); pdflatex $(rnwfile).tex;
+	cd $(output); bibtex $(rnwfile);
+	cd $(output); pdflatex $(rnwfile).tex;
+	cd $(output); pdflatex $(rnwfile).tex;
+	cd $(output); evince $(rnwfile).pdf &
 
 howto-cache:
 	cd $(docPath); R CMD Sweave jaatha.Rnw
@@ -27,6 +27,7 @@ doc: clean-doc
 
 test: doc
 	# Runs the unit tests
+	R CMD INSTALL jaatha
 	cd unit_tests; ./doRUnit.R
 
 check: doc clean-package

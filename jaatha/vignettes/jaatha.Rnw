@@ -154,29 +154,34 @@ description.
 
 \section{Importing Your Data}
 \noindent
-To run Jaatha, you need to calculate the JSFS of your data. 
+To run Jaatha, you need to calculate the JSFS of your data. To do so, you can
+use the function \verb@calculateJsfs()@. This function accepts data imported
+with the \verb@read.dna()@ function from the package \emph{ape}. It assumes that you provide
+a joined, aligned data set with multiple samples from two populations and -- optional 
+but highly recommended -- one or more outgroup sequences. Additionally, you must
+provide the numbers of the sequences in the dataset that belong to population
+one, population two and the outgroup respectively.
+
+Please consult the documentation of \emph{ape} in order to get more information
+about \verb@read.dna()@. As example, the import of the data could look like this:  
 
 <<Load Fasta files>>=
-pop1.file <- system.file('example_fasta_files/pop1.fasta', 
-                         package='jaatha')
-pop2.file <- system.file('example_fasta_files/pop2.fasta', 
-                         package='jaatha')
-outgroup.file <- system.file('example_fasta_files/outgroup.fasta', 
-                             package='jaatha')
-#fasta2Jsfs(pop1.file, pop2.file, outgroup.file)
+library(ape)
+# The path to the data
+sample.file <- system.file('example_fasta_files/sample.fasta', 
+                           package='jaatha')
+
+# Reading the data
+sample.data <- read.dna(sample.file, format='fasta', 
+                        as.character=TRUE)
+
+# Calculating the JSFS
+sample.jsfs <- calculateJsfs(sample.data, 
+                             pop1.rows=3:7, 
+                             pop2.row=8:12,
+                             outgroup.row=1:2)
+sample.jsfs
 @
-
-\noindent
-You can also use this function to calculate to folded JSFS in case you have no
-outgroup sequence available. However, using the folded JSFS, you will get
-significant worser estimates the with the unfolded one.
-
-<<Calc folded JSFS>>=
-#fasta2Jsfs(pop1.file, pop2.file)
-@
-
-\noindent
-We strongly recommend to use an outgroup sequence and the unfolded JSFS!
 
 \vspace{1em}
 \noindent

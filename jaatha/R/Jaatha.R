@@ -44,7 +44,6 @@ NULL
 #'    \item{externalTheta}{If TRUE theta will estimated using Watersons-estimator}
 #'    \item{finiteSites}{If TRUE, we use a finite sites mutation model instead of an infinite sites one}
 #'    \item{parNames}{The name of the paramters we estimate}
-#'    \item{resultFile}{The name of a file in which the results will be written}
 #'    \item{debugMode}{If TRUE, a debug output will be produced}
 #'    \item{logFile}{If set, the debug output will be written into this file}
 #'    \item{sumStats}{The summary statistics from the real data}
@@ -69,7 +68,6 @@ setClass("Jaatha",
       externalTheta= "logical", 
       finiteSites= "logical",
       parNames = "character",
-      resultFile = "character",
       sumStats = "numeric",
       likelihood.table = "matrix",
       sum.stats.func = "function",
@@ -81,7 +79,7 @@ setClass("Jaatha",
 
 ## constructor method for Jaatha object
 .init <- function(.Object, demographicModel=NA, jsfs=NA, folded=F, seed=numeric(),
-                  summary.statistics=NA, resultFile=NA, parallelization.model,
+                  summary.statistics=NA, parallelization.model,
                   sim.package.size, cores) {
 
   .log3("Starting initialization")
@@ -118,23 +116,6 @@ setClass("Jaatha",
 
   .Object@likelihood.table <- matrix(0,0,.Object@nPar + 2)
 
-  if (!is.na(resultFile)){
-    .Object@resultFile <- resultFile
-  } else{
-    .Object@resultFile <- "JaathaResult.txt" 
-    cat("Result file name set to default (JaathaResult.txt).\n")
-  }
-      
-  ## new result file is being written; if old file exists it will be
-  ## replaced
-  if (file.exists(.Object@resultFile)){
-    message("File ",.Object@resultFile,
-        " already exists. It will be appended!")
-  }
-  if (.Object@resultFile != "")
-    cat("block","likelihood",.Object@parNames,"\n",sep="\t",
-        file=.Object@resultFile,append=TRUE)
-      
   # Seeds
   # Jaatha uses three seeds. The first is the "main seed" used to generate the
   # other two seeds if provided, the second is the seed for the initial search
@@ -183,7 +164,6 @@ rm(.init)
 #'             calulate summary statistics out of it.
 #' @param folded If 'TRUE', Jaatha will assume that the JSFS is folded.
 #' @param seed An integer used as seed for both Jaatha and the simulation software
-#' @param resultFile A File in which the results of the search will be written. 
 #' @param log.level An integer from 0 to 3 indicating Jaatha's verbosity. 0 is
 #'              (almost) no output, 1 is normal output, and 2 and 3 are some and heavy debug
 #'              output respectively
@@ -209,7 +189,7 @@ rm(.init)
 #' @export
 Jaatha.initialize <- function(demographicModel, summary.statistics, jsfs,
                               folded=F, seed=numeric(), 
-                              resultFile="", log.level, log.file, 
+                              log.level, log.file, 
                               parallelization.model="none", sim.package.size=25,
                               cores=0) {
 
@@ -224,7 +204,6 @@ Jaatha.initialize <- function(demographicModel, summary.statistics, jsfs,
                 jsfs=jsfs,
                 folded=folded,
                 seed=seed,
-                resultFile=resultFile,
                 parallelization.model=parallelization.model,
                 sim.package.size=sim.package.size,
                 cores=cores)
@@ -239,7 +218,6 @@ Jaatha.initialize <- function(demographicModel, summary.statistics, jsfs,
   cat(" finiteSites =",object@finiteSites,"\n")                
   cat(" nPar =",object@nPar,"\n")   
   cat(" parNames =",object@parNames,"\n") 
-  cat(" resultFile =",object@resultFile,"\n")
   cat(" random seed =",object@seeds,"\n")                  
   cat(" popSampleSizes =",object@popSampleSizes,"\n")                
   cat(" nLoci in observed data =",object@nLoci,"\n")               
@@ -411,11 +389,6 @@ Jaatha.refineSearch <- function(jObject,startPoints,nSim,
       jObject <- .refineSearchSingleBlock(jObject,nSim=nSim,nFinalSim=nFinalSim,
                 epsilon=epsilon,halfBlockSize=halfBlockSize,
                 weight=weight,nMaxStep=nMaxStep,blocknr=s)  
-      ## print results in original parameter ranges into file
-      cat(s,jObject@logMLmax, sapply(1:(jObject@nPar),
-            function(d) Jaatha.deNormalize01(dm.getParRanges(jObject@dm)[d,],jObject@MLest[d])),
-          jObject@MLest[jObject@nPar+1]/jObject@nLoci,
-    "\n",file=jObject@resultFile,append=T,sep="\t")
   }
 
   .print()
@@ -605,6 +578,7 @@ Jaatha.refineSearch <- function(jObject,startPoints,nSim,
   #cat(Jaatha.getMLmax(jObject), round(Jaatha.getMLest(jObject),6),
   #   "\n", file=jObject@resultFile, append=T, sep="\t")
 
+  .print()
   return (jObject)
 }
 
@@ -999,23 +973,6 @@ Jaatha.setnNonJsfsSumstat <- function(jObject, value){
 ## Returns the value of the slot parNames of the Jaatha object
 Jaatha.getparNames <- function(jObject){
   return (jObject@parNames)
-}
-
-## Returns the value of the slot resultFile of the Jaatha object
-Jaatha.getresultFile <- function(jObject){
-  return (jObject@resultFile)
-}
-
-## Returns the value of the slot ssFunc of the Jaatha object
-Jaatha.setresultFile <- function(jObject, newName){
-  if (!missing(newName)){
-    jObject@resultFile <- newName
-    message("'resultFile' set to ",newName)
-  }
-  else{
-    stop("Please specify a new name for the result file. Nothing has been set now!\n")
-  }
-  return (jObject)
 }
 
 ## Returns the value of the slot ssFunc of the Jaatha object

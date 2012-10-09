@@ -68,7 +68,7 @@ markerTableToJsfs <- function(marker.table, pop1.cols, pop2.cols,
 
 isSnp <- function(gene.row, outg.mask) {
   # Filter out bad positions
-  if (!all(gene.row %in% c("A","C","T","G"))) return(F)
+  if (!all(gene.row %in% c("a","c","t","g"))) return(F)
   # Filter out fixed positions
   if (all(gene.row == "A")) return(F)
   if (all(gene.row == "C")) return(F)
