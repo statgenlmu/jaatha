@@ -3,7 +3,7 @@ Version:    1.9.11
 Date:       2012-10-08
 License:    GPL (>= 3)
 Title:      Jaatha - Fast Estimation of Model Parameters in Population Genetics
-Author:     Lisha Naduvilezhath, Paul R. Staab and Dirk Metzler
+Author:     Lisha Mathew, Paul R. Staab and Dirk Metzler
 Maintainer: Paul R. Staab <staab@bio.lmu.de>
 Description:
     A method for estimating parameters of the demographic history of

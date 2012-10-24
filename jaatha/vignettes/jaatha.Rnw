@@ -40,17 +40,26 @@ jinfo <- packageDescription("jaatha")
 \section{Introduction}
 \noindent
 Jaatha is a fast composite likelihood method to estimate model parameters of the 
-demographic history of (at the moment) two related species. To do so, it uses SNP
-data from multiple individuals from both species.
+demographic history of (at the moment) two related species.  To do so, it uses SNP
+data from multiple individuals from both species and -- optinally but
+highly recommended -- one or more outgroup sequences.
 This HowTo describes the method and gives an example of using its implementation
 as an \verb@R@ package \verb@jaatha@.
 
 A detailed description of Jaatha can be found in 
-\cite{naduvilezhath_jaatha:_2011}, which also is the correct citation for Jaatha. 
-Further explanations of all functions used can be found in the R help pages of Jaatha
-as well as in the Jaatha manual. The package itself can be obtained from CRAN
-using \verb@install.packages('jaatha')@ or downloaded from
-\url{http://evol.bio.lmu.de/_statgen/software/jaatha}.
+\cite{naduvilezhath_jaatha:_2011}. Please cite this paper when using Jaatha in a
+publication.
+Further explanation of all functions used here can be found in the R help pages of Jaatha
+via \verb@?function@.  The package itself can be obtained from CRAN
+using 
+<<install, run=FALSE>>=
+install.packages('jaatha')
+@ 
+or downloaded from
+\url{http://evol.bio.lmu.de/_statgen/software/jaatha}. Jaatha runs on all
+operating systems supported by \verb@R@ -- namely Windows, OS X (Mac) and Linux
+-- with one minor restriction: On Windows the parallelization is currently not
+working.
 
 \section{A demographic model}
 \noindent
