@@ -817,7 +817,7 @@ dm.addSpeciationEvent <- function(dm, min.time, max.time, fixed.time,
   checkType(max.time,            c("num", "s"),  F, F)
   checkType(fixed.time,          c("num", "s"),  F, F)
   checkType(new.time.point.name, c("char","s"),  F, T)
-  checkType(time.point,          c("num", "s"),  F, T)
+  checkType(time.point,          c("char", "s"),  F, T)
   
   # in.population valid?
   populations <- getPopulations(dm)
@@ -985,11 +985,24 @@ dm.addGrowth <- function(dm, min.growth.rate, max.growth.rate, fixed.growth.rate
 #' dm
 dm.createThetaTauModel <- function(sample.sizes, loci.num, seq.length=1000) {
   dm <- dm.createDemographicModel(sample.sizes, loci.num, seq.length)
-  dm <- dm.addSpeciationEvent(dm, 0.01, 5)
+  dm <- dm.addSpeciationEvent(dm, 0.01, 5, new.time.point.name="tau")
   dm <- dm.addRecombination(dm, fixed.value=20)
   dm <- dm.addMutation(dm, 1, 20)
   return(dm)
 }
+
+
+#-------------------------------------------------------------------
+# dm.addOutgroup
+#-------------------------------------------------------------------
+dm.addOutgroup <- function(number.of.individuals, separation.time) {
+  dm@sampleSizes <- c(dm@sampleSizes, number.of.individuals)
+  dm.addSpeciationEvent(dm, in.population=1, 
+                        new.time.point=F, 
+                        time.point=separation.time) 
+}
+
+
 
 
 #' Simulates data according to a demographic model and calculates summary statistics form it

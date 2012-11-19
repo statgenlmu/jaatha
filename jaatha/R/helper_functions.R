@@ -4,7 +4,7 @@
 # 
 # Author:   Paul R. Staab & Lisha Naduvilezhath 
 # Email:    staab (at) bio.lmu.de
-# Date:     2012-10-05
+# Date:     2012-10-25
 # Licence:  GPLv3 or later
 # ------------------------------------------------------------
 

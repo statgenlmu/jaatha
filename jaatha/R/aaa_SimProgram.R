@@ -133,3 +133,7 @@ createSimProgram <- function(name, executable,
 
   .jaatha$simProgs[[name]] <- simProg
 }
+
+getSimProgram <- function(name) {
+  return(.jaatha$simProgs[[name]])
+}

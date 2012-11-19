@@ -39,20 +39,16 @@ jinfo <- packageDescription("jaatha")
 
 \section{Introduction}
 \noindent
-Jaatha is a fast composite likelihood method to estimate model parameters of the 
-demographic history of (at the moment) two related species.  To do so, it uses SNP
-data from multiple individuals from both species and -- optinally but
+Jaatha is a fast composite likelihood method to estimate model parameters of the
+evolutionary history of (at the moment) two related species or populations.
+To do so, it uses SNP data from multiple individuals from both species and -- optionally but
 highly recommended -- one or more outgroup sequences.
 This HowTo describes the method and gives an example of using its implementation
 as an \verb@R@ package \verb@jaatha@.
 
-A detailed description of Jaatha can be found in 
-\cite{naduvilezhath_jaatha:_2011}. Please cite this paper when using Jaatha in a
-publication.
-Further explanation of all functions used here can be found in the R help pages of Jaatha
-via \verb@?function@.  The package itself can be obtained from CRAN
-using 
-<<install, run=FALSE>>=
+The package itself can be obtained from CRAN
+using
+<<install, eval=FALSE>>=
 install.packages('jaatha')
 @ 
 or downloaded from
@@ -61,13 +57,30 @@ operating systems supported by \verb@R@ -- namely Windows, OS X (Mac) and Linux
 -- with one minor restriction: On Windows the parallelization is currently not
 working.
 
+A more detailed description of the algorithm can be found in
+\cite{naduvilezhath_jaatha:_2011}. 
+Further information about the
+\verb@R@ functions used in this document can be obtained by calling 
+\verb@help()@ with the functions name as argument.
+
+Please cite the above paper when using Jaatha in a publication.
+
+
 \section{A demographic model}
 \noindent
-Before we can apply Jaatha to estimate parameter, we first need to create a model
-of the demographic history of the species. 
+Before we can apply Jaatha to estimate parameters, we first need to create a model
+of the evolutionary history of the two species. Jaatha cannot account for the
+effects of selection, hence we assume a neutral evolution. It can estimate the 
+effects that either ``demographic'' events -- like an expansion of the
+size of one population or migration between the two populations -- or molecular events --
+like mutation or recombination -- have on the genome of the populations. To
+emphasize that we can not include selection, we refer to a scenario of the
+evolution of the two species under such events as a ``demographic model''.
+
 For now, assume that we know that our two species are closely related; hence they must 
-have separated at a certain time in the past. There may be still gene flow between them, 
-which we will refer to as migration from one population into the other. 
+have separated at a certain time in the past. There may still be gene flow
+ongoing between them 
+to which we will refer to as migration from one population into the other. 
 Hence, we could propose the simple demographic model described in Figure~\ref{fig:dm}.
 
 \begin{figure}
@@ -82,7 +95,7 @@ known rate $\rho$.}
 \label{fig:dm}
 \end{figure}
 
-To specify the model in \verb@R@, we first need to load \verb@jaatha@.
+To specify that model in \verb@R@, we first need to load \verb@jaatha@.
 <<Loading Jaatha>>=
 library(jaatha)
 @
@@ -92,20 +105,20 @@ We can now create an 'empty' demographic model \verb@dm@ using the\\
 <<Creating a demographic model in R>>=
 dm <- dm.createDemographicModel(sample.sizes=c(25,24), 
                                 loci.num=100,
-                                seq.length=10^3)
+                                seq.length=1000)
 @
 
-The parameter \verb@sampleSizes@ here corresponds to the number of individuals we have
+The parameter \verb@sample.sizes@ here corresponds to the number of individuals we have
 sampled from the first population and second population respectively. The 
-second argument \verb@nLoci@ states that we are using data from $100$ independent loci
-while \verb@seqLength@ gives the (average) length of each loci\footnote{This 
-is only used when a finite sites model is assumed or if recombination is included.}.
+second argument \verb@loci.num@ states that we are using data from $100$ independent loci
+while \verb@seq.length@ gives the (average) length of each loci\footnote{This 
+is only used when a finite sites model is assumed or if intra-locus recombination is included.}.
 
 We can now successively add the other assumptions of our model:
 <<Creating a demographic model in R>>=
-dm <- dm.addSpeciationEvent(dm, .1, 5)
-dm <- dm.addSymmetricMigration(dm, .01, 5)
-dm <- dm.addMutation(dm, 1, 20)
+dm <- dm.addSpeciationEvent(dm, .1, 5, new.time.point.name='tau')
+dm <- dm.addSymmetricMigration(dm, .01, 5, new.par.name='m')
+dm <- dm.addMutation(dm, 1, 20, new.par.name='theta')
 dm <- dm.addRecombination(dm, fixed=20)
 @
 Here, the first parameter is always the demographic model to which we want to add

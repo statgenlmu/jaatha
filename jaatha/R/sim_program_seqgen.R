@@ -1,0 +1,118 @@
+# --------------------------------------------------------------
+# sim_prog_seqgen.R
+# Adaptor to calling ms from a demographic model.
+# 
+# Authors:  Lisha Mathew & Paul R. Staab
+# Date:     2012-10-25
+# Licence:  GPLv3 or later
+# --------------------------------------------------------------
+
+#test code:
+source("./aaa_SimProgram.R")
+source("./helper_functions.R")
+source("./sim_program_ms.R")
+source("./DemographicModel.R")
+
+# list ms's features + FS related features
+seqgen.features    <- c()
+fossible.sum.stats <- c("jsfs")
+
+# possible.features  <- c(getSimProgram('ms')@possible.features, seqgen.features)
+
+# Function to perform simulation using seqgen
+# 
+# @param opts The options to pass to ms. Must either be a character or character
+# vector.
+callSeqgen <- function(opts, ms.file){
+  if (missing(opts)) stop("No options given!")
+  opts[length(opts) + 1:2] <- c(" ", ms.file)
+  opts <- paste(opts, collapse="");
+  #opts <- unlist(strsplit(opts, " "))
+  if (file.info(ms.file)$size == 0) stop("ms output is empty!")
+  #.log3("Called callMs")
+  #.log3("Options:", opts)
+
+  seqgen.file <- getTempFile("seqgen")
+  #print(opts) 
+  #.log3("Calling seq-gen...")
+  #.Call("R_seq_gen_main", opts, seqgen.file, PACKAGE = "phyclust")
+  system(paste(opts, ">", seqgen.file))
+  if( ! file.exists(seqgen.file) ) stop("seq-gen simulation failed!")
+  if (file.info(seqgen.file)$size == 0) stop("seq-gen output is empty!")
+  #.log3("seq-gen finished. Finished callMs()")
+  return(seqgen.file)
+}
+
+generateSeqgenOptions <- function(dm, parameters) {
+  #return(c("-mHKY", "-l", dm@seqLength, "-p", dm@seqLength + 1))
+  return(c("seq-gen", " -mHKY", " -l", dm@seqLength, " -p", dm@seqLength + 1, 
+           " -q"))
+}
+
+# printMsCommand <- function(dm) {
+#   for (i in 1:nrow(dm@parameters)) {
+#     eval(parse(text=paste(dm@parameters[i, "name"],
+#                           "<-",'\"',dm@parameters[i, "name"],'\"',sep="")))
+#   }
+# 
+#   cmd <- generateMsOptionsCommand(dm)
+#   cmd <- eval(parse(text=cmd))
+#   cmd <- paste(cmd, collapse=" ")
+# 
+#   return(cmd)
+# }
+# 
+seqgenOut2Jsfs <- function(dm, seqgen.out) {
+  #.log3("Called .ms.getJSFS()")
+  jsfs <- rep(0,(dm@sampleSizes[1]+1)*(dm@sampleSizes[2]+1))
+  jsfs <- matrix( .Call("seqFile2jsfs",
+                     as.character(seqgen.out),
+                     as.integer(dm@sampleSizes[1]),
+                     as.integer(dm@sampleSizes[2]),
+                     as.integer(dm@nLoci),
+                     as.integer(length(jsfs)),
+                     res=as.integer(jsfs),
+                     PACKAGE="jaatha")$res,
+                 dm@sampleSizes[1] + 1 ,
+                 dm@sampleSizes[2] + 1 ,
+                 byrow=T)
+  #.log3("Finished .ms.getJSFS()")
+  return(jsfs)
+}
+
+
+seqgenSingleSimFunc <- function(dm, parameters) {
+  .log3("Called msSingleSimFunc()")
+  .log3("parameter:",parameters)
+  checkType(dm, "dm")
+  checkType(parameters, "num")
+  if (length(parameters) != dm.getNPar(dm)) 
+    stop("Wrong number of parameters!")
+
+  .log3("Calling ms to generate Tree...")
+  ms.options <- generateMsOptions(dm, parameters)
+  ms.file <- callMs(ms.options)
+
+  .log3("Calling seq-gen...")
+  seqgen.options <- generateSeqgenOptions(dm, parameters)
+  seqgen.file  <- callSeqgen(seqgen.options, ms.file)
+  .log3("Simulation output in file", seqgen.file)
+
+  .log3("Calculation jsfs...")
+  jsfs  <- seqgenOut2Jsfs(dm, seqgen.file)
+
+  .log3("Done. Removing tmp files...")
+  unlink(seqgen.file)
+  unlink(ms.file)
+  return(jsfs)
+}
+
+# createSimProgram("seq-gen", "",
+#                  possible.features,
+#                  possible.sum.stats,
+#                  singleSimFunc=seqgenSingleSimFunc)
+
+#test code:
+dm <- dm.createThetaTauModel(24:25, 100, 1000)
+dm <- dm.addOutgroup(1, "2*tau")
+dm <- seqgenSingleSimFunc(dm, c(1,5))

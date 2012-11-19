@@ -34,7 +34,8 @@ callMs <- function(opts){
 generateMsOptionsCommand <- function(dm) {
     nSample <- dm@sampleSizes
 	cmd <- c('c(', '"ms"', ",", sum(nSample), ",", dm@nLoci , ",")
-	cmd <- c(cmd,'"-I 2"', ",", nSample[1], ",", nSample[2], ",")
+	cmd <- c(cmd,'"-I"', ",", length(nSample), ',', 
+             paste(nSample, collapse=","), ',')
 
 	for (i in 1:dim(dm@features)[1] ) {
 		type <- as.character(dm@features[i,"type"])
@@ -70,7 +71,7 @@ generateMsOptionsCommand <- function(dm) {
 		}
 	}
 
-    cmd <- c(cmd, '"")')
+    cmd <- c(cmd, '"-T")')
 }
 
 generateMsOptions <- function(dm, parameters) {
@@ -97,15 +98,17 @@ generateMsOptions <- function(dm, parameters) {
 }
 
 printMsCommand <- function(dm) {
-  for (i in 1:nrow(dm@parameters)) {
-    eval(parse(text=paste(dm@parameters[i, "name"],
-                          "<-",'\"',dm@parameters[i, "name"],'\"',sep="")))
-  }
-
   cmd <- generateMsOptionsCommand(dm)
-  cmd <- eval(parse(text=cmd))
+  
+  cmd <- cmd[cmd != ","]
+  cmd <- cmd[-c(1, length(cmd))]
+
   cmd <- paste(cmd, collapse=" ")
 
+  cmd <- gsub(",", " ", cmd)
+  cmd <- gsub('\"', "", cmd)
+  cmd <- gsub('"', " ", cmd)
+  
   return(cmd)
 }
 
@@ -140,7 +143,7 @@ msSingleSimFunc <- function(dm, parameters) {
   
   .log3("Calculation jsfs...")
   jsfs  <- msOut2Jsfs(dm, ms.out) 
-  unlink(ms.out)
+  #unlink(ms.out)
   return(jsfs)
 }
 
