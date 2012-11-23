@@ -136,14 +136,17 @@ msSingleSimFunc <- function(dm, parameters) {
   if (length(parameters) != dm.getNPar(dm)) 
     stop("Wrong number of parameters!")
 
-  .log3("Calling ms.")
+  .log2("running ms")
+  .log3("executing: \'", printMsCommand(dm), "'")
   ms.options <- generateMsOptions(dm, parameters)
-  ms.out  <- callMs(ms.options)
+  sim.time <- system.time(ms.out  <- callMs(ms.options))
+  .log3("finished after", sum(sim.time[-3]), "seconds")
   .log3("Simulation output in file", ms.out)
-  
-  .log3("Calculation jsfs...")
-  jsfs  <- msOut2Jsfs(dm, ms.out) 
-  #unlink(ms.out)
+
+  .log2("calculating jsfs")
+  jsfs  <- msOut2Jsfs(dm, ms.out)
+  .log3("done. Removing tmp files...")
+  unlink(ms.out)
   return(jsfs)
 }
 

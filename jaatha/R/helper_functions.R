@@ -39,7 +39,7 @@ if (!exists('log.file', envir=.jaatha))  .jaatha$log.file  <- ""
   cat(format(Sys.time(), "%Y-%m-%d %H:%M:%S"), ..., "\n", sep=" ",
       file=.jaatha$log.file, append=T)
 
-  if (.jaatha$log.file != "" && level == 1) {
+  if (.jaatha$log.file != "" & level == 1) {
     # Also print normal output when logging to file
     cat(...,"\n",sep=" ")
   }

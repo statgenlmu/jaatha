@@ -8,10 +8,10 @@
 # --------------------------------------------------------------
 
 #test code:
-source("./aaa_SimProgram.R")
-source("./helper_functions.R")
-source("./sim_program_ms.R")
-source("./DemographicModel.R")
+#source("./aaa_SimProgram.R")
+#source("./helper_functions.R")
+#source("./sim_program_ms.R")
+#source("./DemographicModel.R")
 
 # list ms's features + FS related features
 seqgen.features    <- c()
@@ -46,7 +46,22 @@ callSeqgen <- function(opts, ms.file){
 generateSeqgenOptions <- function(dm, parameters) {
   #return(c("-mHKY", "-l", dm@seqLength, "-p", dm@seqLength + 1))
   return(c("seq-gen", " -mHKY", " -l", dm@seqLength, " -p", dm@seqLength + 1, 
-           " -q"))
+           " -s 0.0002", " -q"))
+}
+
+printSeqgenCommand <- function(dm) {
+  cmd <- generateSeqgenOptions(dm)
+  
+  cmd <- cmd[cmd != ","]
+  #cmd <- cmd[-c(1, length(cmd))]
+
+  cmd <- paste(cmd, collapse=" ")
+
+  cmd <- gsub(",", " ", cmd)
+  cmd <- gsub('\"', "", cmd)
+  cmd <- gsub('"', " ", cmd)
+  
+  return(cmd)
 }
 
 # printMsCommand <- function(dm) {
@@ -64,17 +79,17 @@ generateSeqgenOptions <- function(dm, parameters) {
 # 
 seqgenOut2Jsfs <- function(dm, seqgen.out) {
   #.log3("Called .ms.getJSFS()")
-  jsfs <- rep(0,(dm@sampleSizes[1]+1)*(dm@sampleSizes[2]+1))
-  jsfs <- matrix( .Call("seqFile2jsfs",
+  jsfs.size <- (dm@sampleSizes[1]+1)*(dm@sampleSizes[2]+1)
+  jsfs <- matrix( .C("seqFile2jsfs",
                      as.character(seqgen.out),
                      as.integer(dm@sampleSizes[1]),
                      as.integer(dm@sampleSizes[2]),
                      as.integer(dm@nLoci),
-                     as.integer(length(jsfs)),
-                     res=as.integer(jsfs),
+                     as.integer(jsfs.size),
+                     res=integer(jsfs.size),
                      PACKAGE="jaatha")$res,
                  dm@sampleSizes[1] + 1 ,
-                 dm@sampleSizes[2] + 1 ,
+                 dm@sampleSizes[2] + 1,
                  byrow=T)
   #.log3("Finished .ms.getJSFS()")
   return(jsfs)
@@ -82,26 +97,28 @@ seqgenOut2Jsfs <- function(dm, seqgen.out) {
 
 
 seqgenSingleSimFunc <- function(dm, parameters) {
-  .log3("Called msSingleSimFunc()")
+  .log3("called msSingleSimFunc()")
   .log3("parameter:",parameters)
   checkType(dm, "dm")
   checkType(parameters, "num")
   if (length(parameters) != dm.getNPar(dm)) 
     stop("Wrong number of parameters!")
 
-  .log3("Calling ms to generate Tree...")
+  .log2("calling ms to generate tree...")
   ms.options <- generateMsOptions(dm, parameters)
   ms.file <- callMs(ms.options)
 
-  .log3("Calling seq-gen...")
+  .log2("running seq-gen")
+  .log3("executing: \'", printSeqgenCommand(dm), "'")
   seqgen.options <- generateSeqgenOptions(dm, parameters)
-  seqgen.file  <- callSeqgen(seqgen.options, ms.file)
-  .log3("Simulation output in file", seqgen.file)
+  sim.time <- system.time(seqgen.file  <- callSeqgen(seqgen.options, ms.file))
+  .log3("finished after", sum(sim.time[-3]), "seconds")
+  .log3("simulation output in file", seqgen.file)
 
-  .log3("Calculation jsfs...")
-  jsfs  <- seqgenOut2Jsfs(dm, seqgen.file)
+  .log2("calculating jsfs")
+  jsfs <- seqgenOut2Jsfs(dm, seqgen.file)
 
-  .log3("Done. Removing tmp files...")
+  .log3("done. Removing tmp files...")
   unlink(seqgen.file)
   unlink(ms.file)
   return(jsfs)
@@ -113,6 +130,7 @@ seqgenSingleSimFunc <- function(dm, parameters) {
 #                  singleSimFunc=seqgenSingleSimFunc)
 
 #test code:
+#parameters <- c(1,5)
 dm <- dm.createThetaTauModel(24:25, 100, 1000)
-dm <- dm.addOutgroup(1, "2*tau")
-dm <- seqgenSingleSimFunc(dm, c(1,5))
+dm <- jaatha:::dm.addOutgroup(1, "2*tau")
+jsfs <- jaatha:::seqgenSingleSimFunc(dm, c(1,5))
