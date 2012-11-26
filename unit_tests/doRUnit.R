@@ -9,6 +9,10 @@
 # Licence:  GPLv3 or later
 #
 
+quick = F;
+args <- commandArgs(TRUE)
+if (args[1] == "quick") quick <- T
+
 # Load required packages
 require("RUnit", quietly=TRUE)
 require("devtools", quietly=TRUE)
@@ -24,7 +28,10 @@ if (is.element("jaatha", loadedNamespaces()))
 ## --- Testing ---
 
 ## Define tests
-testSuite <- defineTestSuite(name="Jaatha Unit Testing", dirs=".")
+files <- "^runit.+\\.[rR]$"
+if (quick) files <- "^runit\\..+\\.[rR]$"
+testSuite <- defineTestSuite(name="Jaatha Unit Testing", dirs=".",
+                             testFileRegexp = files)
 
 ## Run
 tests <- runTestSuite(testSuite)

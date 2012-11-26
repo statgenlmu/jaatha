@@ -30,6 +30,11 @@ test: doc
 	R CMD INSTALL jaatha
 	cd unit_tests; ./doRUnit.R
 
+quick-test:
+	# Runs the unit tests without time-consuming whole algorithms tests
+	R CMD INSTALL jaatha
+	cd unit_tests; ./doRUnit.R quick
+
 check: doc clean-package
 	# Runs an R CMD check
 	R CMD check jaatha
