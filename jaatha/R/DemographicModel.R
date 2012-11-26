@@ -995,7 +995,7 @@ dm.createThetaTauModel <- function(sample.sizes, loci.num, seq.length=1000) {
 #-------------------------------------------------------------------
 # dm.addOutgroup
 #-------------------------------------------------------------------
-dm.addOutgroup <- function(number.of.individuals, separation.time) {
+dm.addOutgroup <- function(dm, number.of.individuals, separation.time) {
   dm@sampleSizes <- c(dm@sampleSizes, number.of.individuals)
   dm.addSpeciationEvent(dm, in.population=1, 
                         new.time.point=F, 

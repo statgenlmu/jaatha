@@ -64,24 +64,13 @@ printSeqgenCommand <- function(dm) {
   return(cmd)
 }
 
-# printMsCommand <- function(dm) {
-#   for (i in 1:nrow(dm@parameters)) {
-#     eval(parse(text=paste(dm@parameters[i, "name"],
-#                           "<-",'\"',dm@parameters[i, "name"],'\"',sep="")))
-#   }
-# 
-#   cmd <- generateMsOptionsCommand(dm)
-#   cmd <- eval(parse(text=cmd))
-#   cmd <- paste(cmd, collapse=" ")
-# 
-#   return(cmd)
-# }
-# 
-seqgenOut2Jsfs <- function(dm, seqgen.out) {
-  #.log3("Called .ms.getJSFS()")
+seqgenOut2Jsfs <- function(dm, seqgen.file) {
+  if( ! file.exists(seqgen.file) ) stop("seq-gen simulation failed!")
+  if (file.info(seqgen.file)$size == 0) stop("seq-gen output is empty!")
+
   jsfs.size <- (dm@sampleSizes[1]+1)*(dm@sampleSizes[2]+1)
   jsfs <- matrix( .C("seqFile2jsfs",
-                     as.character(seqgen.out),
+                     as.character(seqgen.file),
                      as.integer(dm@sampleSizes[1]),
                      as.integer(dm@sampleSizes[2]),
                      as.integer(dm@nLoci),
@@ -91,10 +80,9 @@ seqgenOut2Jsfs <- function(dm, seqgen.out) {
                  dm@sampleSizes[1] + 1 ,
                  dm@sampleSizes[2] + 1,
                  byrow=T)
-  #.log3("Finished .ms.getJSFS()")
+
   return(jsfs)
 }
-
 
 seqgenSingleSimFunc <- function(dm, parameters) {
   .log3("called msSingleSimFunc()")
@@ -131,6 +119,6 @@ seqgenSingleSimFunc <- function(dm, parameters) {
 
 #test code:
 #parameters <- c(1,5)
-dm <- dm.createThetaTauModel(24:25, 100, 1000)
-dm <- jaatha:::dm.addOutgroup(1, "2*tau")
-jsfs <- jaatha:::seqgenSingleSimFunc(dm, c(1,5))
+#dm <- dm.createThetaTauModel(24:25, 100, 1000)
+#dm <- jaatha:::dm.addOutgroup(dm, 1, "2*tau")
+#jsfs <- jaatha:::seqgenSingleSimFunc(dm, c(1,5))
