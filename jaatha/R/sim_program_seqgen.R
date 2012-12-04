@@ -25,28 +25,33 @@ fossible.sum.stats <- c("jsfs")
 # vector.
 callSeqgen <- function(opts, ms.file){
   if (missing(opts)) stop("No options given!")
+  .log3(1)
   opts[length(opts) + 1:2] <- c(" ", ms.file)
-  opts <- paste(opts, collapse="");
-  #opts <- unlist(strsplit(opts, " "))
-  if (file.info(ms.file)$size == 0) stop("ms output is empty!")
-  #.log3("Called callMs")
-  #.log3("Options:", opts)
+  .log3(2)
+  opts <- paste(opts, collapse=" ")
+  .log3(3)
+
+  if( !file.exists(ms.file) ) stop("ms file not found")
+  .log3(4)
+  if( file.info(ms.file)$size == 0 ) stop("ms output is empty")
+  .log3(5)
 
   seqgen.file <- getTempFile("seqgen")
-  #print(opts) 
-  #.log3("Calling seq-gen...")
-  #.Call("R_seq_gen_main", opts, seqgen.file, PACKAGE = "phyclust")
-  system(paste(opts, ">", seqgen.file))
-  if( ! file.exists(seqgen.file) ) stop("seq-gen simulation failed!")
-  if (file.info(seqgen.file)$size == 0) stop("seq-gen output is empty!")
-  #.log3("seq-gen finished. Finished callMs()")
+  .log3(6)
+  cmd <- paste(opts, ">", seqgen.file, sep=" ", collapse=" ")
+  .log3(7)
+  .log3("executing: '", cmd, "'")
+  system(cmd)
+  
+  if( !file.exists(seqgen.file) ) stop("seq-gen simulation failed!")
+  if( file.info(seqgen.file)$size == 0 ) stop("seq-gen output is empty!")
   return(seqgen.file)
 }
 
 generateSeqgenOptions <- function(dm, parameters) {
   #return(c("-mHKY", "-l", dm@seqLength, "-p", dm@seqLength + 1))
-  return(c("seq-gen", " -mHKY", " -l", dm@seqLength, " -p", dm@seqLength + 1, 
-           " -s 0.0002", " -q"))
+  return(c("seq-gen", "-mHKY", "-l", dm@seqLength, "-p", dm@seqLength + 1, 
+           "-s 0.0002", "-z ", generateSeeds(1), "-q"))
 }
 
 printSeqgenCommand <- function(dm) {
@@ -97,14 +102,16 @@ seqgenSingleSimFunc <- function(dm, parameters) {
   ms.file <- callMs(ms.options)
 
   .log2("running seq-gen")
-  .log3("executing: \'", printSeqgenCommand(dm), "'")
   seqgen.options <- generateSeqgenOptions(dm, parameters)
-  sim.time <- system.time(seqgen.file  <- callSeqgen(seqgen.options, ms.file))
-  .log3("finished after", sum(sim.time[-3]), "seconds")
+  .log3("options generated")
+  #sim.time <- system.time(print(1))
+  seqgen.file  <- callSeqgen(seqgen.options, ms.file)
+  #.log3("finished after", sum(sim.time[-3]), "seconds")
   .log3("simulation output in file", seqgen.file)
 
   .log2("calculating jsfs")
   jsfs <- seqgenOut2Jsfs(dm, seqgen.file)
+  #jsfs <- matrix(0,  dm@sampleSizes[1] + 1, dm@sampleSizes[2] + 1)
 
   .log3("done. Removing tmp files...")
   unlink(seqgen.file)

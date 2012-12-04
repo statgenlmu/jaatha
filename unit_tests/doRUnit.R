@@ -11,7 +11,9 @@
 
 quick = F;
 args <- commandArgs(TRUE)
-if (args[1] == "quick") quick <- T
+if (!is.na(args[1])) {
+  if (args[1] == "quick") quick <- T
+}
 
 # Load required packages
 require("RUnit", quietly=TRUE)

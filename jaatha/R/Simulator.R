@@ -62,10 +62,13 @@ simulateWithinBlock<- function(bObject, jaathaObject) {
   }
 
   set.seed(seeds[length(seeds)])
-  
+
+  # Scale SumStats if we use scaling
+  sumStats <- sumStats * jaathaObject@scaling.factor
+
   # Create combined output
   paraNsumstat <- cbind(randompar, sumStats) 
-
+  .log2("Finished simulating for this block")
   return (paraNsumstat)
 }
 
@@ -80,7 +83,7 @@ createSimulationPackages <- function(random.par, package.size) {
     i <- i + 1
     lower <- (i-1)*package.size+1
     upper <-  min(i*package.size, num.pars)
-    sim.packages[[i]] <- random.par[lower:upper, ]
+    sim.packages[[i]] <- random.par[lower:upper, , drop=F]
   }
 
   return(sim.packages)  
@@ -105,20 +108,24 @@ Jaatha.deNormalize01 <- function(oldRange, value){
 
 .deNormalize <- function(jObject, values, withoutTheta=F){
   if (!is.jaatha(jObject)) stop("jObject is no Jaatha object")
-  if (!is.matrix(values)) values <- matrix(values,1)
-
-  return( t(apply(values, 1, .deNormalizeVector,
-                  jObject=jObject, withoutTheta=withoutTheta)) )
+  if (!is.matrix(values)) stop("values is no matrix!") 
+  
+  result <- apply(values, 1, .deNormalizeVector,
+                  jObject=jObject, withoutTheta=withoutTheta)
+  if (!is.matrix(result)) result <- matrix(result,1)
+  result <- t(result)
+  return(result)
 }
 
 .deNormalizeVector <- function(jObject, values, withoutTheta){	
   #.log(jObject,"Called .deNormalizeVector")
-  #.log(jObject,"values:",values,"| withoutTheta:",withoutTheta)
+  .log3("Denormalizing parameters...")
+  .log3("values:",values,"| withoutTheta:",withoutTheta)
   if (!is.jaatha(jObject)) stop("jObject is no Jaatha object!")
   if (!is.numeric(values)) stop("trying to deNomalize non-numeric values")
   if (!is.vector(values)) stop("trying to deNormalize non-vector values")
   nPar <- jObject@nPar+jObject@externalTheta-withoutTheta
-  #.log(jObject,"expecting",nPar,"parmeters")
+  .log3("expecting",nPar,"parmeters")
   if (length(values) != nPar)
     stop("trying to deNormalize vector of wrong length")
 

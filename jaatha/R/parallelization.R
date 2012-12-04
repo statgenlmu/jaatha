@@ -12,23 +12,9 @@ setSingleCoreMode <- function(jaatha) {
   registerDoSEQ()
 }
 
-setSimpleParallelization <- function(jaatha) {
+setParallelization <- function(jaatha) {
   require(doMC)
   cores <- jaatha@cores
   if (cores == 0) cores <- NULL
   registerDoMC(cores)
-}
-
-setParrallelizationForInitialSearch <- function(jaatha) {
-  if (jaatha@parallelization.model == "none")   setSingleCoreMode(jaatha)
-  if (jaatha@parallelization.model == "simple") setSimpleParallelization(jaatha)
-  if (jaatha@parallelization.model == "nodes")
-    stop('Model "nodes" is not yet implemented')
-}
-
-setParrallelizationForRefineSearch <- function(jaatha) {
-  if (jaatha@parallelization.model == "none")   setSingleCoreMode(jaatha)
-  if (jaatha@parallelization.model == "simple") setSimpleParallelization(jaatha)
-  if (jaatha@parallelization.model == "nodes")
-    stop('Model "nodes" is not yet implemented')
 }

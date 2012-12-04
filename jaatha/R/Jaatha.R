@@ -71,16 +71,16 @@ setClass("Jaatha",
       sumStats = "numeric",
       likelihood.table = "matrix",
       sum.stats.func = "function",
-      parallelization.model = "character",
       sim.package.size = "numeric",
-      cores= "numeric"
+      cores = "numeric",
+      scaling.factor = "numeric",
+      route = "list"
     ),
 )
 
 ## constructor method for Jaatha object
 .init <- function(.Object, demographicModel=NA, jsfs=NA, folded=F, seed=numeric(),
-                  summary.statistics=NA, parallelization.model,
-                  sim.package.size, cores) {
+                  summary.statistics=NA, cores, sim.package.size, scaling.factor) {
 
   .log3("Starting initialization")
   .Object@dm <- demographicModel
@@ -128,26 +128,28 @@ setClass("Jaatha",
   else stop("Malformated argument: seed")
   .Object@seeds <- seed
 
+
   #--------------------------------------------------------------------------
   # Parallelization options
   #--------------------------------------------------------------------------
-  if (missing(parallelization.model)) parallelization.model <- "none"
-  checkType(parallelization.model, c("char","single"))
-  if (!parallelization.model %in% c("none","simple","nodes"))
-    stop('parallelization.model need to be "none", "simple" or "nodes"')
-  .Object@parallelization.model <- parallelization.model
-
-  if (missing(sim.package.size)) sim.package.size <- 100
+  if (missing(sim.package.size)) sim.package.size <- 10
   checkType(sim.package.size, c("num","single"))
   .Object@sim.package.size <- sim.package.size
 
-  if (missing(cores)) cores <- 0
-  checkType(cores, c("num","single"))
-  if (cores > 0 & parallelization.model == "none")
-    .Object@parallelization.model <- "simple"
+  if (missing(cores)) cores <- 1
   .Object@cores <- cores
   
   .log3("Finished initialization")
+
+
+  #--------------------------------------------------------------------------
+  # Scaling options
+  #--------------------------------------------------------------------------
+  if (missing(scaling.factor)) scaling.factor <- 1
+  checkType(scaling.factor, c("num","single"))
+  .Object@dm <- scaleDemographicModel(.Object@dm, scaling.factor)
+  .Object@scaling.factor <- scaling.factor
+  
   return (.Object)
 }
 
@@ -170,16 +172,6 @@ rm(.init)
 #'              (almost) no output, 1 is normal output, and 2 and 3 are some and heavy debug
 #'              output respectively
 #' @param log.file If specified, the output will be redirected to this file
-#' @param parallelization.model Jaatha can use multiple CPU cores to speedup the
-#'              estimation. When this is set to "simple" Jaatha uses R's
-#'              'multicore' package to distribute just the simulations over different
-#'              cores, while the basic flow of the program is not changed.
-#'              You can also set this to "nodes" to use a more sophisticated way
-#'              of parallelization, which is designed to run grids and
-#'              supercomputers. This requires the 'doRedis' package and a running redis
-#'              database. See the description in Jaatha's vignette if you want
-#'              to use this.
-#'              Can also be "none" for no parallelization.
 #' @param sim.package.size When running Jaatha on multiple cores, a singe core
 #'              will always execute a whole "package" of simulations the reduce
 #'              the inter thread communication overhead. This gives the number
@@ -191,9 +183,9 @@ rm(.init)
 #' @export
 Jaatha.initialize <- function(demographicModel, summary.statistics, jsfs,
                               folded=F, seed=numeric(), 
-                              log.level, log.file, 
-                              parallelization.model="none", sim.package.size=25,
-                              cores=0) {
+                              log.level=1, log.file="", 
+                              sim.package.size=10,
+                              cores=1, scaling.factor=1) {
 
   setLogging(log.level, log.file)
 
@@ -206,9 +198,9 @@ Jaatha.initialize <- function(demographicModel, summary.statistics, jsfs,
                 jsfs=jsfs,
                 folded=folded,
                 seed=seed,
-                parallelization.model=parallelization.model,
                 sim.package.size=sim.package.size,
-                cores=cores)
+                cores=cores,
+                scaling.factor = scaling.factor)
   return(jaatha)
 }
 
@@ -273,7 +265,7 @@ Jaatha.initialSearch <- function(jObject, nSim=200, nBlocksPerPar=3){
   }
   #print(jObject)
 
-  setParrallelizationForInitialSearch(jObject)
+  setParallelization(jObject)
       
   firstBlocks <- list() ## list blocks with simulated summary stats
   ## pRange contains the boarders of all starting blocks
@@ -288,11 +280,10 @@ Jaatha.initialSearch <- function(jObject, nSim=200, nBlocksPerPar=3){
     ## is being considered; dim=#nPar
     b <- .index2blocks(value=i-1, newBase=nBlocksPerPar,expo=jObject@nPar) + 1  ##+1 bc R indices start with 0
     boundry <- sapply(1:jObject@nPar, function(p) pRange[p,b[p],])  #dim=c(2,jObject@nPar)
-    #boundry
-    .print("*** Block",i,
-      " (lowerB:",round(.deNormalize(jObject,boundry[1,],withoutTheta=jObject@externalTheta),3),
-      " upperB:", round(.deNormalize(jObject,boundry[2,],withoutTheta=jObject@externalTheta),3),
-      ")")
+    boundry.readable <- round(.deNormalize(jObject, boundry, withoutTheta=jObject@externalTheta), 3)
+    .print("*** Block", i, 
+           " (lowerB:", boundry.readable[1, ], 
+            " upperB:", boundry.readable[2, ], ")")
 
     .log3("Creating block",i)
     firstBlocks[[i]] <- new("Block", nPar=jObject@nPar,
@@ -382,7 +373,7 @@ Jaatha.refineSearch <- function(jObject,startPoints,nSim,
   # Setup enviroment for the refine search
   set.seed(jObject@seeds[3])
   .log2("Seeting seed to", jObject@seeds[3])
-  setParrallelizationForRefineSearch(jObject)
+  setParallelization(jObject)
 
   # Start a search for every start point
   for (s in 1:length(startPoints)){
@@ -404,9 +395,9 @@ Jaatha.refineSearch <- function(jObject,startPoints,nSim,
 
 ## This is called from Jaatha.refineSearch for each block. The actual search is done here.
 ## Parameters are the same as in Jaatha.refineSearch
-.refineSearchSingleBlock <- function(jObject,nSim,nFinalSim,
-                                     epsilon,halfBlockSize,weight=weight,
-                                     nMaxStep=nMaxStep,blocknr){
+.refineSearchSingleBlock <- function(jObject, nSim, nFinalSim,
+                                     epsilon, halfBlockSize, weight=weight,
+                                     nMaxStep=nMaxStep, blocknr){
   ## initialize values 
   .log3("Initializing")
   currentBlocks <- list()
@@ -414,6 +405,11 @@ Jaatha.refineSearch <- function(jObject,startPoints,nSim,
   noLchangeCount <- 0
   lastNoChange <- -1        # has to be !=0 for the start
   nNewSim <- nSim + 2^jObject@nPar   # no. sim + no. corners      
+
+  # Track route through parameter space
+  route <- matrix(0, nMaxStep, jObject@nPar+1)
+  route[1,  1] <- -1
+  route[1, -1] <- jObject@MLest
 
   ##since the likelihood estimate for the starting point is
   ##only a very rough estimate we don't keep that value 
@@ -489,6 +485,8 @@ Jaatha.refineSearch <- function(jObject,startPoints,nSim,
     topTen <- .saveBestTen(currentTopTen=topTen, numSteps=nSteps,
                            externalTheta=jObject@externalTheta, newOptimum=newOptimum)
 
+    route[nSteps, ] <- c(newOptimum$score, newOptimum$est)
+
     ## prepare for next round
     nSteps <- nSteps+1        
     ## in parNsumstat only the newest simulation results
@@ -545,6 +543,10 @@ Jaatha.refineSearch <- function(jObject,startPoints,nSim,
   }
   #print(cbind(topTen[1:nBest,1],
   #     .calcAbsParamValue(jObject@dm,topTen[1:nBest,-1]) ))
+
+  route <- route[route[,1] != 0,]
+  route[,-1] <- .deNormalize(jObject, route[ ,-1,drop=F])
+  jObject@route[[length(jObject@route) + 1]] <- route
 
   likelihoods <- c()
   .log3("Starting final sim.")
@@ -1097,7 +1099,7 @@ Jaatha.printStartPoints <- function(jObject, startPoints, extThetaPossible=F){
   for (i in 1:length(startPoints)){
     if (jObject@externalTheta & !extThetaPossible) theta <- startPoints[[i]]@MLest[width-1]
     mat[i,1] <- round(startPoints[[i]]@score,2)
-    mat[i,-1] <- round(.deNormalize(jObject,startPoints[[i]]@MLest)[1:(width-1)], 3)
+    mat[i,-1] <- round(.deNormalize(jObject,t(startPoints[[i]]@MLest))[1:(width-1)], 3)
     if (jObject@externalTheta & !extThetaPossible) mat[i, width] <- round(theta,3)
   }
   perm <- sort.list(mat[,1],decreasing=T) 
@@ -1118,15 +1120,20 @@ Jaatha.printStartPoints <- function(jObject, startPoints, extThetaPossible=F){
 Jaatha.printLikelihoods <- function(jObject, max.entries=NULL) {
   .log3("Called Jaatha.printLikelihoods")
   lt <- jObject@likelihood.table
-  lt[,-(1:2)] <- .deNormalize(jObject, lt[,-(1:2)])
+  lt[,-(1:2)] <- .deNormalize(jObject, lt[,-(1:2), drop=F])
   perm <- sort.list(lt[,1],decreasing=T)  
-  lt <- lt[perm, ]
+  lt <- lt[perm, , drop=F]
   .log3("Finished Jaatha.printLikelihoods")
-  return(lt[1:min(max.entries, nrow(lt)), ])
+  return(lt[1:min(max.entries, nrow(lt)), , drop=F])
 }
 
 printBestPar <- function(jObject, block) {
   .print("Best parameters: ", 
-           round(.deNormalize(jObject, block@MLest), 3), 
+           round(.deNormalize(jObject, t(block@MLest)), 3), 
            "| Score:",  block@score)
+}
+
+scaleDemographicModel <- function(dm, scaling.factor) {
+  dm@nLoci <- round(dm@nLoci / scaling.factor)
+  return(dm)
 }

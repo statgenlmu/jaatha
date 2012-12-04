@@ -1025,7 +1025,7 @@ dm.simSumStats <- function(dm, parameters, sumStatFunc){
   .log3("Called dm.simSumStats()")
 
   jsfs <- F
-  if (!is.matrix(parameters)) parameters <- matrix(parameters,1,length(parameters))
+  if (!is.matrix(parameters)) parameters <- matrix(parameters,1)
   if (missing(sumStatFunc)) {
     if (nrow(parameters) > 1) stop("Only one parameter combination is allowed
                                    when not providing sumStatFunc.")

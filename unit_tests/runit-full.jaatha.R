@@ -4,16 +4,16 @@ rerecord.results = F
  
 library("RUnit")
 
-dm.thetaTau <- dm.createDemographicModel(c(20,25), 20)
+dm.thetaTau <- dm.createDemographicModel(c(10,15), 20)
 dm.thetaTau <- dm.addSpeciationEvent(dm.thetaTau,0.1,5)
 dm.thetaTau <- dm.addMutation(dm.thetaTau,5,20)
 
-dm.extTheta <- dm.createDemographicModel(c(25,15), 80)
+dm.extTheta <- dm.createDemographicModel(c(12,11), 30)
 dm.extTheta <- dm.addSpeciationEvent(dm.extTheta,0.1,5)
 dm.extTheta <- dm.addSymmetricMigration(dm.extTheta,1,5)
 dm.extTheta <- dm.addMutation(dm.extTheta)
 
-dm.eTp <- dm.createDemographicModel(c(20,40), 50)
+dm.eTp <- dm.createDemographicModel(c(12,13), 25)
 dm.eTp <- dm.addSpeciationEvent(dm.eTp,0.1,5)
 dm.eTp <- dm.addSymmetricMigration(dm.eTp,1,5)
 dm.eTp <- dm.addMutation(dm.eTp,1,5)
@@ -84,11 +84,10 @@ test.initialSearch.folded <- function() {
     if (rerecord.results) save(samples,file="samples.save")
 }
 
-test.initialSearch.parallel.simple <- function() {
+test.initialSearch.parallel <- function() {
     load("samples.save")
 	jaatha <- Jaatha.initialize(dm.thetaTau, samples[["simSumStats"]], seed=100,
-                                sim.package.size=2,
-                                parallelization.model="simple")
+                                sim.package.size=2)
 	startPoints <- Jaatha.initialSearch(jaatha, nSim=10, nBlocksPerPar=2)
 	pStartPoints <- Jaatha.printStartPoints(jaatha,startPoints)
 	if (rerecord.results) samples[["initialSearch.parallel.simple"]] <- pStartPoints
@@ -109,10 +108,4 @@ test.refineSearch <- function(){
     if (rerecord.results) save(samples,file="samples.save")
 }
 
-## -- Fixed bugs ----------------------------------------
-#print() failed for empty demographic models
-test.showEmptyModel <- function() {
-  dm <- dm.createDemographicModel(25:26, 100)
-  print(dm)
-}
 
