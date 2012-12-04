@@ -29,7 +29,8 @@ glmFitting <- function(bObject,nTotalSumstat,weighting){
 				## if glm function did not converge, set coefficients & convergence to 0
 				tryCatch({
 					mod <- suppressWarnings(glm(as.formula(paste(response[s]," ~ ", explanatory)),
-								data=dat, family=poisson, weights=weighting))}, 
+								data=dat, family=poisson, weights=weighting,
+                                control = list(maxit = 50)))}, 
 					error=function(e) {
 						print(list("Caught error of GLM function!"))
 						cat("sumstat",s," sum=",sum(dat[,s+bObject@nPar]),"\n")
@@ -38,7 +39,7 @@ glmFitting <- function(bObject,nTotalSumstat,weighting){
 			
 				modFeld[s,] <- c(mod$coef,mod$conv,sum(dat[,s+bObject@nPar])) 
 				if (!mod$conv){
-					cat("WARNING = sumstat",s," did not converge, sum = ",
+					cat("WARNING: sumstat",s," did not converge, sum = ",
 							sum(dat[,s+bObject@nPar]),"\n")
 				} else{}
 			}  

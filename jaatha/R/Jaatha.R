@@ -503,14 +503,15 @@ Jaatha.refineSearch <- function(jObject,startPoints,nSim,
 
     # Output current best position
     printBestPar(jObject, searchBlock)
-    .print()
 
     ## stop criterion 1: likelihood difference less than epsilon 
     if ( (abs(newOptimum$score - oldParamLikeli) < epsilon)){
-      if (lastNoChange==(nSteps-1)){  # if last noChange happend just last step
+      #if (lastNoChange==(nSteps-1)){  # if last noChange happend just last step
         noLchangeCount <- noLchangeCount +1           
+        .print("No sigificant score changes in the last",noLchangeCount,"Step(s)")
         ## if there has been no change 5 times in a row, stop 
         if (noLchangeCount>4){
+          .print()
           .print("*** Finished search ***")
           .print("Likelihood value has not change much in the last 5 steps.")
           .print("Seems we have converged.")
@@ -518,16 +519,20 @@ Jaatha.refineSearch <- function(jObject,startPoints,nSim,
           break
         } else{}
       } else{ # if first noChange, save old estimates
-        noLchangeCount <- 1
+        noLchangeCount <- 0
       }
-      lastNoChange <- nSteps
-    } else{}
+    #  lastNoChange <- nSteps
+    #} else{}
 
     ## stop criterion 2: more than nMaxStep search steps
     if (nSteps>(nMaxStep-1)) {
+      .print()
       .print("Maximimum number of search steps",nMaxStep,"reached.\n")
+      .print()
       break
-    } 
+    }
+
+    .print()
 
   } #repeat loop end
 
