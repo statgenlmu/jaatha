@@ -114,7 +114,7 @@ setClass("Jaatha",
   .Object@sumStats <- summary.statistics
   .Object@nTotalSumstat <- length(summary.statistics)
 
-  .Object@likelihood.table <- matrix(0,0,.Object@nPar + 2)
+  .Object@likelihood.table <- matrix()
 
   # Seeds
   # Jaatha uses three seeds. The first is the "main seed" used to generate the
@@ -148,6 +148,8 @@ setClass("Jaatha",
   if (missing(scaling.factor)) scaling.factor <- 1
   checkType(scaling.factor, c("num","single"))
   .Object@dm <- scaleDemographicModel(.Object@dm, scaling.factor)
+  if (.Object@dm@nLoci < 3) 
+    stop("Error: Simulating less then 3 Loci. Use more data or less scaling.")
   .Object@scaling.factor <- scaling.factor
   
   return (.Object)
@@ -369,6 +371,8 @@ Jaatha.refineSearch <- function(jObject,startPoints,nSim,
   .log2("Called function Jaatha.refineSearch()")
   if (missing(nFinalSim)) nFinalSim <- nSim
   if (!is.list(startPoints)) stop("startPoints is no list!")
+  
+  jObject@likelihood.table <- matrix(0,0, jObject@nPar + 2)
 
   # Setup enviroment for the refine search
   set.seed(jObject@seeds[3])
@@ -513,7 +517,7 @@ Jaatha.refineSearch <- function(jObject,startPoints,nSim,
         if (noLchangeCount>4){
           .print()
           .print("*** Finished search ***")
-          .print("Likelihood value has not change much in the last 5 steps.")
+          .print("Score has not change much in the last 5 steps.")
           .print("Seems we have converged.")
           .print()
           break
@@ -537,7 +541,7 @@ Jaatha.refineSearch <- function(jObject,startPoints,nSim,
   } #repeat loop end
 
   ##last best estimates will be taken into topTen
-  nBest <- min(nSteps+1,nrow(topTen))
+  nBest <- min(nSteps, nrow(topTen))
 
   ## inlcude last optimum into top ten
   if (jObject@externalTheta){
@@ -555,17 +559,16 @@ Jaatha.refineSearch <- function(jObject,startPoints,nSim,
 
   likelihoods <- c()
   .log3("Starting final sim.")
-  .print("Calulating composite log likelihoods for best estimates:")
+  .print("Calulating log-composite-likelihoods for best estimates:")
   for (t in 1:nBest){
-    .print("Parameter combination",t,"of",nBest,"...")
     topPar <- topTen[t,2:(nTotalPar+1)]    # in original parameter range
+    .print("* Parameter combination",t,"of",nBest)
     likelihoods[t] <- Jaatha.calcLikelihood(jObject, 
                                             nSimulations=nFinalSim, 
                                             par=topPar)
     #cat(t,likelihoods[t],"\n")
   }
   .log3("Finished final sim.")
-
 
   likelihood.table <- cbind(log.cl=likelihoods,block=blocknr,topTen[topTen[,1]!=0,-1])
   jObject@likelihood.table <- rbind(jObject@likelihood.table,likelihood.table)

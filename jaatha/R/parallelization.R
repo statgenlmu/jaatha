@@ -8,13 +8,12 @@
 # Licence:  GPLv3 or later
 # ----------------------------------------------------------------------
 
-setSingleCoreMode <- function(jaatha) {
-  registerDoSEQ()
-}
-
 setParallelization <- function(jaatha) {
-  require(doMC)
   cores <- jaatha@cores
-  if (cores == 0) cores <- NULL
-  registerDoMC(cores)
+  if (cores > 1) {
+    require(doMC)
+    registerDoMC(cores)
+  } else {
+    registerDoSEQ()
+  }
 }

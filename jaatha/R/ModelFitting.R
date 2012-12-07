@@ -30,7 +30,7 @@ glmFitting <- function(bObject,nTotalSumstat,weighting){
 				tryCatch({
 					mod <- suppressWarnings(glm(as.formula(paste(response[s]," ~ ", explanatory)),
 								data=dat, family=poisson, weights=weighting,
-                                control = list(maxit = 50)))}, 
+                                control = list(maxit = 200)))}, 
 					error=function(e) {
 						print(list("Caught error of GLM function!"))
 						cat("sumstat",s," sum=",sum(dat[,s+bObject@nPar]),"\n")

@@ -15,9 +15,9 @@ howto:
 	cd $(output); evince $(rnwfile).pdf &
 
 howto-cache:
-	cd $(docPath); R CMD Sweave jaatha.Rnw
+	- cd $(docPath); R CMD Sweave jaatha.Rnw
 	cd $(docPath)/cache; R CMD Sweave initialSearch.Rnw
-	cd $(docPath); R CMD Sweave jaatha.Rnw
+	- cd $(docPath); R CMD Sweave jaatha.Rnw
 	cd $(docPath)/cache; R CMD Sweave refineSearch.Rnw
 	rm $(docPath)/jaatha.tex
 

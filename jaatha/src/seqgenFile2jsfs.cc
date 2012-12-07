@@ -1,4 +1,4 @@
-#include <R.h>	
+#include<R.h>	
 #include<iostream>
 #include<fstream>
 #include<string>
@@ -6,7 +6,7 @@
 #include<cstring>
 #include<vector>
 #include<map>
-#include <algorithm>
+#include<algorithm>
 
 inline unsigned int argmax(int * p, int len) {
   int maxIndex=0;
@@ -24,7 +24,6 @@ using namespace std;
    and newMig (=bases that are common (>=90%) in one pop and uncommon in the other (<=10%) -> indication for recent migration). */
 
 extern "C" {
-
   // usage: seqGenFile2jsfs seqgenOutput samplesize1 samplesize2 anzLoci resArraySize resArray
   // 'res' (returned array) will contain the jsfs and possibly additional ss 
   void seqFile2jsfs(char **filename, int *ps1, int *ps2, int *pnloc, int *rSize, int *res){

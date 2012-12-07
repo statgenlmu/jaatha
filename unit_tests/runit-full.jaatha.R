@@ -49,7 +49,7 @@ test.initialSearch.normal <- function(){
                                 sim.package.size=3)
 	startPoints2 <- Jaatha.initialSearch(jaatha2, nSim=10, nBlocksPerPar=2)
 	pStartPoints2 <- Jaatha.printStartPoints(jaatha, startPoints2)
-	checkEquals(pStartPoints, pStartPoints2)
+	checkEquals(pStartPoints[1:2,], pStartPoints2[1:2,])
 }
 
 test.initialSearch.extThet <- function(){

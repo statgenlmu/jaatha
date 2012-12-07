@@ -836,7 +836,6 @@ dm.addSpeciationEvent <- function(dm, min.time, max.time, fixed.time,
   }
 
   new.pop <- max(populations) + 1
-  .print("The new population is population", new.pop)
 
   return(addFeature(dm, "split", par.new = F, 
                     pop.source=in.population,

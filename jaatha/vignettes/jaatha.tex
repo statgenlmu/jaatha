@@ -14,14 +14,10 @@
 \usepackage{indentfirst}
 \usepackage{hyperref}
 
-<<foo,include=FALSE,echo=FALSE>>=
-options(keep.source = TRUE, width = 60)
-jinfo <- packageDescription("jaatha")
-@
 
 \hypersetup{
-	pdftitle={The Jaatha HowTo \Sexpr{jinfo$Version}},
-	pdfauthor={\Sexpr{jinfo$Author}},
+	pdftitle={The Jaatha HowTo 1.9.12},
+	pdfauthor={Lisha Mathew, Paul R. Staab and Dirk Metzler},
 	colorlinks=true,
 	linkcolor=black,          % color of internal links
 	citecolor=black,        % color of links to bibliography
@@ -29,12 +25,13 @@ jinfo <- packageDescription("jaatha")
 	urlcolor=blue           % color of external links
 }
 
+\usepackage{Sweave}
 \begin{document}
 
 
 \title{The Jaatha HowTo}
-\author{\Sexpr{jinfo$Author}}
-\date{Version \Sexpr{jinfo$Version}}
+\author{Lisha Mathew, Paul R. Staab and Dirk Metzler}
+\date{Version 1.9.12}
 \maketitle
 
 \section{Introduction}
@@ -48,9 +45,11 @@ as an \verb@R@ package \verb@jaatha@.
 
 The package itself can be obtained from CRAN
 using
-<<install, eval=FALSE>>=
-install.packages('jaatha')
-@ 
+\begin{Schunk}
+\begin{Sinput}
+> install.packages('jaatha')
+\end{Sinput}
+\end{Schunk}
 or downloaded from
 \url{http://evol.bio.lmu.de/_statgen/software/jaatha}. Jaatha runs on all
 operating systems supported by \verb@R@ -- namely Windows, OS X (Mac) and Linux
@@ -96,17 +95,21 @@ known rate $\rho$.}
 \end{figure}
 
 To specify that model in \verb@R@, we first need to load \verb@jaatha@.
-<<Loading Jaatha>>=
-library(jaatha)
-@
+\begin{Schunk}
+\begin{Sinput}
+> library(jaatha)
+\end{Sinput}
+\end{Schunk}
 We can now create an 'empty' demographic model \verb@dm@ using the\\ 
 \verb@dm.createDemographicModel()@ function:
 
-<<Creating a demographic model in R>>=
-dm <- dm.createDemographicModel(sample.sizes=c(25,24), 
-                                loci.num=70,
-                                seq.length=1000)
-@
+\begin{Schunk}
+\begin{Sinput}
+> dm <- dm.createDemographicModel(sample.sizes=c(25,24), 
++                                 loci.num=70,
++                                 seq.length=1000)
+\end{Sinput}
+\end{Schunk}
 
 The parameter \verb@sample.sizes@ here corresponds to the number of individuals we have
 sampled from the first population and second population respectively. The 
@@ -115,12 +118,14 @@ while \verb@seq.length@ gives the (average) length of each loci\footnote{This
 is only used when a finite sites model is assumed or if intra-locus recombination is included.}.
 
 We can now successively add the other assumptions of our model:
-<<Creating a demographic model in R>>=
-dm <- dm.addSpeciationEvent(dm, .1, 5, new.time.point.name='tau')
-dm <- dm.addSymmetricMigration(dm, .01, 5, new.par.name='M')
-dm <- dm.addMutation(dm, 1, 20, new.par.name='theta')
-dm <- dm.addRecombination(dm, fixed=20)
-@
+\begin{Schunk}
+\begin{Sinput}
+> dm <- dm.addSpeciationEvent(dm, .1, 5, new.time.point.name='tau')
+> dm <- dm.addSymmetricMigration(dm, .01, 5, new.par.name='M')
+> dm <- dm.addMutation(dm, 1, 20, new.par.name='theta')
+> dm <- dm.addRecombination(dm, fixed=20)
+\end{Sinput}
+\end{Schunk}
 The first parameter is the demographic model to which we want to add
 an assumption/feature. The two following numbers represent the range for the
 coresponding parameter. 
@@ -191,39 +196,61 @@ one, population two, and the outgroup, respectively.
 Please consult the documentation of \emph{ape} in order to get more information
 about \verb@read.dna()@. For example, the import of the data could look like this:  
 
-<<Load Fasta files>>=
-library(ape)
-# The path to the data
-sample.file <- system.file('example_fasta_files/sample.fasta', 
-                           package='jaatha')
-
-# Reading the data
-sample.data <- read.dna(sample.file, format='fasta', 
-                        as.character=TRUE)
-
-# Calculating the JSFS
-sample.jsfs <- calculateJsfs(sample.data, 
-                             pop1.rows=3:7, 
-                             pop2.rows=8:12,
-                             outgroup.row=1:2)
-sample.jsfs
-@
+\begin{Schunk}
+\begin{Sinput}
+> library(ape)
+> # The path to the data
+> sample.file <- system.file('example_fasta_files/sample.fasta', 
++                            package='jaatha')
+> # Reading the data
+> sample.data <- read.dna(sample.file, format='fasta', 
++                         as.character=TRUE)
+> # Calculating the JSFS
+> sample.jsfs <- calculateJsfs(sample.data, 
++                              pop1.rows=3:7, 
++                              pop2.rows=8:12,
++                              outgroup.row=1:2)
+> sample.jsfs
+\end{Sinput}
+\begin{Soutput}
+     [,1] [,2] [,3] [,4] [,5] [,6]
+[1,]    1    0    0    0    0    0
+[2,]    1    1    1    0    0    0
+[3,]    2    0    1    0    0    0
+[4,]    1    1    0    2    0    1
+[5,]    1    0    0    0    3    0
+[6,]    1    0    0    0    0    0
+\end{Soutput}
+\end{Schunk}
 
 \vspace{1em}
 \noindent
 For the purpose of this HowTo, we will use a simulated JSFS, for which we 
 know the real parameters:
 
-<<Summary Statistics>>=
-# Real parameters: M = 1, tau = 1 and theta = 10
-real.pars <- c(1,1,10) 
-
-# Simulate a JSFS with this parameters
-jsfs <- dm.simSumStats(dm, real.pars)
-
-# Print the upper left part of the JSFS
-jsfs[1:10, 1:10]
-@
+\begin{Schunk}
+\begin{Sinput}
+> # Real parameters: M = 1, tau = 1 and theta = 10
+> real.pars <- c(1,1,10) 
+> # Simulate a JSFS with this parameters
+> jsfs <- dm.simSumStats(dm, real.pars)
+> # Print the upper left part of the JSFS
+> jsfs[1:10, 1:10]
+\end{Sinput}
+\begin{Soutput}
+      [,1] [,2] [,3] [,4] [,5] [,6] [,7] [,8] [,9] [,10]
+ [1,]    0  760  345  219  141   91   80   57   69    29
+ [2,]  659   39   27   32   26   17   12    6   17    10
+ [3,]  333   20   19   14    9    5   14    7    9     5
+ [4,]  177   14   14   21    9    6   10    6    1     9
+ [5,]  173   17   21   13    7    7   10    8   10     6
+ [6,]  109   19   21   13    2    6    6    4    4     4
+ [7,]   71   21   12    3    6    7    7    5    5     2
+ [8,]   69   13    7    9    4    8    6    3    3     0
+ [9,]   56   20    3    6    6    3    0    3    3     1
+[10,]   44   17    5   11    5    4    1    1    0     0
+\end{Soutput}
+\end{Schunk}
 
 \section{Running Jaatha}
 
@@ -235,13 +262,12 @@ is performed starting from the best positions of the first step. Before starting
 the search, we need to set some options like our demographic model, the summary 
 statistics of the real data, and a seed to ensure repoducibilty:
 
-<<Initialize>>=
-jaatha <- Jaatha.initialize(dm, jsfs=jsfs, seed=12345)
-@
+\begin{Schunk}
+\begin{Sinput}
+> jaatha <- Jaatha.initialize(dm, jsfs=jsfs, seed=12345)
+\end{Sinput}
+\end{Schunk}
 
-<<SaveJaatha, include=FALSE, echo=FALSE>>=
-save(jaatha, file='cache/saved_objects/jaatha.Rsave')
-@
 
 \noindent
 For more options refer to \verb@?Jaatha.initialize@ or the Jaatha manual.
@@ -267,33 +293,44 @@ In R, the initial search is performed with the command
 % Don't run a complete jaatha search; would take tooo long
 \input{cache/initialSearch}
 
-<<LoadStartPoints, include=FALSE, echo=FALSE>>=
-load('cache/saved_objects/start-points.Rsave')
-@
 
 \noindent
 To visualise the estimates for good stating positions sorted by sorce, type:
-<<PrintStartPoints>>=
-Jaatha.printStartPoints(jaatha, start.points)
-@
+\begin{Schunk}
+\begin{Sinput}
+> Jaatha.printStartPoints(jaatha, start.points)
+\end{Sinput}
+\begin{Soutput}
+         score   tau     M  theta
+ [1,] 32123.74 1.357 1.015  9.320
+ [2,] 32112.91 0.858 1.092 10.464
+ [3,] 32023.98 0.275 0.876 12.332
+ [4,] 31983.12 0.368 0.630 11.090
+ [5,] 31980.47 0.176 0.630 13.383
+ [6,] 31905.78 1.357 0.630  8.869
+ [7,] 31867.61 0.111 0.079 13.964
+ [8,] 31024.21 0.368 0.079 10.859
+ [9,] 28449.97 1.357 0.079  8.725
+\end{Soutput}
+\end{Schunk}
 Here, there is a big reduction in the scores after the first seven blocks, and a smaller one 
 after the first two. This is suggesting that we either use the first two or the
 first seven 
 blocks as starting positions for the refined search, depending on how much time we want to
 spend. For now, we will just use the first two points.
-<<Pick points>>=
-picked.points <- Jaatha.pickBestStartPoints(start.points, 2)
-@
+\begin{Schunk}
+\begin{Sinput}
+> picked.points <- Jaatha.pickBestStartPoints(start.points, 2)
+\end{Sinput}
+\begin{Soutput}
+There used to be 9 blocks in the list.
+Keeping Block: 9  6  
+\end{Soutput}
+\end{Schunk}
 
-<<SavePickedPoints, include=FALSE, echo=FALSE>>=
-save(picked.points, file='cache/saved_objects/picked-points.Rsave')
-@
 
 \subsection{The Refined Search}
 
-<<LoadFinalResults, include=FALSE, echo=FALSE>>=
-load('cache/saved_objects/jaatha-complete.Rsave')
-@
 
 \noindent
 Now we can conduct the more thorough refined search described above to improve the
@@ -318,10 +355,18 @@ Finally the log composite likelihoods for the best ten parameter combinations ar
 approximated using \verb@nFinalSim@ simulations. These are values printed at the 
 end of the search. This matrix can also be accessed via
 
-<<printLT>>=
-likelihoods <- Jaatha.printLikelihoods(jaatha)
-print(likelihoods[1:3, ])
-@
+\begin{Schunk}
+\begin{Sinput}
+> likelihoods <- Jaatha.printLikelihoods(jaatha)
+> print(likelihoods[1:3, ])
+\end{Sinput}
+\begin{Soutput}
+     log.cl block       tau        M    theta
+1 -86.12714     2 0.9739440 1.032511 10.25657
+7 -86.18361     1 0.9885422 1.026013 10.31083
+4 -86.73760     2 1.0280078 1.021425 10.22406
+\end{Soutput}
+\end{Schunk}
 
 %\begin{figure}
 %  \begin{center}
