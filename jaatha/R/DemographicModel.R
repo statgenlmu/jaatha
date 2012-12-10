@@ -131,7 +131,7 @@ rm(.init)
     }
   }
 } 
-setMethod("show","DemographicModel",.show)
+#setMethod("show","DemographicModel",.show)
 rm(.show)
 
 
@@ -966,6 +966,92 @@ dm.addGrowth <- function(dm, min.growth.rate, max.growth.rate, fixed.growth.rate
   return(dm)
 }
 
+
+#-------------------------------------------------------------------
+# dm.setMutationModel
+#-------------------------------------------------------------------
+#' Defines what mutation model is used for simulations
+#'
+#' As default, we simulate mutation using the Infinite Sites Model. 
+#' Using the function, you can change it either to the Hasegawa, Kishino and
+#' Yano (HKY), to the Felsenstein and Churchill 96 (F84) or to the Generalised 
+#' time reversible (GTR) model. This requires that seq-gen is installed on our system.
+#'
+#' The HKY and F84 models use the the arguments 'base.frequencies' and
+#' 'tstv.ratio'. The GTR model uses 'gtr.rates'.
+#'
+#' @param dm  The demographic model for which the mutation model will be set.
+#' @param mutation.model  The mutation model you want to use. Can be HKY, F84 or GTR.
+#' @param tstv.ratio The ratio of transitions to transversions. The default is
+#'                   0.5, which means that all amino acid substitutions are
+#'                   equally likely. In this case, the HKY model is identical to
+#'                   the Felsenstein 81 model.
+#' @param base.frequencies The equilibrium frequencies of the four bases. 
+#'                   Must be a numeric vector of length four. 
+#'                   Order is A, C, G, T.
+#' @param gtr.rates  The rates for the amino acid substitutions. Must be a
+#'                   numeric vector of length six. Order: A->C, A->G, A->T, C->G, C->T, G->T.
+#' @return    The demographic model with the new mutation model.
+#' @export
+#' @examples
+#' dm <- dm.createThetaTauModel(11:12, 100)
+#' dm <- dm.setMutationModel(dm, "HKY")
+dm.setMutationModel <- function(dm, mutation.model, 
+                                base.frequencies, tstv.ratio, 
+                                gtr.rates) {
+
+  checkType(mutation.model, c("char", "s"), T, F)
+  checkType(base.frequencies, c("num"), F, F)
+  checkType(tstv.ratio, c("num", "s"), F, F)
+  checkType(gtr.rates, c("num"), F, F)
+
+  if (! mutation.model %in% mutation.models) 
+    stop("Allowed values: ", paste(mutation.models, collapse=" "))
+  
+  mutation.model = seq(along = mutation.models)[mutation.models == mutation.model]
+  dm <- jaatha:::addFeature(dm, "mutation.model", "mutation.model", 
+                            fixed.value=mutation.model)
+
+  if ( !missing(tstv.ratio) ) 
+    dm <- jaatha:::addFeature(dm, "tstv.ratio", "tstv.ratio", fixed.value=tstv.ratio)
+
+  if ( !missing(base.frequencies) ) {
+    if (length(base.frequencies) != 4) 
+        stop("You must enter frequencies for all 4 bases")
+
+    dm <- addFeature(dm, "base.freq.A", "base.freq.A", fixed.value=base.frequencies[1])
+    dm <- addFeature(dm, "base.freq.C", "base.freq.C", fixed.value=base.frequencies[2])
+    dm <- addFeature(dm, "base.freq.G", "base.freq.G", fixed.value=base.frequencies[3])
+    dm <- addFeature(dm, "base.freq.T", "base.freq.T", fixed.value=base.frequencies[4])
+  }
+
+  if ( !missing(gtr.rates) ) {
+    if (length( gtr.rates) != 6 ) 
+        stop("You must enter rates for all 6 substitutions")
+
+    dm <- addFeature(dm, "gtr.rate.1", "gtr.rate.1", fixed.value=gtr.rates[1])
+    dm <- addFeature(dm, "gtr.rate.2", "gtr.rate.2", fixed.value=gtr.rates[2])
+    dm <- addFeature(dm, "gtr.rate.3", "gtr.rate.3", fixed.value=gtr.rates[3])
+    dm <- addFeature(dm, "gtr.rate.4", "gtr.rate.4", fixed.value=gtr.rates[4])
+    dm <- addFeature(dm, "gtr.rate.5", "gtr.rate.5", fixed.value=gtr.rates[5])
+    dm <- addFeature(dm, "gtr.rate.6", "gtr.rate.6", fixed.value=gtr.rates[6])
+  }
+
+  return(dm)
+}
+
+
+dm.addMutationRateHeterogenity <- 
+  function(dm, min.alpha, max.alpha, fixed.alpha, par.new=T, 
+           new.par.name="alpha", parameter) {
+
+  if (par.new) parameter <- new.par.name
+
+  dm <- addFeature(dm, "gamma.rate", parameter, min.alpha, max.alpha,
+                   fixed.alpha, par.new, NA, NA, NA)
+
+  return(dm)
+}
 
 #-------------------------------------------------------------------
 # dm.createThetaTauModel

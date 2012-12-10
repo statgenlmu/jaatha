@@ -10,12 +10,31 @@
 
 
 #-----------------------------------------------------------------------
-# Functions for easy log creation
+# Create and Manage an enviroment for run-time variables
 #-----------------------------------------------------------------------
 
 # Create a new enviroment for local variables that won't be looked after package
-# loading like jaathas enviroment is.
+# loading like the default package enviroment is.
 if (!exists(".jaatha")) .jaatha <- new.env()
+
+setJaathaVariable <- function(name, value) {
+  .jaatha[[name]] <- value
+}
+
+getJaathaVariable <- function(name) {
+  return(get(name, envir=.jaatha))
+}
+
+isJaathaVariable <- function(name) {
+  exists(name, envir=.jaatha)
+}
+
+
+
+#-----------------------------------------------------------------------
+# Functions for easy log creation
+#-----------------------------------------------------------------------
+
 if (!exists('log.level', envir=.jaatha)) .jaatha$log.level <- 1
 if (!exists('log.file', envir=.jaatha))  .jaatha$log.file  <- ""
 

@@ -14,58 +14,158 @@
 #source("./DemographicModel.R")
 
 # list ms's features + FS related features
-seqgen.features    <- c()
-fossible.sum.stats <- c("jsfs")
+seqgen.features    <- c('mutation.model', 'tstv.ratio', 
+                        'base.freq.A', 'base.freq.C', 'base.freq.G',
+                        'base.freq.T',
+                        'gtr.rate.1', 'gtr.rate.2', 'gtr.rate.3',
+                        'gtr.rate.4','gtr.rate.5','gtr.rate.6')
 
-# possible.features  <- c(getSimProgram('ms')@possible.features, seqgen.features)
+possible.sum.stats <- c("jsfs")
+mutation.models    <- c('HKY', 'F84', 'GTR')
+
+possible.features  <- c(getSimProgram('ms')@possible.features, seqgen.features)
+
+checkForSeqgen <- function() {
+  if ( isJaathaVariable('seqgen.exe') ) return()
+
+  # Works on linux
+  run.path <- strsplit(Sys.getenv("PATH"), ":")[[1]]
+  executables <- c(paste(run.path, "/seq-gen", sep=""), 
+                   paste(run.path, "/seqgen", sep=""))
+  for (exe in executables) {
+    if (file.exists(exe)) {
+      .print("Using", exe, "as seqgen executable\n")
+      setJaathaVariable('seqgen.exe', exe)     
+      return()
+    }
+  }
+
+  stop("No seqgen executable found. Please provide one using
+       Jaatha.setSeqgenExecutable()")
+}
+
+Jaatha.setSeqgenExecutable <- function(seqgen.exe) {
+  if (file.exists(seqgen.exe)) {
+    setJaathaVariable('seqgen.exe', seqgen.exe)     
+    .print("Using", seqgen.exe, "as seqgen executable\n")
+  } else {
+    stop("File", seqgen.exe, "does not exist")
+  }
+}
 
 # Function to perform simulation using seqgen
 # 
 # @param opts The options to pass to ms. Must either be a character or character
 # vector.
-callSeqgen <- function(opts, ms.file){
+callSeqgen <- function(opts, ms.file) {
   if (missing(opts)) stop("No options given!")
-  .log3(1)
   opts[length(opts) + 1:2] <- c(" ", ms.file)
-  .log3(2)
   opts <- paste(opts, collapse=" ")
-  .log3(3)
 
   if( !file.exists(ms.file) ) stop("ms file not found")
-  .log3(4)
   if( file.info(ms.file)$size == 0 ) stop("ms output is empty")
-  .log3(5)
 
   seqgen.file <- getTempFile("seqgen")
-  .log3(6)
   cmd <- paste(opts, ">", seqgen.file, sep=" ", collapse=" ")
-  .log3(7)
   .log3("executing: '", cmd, "'")
   system(cmd)
-  
+
   if( !file.exists(seqgen.file) ) stop("seq-gen simulation failed!")
   if( file.info(seqgen.file)$size == 0 ) stop("seq-gen output is empty!")
   return(seqgen.file)
 }
 
 generateSeqgenOptions <- function(dm, parameters) {
-  #return(c("-mHKY", "-l", dm@seqLength, "-p", dm@seqLength + 1))
-  return(c("seq-gen", "-mHKY", "-l", dm@seqLength, "-p", dm@seqLength + 1, 
-           "-s 0.0002", "-z ", generateSeeds(1), "-q"))
+  seqgen.tmp <- new.env()
+
+  par.names <- dm.getParameters(dm)
+
+  for (i in seq(along = par.names)){
+    seqgen.tmp[[ par.names[i] ]] <- parameters[i]
+  }
+
+  fixed.pars <- dm@parameters[dm@parameters$fixed, ]
+  if (nrow(fixed.pars) > 0) {
+    for (i in 1:nrow(fixed.pars)){
+      seqgen.tmp[[ fixed.pars$name[i] ]] <- fixed.pars$lower.range[i]
+    }
+  }
+
+  seqgen.tmp[['seed']] <- generateSeeds(1)
+
+  cmd <- generateSeqgenOptionsCmd(dm)
+  cmd <- paste(eval(parse(text=cmd), envir=seqgen.tmp), collapse=" ")
+
+  return(cmd)
+}
+
+generateSeqgenOptionsCmd <- function(dm, parameters) {  
+  base.freqs <- F
+  gtr.rates <- F
+
+  opts <- c('c(', paste('"', getJaathaVariable('seqgen.exe'), '"', sep=""), ",")
+
+  for (i in 1:dim(dm@features)[1] ) {
+	type <- as.character(dm@features[i,"type"])
+    feat <- unlist(dm@features[i, ])
+  
+    if (type == "mutation.model") {
+      model <- mutation.models[dm@parameters[dm@parameters$name == "mutation.model", 
+                                             'lower.range']]
+      opts <- c(opts, '"-m"', ',', 
+                paste('"', model, '"', sep=""), ",")
+    }
+
+    else if ( type %in% c('base.freq.A', 'base.freq.C', 
+                          'base.freq.G', 'base.freq.T') )
+      base.freqs <- T
+
+    else if ( type %in% c('gtr.rate.1', 'gtr.rate.2', 'gtr.rate.3',
+                          'gtr.rate.4', 'gtr.rate.5', 'gtr.rate.6') )
+      gtr.rates <- T
+
+    else if (type == "tstv.ratio")
+      opts <- c(opts, '"-t"', ',', 'tstv.ratio', ',')
+
+    else if (type == "gamma.rate")
+      opts <- c(opts, '"-a"', ',', feat['parameter'], ',')
+  }
+
+  if (base.freqs) {
+    opts <- c(opts, '"-f"', ',', 'base.freq.A',
+                            ',', 'base.freq.C',
+                            ',', 'base.freq.G',  
+                            ',', 'base.freq.T', ',')
+  }
+
+  if (gtr.rates) {
+    opts <- c(opts, '"-t"', ',', 'base.freq.1',
+                            ',', 'base.freq.2',
+                            ',', 'base.freq.3',  
+                            ',', 'base.freq.4',  
+                            ',', 'base.freq.5',  
+                            ',', 'base.freq.6', ',')
+  }
+
+  opts <- c(opts, '"-l"', ',', dm@seqLength, ',')
+  opts <- c(opts, '"-p"', ',', dm@seqLength + 1, ',')
+  opts <- c(opts, '"-z"', ',', 'seed', ',')
+  opts <- c(opts, '"-q"', ')')
+  return(opts)
 }
 
 printSeqgenCommand <- function(dm) {
   cmd <- generateSeqgenOptions(dm)
-  
+
   cmd <- cmd[cmd != ","]
-  #cmd <- cmd[-c(1, length(cmd))]
+  cmd <- cmd[-c(1, length(cmd))]
 
   cmd <- paste(cmd, collapse=" ")
 
   cmd <- gsub(",", " ", cmd)
   cmd <- gsub('\"', "", cmd)
   cmd <- gsub('"', " ", cmd)
-  
+
   return(cmd)
 }
 
@@ -94,6 +194,7 @@ seqgenSingleSimFunc <- function(dm, parameters) {
   .log3("parameter:",parameters)
   checkType(dm, "dm")
   checkType(parameters, "num")
+  checkForSeqgen()
   if (length(parameters) != dm.getNPar(dm)) 
     stop("Wrong number of parameters!")
 

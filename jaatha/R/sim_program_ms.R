@@ -22,7 +22,7 @@ callMs <- function(opts){
   .log3("Options:", opts)
 
   ms.file <- getTempFile("ms")
-  
+
   .log3("Calling ms...")
   .Call("R_ms_main", opts, ms.file, PACKAGE = "phyclust")
   .log3("ms finished. Finished callMs()")
@@ -32,74 +32,75 @@ callMs <- function(opts){
 # This function generates an string that contains an R command for generating
 # an ms call to the current model.
 generateMsOptionsCommand <- function(dm) {
-    nSample <- dm@sampleSizes
-	cmd <- c('c(', '"ms"', ",", sum(nSample), ",", dm@nLoci , ",")
-	cmd <- c(cmd,'"-I"', ",", length(nSample), ',', 
-             paste(nSample, collapse=","), ',')
+  nSample <- dm@sampleSizes
+  cmd <- c('c(', '"ms"', ",", sum(nSample), ",", dm@nLoci , ",")
+  cmd <- c(cmd,'"-I"', ",", length(nSample), ',', 
+           paste(nSample, collapse=","), ',')
 
-	for (i in 1:dim(dm@features)[1] ) {
-		type <- as.character(dm@features[i,"type"])
-        feat <- unlist(dm@features[i, ])
-        
-		if (type == "mutation") {
-			if (dm@externalTheta) cmd <- c(cmd,'"-t 5"', ",")
-            else 
-              cmd <- c(cmd,'"-t"', ',', feat["parameter"], ',')
-		}
-		
-		if (type == "split") {
-			cmd <- c(cmd, '"-ej"', ',', feat["time.point"], ',',
-                     feat["pop.sink"], ',', feat["pop.source"], ',')
-        }
-		
-		if (type == "migration")
-			cmd <- c(cmd, '"-em"', ',', feat['time.point'], ',',
-                     feat['pop.sink'], ',', feat['pop.source']  , ',',
-                     feat['parameter'], ',')
-		
-		if (type == "recombination") 
-			cmd <- c(cmd, '"-r"', ',', feat['parameter'], ',', dm@seqLength, ',')
+  for (i in 1:dim(dm@features)[1] ) {
+    type <- as.character(dm@features[i,"type"])
+    feat <- unlist(dm@features[i, ])
 
-		if (type == "size.change"){
-		        cmd <- c(cmd, '"-en"', ',', feat['time.point'], ',',
-                         feat["pop.source"], ',', feat['parameter'], ',')
-		}
+    if (type == "mutation") {
+      if (dm@externalTheta) cmd <- c(cmd,'"-t 5"', ",")
+      else 
+        cmd <- c(cmd,'"-t"', ',', feat["parameter"], ',')
+    }
 
-		if (type == "growth"){
-			cmd <- c(cmd, '"-eg"', ',' , feat["time.point"], ',',
-                     feat["pop.source"], ',', feat["parameter"], ',')
-		}
-	}
+    if (type == "split") {
+      cmd <- c(cmd, '"-ej"', ',', feat["time.point"], ',',
+               feat["pop.sink"], ',', feat["pop.source"], ',')
+    }
 
-    cmd <- c(cmd, '"-T")')
+    if (type == "migration")
+      cmd <- c(cmd, '"-em"', ',', feat['time.point'], ',',
+               feat['pop.sink'], ',', feat['pop.source']  , ',',
+               feat['parameter'], ',')
+
+    if (type == "recombination") 
+      cmd <- c(cmd, '"-r"', ',', feat['parameter'], ',', dm@seqLength, ',')
+
+    if (type == "size.change"){
+      cmd <- c(cmd, '"-en"', ',', feat['time.point'], ',',
+               feat["pop.source"], ',', feat['parameter'], ',')
+    }
+
+    if (type == "growth"){
+      cmd <- c(cmd, '"-eg"', ',' , feat["time.point"], ',',
+               feat["pop.source"], ',', feat["parameter"], ',')
+    }
+  }
+
+  cmd <- c(cmd, '"-T")')
 }
 
 generateMsOptions <- function(dm, parameters) {
-	.log3("Called .ms.generateCmd()")
+  .log3("Called .ms.generateCmd()")
+  ms.tmp <- new.env()
 
-    par.names <- dm.getParameters(dm)
-    for (i in seq(along = par.names)){
-      eval(parse(text=paste(par.names[i],"<-",parameters[i])))
+  par.names <- dm.getParameters(dm)
+  for (i in seq(along = par.names)){
+    ms.tmp[[ par.names[i] ]] <- parameters[i]
+  }
+
+  fixed.pars <- dm@parameters[dm@parameters$fixed, ]
+  if (nrow(fixed.pars) > 0) {
+    for (i in 1:nrow(fixed.pars)){
+      ms.tmp[[ fixed.pars$name[i] ]] <- fixed.pars$lower.range[i]
     }
+  }
 
-    fixed.pars <- dm@parameters[dm@parameters$fixed, ]
-    if (nrow(fixed.pars) > 0) {
-      for (i in 1:nrow(fixed.pars)){
-        eval(parse(text=paste(fixed.pars$name[i],"<-",fixed.pars$lower.range[i])))
-      }
-    }
+  cmd <- generateMsOptionsCommand(dm)
+  cmd <- eval(parse(text=cmd), envir=ms.tmp)
 
-    cmd <- generateMsOptionsCommand(dm)
-    cmd <- eval(parse(text=cmd))
+  .log3("Finished .ms.generateCmd()")
 
-	.log3("Finished .ms.generateCmd()")
-
-    return(cmd)
+  return(cmd)
 }
 
 printMsCommand <- function(dm) {
   cmd <- generateMsOptionsCommand(dm)
-  
+
   cmd <- cmd[cmd != ","]
   cmd <- cmd[-c(1, length(cmd))]
 
@@ -108,7 +109,7 @@ printMsCommand <- function(dm) {
   cmd <- gsub(",", " ", cmd)
   cmd <- gsub('\"', "", cmd)
   cmd <- gsub('"', " ", cmd)
-  
+
   return(cmd)
 }
 

@@ -32,6 +32,12 @@ test.makeThetaLast <- function() {
   checkEquals(dm.getParameters(dm)[dm.getNPar(dm)], "theta")
 }
 
+test.setMutationModel <- function() {
+  dm <- dm.createThetaTauModel(11:12, 100)
+  dm <- dm.setMutationModel(dm, "HKY")
+  checkTrue("mutation.model" %in% dm@parameters$name)
+  checkException(dm <- dm.setMutationModel(dm, "bla"))
+}
 
 ## -- Fixed bugs ----------------------------------------
 #print() failed for empty demographic models
