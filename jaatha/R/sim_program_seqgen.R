@@ -220,10 +220,10 @@ seqgenSingleSimFunc <- function(dm, parameters) {
   return(jsfs)
 }
 
-# createSimProgram("seq-gen", "",
-#                  possible.features,
-#                  possible.sum.stats,
-#                  singleSimFunc=seqgenSingleSimFunc)
+createSimProgram("seq-gen", "",
+                 possible.features,
+                 possible.sum.stats,
+                 singleSimFunc=seqgenSingleSimFunc)
 
 #test code:
 #parameters <- c(1,5)
