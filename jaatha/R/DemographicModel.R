@@ -994,8 +994,11 @@ dm.addGrowth <- function(dm, min.growth.rate, max.growth.rate, fixed.growth.rate
 #' @return    The demographic model with the new mutation model.
 #' @export
 #' @examples
-#' dm <- dm.createThetaTauModel(11:12, 100)
-#' dm <- dm.setMutationModel(dm, "HKY")
+#' dm <- dm.createThetaTauModel(10:11, 10, 100)
+#' dm <- dm.addOutgroup(dm, "2*tau")
+#' dm.hky <- dm.setMutationModel(dm, "HKY", c(0.2, 0.2, 0.3, 0.3), 2)
+#' dm.f81 <- dm.setMutationModel(dm, "F84", c(0.3, 0.2, 0.3, 0.2), 2)
+#' dm.gtr <- dm.setMutationModel(dm, "GTR", gtr.rates=c(0.2, 0.2, 0.1, 0.1, 0.1, 0.2))
 dm.setMutationModel <- function(dm, mutation.model, 
                                 base.frequencies, tstv.ratio, 
                                 gtr.rates) {
@@ -1008,16 +1011,21 @@ dm.setMutationModel <- function(dm, mutation.model,
   if (! mutation.model %in% mutation.models) 
     stop("Allowed values: ", paste(mutation.models, collapse=" "))
   
-  mutation.model = seq(along = mutation.models)[mutation.models == mutation.model]
+  mutation.model.nr <- seq(along = mutation.models)[mutation.models == mutation.model]
   dm <- jaatha:::addFeature(dm, "mutation.model", "mutation.model", 
-                            fixed.value=mutation.model)
+                            fixed.value=mutation.model.nr)
 
-  if ( !missing(tstv.ratio) ) 
+  if ( !missing(tstv.ratio) ) {
+    if (!mutation.model %in% c("HKY", "F84"))
+      stop("This mutation model does not support a ts/tv ratio")
     dm <- jaatha:::addFeature(dm, "tstv.ratio", "tstv.ratio", fixed.value=tstv.ratio)
+  }
 
   if ( !missing(base.frequencies) ) {
-    if (length(base.frequencies) != 4) 
+    if ( length(base.frequencies) != 4 ) 
         stop("You must enter frequencies for all 4 bases")
+    if (!mutation.model %in% c("HKY", "F84")) 
+      stop("This mutation model does not support base frequencies")
 
     dm <- addFeature(dm, "base.freq.A", "base.freq.A", fixed.value=base.frequencies[1])
     dm <- addFeature(dm, "base.freq.C", "base.freq.C", fixed.value=base.frequencies[2])
@@ -1026,8 +1034,10 @@ dm.setMutationModel <- function(dm, mutation.model,
   }
 
   if ( !missing(gtr.rates) ) {
-    if (length( gtr.rates) != 6 ) 
-        stop("You must enter rates for all 6 substitutions")
+    if ( length(gtr.rates) != 6 ) 
+        stop("You must enter rates for all 6 posible substitutions")
+    if (!mutation.model %in% c("GTR")) 
+      stop("You can specify gtr.rates only with the GTR model")
 
     dm <- addFeature(dm, "gtr.rate.1", "gtr.rate.1", fixed.value=gtr.rates[1])
     dm <- addFeature(dm, "gtr.rate.2", "gtr.rate.2", fixed.value=gtr.rates[2])
@@ -1080,7 +1090,21 @@ dm.createThetaTauModel <- function(sample.sizes, loci.num, seq.length=1000) {
 #-------------------------------------------------------------------
 # dm.addOutgroup
 #-------------------------------------------------------------------
-dm.addOutgroup <- function(dm, number.of.individuals, separation.time) {
+#' Adds an outgroup to a demographic model
+#'
+#' This function adds an outgroup consisting of one individual to a 
+#' demographic model. The outgroup consists of one individual.
+#' An outgroup is required for a finite sites analysis.
+#'
+#' @param dm The demographic model to which we add the outgroup
+#' @param separation.time The time point at which the outgroup splited 
+#'           from the ancestral population. This can be an absolute value
+#'           (e.g. 10) or relative to another time points (e.g. '5*t_split_1').
+#' 
+#' @return  The extended demographic model
+#' @export
+dm.addOutgroup <- function(dm, separation.time) {
+  number.of.individuals <- 1
   dm@sampleSizes <- c(dm@sampleSizes, number.of.individuals)
   dm.addSpeciationEvent(dm, in.population=1, 
                         new.time.point=F, 

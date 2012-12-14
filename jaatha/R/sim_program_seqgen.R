@@ -7,12 +7,6 @@
 # Licence:  GPLv3 or later
 # --------------------------------------------------------------
 
-#test code:
-#source("./aaa_SimProgram.R")
-#source("./helper_functions.R")
-#source("./sim_program_ms.R")
-#source("./DemographicModel.R")
-
 # list ms's features + FS related features
 seqgen.features    <- c('mutation.model', 'tstv.ratio', 
                         'base.freq.A', 'base.freq.C', 'base.freq.G',
@@ -44,6 +38,10 @@ checkForSeqgen <- function() {
        Jaatha.setSeqgenExecutable()")
 }
 
+#' Set the path to the executable for seqgen
+#'
+#' @param seqgen.exe Path to seqgen's executable.
+#' @export
 Jaatha.setSeqgenExecutable <- function(seqgen.exe) {
   if (file.exists(seqgen.exe)) {
     setJaathaVariable('seqgen.exe', seqgen.exe)     
@@ -102,6 +100,7 @@ generateSeqgenOptions <- function(dm, parameters) {
 generateSeqgenOptionsCmd <- function(dm, parameters) {  
   base.freqs <- F
   gtr.rates <- F
+  includes.model <- F
 
   opts <- c('c(', paste('"', getJaathaVariable('seqgen.exe'), '"', sep=""), ",")
 
@@ -110,6 +109,7 @@ generateSeqgenOptionsCmd <- function(dm, parameters) {
     feat <- unlist(dm@features[i, ])
 
     if (type == "mutation.model") {
+      includes.model <- T
       model <- mutation.models[dm@parameters[dm@parameters$name == "mutation.model", 
                                              'lower.range']]
       opts <- c(opts, paste('"-m', model, '"', sep=""), ",")
@@ -138,12 +138,16 @@ generateSeqgenOptionsCmd <- function(dm, parameters) {
   }
 
   if (gtr.rates) {
-    opts <- c(opts, '"-t"', ',', 'base.freq.1',
-              ',', 'base.freq.2',
-              ',', 'base.freq.3',  
-              ',', 'base.freq.4',  
-              ',', 'base.freq.5',  
-              ',', 'base.freq.6', ',')
+    opts <- c(opts, '"-r"', ',', 'gtr.rate.1',
+              ',', 'gtr.rate.2',
+              ',', 'gtr.rate.3',  
+              ',', 'gtr.rate.4',  
+              ',', 'gtr.rate.5',  
+              ',', 'gtr.rate.6', ',')
+  }
+
+  if (!includes.model) {
+    stop("You must specify a finite sites mutation model for this demographic model")
   }
 
   opts <- c(opts, '"-l"', ',', dm@seqLength, ',')
@@ -154,7 +158,7 @@ generateSeqgenOptionsCmd <- function(dm, parameters) {
 }
 
 printSeqgenCommand <- function(dm) {
-  cmd <- generateSeqgenOptions(dm)
+  cmd <- generateSeqgenOptionsCmd(dm)
 
   cmd <- cmd[cmd != ","]
   cmd <- cmd[-c(1, length(cmd))]
@@ -209,7 +213,7 @@ seqgenSingleSimFunc <- function(dm, parameters) {
   if (sum(jsfs) == 0) stop("No SNPs found in simulation output")
   .log3("done.", sum(jsfs), "SNPs")
   .log3("Removing tmp files...")
-  #unlink(seqgen.file)
+  unlink(seqgen.file)
   unlink(ms.file)
   .log3("Seq-gen simulation succesfully finished")
   return(jsfs)
@@ -219,9 +223,3 @@ createSimProgram("seq-gen", "",
                  possible.features,
                  possible.sum.stats,
                  singleSimFunc=seqgenSingleSimFunc)
-
-#test code:
-#parameters <- c(1,5)
-#dm <- dm.createThetaTauModel(24:25, 100, 1000)
-#dm <- jaatha:::dm.addOutgroup(dm, 1, "2*tau")
-#jsfs <- jaatha:::seqgenSingleSimFunc(dm, c(1,5))

@@ -4,7 +4,7 @@ rerecord.results = F
  
 library("RUnit")
 
-dm.thetaTau <- dm.createDemographicModel(c(10,15), 20)
+dm.thetaTau <- dm.createDemographicModel(c(10,15), 20, 100)
 dm.thetaTau <- dm.addSpeciationEvent(dm.thetaTau,0.1,5)
 dm.thetaTau <- dm.addMutation(dm.thetaTau,5,20)
 
@@ -60,6 +60,18 @@ test.initialSearch.extThet <- function(){
 	pStartPoints <- Jaatha.printStartPoints(jaatha,startPoints)
 	if (rerecord.results) samples[["initialSearch.extTheta"]] <- pStartPoints
 	checkEquals(pStartPoints, samples[["initialSearch.extTheta"]])
+    if (rerecord.results) save(samples,file="samples.save")
+}
+
+test.initialSearch.seqgen <- function(){
+    load("samples.save")
+    dm.sq <- dm.setMutationModel(dm.thetaTau, "HKY", c(.2, .2, .2, .4), 0.5)
+	jaatha <- Jaatha.initialize(dm.sq, samples[["sumStats.extTheta"]],
+                                seed=10)
+	startPoints <- Jaatha.initialSearch(jaatha,nSim=10,nBlocksPerPar=2)
+	pStartPoints <- Jaatha.printStartPoints(jaatha,startPoints)
+	if (rerecord.results) samples[["initialSearch.seqgen"]] <- pStartPoints
+	checkEquals(pStartPoints, samples[["initialSearch.seqgen"]])
     if (rerecord.results) save(samples,file="samples.save")
 }
 
