@@ -3,6 +3,7 @@ Version 1.9.12:
 + Added support for seqgen
 + GLM fitting algorithm can now take more steps to converge
 + Updated the vignette
++ Ported seqgenFile2Jsfs.cc to Rcpp
 
 Version 1.9.11:
 + Added parallelization using doMC.

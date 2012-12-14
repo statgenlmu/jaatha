@@ -59,7 +59,7 @@ Jaatha.setSeqgenExecutable <- function(seqgen.exe) {
 # vector.
 callSeqgen <- function(opts, ms.file) {
   if (missing(opts)) stop("No options given!")
-  opts[length(opts) + 1:2] <- c(" ", ms.file)
+  opts[length(opts) + 1:2] <- c("<", ms.file)
   opts <- paste(opts, collapse=" ")
 
   if( !file.exists(ms.file) ) stop("ms file not found")
@@ -106,14 +106,13 @@ generateSeqgenOptionsCmd <- function(dm, parameters) {
   opts <- c('c(', paste('"', getJaathaVariable('seqgen.exe'), '"', sep=""), ",")
 
   for (i in 1:dim(dm@features)[1] ) {
-	type <- as.character(dm@features[i,"type"])
+    type <- as.character(dm@features[i,"type"])
     feat <- unlist(dm@features[i, ])
-  
+
     if (type == "mutation.model") {
       model <- mutation.models[dm@parameters[dm@parameters$name == "mutation.model", 
                                              'lower.range']]
-      opts <- c(opts, '"-m"', ',', 
-                paste('"', model, '"', sep=""), ",")
+      opts <- c(opts, paste('"-m', model, '"', sep=""), ",")
     }
 
     else if ( type %in% c('base.freq.A', 'base.freq.C', 
@@ -133,18 +132,18 @@ generateSeqgenOptionsCmd <- function(dm, parameters) {
 
   if (base.freqs) {
     opts <- c(opts, '"-f"', ',', 'base.freq.A',
-                            ',', 'base.freq.C',
-                            ',', 'base.freq.G',  
-                            ',', 'base.freq.T', ',')
+              ',', 'base.freq.C',
+              ',', 'base.freq.G',  
+              ',', 'base.freq.T', ',')
   }
 
   if (gtr.rates) {
     opts <- c(opts, '"-t"', ',', 'base.freq.1',
-                            ',', 'base.freq.2',
-                            ',', 'base.freq.3',  
-                            ',', 'base.freq.4',  
-                            ',', 'base.freq.5',  
-                            ',', 'base.freq.6', ',')
+              ',', 'base.freq.2',
+              ',', 'base.freq.3',  
+              ',', 'base.freq.4',  
+              ',', 'base.freq.5',  
+              ',', 'base.freq.6', ',')
   }
 
   opts <- c(opts, '"-l"', ',', dm@seqLength, ',')
@@ -173,15 +172,9 @@ seqgenOut2Jsfs <- function(dm, seqgen.file) {
   if( ! file.exists(seqgen.file) ) stop("seq-gen simulation failed!")
   if (file.info(seqgen.file)$size == 0) stop("seq-gen output is empty!")
 
-  jsfs.size <- (dm@sampleSizes[1]+1)*(dm@sampleSizes[2]+1)
-  jsfs <- matrix( .C("seqFile2jsfs",
-                     as.character(seqgen.file),
-                     as.integer(dm@sampleSizes[1]),
-                     as.integer(dm@sampleSizes[2]),
-                     as.integer(dm@nLoci),
-                     as.integer(jsfs.size),
-                     res=integer(jsfs.size),
-                     PACKAGE="jaatha")$res,
+  qsfs.size <- (dm@sampleSizes[1]+1)*(dm@sampleSizes[2]+1)
+  jsfs <- matrix(.Call("seqgen2jsfs", seqgen.file, dm@sampleSizes[1], 
+                       dm@sampleSizes[2], dm@nLoci),
                  dm@sampleSizes[1] + 1 ,
                  dm@sampleSizes[2] + 1,
                  byrow=T)
@@ -205,18 +198,20 @@ seqgenSingleSimFunc <- function(dm, parameters) {
   .log2("running seq-gen")
   seqgen.options <- generateSeqgenOptions(dm, parameters)
   .log3("options generated")
-  #sim.time <- system.time(print(1))
-  seqgen.file  <- callSeqgen(seqgen.options, ms.file)
-  #.log3("finished after", sum(sim.time[-3]), "seconds")
+  sim.time <- system.time(seqgen.file  <- callSeqgen(seqgen.options, ms.file))
+  .log3("finished after", sum(sim.time[-3]), "seconds")
   .log3("simulation output in file", seqgen.file)
 
   .log2("calculating jsfs")
   jsfs <- seqgenOut2Jsfs(dm, seqgen.file)
-  #jsfs <- matrix(0,  dm@sampleSizes[1] + 1, dm@sampleSizes[2] + 1)
+  #jsfs <- matrix(1,  dm@sampleSizes[1] + 1, dm@sampleSizes[2] + 1)
 
-  .log3("done. Removing tmp files...")
-  unlink(seqgen.file)
+  if (sum(jsfs) == 0) stop("No SNPs found in simulation output")
+  .log3("done.", sum(jsfs), "SNPs")
+  .log3("Removing tmp files...")
+  #unlink(seqgen.file)
   unlink(ms.file)
+  .log3("Seq-gen simulation succesfully finished")
   return(jsfs)
 }
 

@@ -9,6 +9,6 @@ Description:
     A method for estimating parameters of the demographic history of
     two closely related species out of SNP data.
 Depends:
-    methods, foreach, phyclust, ape
+    methods, foreach, phyclust, ape, Rcpp
 Suggests:
     doMC
