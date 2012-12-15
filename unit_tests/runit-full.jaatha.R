@@ -4,18 +4,19 @@ rerecord.results = F
  
 library("RUnit")
 
-dm.thetaTau <- dm.createDemographicModel(c(10,15), 20, 100)
-dm.thetaTau <- dm.addSpeciationEvent(dm.thetaTau,0.1,5)
-dm.thetaTau <- dm.addMutation(dm.thetaTau,5,20)
+dm.thetaTau <- dm.createThetaTauModel(c(10,15), 20, 100)
 
 dm.extTheta <- dm.createDemographicModel(c(12,11), 30)
 dm.extTheta <- dm.addSpeciationEvent(dm.extTheta,0.1,5)
 dm.extTheta <- dm.addSymmetricMigration(dm.extTheta,1,5)
+dm.extTheta <- dm.addRecombination(dm.extTheta, fixed=20)
 dm.extTheta <- dm.addMutation(dm.extTheta)
 
+#External Theta Possible
 dm.eTp <- dm.createDemographicModel(c(12,13), 25)
 dm.eTp <- dm.addSpeciationEvent(dm.eTp,0.1,5)
 dm.eTp <- dm.addSymmetricMigration(dm.eTp,1,5)
+dm.eTp <- dm.addRecombination(dm.eTp, fixed=20)
 dm.eTp <- dm.addMutation(dm.eTp,1,5)
 
 
@@ -65,9 +66,10 @@ test.initialSearch.extThet <- function(){
 
 test.initialSearch.seqgen <- function(){
     load("samples.save")
+    set.seed(20)
     dm.sq <- dm.setMutationModel(dm.thetaTau, "HKY", c(.2, .2, .2, .4), 0.5)
-	jaatha <- Jaatha.initialize(dm.sq, samples[["sumStats.extTheta"]],
-                                seed=10)
+    jsfs <- dm.simSumStats(dm.sq, c(1.5, 7))
+	jaatha <- Jaatha.initialize(dm.sq, jsfs=jsfs, seed=18)
 	startPoints <- Jaatha.initialSearch(jaatha,nSim=10,nBlocksPerPar=2)
 	pStartPoints <- Jaatha.printStartPoints(jaatha,startPoints)
 	if (rerecord.results) samples[["initialSearch.seqgen"]] <- pStartPoints

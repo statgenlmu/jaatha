@@ -12,7 +12,8 @@ seqgen.features    <- c('mutation.model', 'tstv.ratio',
                         'base.freq.A', 'base.freq.C', 'base.freq.G',
                         'base.freq.T',
                         'gtr.rate.1', 'gtr.rate.2', 'gtr.rate.3',
-                        'gtr.rate.4','gtr.rate.5','gtr.rate.6')
+                        'gtr.rate.4','gtr.rate.5','gtr.rate.6',
+                        'gamma.categories')
 
 possible.sum.stats <- c("jsfs")
 mutation.models    <- c('HKY', 'F84', 'GTR')
@@ -22,7 +23,7 @@ possible.features  <- c(getSimProgram('ms')@possible.features, seqgen.features)
 checkForSeqgen <- function() {
   if ( isJaathaVariable('seqgen.exe') ) return()
 
-  # Works on linux
+  # Works on Linux
   run.path <- strsplit(Sys.getenv("PATH"), ":")[[1]]
   executables <- c(paste(run.path, "/seq-gen", sep=""), 
                    paste(run.path, "/seqgen", sep=""))
@@ -128,6 +129,9 @@ generateSeqgenOptionsCmd <- function(dm, parameters) {
 
     else if (type == "gamma.rate")
       opts <- c(opts, '"-a"', ',', feat['parameter'], ',')
+
+    else if (type == "gamma.categories")
+      opts <- c(opts, '"-g"', ',', feat['parameter'], ',')
   }
 
   if (base.freqs) {

@@ -36,4 +36,5 @@ jaatha/man/*
 jaatha.Rcheck
 jaatha/NAMESPACE
 jaatha/DESCRIPTION
-unit_tests/results
+unit_tests/results 
+*.tex

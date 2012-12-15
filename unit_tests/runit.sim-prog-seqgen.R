@@ -37,6 +37,19 @@ test.GtrModel <- function() {
   checkTrue(sum(jsfs) > 0)
 }
 
+test.RateHeterogenity <- function() {
+  set.seed(12)
+  dm.rh <- dm.addMutationRateHeterogenity(dm.hky, 0.1, 5, categories.number=5)
+
+  opts <- jaatha:::generateSeqgenOptions(dm.rh, pars)
+  opts <- strsplit(opts, " ")[[1]]
+  checkTrue("-a" %in% opts)
+  checkTrue("-g" %in% opts)
+
+  jsfs <- jaatha:::seqgenSingleSimFunc(dm.rh, c(1,2,10))
+  checkTrue(sum(jsfs) > 0)
+}
+
 test.callSeqgen <- function(opts, ms.file){
   opts <- c("seq-gen", " -mHKY", " -l", dm@seqLength, " -p", dm@seqLength + 1, " -q")
   
