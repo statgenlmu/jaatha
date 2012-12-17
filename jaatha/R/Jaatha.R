@@ -69,6 +69,7 @@ setClass("Jaatha",
       finiteSites= "logical",
       parNames = "character",
       sumStats = "numeric",
+      starting.positions = "list",
       likelihood.table = "matrix",
       sum.stats.func = "function",
       sim.package.size = "numeric",
@@ -115,6 +116,7 @@ setClass("Jaatha",
   .Object@nTotalSumstat <- length(summary.statistics)
 
   .Object@likelihood.table <- matrix()
+  .Object@starting.positions <- list()
 
   # Seeds
   # Jaatha uses three seeds. The first is the "main seed" used to generate the
@@ -260,7 +262,8 @@ Jaatha.initialSearch <- function(jObject, nSim=200, nBlocksPerPar=3){
   ## searches with externalTheta=T will be run for initial search
   ## if theta is included into parRange, exclude it and decrese nPar
   extThetaPossible <- !jObject@externalTheta & !jObject@finiteSites & jObject@nPar > 2
-  .log2( "extThetaPossible:",extThetaPossible)
+  .log2( "extThetaPossible:",extThetaPossiblie)
+  jObject.bu <- jObject
   if ( extThetaPossible ){
     #origParRange <- jObject@parRange
     #jObject@parRange <- jObject@parRange[-jObject@nPar]
@@ -336,10 +339,12 @@ Jaatha.initialSearch <- function(jObject, nSim=200, nBlocksPerPar=3){
   #.print("=> Best Block is:",bestBlockIndex,"with score:",
   #     firstBlocks[[bestBlockIndex]]@score,"with\n estimates:\n")
   #print( round( .deNormalize(jObject,firstBlocks[[bestBlockIndex]]@MLest), 3 ) )
-  print(Jaatha.printStartPoints(jObject, firstBlocks, extThetaPossible))
+  jObject.bu@starting.positions <- firstBlocks
+  print(Jaatha.printStartPoints(jObject.bu, extThetaPossible))
 
   removeTempFiles()
-  return (firstBlocks)
+
+  return(jObject.bu)
 }
 
 
@@ -362,19 +367,37 @@ Jaatha.initialSearch <- function(jObject, nSim=200, nBlocksPerPar=3){
 #' @param halfBlockSize The size of the new block that is created around a new maximum.
 #' @param weight The weighting factor that will reduce the influence of old block in the estimation procedure
 #' @param nMaxStep The search will stop at this number of steps if not stopped before (see epsilon)
-#'
+#' @param best.start.pos This is the number of best starting positions
+#'      found in the inital search that we will use. Jaatha runs a seperate 
+#'      search starting from each of this points.
+#'              
 #' @return An Jaatha object. The found values are written to the slot likelihood.table.
 #'
 #' @export
-Jaatha.refineSearch <- function(jObject,startPoints,nSim,
-        nFinalSim,epsilon=.2,halfBlockSize=.05,
-        weight=.9,nMaxStep=200) {
+Jaatha.refineSearch <- 
+  function(jObject, best.start.pos, nSim,
+           nFinalSim, epsilon=.2, halfBlockSize=.05,
+           weight=.9, nMaxStep=200) {
 
   # Check parameters
   if (!is.jaatha(jObject)) stop("jObject is not of type Jaatha")
   .log2("Called function Jaatha.refineSearch()")
+
+
+  checkType(best.start.pos, c("num", "single"))
+  checkType(nSim, c("num", "single"))
+  checkType(nFinalSim, c("num", "single"), F)
+  checkType(epsilon, c("num", "single"))
+  checkType(halfBlockSize, c("num", "single"))
+  checkType(weight, c("num", "single"))
+  checkType(nMaxStep, c("num", "single"))
+
   if (missing(nFinalSim)) nFinalSim <- nSim
-  if (!is.list(startPoints)) stop("startPoints is no list!")
+  
+  if (length(jObject@starting.positions) == 0) 
+    stop("No starting positions available. Did you run a initial search first?")
+  startPoints <- Jaatha.pickBestStartPoints(blocks=jObject@starting.positions,
+                                            best=best.start.pos)
   
   jObject@likelihood.table <- matrix(0,0, jObject@nPar + 2)
 
@@ -616,9 +639,9 @@ Jaatha.pickBestStartPoints <- function(blocks, best){
   nBlocks <- length(blocks)
   sortedL <- sort(sapply(1:nBlocks, function(x) blocks[[x]]@score),
       decreasing=TRUE)
-  cat("There used to be",nBlocks,"blocks in the list.\n")
+  #cat("There used to be",nBlocks,"blocks in the list.\n")
   #print(sortedL)
-  cat("Keeping Block: ")
+  #cat("Keeping Block: ")
   if (best>length(blocks)){
     stop("There are only ",length(blocks)," blocks to choose from not ",best,"!")
   }else{
@@ -626,11 +649,11 @@ Jaatha.pickBestStartPoints <- function(blocks, best){
       for (p in seq(along = blocks)){
         if (sortedL[s] == blocks[[p]]@score){
           returnPoints <- c(returnPoints,blocks[[p]])
-          cat(p," ")
+          #cat(p," ")
         }else{}
       }
     }
-    cat("\n")
+   # cat("\n")
   }
   
   return(returnPoints)
@@ -1101,7 +1124,8 @@ is.jaatha <- function(jObject){
 #' @param extThetaPossible For internal use only.
 #' @return a matrix with score and parameters of each start point
 #' @export
-Jaatha.printStartPoints <- function(jObject, startPoints, extThetaPossible=F){
+Jaatha.printStartPoints <- function(jObject, extThetaPossible=F){
+  startPoints <- jObject@starting.positions
   width <- dm.getNPar(jObject@dm) + 1 + jObject@externalTheta
   mat <- matrix(0,length(startPoints),width)
   col.names <- c("score", dm.getParameters(jObject@dm))

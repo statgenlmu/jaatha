@@ -1,0 +1,9 @@
+RUNIT TEST PROTOCOL -- Mon Dec 17 18:16:35 2012 
+*********************************************** 
+Number of test functions: 27 
+Number of errors: 0 
+Number of failures: 0 
+
+ 
+1 Test Suite : 
+Jaatha Unit Testing - 27 test functions, 0 errors, 0 failures

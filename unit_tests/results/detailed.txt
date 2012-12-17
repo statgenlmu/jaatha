@@ -1,0 +1,60 @@
+RUNIT TEST PROTOCOL -- Mon Dec 17 18:16:35 2012 
+*********************************************** 
+Number of test functions: 27 
+Number of errors: 0 
+Number of failures: 0 
+
+ 
+1 Test Suite : 
+Jaatha Unit Testing - 27 test functions, 0 errors, 0 failures
+
+
+
+Details 
+*************************** 
+Test Suite: Jaatha Unit Testing 
+Test function regexp: ^test.+ 
+Test file regexp: ^runit.+\.[rR]$ 
+Involved directory: 
+. 
+--------------------------- 
+Test file: ./runit.dm-ms.R 
+test.callMS: (2 checks) ... OK (0 seconds)
+test.msSingleSimFunc: (1 checks) ... OK (0.84 seconds)
+test.simProg: (1 checks) ... OK (0 seconds)
+--------------------------- 
+Test file: ./runit.dm.R 
+test.addFeature: (2 checks) ... OK (0.01 seconds)
+test.addParameter: (4 checks) ... OK (0.01 seconds)
+test.makeThetaLast: (1 checks) ... OK (0.01 seconds)
+test.setMutationModel: (2 checks) ... OK (0.02 seconds)
+test.showEmptyModel: (0 checks) ... OK (0 seconds)
+--------------------------- 
+Test file: ./runit.fixed-bugs.R 
+test.oneParModel: (1 checks) ... OK (2.29 seconds)
+test.showEmptyModel: (0 checks) ... OK (0 seconds)
+--------------------------- 
+Test file: ./runit-full.jaatha.R 
+test.dm.simSumStats: (5 checks) ... OK (0.16 seconds)
+test.extThetaPossible: (1 checks) ... OK (18.22 seconds)
+test.initialSearch.extThet: (1 checks) ... OK (12.24 seconds)
+test.initialSearch.folded: (1 checks) ... OK (7.95 seconds)
+test.initialSearch.normal: (2 checks) ... OK (16.18 seconds)
+test.initialSearch.parallel: (1 checks) ... OK (8.17 seconds)
+test.initialSearch.seqgen: (1 checks) ... OK (18.63 seconds)
+test.refineSearch: (1 checks) ... OK (47.05 seconds)
+--------------------------- 
+Test file: ./runit.sim_program.R 
+test.InstanceCreation: (4 checks) ... OK (0.01 seconds)
+--------------------------- 
+Test file: ./runit.sim-prog-seqgen.R 
+test.callSeqgen: (2 checks) ... OK (0.13 seconds)
+test.F81Model: (1 checks) ... OK (0.21 seconds)
+test.generateSeqgenOptions: (9 checks) ... OK (0 seconds)
+test.GtrModel: (1 checks) ... OK (0.21 seconds)
+test.HkyModel: (1 checks) ... OK (0.21 seconds)
+test.RateHeterogenity: (3 checks) ... OK (0.23 seconds)
+test.seqgenSingleSimFunc: (3 checks) ... OK (0.46 seconds)
+--------------------------- 
+Test file: ./runit.simulaton.R 
+test.createSimulationPackages: (4 checks) ... OK (0 seconds)

@@ -1,5 +1,6 @@
 ### --- Test setup ---
 
+#rerecord.results = TRUE
 rerecord.results = FALSE
  
 library("RUnit")
@@ -39,17 +40,18 @@ test.initialSearch.normal <- function(){
     load("samples.save")
 	jaatha <- Jaatha.initialize(dm.thetaTau, samples[["simSumStats"]], seed=1,
                                 sim.package.size=3)
-	startPoints <- Jaatha.initialSearch(jaatha, nSim=10, nBlocksPerPar=2)
-	pStartPoints <- Jaatha.printStartPoints(jaatha,startPoints)
+	jaatha <- Jaatha.initialSearch(jaatha, nSim=10, nBlocksPerPar=2)
+	pStartPoints <- Jaatha.printStartPoints(jaatha)
+    if (rerecord.results) samples[["refineSearch.jaatha"]] <- jaatha
 	if (rerecord.results) samples[["initialSearch.normal"]] <- pStartPoints
 	checkEquals(pStartPoints, samples[["initialSearch.normal"]])
-    if (rerecord.results) save(samples,file="samples.save")
+    if (rerecord.results) save(samples, file="samples.save")
 
     # Test reproducibility
 	jaatha2 <- Jaatha.initialize(dm.thetaTau, samples[["simSumStats"]], seed=1,
                                 sim.package.size=3)
-	startPoints2 <- Jaatha.initialSearch(jaatha2, nSim=10, nBlocksPerPar=2)
-	pStartPoints2 <- Jaatha.printStartPoints(jaatha, startPoints2)
+	jaatha2 <- Jaatha.initialSearch(jaatha2, nSim=10, nBlocksPerPar=2)
+	pStartPoints2 <- Jaatha.printStartPoints(jaatha2)
 	checkEquals(pStartPoints[1:2,], pStartPoints2[1:2,])
 }
 
@@ -57,8 +59,8 @@ test.initialSearch.extThet <- function(){
     load("samples.save")
 	jaatha <- Jaatha.initialize(dm.extTheta, samples[["sumStats.extTheta"]],
                                 seed=5)
-	startPoints <- Jaatha.initialSearch(jaatha,nSim=10,nBlocksPerPar=2)
-	pStartPoints <- Jaatha.printStartPoints(jaatha,startPoints)
+	jaatha <- Jaatha.initialSearch(jaatha,nSim=10,nBlocksPerPar=2)
+	pStartPoints <- Jaatha.printStartPoints(jaatha)
 	if (rerecord.results) samples[["initialSearch.extTheta"]] <- pStartPoints
 	checkEquals(pStartPoints, samples[["initialSearch.extTheta"]])
     if (rerecord.results) save(samples,file="samples.save")
@@ -70,29 +72,20 @@ test.initialSearch.seqgen <- function(){
     dm.sq <- dm.setMutationModel(dm.thetaTau, "HKY", c(.2, .2, .2, .4), 0.5)
     jsfs <- dm.simSumStats(dm.sq, c(1.5, 7))
 	jaatha <- Jaatha.initialize(dm.sq, jsfs=jsfs, seed=18)
-	startPoints <- Jaatha.initialSearch(jaatha,nSim=10,nBlocksPerPar=2)
-	pStartPoints <- Jaatha.printStartPoints(jaatha,startPoints)
+	jaatha <- Jaatha.initialSearch(jaatha,nSim=10,nBlocksPerPar=2)
+	pStartPoints <- Jaatha.printStartPoints(jaatha)
 	if (rerecord.results) samples[["initialSearch.seqgen"]] <- pStartPoints
 	checkEquals(pStartPoints, samples[["initialSearch.seqgen"]])
     if (rerecord.results) save(samples,file="samples.save")
 }
 
-test.initialSearch.extThetaPossible <- function(){
-    load("samples.save")
-	jaatha <- Jaatha.initialize(dm.eTp, samples[["sumStats.extTheta"]], seed=10)
-	startPoints <- Jaatha.initialSearch(jaatha,nSim=10,nBlocksPerPar=2)
-	pStartPoints <- Jaatha.printStartPoints(jaatha, startPoints)
-	if (rerecord.results) samples[["initialSearch.eTp"]] <- pStartPoints
-	checkEquals(pStartPoints, samples[["initialSearch.eTp"]])
-    if (rerecord.results) save(samples,file="samples.save")
-}
 
 test.initialSearch.folded <- function() {
     load("samples.save")
     jsfs <- matrix(1, 21, 26)
 	jaatha <- Jaatha.initialize(dm.thetaTau, jsfs=jsfs, folded=T, seed=20)
-	startPoints <- Jaatha.initialSearch(jaatha, nSim=10, nBlocksPerPar=2)
-	pStartPoints <- Jaatha.printStartPoints(jaatha, startPoints)
+	jaatha <- Jaatha.initialSearch(jaatha, nSim=10, nBlocksPerPar=2)
+	pStartPoints <- Jaatha.printStartPoints(jaatha)
 	if (rerecord.results) samples[["initialSearch.folded"]] <- pStartPoints
 	checkEquals(pStartPoints, samples[["initialSearch.folded"]])
     if (rerecord.results) save(samples,file="samples.save")
@@ -102,8 +95,8 @@ test.initialSearch.parallel <- function() {
     load("samples.save")
 	jaatha <- Jaatha.initialize(dm.thetaTau, samples[["simSumStats"]], seed=100,
                                 sim.package.size=2)
-	startPoints <- Jaatha.initialSearch(jaatha, nSim=10, nBlocksPerPar=2)
-	pStartPoints <- Jaatha.printStartPoints(jaatha,startPoints)
+	jaatha <- Jaatha.initialSearch(jaatha, nSim=10, nBlocksPerPar=2)
+	pStartPoints <- Jaatha.printStartPoints(jaatha)
 	if (rerecord.results) samples[["initialSearch.parallel.simple"]] <- pStartPoints
 	checkEquals(pStartPoints, samples[["initialSearch.parallel.simple"]])
     if (rerecord.results) save(samples,file="samples.save")
@@ -112,14 +105,25 @@ test.initialSearch.parallel <- function() {
 test.refineSearch <- function(){
     load("samples.save")
 	set.seed(1)
-	startPoints <- Jaatha.pickBestStartPoints(samples[["refineSearch.startpoints"]],best=2)
-	jaatha <- Jaatha.initialize(dm.thetaTau, samples[["simSumStats"]], seed=1)
-	jaatha <- Jaatha.refineSearch(jaatha,startPoints,nSim=10,epsilon=.2,
-				      halfBlockSize=.05,weight=.9,nMaxStep=10)
+	jaatha <- samples[["refineSearch.jaatha"]]
+    jaatha@cores <- 2
+    jaatha@sim.package.size <- 5
+	jaatha <- Jaatha.refineSearch(jaatha, 2,nSim=10,epsilon=.2,
+				      halfBlockSize=.05,weight=.9,nMaxStep=50)
 	lt <- Jaatha.printLikelihoods(jaatha)
 	if (rerecord.results) samples[["refineSearch.result"]] <- lt 
 	checkEquals(lt, samples[["refineSearch.result"]])
     if (rerecord.results) save(samples,file="samples.save")
 }
 
-
+test.extThetaPossible <- function(){
+    load("samples.save")
+	jaatha <- Jaatha.initialize(dm.eTp, samples[["sumStats.extTheta"]], seed=10,
+                                cores=2, sim.package.size=5)
+	jaatha <- Jaatha.initialSearch(jaatha, nSim=10, nBlocksPerPar=1)
+    jaatha <- Jaatha.refineSearch(jaatha, 1, nSim=10, nMaxStep=5)
+	lt <- Jaatha.printLikelihoods(jaatha)
+	if (rerecord.results) samples[["etp"]] <- lt 
+	checkEquals(lt, samples[["etp"]])
+    if (rerecord.results) save(samples,file="samples.save")
+}

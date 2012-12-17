@@ -38,3 +38,4 @@ jaatha/NAMESPACE
 jaatha/DESCRIPTION
 unit_tests/results 
 *.tex
+jaatha/vignettes/cache/saved_objects

@@ -274,20 +274,13 @@ load('cache/saved_objects/start-points.Rsave')
 \noindent
 To visualise the estimates for good stating positions sorted by score, type:
 <<PrintStartPoints>>=
-Jaatha.printStartPoints(jaatha, start.points)
+Jaatha.printStartPoints(jaatha)
 @
 Here, there is a big reduction in the scores after the first seven blocks, and a smaller one 
 after the first two. This is suggesting that we either use the first two or the
 first seven 
 blocks as starting positions for the refined search, depending on how much time we want to
 spend. For now, we will just use the first two points.
-<<Pick points>>=
-picked.points <- Jaatha.pickBestStartPoints(start.points, 2)
-@
-
-<<SavePickedPoints, include=FALSE, echo=FALSE>>=
-save(picked.points, file='cache/saved_objects/picked-points.Rsave')
-@
 
 \subsection{The Refined Search}
 
