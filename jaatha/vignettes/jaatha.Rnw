@@ -54,11 +54,11 @@ install.packages('jaatha')
 or downloaded from
 \url{http://evol.bio.lmu.de/_statgen/software/jaatha}. Jaatha runs on all
 operating systems supported by \verb@R@ -- namely Windows, OS X (Mac) and Linux
--- with one minor restriction: On Windows the parallelization is currently not
-working.
+-- with the following restriction: On Windows the parallelization and finite sites
+simulation using seq-gen is currently not working.
 
 A more detailed description of the algorithm can be found in
-\cite{naduvilezhath_jaatha:_2011}. 
+\cite{mathew_composite_2012}. 
 Further information about the
 \verb@R@ functions used in this document can be obtained by calling 
 \verb@help()@ with the functions name as argument.
@@ -123,7 +123,7 @@ dm <- dm.addRecombination(dm, fixed=20)
 @
 The first parameter is the demographic model to which we want to add
 an assumption/feature. The two following numbers represent the range for the
-coresponding parameter. 
+corresponding parameter. 
 The lower border has to be strictly greater the zero, as we are using a logarithmic transformation
 of the parameter space. The parameters are scaled as in the popular simulation program
 \verb@ms@ \citep{hudson_generating_2002} that we use for simulations:
@@ -272,7 +272,7 @@ load('cache/saved_objects/start-points.Rsave')
 @
 
 \noindent
-To visualise the estimates for good stating positions sorted by sorce, type:
+To visualise the estimates for good stating positions sorted by score, type:
 <<PrintStartPoints>>=
 Jaatha.printStartPoints(jaatha, start.points)
 @
@@ -348,6 +348,24 @@ The use of the \verb@cores@ option does affect the seeding system. A run without
 set at a value greater than one, even when using the same seed. However, if you
 use \verb@cores@, the actual number of cores you use does not change the
 results.
+
+\section{Finite sites models}
+As described in \cite{mathew_composite_2012}, you can use finite sites mutation 
+models in Jaatha. However,
+this currently only works on Linux and OS X and requires that seq-gen 
+\citep{rambaut_seq-gen:_1997} is
+installed on your system. On Debian/Ubuntu can install it running 
+\verb@apt-get install seq-gen@ as root. Otherwise download the current version from 
+\url{http://tree.bio.ed.ac.uk/software/seqgen} and compile it according to the
+instruction within the package. Jaatha will search for the seq-gen executable using 
+your PATH variable. If you get an error that it is not able to find it, you can
+specify the path to the executable using the \verb@Jaatha.setSeqgenExecutable@
+function.
+
+To create a finite sites model, you must specify a mutation model using the 
+\verb@dm.setMutationModel@ function and add an outgroup to your model using
+\verb@dm.addOutgroup@. Optionally, you can than add a mutation rate heterogeneity
+to your model using \verb@dm.addMutationRateHeterogenity@.
 
 \bibliographystyle{plainnat}
 \bibliography{jaatha}
