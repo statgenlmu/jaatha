@@ -255,6 +255,7 @@ Jaatha.initialSearch <- function(jObject, nSim=200, nBlocksPerPar=3){
   .log2("nSim:",nSim,"| nBlocksPerPar:",nBlocksPerPar)
   set.seed(jObject@seeds[2])
   .log2("Seeting seed to", jObject@seeds[2])
+  tmp.dir <- getTempDir()
   ## change slot values of jObject locally, so that only  
   ## searches with externalTheta=T will be run for initial search
   ## if theta is included into parRange, exclude it and decrese nPar
@@ -381,6 +382,7 @@ Jaatha.refineSearch <- function(jObject,startPoints,nSim,
   set.seed(jObject@seeds[3])
   .log2("Seeting seed to", jObject@seeds[3])
   setParallelization(jObject)
+  tmp.dir <- getTempDir()
 
   # Start a search for every start point
   for (s in 1:length(startPoints)){
