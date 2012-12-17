@@ -155,6 +155,7 @@ generateSeqgenOptionsCmd <- function(dm, parameters) {
   }
 
   opts <- c(opts, '"-l"', ',', dm@seqLength, ',')
+  opts <- c(opts, '"-s"', ',', paste(getThetaName(dm), "/", dm@seqLength), ',')
   opts <- c(opts, '"-p"', ',', dm@seqLength + 1, ',')
   opts <- c(opts, '"-z"', ',', 'seed', ',')
   opts <- c(opts, '"-q"', ')')

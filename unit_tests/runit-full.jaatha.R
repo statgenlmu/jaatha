@@ -1,6 +1,6 @@
 ### --- Test setup ---
 
-rerecord.results = F
+rerecord.results = FALSE
  
 library("RUnit")
 

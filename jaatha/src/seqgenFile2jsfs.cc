@@ -3,6 +3,7 @@
 #include <fstream>
 #include <vector>
 #include <algorithm>
+#include <stdexcept>
 
 std::vector<int> seqFile2jsfs(const std::string &filename, const int &s1, 
                               const int &s2, const int &nLoci) {
@@ -66,7 +67,7 @@ std::vector<int> seqFile2jsfs(const std::string &filename, const int &s1,
     datei.close();
   } //if file exists
   else{
-    std::cerr << "ERROR: Cannot open file '"<< filename[0]<<"'"<< std::endl;		  
+    throw std::runtime_error("Cannot open file");
   }
   
   return(jsfs);
@@ -76,7 +77,8 @@ RcppExport SEXP seqgen2jsfs(SEXP filename_,
                             SEXP s1_,
                             SEXP s2_,
                             SEXP nLoci_) {
-
+  
+  BEGIN_RCPP    
   std::string filename = Rcpp::as<std::string>(filename_);
   int s1 = Rcpp::as<int>(s1_);
   int s2 = Rcpp::as<int>(s2_);
@@ -85,6 +87,7 @@ RcppExport SEXP seqgen2jsfs(SEXP filename_,
   std::vector<int> jsfs = seqFile2jsfs(filename, s1, s2, nLoci);
 
   return Rcpp::wrap( jsfs );
+  END_RCPP
 }
 
 #ifndef NDEBUG

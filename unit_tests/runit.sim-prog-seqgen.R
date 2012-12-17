@@ -17,6 +17,7 @@ test.generateSeqgenOptions <- function() {
   checkTrue("-mHKY" %in% opts)  
   checkTrue("-t" %in% opts) 
   checkTrue("-f" %in% opts) 
+  checkTrue("-s" %in% opts) 
 }
 
 test.HkyModel <- function() {

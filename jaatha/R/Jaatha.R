@@ -181,6 +181,9 @@ rm(.init)
 #'              execution of the simulations takes at least 15 seconds.
 #' @param cores The number of cores to use in parallel. If 0, it tries to
 #'              guess the number of available cores and use them all.
+#' @param scaling.factor You can use this option if you have a large dataset. If
+#'              so, Jaatha only simulates only a fraction 1/scaling.factor of the
+#'              dataset and interpolates the missing data.
 #' @return A S4-Object of type jaatha containing the settings
 #' @export
 Jaatha.initialize <- function(demographicModel, summary.statistics, jsfs,

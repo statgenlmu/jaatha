@@ -1,14 +1,12 @@
 Package:    jaatha
-Version:    1.9.12
-Date:       2012-12-07
+Version:    2.0.0
+Date:       2012-12-15
 License:    GPL (>= 3)
-Title:      Jaatha - Fast Estimation of Model Parameters in Population Genetics
+Title:      Jaatha - Fast Estimation of Evolutionary Model Parameters
 Author:     Lisha Mathew, Paul R. Staab and Dirk Metzler
 Maintainer: Paul R. Staab <staab@bio.lmu.de>
 Description:
-    A method for estimating parameters of the demographic history of
-    two closely related species out of SNP data.
-Depends:
-    methods, foreach, phyclust, ape, Rcpp
-Suggests:
-    doMC
+    Jaatha is a fast composite likelihood method for estimating parameters
+    of the evolution of two species or population out of genetic data.
+Depends: methods, foreach, phyclust, ape, Rcpp
+Suggests: doMC
