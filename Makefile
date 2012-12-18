@@ -57,4 +57,4 @@ clean-doc:
 	# Deletes the automatically gernerated man files
 	- rm jaatha/man/*.Rd 2> /dev/null
 	- rm jaatha/DESCRIPTION 2> /dev/null 
-	cp jaatha/DESCRIPTION.template jaatha/DESCRIPTION
+	cp DESCRIPTION.template jaatha/DESCRIPTION

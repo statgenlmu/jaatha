@@ -240,6 +240,7 @@ jaatha <- Jaatha.initialize(dm, jsfs=jsfs, seed=12345)
 @
 
 <<SaveJaatha, include=FALSE, echo=FALSE>>=
+if(!file.exists('cache/saved_objects')) dir.create('cache/saved_objects')
 save(jaatha, file='cache/saved_objects/jaatha.Rsave')
 @
 

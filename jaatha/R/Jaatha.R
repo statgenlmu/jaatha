@@ -262,7 +262,7 @@ Jaatha.initialSearch <- function(jObject, nSim=200, nBlocksPerPar=3){
   ## searches with externalTheta=T will be run for initial search
   ## if theta is included into parRange, exclude it and decrese nPar
   extThetaPossible <- !jObject@externalTheta & !jObject@finiteSites & jObject@nPar > 2
-  .log2( "extThetaPossible:",extThetaPossiblie)
+  .log2( "extThetaPossible:",extThetaPossible)
   jObject.bu <- jObject
   if ( extThetaPossible ){
     #origParRange <- jObject@parRange
@@ -357,9 +357,9 @@ Jaatha.initialSearch <- function(jObject, nSim=200, nBlocksPerPar=3){
 #' generalized linear model.
 #' 
 #' @param jObject The Jaatha settings (create with \code{\link{Jaatha.initialize}})
-#' @param startPoints From each of starting positions in this list, a refined 
-#'          search will be performed starting in this position.
-#'                (create this list with \code{\link{Jaatha.initialSearch}})
+#' @param best.start.pos This is the number of best starting positions
+#'      found in the inital search that we will use. Jaatha runs a seperate 
+#'      search starting from each of this points.
 #' @param nSim The number of simulations that are performed in each step
 #' @param nFinalSim The number of simulations that are performed after the search to estimate the 
 #'        composite log likelihood. If not specified, the value of \code{nSim} will be used
@@ -367,9 +367,6 @@ Jaatha.initialSearch <- function(jObject, nSim=200, nBlocksPerPar=3){
 #' @param halfBlockSize The size of the new block that is created around a new maximum.
 #' @param weight The weighting factor that will reduce the influence of old block in the estimation procedure
 #' @param nMaxStep The search will stop at this number of steps if not stopped before (see epsilon)
-#' @param best.start.pos This is the number of best starting positions
-#'      found in the inital search that we will use. Jaatha runs a seperate 
-#'      search starting from each of this points.
 #'              
 #' @return An Jaatha object. The found values are written to the slot likelihood.table.
 #'
@@ -382,7 +379,6 @@ Jaatha.refineSearch <-
   # Check parameters
   if (!is.jaatha(jObject)) stop("jObject is not of type Jaatha")
   .log2("Called function Jaatha.refineSearch()")
-
 
   checkType(best.start.pos, c("num", "single"))
   checkType(nSim, c("num", "single"))
@@ -623,17 +619,6 @@ Jaatha.refineSearch <-
 }
 
 
-#' Pick best starting positions
-#'
-#' This functions picks the best starting positions out of a list
-#' of starting positions.
-#' 
-#' @param blocks A list of starting positions
-#'           (typically from \code{\link{Jaatha.initialSearch}})
-#' @param best The number of best starting positions to keep
-#'
-#' @return A list with the best starting positions
-#' @export
 Jaatha.pickBestStartPoints <- function(blocks, best){
   returnPoints <- list()
   nBlocks <- length(blocks)
@@ -1120,7 +1105,6 @@ is.jaatha <- function(jObject){
 #' search sorted by score.
 #'
 #' @param jObject The Jaatha options
-#' @param startPoints The list of startPoints which will be printed
 #' @param extThetaPossible For internal use only.
 #' @return a matrix with score and parameters of each start point
 #' @export
