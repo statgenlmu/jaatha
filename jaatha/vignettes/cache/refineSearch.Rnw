@@ -5,7 +5,7 @@ invisible(library(doMC, quietly=TRUE))
 @
 
 <<RefineSearch>>=
-jaatha <- Jaatha.refineSearch(jaatha, best.start.pos=2, nSim=100)
+jaatha <- Jaatha.refinedSearch(jaatha, best.start.pos=2, nSim=100)
 @
 
 <<SaveRefSearchResults, include=FALSE, echo=FALSE>>=

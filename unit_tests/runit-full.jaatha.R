@@ -102,13 +102,13 @@ test.initialSearch.parallel <- function() {
     if (rerecord.results) save(samples,file="samples.save")
 }
 
-test.refineSearch <- function(){
+test.refinedSearch <- function(){
     load("samples.save")
 	set.seed(1)
 	jaatha <- samples[["refineSearch.jaatha"]]
     jaatha@cores <- 2
     jaatha@sim.package.size <- 5
-	jaatha <- Jaatha.refineSearch(jaatha, 2,nSim=10,epsilon=.2,
+	jaatha <- Jaatha.refinedSearch(jaatha, 2,nSim=10,epsilon=.2,
 				      halfBlockSize=.05,weight=.9,nMaxStep=50)
 	lt <- Jaatha.printLikelihoods(jaatha)
 	if (rerecord.results) samples[["refineSearch.result"]] <- lt 
@@ -121,7 +121,7 @@ test.extThetaPossible <- function(){
 	jaatha <- Jaatha.initialize(dm.eTp, samples[["sumStats.extTheta"]], seed=10,
                                 cores=2, sim.package.size=5)
 	jaatha <- Jaatha.initialSearch(jaatha, nSim=10, nBlocksPerPar=1)
-    jaatha <- Jaatha.refineSearch(jaatha, 1, nSim=10, nMaxStep=5)
+    jaatha <- Jaatha.refinedSearch(jaatha, 1, nSim=10, nMaxStep=5)
 	lt <- Jaatha.printLikelihoods(jaatha)
 	if (rerecord.results) samples[["etp"]] <- lt 
 	checkEquals(lt, samples[["etp"]])

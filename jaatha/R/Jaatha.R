@@ -40,15 +40,24 @@ NULL
 #'    \item{popSampleSizes=}{Sample sizes of both populations. Vector of length 2.}
 #'    \item{nLoci}{The number of loci}
 #'    \item{MLest}{ML estimations of parameters (transformed between 0 and 1)}
-#'    \item{seed}{Random seed for R}
+#'    \item{seeds}{A set of random seeds. First one to generate the other two.
+#'                 The next one is for the initial search, the last is for the
+#'                 refined search}
 #'    \item{externalTheta}{If TRUE theta will estimated using Watersons-estimator}
 #'    \item{finiteSites}{If TRUE, we use a finite sites mutation model instead of an infinite sites one}
-#'    \item{parNames}{The name of the paramters we estimate}
+#'    \item{parNames}{The name of the parameters we estimate}
 #'    \item{debugMode}{If TRUE, a debug output will be produced}
 #'    \item{logFile}{If set, the debug output will be written into this file}
 #'    \item{sumStats}{The summary statistics from the real data}
 #'    \item{likelihood.table}{A matrix with the best composite log likelihood values and 
-#'      coresponding parameters}
+#'                            corresponding parameters}
+#'    \item{sum.stats.func}{The function for summarizing the JSFS}
+#'    \item{sim.package.size}{Execute this number of simulations on a core in a
+#'                            row}
+#'    \item{cores}{The number of CPU cores to use for simulations}
+#'    \item{scaling.factor}{Only simulate this part of the data and interpolate
+#'                          the rest}
+#'    \item{route}{Tracks the best estimates of each step.}
 #' }
 #'
 #' @name Jaatha-class
@@ -242,7 +251,7 @@ rm(.show)
 #' to roughly predict the combination with the highest score (which is 
 #' equivalent to the highest composite log likelihood).
 #' This points can later be used as starting positions for the secound
-#' estimation phase of Jaatha (\code{\link{Jaatha.refineSearch}})
+#' estimation phase of Jaatha (\code{\link{Jaatha.refinedSearch}})
 #'
 #' @param jObject The Jaatha settings (create with \code{\link{Jaatha.initialize}})
 #' @param nSim The number of simulations that are performed in each bin
@@ -371,14 +380,14 @@ Jaatha.initialSearch <- function(jObject, nSim=200, nBlocksPerPar=3){
 #' @return An Jaatha object. The found values are written to the slot likelihood.table.
 #'
 #' @export
-Jaatha.refineSearch <- 
+Jaatha.refinedSearch <- 
   function(jObject, best.start.pos, nSim,
            nFinalSim, epsilon=.2, halfBlockSize=.05,
            weight=.9, nMaxStep=200) {
 
   # Check parameters
   if (!is.jaatha(jObject)) stop("jObject is not of type Jaatha")
-  .log2("Called function Jaatha.refineSearch()")
+  .log2("Called function Jaatha.refinedSearch()")
 
   checkType(best.start.pos, c("num", "single"))
   checkType(nSim, c("num", "single"))
@@ -397,7 +406,7 @@ Jaatha.refineSearch <-
   
   jObject@likelihood.table <- matrix(0,0, jObject@nPar + 2)
 
-  # Setup enviroment for the refine search
+  # Setup enviroment for the refined search
   set.seed(jObject@seeds[3])
   .log2("Seeting seed to", jObject@seeds[3])
   setParallelization(jObject)
@@ -407,7 +416,7 @@ Jaatha.refineSearch <-
   for (s in 1:length(startPoints)){
     jObject@MLest <- startPoints[[s]]@MLest
       .print("*** Search with starting Point in Block",s,"of",length(startPoints),"****")
-      jObject <- .refineSearchSingleBlock(jObject,nSim=nSim,nFinalSim=nFinalSim,
+      jObject <- .refinedSearchSingleBlock(jObject,nSim=nSim,nFinalSim=nFinalSim,
                 epsilon=epsilon,halfBlockSize=halfBlockSize,
                 weight=weight,nMaxStep=nMaxStep,blocknr=s)  
   }
@@ -421,9 +430,9 @@ Jaatha.refineSearch <-
 }
 
 
-## This is called from Jaatha.refineSearch for each block. The actual search is done here.
-## Parameters are the same as in Jaatha.refineSearch
-.refineSearchSingleBlock <- function(jObject, nSim, nFinalSim,
+## This is called from Jaatha.refinedSearch for each block. The actual search is done here.
+## Parameters are the same as in Jaatha.refinedSearch
+.refinedSearchSingleBlock <- function(jObject, nSim, nFinalSim,
                                      epsilon, halfBlockSize, weight=weight,
                                      nMaxStep=nMaxStep, blocknr){
   ## initialize values 

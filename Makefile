@@ -40,6 +40,11 @@ check: doc clean-package
 	R CMD check jaatha
 	make clean-package
 
+cran-check: doc clean-package
+	# Runs an R CMD check
+	R CMD check --as-cran jaatha
+	make clean-package
+
 package: test howto-cache check
 	# Build the R package out of the sources
 	R CMD build jaatha

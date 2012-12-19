@@ -103,8 +103,8 @@ We can now create an 'empty' demographic model \verb@dm@ using the\\
 \verb@dm.createDemographicModel()@ function:
 
 <<Creating a demographic model in R>>=
-dm <- dm.createDemographicModel(sample.sizes=c(25,24), 
-                                loci.num=70,
+dm <- dm.createDemographicModel(sample.sizes=c(12,14),
+                                loci.num=50,
                                 seq.length=1000)
 @
 
