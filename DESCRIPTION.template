@@ -11,6 +11,6 @@ Description:
     using genetic data. Given a model of the evolutionary history of two
     biological populations as well as SNP data from multiple individuals from
     each population, it estimates model parameters like the time of separation of both species.
-Depends: methods, foreach, phyclust, ape, Rcpp
+Depends: methods, foreach, phyclust (>= 0.1-14), ape, Rcpp
 LinkingTo: Rcpp
 Suggests: doMC

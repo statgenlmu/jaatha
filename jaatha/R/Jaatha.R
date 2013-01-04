@@ -24,6 +24,7 @@
 #' @docType package
 #' @title Fast estimation of demographic parameters
 #' @keywords package
+#' @importFrom phyclust ms
 #' @useDynLib jaatha
 NULL
 

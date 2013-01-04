@@ -202,7 +202,7 @@ seqgenSingleSimFunc <- function(dm, parameters) {
 
   .log2("calling ms to generate tree...")
   ms.options <- generateMsOptions(dm, parameters)
-  ms.file <- callMs(ms.options)
+  ms.file <- callMs(ms.options, dm)
 
   .log2("running seq-gen")
   seqgen.options <- generateSeqgenOptions(dm, parameters)

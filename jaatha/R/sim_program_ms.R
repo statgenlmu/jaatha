@@ -15,7 +15,9 @@ possible.sum.stats <- c("jsfs")
 #' 
 #' @param opts The options to pass to ms. Must either be a character or character
 #' vector.
-callMs <- function(opts){
+#' @param dm The demographic model we are using
+#' @return The file containing the output of ms
+callMs <- function(opts, dm){
   if (missing(opts)) stop("No options given!")
   opts <- unlist(strsplit(opts, " "))
   .log3("Called callMs")
@@ -24,7 +26,7 @@ callMs <- function(opts){
   ms.file <- getTempFile("ms")
 
   .log3("Calling ms...")
-  .Call("R_ms_main", opts, ms.file, PACKAGE = "phyclust")
+  ms(sum(dm@sampleSizes), dm@nLoci, opts, ms.file)
   .log3("ms finished. Finished callMs()")
   return(ms.file)
 }
@@ -33,7 +35,7 @@ callMs <- function(opts){
 # an ms call to the current model.
 generateMsOptionsCommand <- function(dm) {
   nSample <- dm@sampleSizes
-  cmd <- c('c(', '"ms"', ",", sum(nSample), ",", dm@nLoci , ",")
+  cmd <- c('c(')
   cmd <- c(cmd,'"-I"', ",", length(nSample), ',', 
            paste(nSample, collapse=","), ',')
 
@@ -140,7 +142,7 @@ msSingleSimFunc <- function(dm, parameters) {
   .log2("running ms")
   .log3("executing: \'", printMsCommand(dm), "'")
   ms.options <- generateMsOptions(dm, parameters)
-  sim.time <- system.time(ms.out  <- callMs(ms.options))
+  sim.time <- system.time(ms.out  <- callMs(ms.options, dm))
   .log3("finished after", sum(sim.time[-3]), "seconds")
   .log3("Simulation output in file", ms.out)
 

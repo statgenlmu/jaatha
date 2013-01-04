@@ -55,7 +55,7 @@ test.callSeqgen <- function(opts, ms.file){
   opts <- c("seq-gen", " -mHKY", " -l", dm@seqLength, " -p", dm@seqLength + 1, " -q")
   
   ms.options <- jaatha:::generateMsOptions(dm, pars)
-  ms.file <- jaatha:::callMs(ms.options)
+  ms.file <- jaatha:::callMs(ms.options, dm)
 
   seqgen.file <- callSeqgen(opts, ms.file)
   checkTrue( file.exists(seqgen.file) )

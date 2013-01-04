@@ -19,7 +19,7 @@ dm <- dm.createThetaTauModel(c(10,25), 100)
 
 test.callMS <- function() {
   checkException(callMs())
-  checkTrue(file.exists(callMs("ms 2 1 -t 5")))
+  checkTrue(file.exists(callMs("-t 5", dm)))
 }
 
 test.msSingleSimFunc <- function() {
