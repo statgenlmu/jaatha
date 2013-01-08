@@ -18,7 +18,8 @@ setClass("DemographicModel" ,
                         tsTvRatio="numeric",
                         externalTheta="logical",
                         finiteSites="logical",
-                        currentSimProg="SimProgram")
+                        currentSimProg="SimProgram",
+                        options="list")
          )
 
 
@@ -50,6 +51,7 @@ setClass("DemographicModel" ,
   .Object@seqLength       <- seqLength
   .Object@tsTvRatio       <- tsTvRatio
   .Object@nLoci           <- nLoci
+  .Object@options         <- list()
 
   return(.Object)
 }
@@ -362,8 +364,12 @@ makeThetaLast <- function(dm) {
   return(dm)
 }
 
-
-
+finalizeDM <- function(dm) {
+  simProg <- dm@currentSimProg
+  .log2("Finalizing demographic model. Simprog:", simProg@name)
+  dm <- simProg@finalizationFunc(dm)
+  return(dm)
+}
 
 
 #------------------------------------------------------------------------------

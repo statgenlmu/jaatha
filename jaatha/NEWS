@@ -1,7 +1,9 @@
 Version 2.0.0:
 + Testing
 + Updated/Completed Documention and Vignette
++ New Feature: Added caching of ms and seqgen commands
 + Bugfix: Multiple tmp-dirs used during multicore refined search
++ Bugfix: Multiple searches for seqgen binary if running on multiple cores
 
 Version 1.9.12:
 + Fixed a bug with one parameter models

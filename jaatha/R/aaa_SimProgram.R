@@ -21,7 +21,8 @@ slots <- representation(name="character",
                         possible.sum.stats="character",
                         simFunc="function",
                         singleSimFunc="function",
-                        useSingleSimFunc="logical"
+                        useSingleSimFunc="logical",
+                        finalizationFunc="function"
                        )
 
 setClass("SimProgram",slots)
@@ -39,7 +40,8 @@ emptyFunc <- function(){}
                   possible.features=NULL,
                   possible.sum.stats=NULL, 
                   simFunc=NULL,
-                  singleSimFunc=NULL) {
+                  singleSimFunc=NULL,
+                  finalizationFunc=NULL) {
 
   if (is.null(simFunc) & is.null(singleSimFunc))
       stop("One of simFunc and singleSimFunc must be given.")
@@ -49,6 +51,8 @@ emptyFunc <- function(){}
     .Object <- sp.setSimFunc(.Object, simFunc)
   if (!is.null(singleSimFunc)) 
     .Object <- sp.setSingleSimFunc(.Object, singleSimFunc)
+
+  .Object <- sp.setFinalizationFunc(.Object, finalizationFunc)
 
   .Object <- sp.setName(.Object, name)
   .Object <- sp.setExecutable(.Object, executable)
@@ -117,11 +121,19 @@ sp.setSingleSimFunc <- function(simProg, simFunc){
   return(simProg)
 }
 
+sp.setFinalizationFunc <- function(simProg, finalFunc){
+  if (is.null(finalFunc)) finalFunc <- function(dm){return(dm)}
+  checkType(finalFunc, "fun", F)
+  simProg@finalizationFunc <- finalFunc
+  return(simProg)
+}
+
 createSimProgram <- function(name, executable,
                              possible.features,
                              possible.sum.stats,
                              simFunc=NULL,
-                             singleSimFunc=NULL) {
+                             singleSimFunc=NULL,
+                             finalizationFunc=NULL) {
   
   simProg <- new("SimProgram",
                  name = name, 
@@ -129,7 +141,8 @@ createSimProgram <- function(name, executable,
                  possible.features = possible.features,
                  possible.sum.stats = possible.sum.stats,
                  simFunc = simFunc,
-                 singleSimFunc = singleSimFunc) 
+                 singleSimFunc = singleSimFunc,
+                 finalizationFunc = finalizationFunc) 
 
   .jaatha$simProgs[[name]] <- simProg
 }

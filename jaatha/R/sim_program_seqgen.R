@@ -13,7 +13,7 @@ seqgen.features    <- c('mutation.model', 'tstv.ratio',
                         'base.freq.T',
                         'gtr.rate.1', 'gtr.rate.2', 'gtr.rate.3',
                         'gtr.rate.4','gtr.rate.5','gtr.rate.6',
-                        'gamma.categories')
+                        'gamma.categories', 'gamma.rate')
 
 possible.sum.stats <- c("jsfs")
 mutation.models    <- c('HKY', 'F84', 'GTR')
@@ -23,7 +23,7 @@ possible.features  <- c(getSimProgram('ms')@possible.features, seqgen.features)
 checkForSeqgen <- function() {
   if ( isJaathaVariable('seqgen.exe') ) return()
 
-  # Works on Linux
+  # Works on Linux only maybe
   run.path <- strsplit(Sys.getenv("PATH"), ":")[[1]]
   executables <- c(paste(run.path, "/seq-gen", sep=""), 
                    paste(run.path, "/seqgen", sep=""))
@@ -91,14 +91,17 @@ generateSeqgenOptions <- function(dm, parameters) {
   }
 
   seqgen.tmp[['seed']] <- generateSeeds(1)
-
-  cmd <- generateSeqgenOptionsCmd(dm)
+  
+  if ( !is.null( dm@options[['seqgen.cmd']] ) )
+    cmd <- dm@options[['seqgen.cmd']]
+  else
+    cmd <- generateSeqgenOptionsCmd(dm)
   cmd <- paste(eval(parse(text=cmd), envir=seqgen.tmp), collapse=" ")
 
   return(cmd)
 }
 
-generateSeqgenOptionsCmd <- function(dm, parameters) {  
+generateSeqgenOptionsCmd <- function(dm) {  
   base.freqs <- F
   gtr.rates <- F
   includes.model <- F
@@ -224,7 +227,15 @@ seqgenSingleSimFunc <- function(dm, parameters) {
   return(jsfs)
 }
 
+finalizeSeqgen <- function(dm) {
+  checkForSeqgen()
+  dm <- finalizeMs(dm)
+  dm@options[['seqgen.cmd']] <- generateSeqgenOptionsCmd(dm)
+  return(dm)
+}
+
 createSimProgram("seq-gen", "",
                  possible.features,
                  possible.sum.stats,
-                 singleSimFunc=seqgenSingleSimFunc)
+                 singleSimFunc=seqgenSingleSimFunc,
+                 finalizationFunc=finalizeSeqgen)

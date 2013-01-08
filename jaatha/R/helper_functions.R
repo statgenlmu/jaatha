@@ -190,25 +190,6 @@ checkType <- function(variable, type, required=T, allow.na=T) {
 
 
 #-----------------------------------------------------------------------
-# Functions to use R's just-in-time compiler
-#-----------------------------------------------------------------------
-activateCompiler <- function() {
-  if ("compiler" %in% rownames(installed.packages())){
-    library("compiler")
-    .jaatha$compile.level <- compiler::enableJIT(3)
-  }
-}
-
-
-deactivateCompiler <- function() {
-  if (exists("compile.level", envir=.jaatha)) {
-    compiler::enableJIT(.jaatha$compile.level)
-  }
-}
-
-
-
-#-----------------------------------------------------------------------
 # Functions to deal with temporary files
 #-----------------------------------------------------------------------
 getTempDir <- function() {

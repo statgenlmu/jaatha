@@ -92,7 +92,10 @@ generateMsOptions <- function(dm, parameters) {
     }
   }
 
-  cmd <- generateMsOptionsCommand(dm)
+  if ( !is.null( dm@options[['ms.cmd']] ) )
+    cmd <- dm@options[['ms.cmd']]
+  else
+    cmd <- generateMsOptionsCommand(dm)
   cmd <- eval(parse(text=cmd), envir=ms.tmp)
 
   .log3("Finished .ms.generateCmd()")
@@ -153,7 +156,14 @@ msSingleSimFunc <- function(dm, parameters) {
   return(jsfs)
 }
 
+finalizeMs <- function(dm) {
+  dm@options[['ms.cmd']] <- generateMsOptionsCommand(dm)
+  return(dm)
+}
+
 createSimProgram("ms", "",
                  possible.features,
                  possible.sum.stats,
-                 singleSimFunc=msSingleSimFunc)
+                 singleSimFunc=msSingleSimFunc,
+                 finalizationFunc=finalizeMs)
+

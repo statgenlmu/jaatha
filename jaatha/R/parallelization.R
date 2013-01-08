@@ -12,8 +12,14 @@ setParallelization <- function(jaatha) {
   cores <- jaatha@cores
   if (cores > 1) {
     require(doMC)
-    registerDoMC(cores)
+    .registerDoMC(cores)
   } else {
     registerDoSEQ()
   }
+}
+
+# Ugly workaround to prevent note that registerDoMC is not visible at the moment
+# setParallelization is loaded
+.registerDoMC <- function(cores) {
+    registerDoMC(cores)
 }

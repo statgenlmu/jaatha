@@ -94,7 +94,9 @@ setClass("Jaatha",
                   summary.statistics=NA, cores, sim.package.size, scaling.factor) {
 
   .log3("Starting initialization")
-  .Object@dm <- demographicModel
+  # Set demographic model
+  .Object@dm <- finalizeDM(demographicModel)
+  
   # Model parameters
   # TODO: remove.
   .Object@nLoci <- demographicModel@nLoci
