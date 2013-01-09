@@ -7,8 +7,8 @@ jaatha@cores <- 2
 
 <<initialSearch>>=
 jaatha <- Jaatha.initialSearch(jaatha, 
-                               nSim=100, 
-                               nBlocksPerPar=3)
+                               sim=100, 
+                               blocks.per.par=3)
 @
 
 <<saveInitialSearchResults, include=FALSE, echo=FALSE>>=

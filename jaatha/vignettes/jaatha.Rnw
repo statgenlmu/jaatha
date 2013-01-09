@@ -251,8 +251,8 @@ For more options refer to \verb@?Jaatha.initialize@ or the Jaatha manual.
 
 \noindent
 For the initial search, we divide the parameter space into equally-sized blocks by dividing 
-each of the $n$ parameters ranges into \verb@nBlocksPerPar@ intervals such that we obtain 
-$($\verb@nBlocksPerPar@$)^n$ blocks. Within each block we simulate \verb@nSim@ data sets with 
+each of the $n$ parameters ranges into \verb@blocks.per.par@ intervals such that we obtain 
+$($\verb@blocks.per.par@$)^n$ blocks. Within each block we simulate \verb@sim@ data sets with 
 -- on a logarithmic scale -- uniformly drawn parameter values within each block. To ensure 
 a better sampling of the edges, we simulate in addition data sets for all corner points of 
 each parameter block.
@@ -275,7 +275,7 @@ load('cache/saved_objects/start-points.Rsave')
 \noindent
 To visualise the estimates for good stating positions sorted by score, type:
 <<PrintStartPoints>>=
-Jaatha.printStartPoints(jaatha)
+Jaatha.getStartingPoints(jaatha)
 @
 Here, there is a big reduction in the scores after the first seven blocks, and a smaller one 
 after the first two. This is suggesting that we either use the first two or the
@@ -296,24 +296,25 @@ likelihood approximations.
 \input{cache/refineSearch}
 
 \noindent
-Hence we perform two independent searches, starting in the two \verb@startPoints@ we choose before 
+Hence we perform two independent searches, starting in the \verb@best.start.pos@
+best starting positions we choose before 
 and according to the general options we choose during initialization, which are stored in the 
-\verb@jaatha@ object. In each step, we build a block with \verb@halfBlockSize@ in each direction
-(on a logarithmic scale) and perform simulations for \verb@nSim@ random parameter combinations within
+\verb@jaatha@ object. In each step, we build a block with \verb@half.block.size@ in each direction
+(on a logarithmic scale) and perform simulations for \verb@sim@ random parameter combinations within
 this block (plus one for very corner). We use this information to estimate the composite maximum 
 likelihood parameters within this block and take this value as new starting position for the next
 step. 
 
 The algorithm stops when the score has not changed more than \verb@epsilon@ for five consecutive 
-steps or step \verb@nMaxStep@ is reached. To avoid getting stuck in local maxima, 
+steps or step \verb@max.steps@ is reached. To avoid getting stuck in local maxima, 
 the \verb@weight@ option decreases the weight of simulations of previous blocks.
 
 Finally the log composite likelihoods for the best ten parameter combinations are 
-approximated using \verb@nFinalSim@ simulations. These are values printed at the 
+approximated using \verb@sim.final@ simulations. These are values printed at the 
 end of the search. This matrix can also be accessed via
 
 <<printLT>>=
-likelihoods <- Jaatha.printLikelihoods(jaatha)
+likelihoods <- Jaatha.getLikelihoods(jaatha)
 print(likelihoods[1:3, ])
 @
 

@@ -22,6 +22,6 @@ test.oneParModel <- function(){
   dm.onePar <- dm.addMutation(dm.onePar, 1, 20)
   jsfs <- matrix(rpois(11*12, 10), 11, 12)
   jaatha <- Jaatha.initialize(dm.onePar, jsfs=jsfs, seed=100)
-  jaatha <- Jaatha.initialSearch(jaatha, nSim=10, nBlocksPerPar=2)
-  checkEquals(nrow(Jaatha.printStartPoints(jaatha)), 2)
+  jaatha <- Jaatha.initialSearch(jaatha, sim=10, blocks.per.par=2)
+  checkEquals(nrow(Jaatha.getStartingPoints(jaatha)), 2)
 }

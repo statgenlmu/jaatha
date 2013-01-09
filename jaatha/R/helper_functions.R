@@ -192,19 +192,22 @@ checkType <- function(variable, type, required=T, allow.na=T) {
 #-----------------------------------------------------------------------
 # Functions to deal with temporary files
 #-----------------------------------------------------------------------
-getTempDir <- function() {
-  if (exists("temp.dir", envir=.jaatha)) {
+getTempDir <- function(use.shm = FALSE) {
+  if (exists("temp.dir", envir=.jaatha) & !use.shm) {
     return(.jaatha$temp.dir)
   }
 
-  if (file.exists("/dev/shm")) tmp.dir <- "/dev/shm/jaatha"
+  if (use.shm) {
+    if (!file.exists("/dev/shm")) stop("/dev/shm/ does not exists") 
+    tmp.dir <- "/dev/shm/jaatha"
+  }
   else tmp.dir <- paste(tempdir(), "/jaatha", sep="")
   
   i <- 1
   while (file.exists(paste(tmp.dir, "-", i, sep="")))
     i <- i + 1
 
-  .jaatha$temp.dir <- paste(tmp.dir, "-", i, sep="") 
+  .jaatha$temp.dir <- paste(tmp.dir, "-", i, sep="")
   dir.create(.jaatha$temp.dir)
   return(.jaatha$temp.dir)
 }

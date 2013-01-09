@@ -1,7 +1,8 @@
 Version 2.0.0:
 + Testing
-+ Updated/Completed Documention and Vignette
++ Updated Documention and Vignette
 + New Feature: Added caching of ms and seqgen commands
++ Changed Feature: Made use of /dev/shm optional
 + Bugfix: Multiple tmp-dirs used during multicore refined search
 + Bugfix: Multiple searches for seqgen binary if running on multiple cores
 
