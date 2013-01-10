@@ -116,16 +116,16 @@ void parseLine(string line, int *jsfs, const int &s1, const int &s2) {
   }
 }
 
-void printjsfs(int *jsfs, const int &s1, const int &s2) {
+/*void printjsfs(int *jsfs, const int &s1, const int &s2) {
   for (int i=0; i<=s1; i++) {
       for (int j=0; j<=s2; j++) {
             //cout << jsfs[ i * (s2 + 1) + j ] << " ";
       }
           //cout << endl;
   }
-}
+}*/
 
-int main() {
+/*int main() {
   int s1=10, s2=15;
   int jsfs[176] = {0};
   int *pjsfs = jsfs;
@@ -136,4 +136,4 @@ int main() {
   printjsfs(jsfs, s1, s2);
 
   return(0);
-}
+}*/

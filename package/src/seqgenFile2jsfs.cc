@@ -90,6 +90,7 @@ RcppExport SEXP seqgen2jsfs(SEXP filename_,
   END_RCPP
 }
 
+/*
 #ifndef NDEBUG
 void printjsfs(std::vector<int> jsfs, const int &s1, const int &s2) {
   for (int i=0; i<=s1; i++) {
@@ -111,3 +112,4 @@ int main() {
   return(0);
 }
 #endif
+*/
