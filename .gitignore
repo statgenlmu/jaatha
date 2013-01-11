@@ -31,11 +31,12 @@
 Rseed.txt
 
 # Jaatha #
+jaatha_*.tar.gz
 tmp
-jaatha/man/*
-jaatha.Rcheck
-jaatha/NAMESPACE
-jaatha/DESCRIPTION
+package/man/*
+package.Rcheck
+package/NAMESPACE
+package/DESCRIPTION
 unit_tests/results 
 *.tex
-jaatha/vignettes/cache/saved_objects
+package/vignettes/cache/saved_objects

@@ -1,3 +1,6 @@
+Version 2.0.1:
++ Bugfix: Removed debug functions in C++ files that prevented installation on R-2.14
+
 Version 2.0.0:
 + Testing
 + Updated Documention and Vignette
