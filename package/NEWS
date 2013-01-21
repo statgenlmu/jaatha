@@ -1,3 +1,7 @@
+Version 2.0.2:
++ Bugfix: Changed the example fasta file for compatibility with next ape version
++ Bugfix: Fixed encoding issue with bibtex for the packages vignette
+
 Version 2.0.1:
 + Bugfix: Removed debug functions in C++ files that prevented installation on R-2.14
 

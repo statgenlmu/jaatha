@@ -52,10 +52,9 @@ using
 install.packages('jaatha')
 @ 
 or downloaded from
-\url{http://evol.bio.lmu.de/_statgen/software/jaatha}. Jaatha runs on all
-operating systems supported by \verb@R@ -- namely Windows, OS X (Mac) and Linux
--- with the following restriction: On Windows the parallelization and finite sites
-simulation using seq-gen is currently not working.
+\url{http://evol.bio.lmu.de/_statgen/software/jaatha}. Jaatha runs on R under Windows, 
+OS X (Mac) and Linux  with the following restrictions: On Windows the parallelization 
+and finite sites simulation using seq-gen is currently not supported.
 
 A more detailed description of the algorithm can be found in
 \cite{mathew_composite_2012}. 
@@ -233,7 +232,7 @@ positions by simulating very coarsely across the entire parameter space. We call
 this part \emph{initial search}. Afterwards a more thorough \emph{refined search}
 is performed starting from the best positions of the first step. Before starting
 the search, we need to set some options like our demographic model, the summary 
-statistics of the real data, and a seed to ensure repoducibilty:
+statistics of the real data, and a seed to ensure reproducibility:
 
 <<Initialize>>=
 jaatha <- Jaatha.initialize(dm, jsfs=jsfs, seed=12345)
@@ -349,7 +348,8 @@ As described in \cite{mathew_composite_2012}, you can use finite sites mutation
 models in Jaatha. However,
 this currently only works on Linux and OS X and requires that seq-gen 
 \citep{rambaut_seq-gen:_1997} is
-installed on your system. On Debian/Ubuntu can install it running 
+installed on your system. On Debian GNU/Linux and it's derivates (Ubuntu, Mint) 
+you can install it running 
 \verb@apt-get install seq-gen@ as root. Otherwise download the current version from 
 \url{http://tree.bio.ed.ac.uk/software/seqgen} and compile it according to the
 instruction within the package. Jaatha will search for the seq-gen executable using 
@@ -363,6 +363,8 @@ To create a finite sites model, you must specify a mutation model using the
 to your model using \verb@dm.addMutationRateHeterogenity@.
 
 \bibliographystyle{plainnat}
+\inputencoding{latin1}
 \bibliography{jaatha}
+\inputencoding{utf8}
 
 \end{document}
