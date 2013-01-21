@@ -16,7 +16,7 @@ test.showEmptyModel <- function() {
 }
 
 #Jaatha was not able to run on one parameter models
-test.oneParModel <- function(){
+test.oneParModel <- function() {
   dm.onePar <- dm.createDemographicModel(10:11, 20)
   dm.onePar <- dm.addSpeciationEvent(dm.onePar, fixed.time=0)
   dm.onePar <- dm.addMutation(dm.onePar, 1, 20)
@@ -24,4 +24,14 @@ test.oneParModel <- function(){
   jaatha <- Jaatha.initialize(dm.onePar, jsfs=jsfs, seed=100)
   jaatha <- Jaatha.initialSearch(jaatha, sim=10, blocks.per.par=2)
   checkEquals(nrow(Jaatha.getStartingPoints(jaatha)), 2)
+}
+
+test.ApeCodeInVignette <- function() {
+  sample.file <- system.file('example_fasta_files/sample.fasta', package='jaatha')
+  sample.data <- read.dna(sample.file, format='fasta', as.character=TRUE)
+  sample.jsfs <- calculateJsfs(sample.data,
+                               pop1.rows=3:7, 
+                               pop2.rows=8:12,
+                               outgroup.row=1:2)
+  checkTrue(sum(sample.jsfs) > 0)
 }
