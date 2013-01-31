@@ -1,3 +1,6 @@
+Version 2.0.3:
++ Added link to github repo to package description
+
 Version 2.0.2:
 + Bugfix: Changed the example fasta file for compatibility with next ape version
 + Bugfix: Fixed encoding issue with bibtex for the packages vignette
@@ -7,7 +10,7 @@ Version 2.0.1:
 
 Version 2.0.0:
 + Testing
-+ Updated Documention and Vignette
++ Updated Documentation and Vignette
 + New Feature: Added caching of ms and seqgen commands
 + Changed Feature: Made use of /dev/shm optional
 + Bugfix: Multiple tmp-dirs used during multicore refined search
