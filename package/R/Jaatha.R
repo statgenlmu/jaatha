@@ -352,7 +352,7 @@ Jaatha.initialSearch <- function(jaatha, sim=200, blocks.per.par=3){
 
     .log3("Searching optimal values in block",i)
     optimal <- estimate(bObject=firstBlocks[[i]],jObject=jObject,
-            modFeld=glm, ssData=jObject@sumStats, boarder=0, opt=3)
+            modFeld=glm, ssData=jObject@sumStats, boarder=0)
     ##boarder of 0 is important! (otherwise not all param
     ##under consideration)
     firstBlocks[[i]]@score <- optimal$score
@@ -554,7 +554,7 @@ Jaatha.refinedSearch <-
                                                     bObject=searchBlock)
 
     newOptimum <- estimate(bObject=searchBlock,jObject=jObject,
-                           modFeld=glm,ssData=jObject@sumStats,boarder=0,opt=3)
+                           modFeld=glm,ssData=jObject@sumStats,boarder=0)
 
     ## keep the best 10 parameter combinations with their score
     topTen <- .saveBestTen(currentTopTen=topTen, numSteps=nSteps,
