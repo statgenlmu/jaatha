@@ -1,5 +1,6 @@
 Version 2.0.3:
 + Added link to github repo to package description
++ Removed unused optimization strategies
 
 Version 2.0.2:
 + Bugfix: Changed the example fasta file for compatibility with next ape version
