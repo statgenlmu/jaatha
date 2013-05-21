@@ -184,7 +184,6 @@ seqgenOut2Jsfs <- function(dm, seqgen.file) {
   if( ! file.exists(seqgen.file) ) stop("seq-gen simulation failed!")
   if (file.info(seqgen.file)$size == 0) stop("seq-gen output is empty!")
 
-  qsfs.size <- (dm@sampleSizes[1]+1)*(dm@sampleSizes[2]+1)
   jsfs <- matrix(.Call("seqgen2jsfs", seqgen.file, dm@sampleSizes[1], 
                        dm@sampleSizes[2], dm@nLoci),
                  dm@sampleSizes[1] + 1 ,
