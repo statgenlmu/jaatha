@@ -636,6 +636,13 @@ dm.addRecombination <- function(dm, lower.range, upper.range, fixed.value,
 }
 
 
+#' @export
+dm.simulateBands <- function(dm, band.length, band.freq) {
+  dm <- addFeature(dm, "band.number", "band.number", fixed.value=band.length)
+  dm <- addFeature(dm, "band.freq", "band.freq", fixed.value=band.freq)
+  return(dm)
+}
+
 #-------------------------------------------------------------------
 #  dm.addMigration
 #-------------------------------------------------------------------
@@ -1239,7 +1246,6 @@ dm.simSumStats <- function(dm, parameters, sumStatFunc){
               return(sumStats)
             })
 
-    
     sumStats <- t(sumStats)
     if (jsfs) sumStats <- matrix(sumStats, dm@sampleSizes[1]+1,
                                  dm@sampleSizes[2]+1)

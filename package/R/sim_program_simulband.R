@@ -45,19 +45,6 @@ Jaatha.setSimulBandsExecutable <- function(seqgen.exe) {
   }
 }
 
-seqgenOut2Jsfs <- function(dm, seqgen.file) {
-  if( ! file.exists(seqgen.file) ) stop("seq-gen simulation failed!")
-  if (file.info(seqgen.file)$size == 0) stop("seq-gen output is empty!")
-
-  jsfs <- matrix(.Call("seqgen2jsfs", seqgen.file, dm@sampleSizes[1], 
-                       dm@sampleSizes[2], dm@nLoci),
-                 dm@sampleSizes[1] + 1 ,
-                 dm@sampleSizes[2] + 1,
-                 byrow=T)
-
-  return(jsfs)
-}
-
 simulbandsSingleSimFunc <- function(dm, parameters) {
   .log3("called msSingleSimFunc()")
   .log3("parameter:",parameters)
@@ -70,14 +57,16 @@ simulbandsSingleSimFunc <- function(dm, parameters) {
   opts <- c() 
 
   # Get the executable
-  jaatha:::checkForSimulBands()
+  checkForSimulBands()
   opts[1] <- getJaathaVariable('simulbands.exe')
   opts[2] <- "tree"
 
   # Generate a tree with ms
   .log2("calling ms to generate tree...")
-  ms.options <- generateMsOptions(dm, parameters)
-  ms.file <- callMs(ms.options, dm)
+  dm.ms <- dm
+  dm.ms@sampleSizes <- dm.ms@sampleSizes * 2
+  ms.options <- generateMsOptions(dm.ms, parameters)
+  ms.file <- callMs(ms.options, dm.ms)
   tr <- readLines(ms.file)
 
   # Get remaining options
@@ -87,8 +76,9 @@ simulbandsSingleSimFunc <- function(dm, parameters) {
   band.freq.row <- dm@parameters$name == "band.freq"
   opts[4] <- dm@parameters[band.freq.row, 'lower.range']
   
-  indiv <- sum(dm@sampleSizes)
-  M <- matrix(rep(0,len*indiv*2),nrow=2*indiv)
+  indiv1 <- dm@sampleSizes[1]
+  indiv2 <- dm@sampleSizes[2]
+  M <- matrix(rep(0,len*(indiv1+indiv2)*2),nrow=2*(indiv1+indiv2))
 
   # Get the mutation rate
   rate <- parameters[dm.getParameters(dm) == "theta"]
@@ -98,8 +88,8 @@ simulbandsSingleSimFunc <- function(dm, parameters) {
   opts[8] <- "outfile"
 
   for (i in 3:length(tr)) {
-    if (tr[i] == "") next()
-    if (tr[i] == "//") next()
+    if (tr[i] == "") stop()
+    if (tr[i] == "//") stop()
 
     trlen <- as.numeric(strsplit(tr[i],"[][]")[[1]][2])
     tree <- paste("\"",strsplit(tr[i],"]")[[1]][2],"\"",sep="")
@@ -130,16 +120,40 @@ simulbandsSingleSimFunc <- function(dm, parameters) {
     }
   }
 
+  r1 <- sample(1:(2*indiv1))
+  r2 <- sample(1:(2*indiv2))
+  M <- apply( M[c(r1[1:indiv1],2*indiv1+r2[1:indiv2]),]|
+         M[c(r1[(indiv1+1):(2*indiv1)],2*indiv1+r2[(indiv2+1):(2*indiv2)]),] , 
+         2 , as.numeric)
+
+  jsfs <- convertBandsToJSFS(M, indiv1, indiv2)
   unlink(ms.file)
   .log3("Simubands simulation succesfully finished")
-  r <- sample(1:(2*indiv))
-  return(apply( M[r[1:indiv],]|M[r[(indiv+1):(2*indiv)],] , 2 , as.numeric) )
+  
+  return(jsfs)
 }
+
 
 finalizeSimulbands <- function(dm) {
   checkForSimulBands()
   dm <- finalizeMs(dm)
   return(dm)
+}
+
+convertBandsToJSFS <- function(B,indiv1,indiv2) {
+  if(dim(B)[1]!=indiv1+indiv2) {
+    print("Error: Total sample size does not match number of lines in B.\n")
+  } else {
+    n <- dim(B)[2]
+    x <- apply(B[1:indiv1,],2,sum)
+    y <- apply(B[(indiv1+1):(indiv1+indiv2),],2,sum)
+    M <- matrix(rep(0,(indiv1+1)*(indiv2+1)),nrow=indiv1+1)
+    dimnames(M) <- list(0:indiv1,0:indiv2)
+    for(i in 1:n) {
+      M[x[i]+1,y[i]+1] <- M[x[i]+1,y[i]+1]+1
+    }
+  }
+  return(M)
 }
 
 createSimProgram("simulbands", "",

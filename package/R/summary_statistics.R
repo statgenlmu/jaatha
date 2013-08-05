@@ -23,7 +23,9 @@
 Jaatha.defaultSumStats <- function(dm = NULL, jsfs) {
   n <- nrow(jsfs)
   m <- ncol(jsfs)
-  c(sum(jsfs[1,2:3]),
+  c(jsfs[1,1],
+    jsfs[n,m],
+    sum(jsfs[1,2:3]),
     sum(jsfs[2:3,1]),
     sum(jsfs[1,4:(m-3)]),
     sum(jsfs[4:(n-3),1]),

@@ -167,8 +167,8 @@ setClass("Jaatha",
   if (missing(scaling.factor)) scaling.factor <- 1
   checkType(scaling.factor, c("num","single"))
   .Object@dm <- scaleDemographicModel(.Object@dm, scaling.factor)
-  if (.Object@dm@nLoci < 3) 
-    stop("Error: Simulating less then 3 Loci. Use more data or less scaling.")
+  # if (.Object@dm@nLoci < 3) 
+  #   stop("Error: Simulating less then 3 Loci. Use more data or less scaling.")
   .Object@scaling.factor <- scaling.factor
   
   return (.Object)
@@ -302,6 +302,7 @@ Jaatha.initialSearch <- function(jaatha, sim=200, blocks.per.par=3){
   ## searches with externalTheta=T will be run for initial search
   ## if theta is included into parRange, exclude it and decrese nPar
   extThetaPossible <- !jObject@externalTheta & !jObject@finiteSites & jObject@nPar > 2
+  if (dm@currentSimProg@name == "simulbands") extThetaPossible <- FALSE
   .log2( "extThetaPossible:",extThetaPossible)
   jObject.bu <- jObject
   if ( extThetaPossible ){

@@ -44,6 +44,7 @@ generateMsOptionsCommand <- function(dm) {
     feat <- unlist(dm@features[i, ])
 
     if (type == "mutation") {
+      if (dm@currentSimProg@name != "ms") next()
       if (dm@externalTheta) cmd <- c(cmd,'"-t 5"', ",")
       else 
         cmd <- c(cmd,'"-t"', ',', feat["parameter"], ',')
@@ -73,7 +74,10 @@ generateMsOptionsCommand <- function(dm) {
     }
   }
 
-  cmd <- c(cmd, '"-T")')
+  if (dm@currentSimProg@name != "ms") cmd <- c(cmd, '"-T"', ',')
+  cmd <- c(cmd, '" ")')
+
+  return(cmd)
 }
 
 generateMsOptions <- function(dm, parameters) {
@@ -92,9 +96,9 @@ generateMsOptions <- function(dm, parameters) {
     }
   }
 
-  if ( !is.null( dm@options[['ms.cmd']] ) )
-    cmd <- dm@options[['ms.cmd']]
-  else
+  # if ( isJaathaVariable('ms.cmd') )
+  #   cmd <- getJaathaVariable('ms.cmd')
+  # else
     cmd <- generateMsOptionsCommand(dm)
   cmd <- eval(parse(text=cmd), envir=ms.tmp)
 
@@ -157,7 +161,7 @@ msSingleSimFunc <- function(dm, parameters) {
 }
 
 finalizeMs <- function(dm) {
-  dm@options[['ms.cmd']] <- generateMsOptionsCommand(dm)
+  setJaathaVariable('ms.cmd', generateMsOptionsCommand(dm)) 
   return(dm)
 }
 
