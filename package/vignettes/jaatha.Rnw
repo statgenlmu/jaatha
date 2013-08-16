@@ -54,7 +54,7 @@ install.packages('jaatha')
 or downloaded from
 \url{http://evol.bio.lmu.de/_statgen/software/jaatha}. Jaatha runs on R under Windows, 
 OS X (Mac) and Linux  with the following restrictions: On Windows the parallelization 
-and finite sites simulation using seq-gen is currently not supported.
+and finite sites simulation using Seq-Gen is currently not supported.
 
 A more detailed description of the algorithm can be found in
 \cite{mathew_composite_2012}. 
@@ -346,13 +346,13 @@ results.
 \section{Finite sites models}
 As described in \cite{mathew_composite_2012}, you can use finite sites mutation 
 models in Jaatha. However,
-this currently only works on Linux and OS X and requires that seq-gen 
+this currently only works on Linux and OS X and requires that Seq-Gen 
 \citep{rambaut_seq-gen:_1997} is
 installed on your system. On Debian GNU/Linux and it's derivates (Ubuntu, Mint) 
 you can install it running 
 \verb@apt-get install seq-gen@ as root. Otherwise download the current version from 
 \url{http://tree.bio.ed.ac.uk/software/seqgen} and compile it according to the
-instruction within the package. Jaatha will search for the seq-gen executable using 
+instruction within the package. Jaatha will search for the Seq-Gen executable using 
 your PATH variable. If you get an error that it is not able to find it, you can
 specify the path to the executable using the \verb@Jaatha.setSeqgenExecutable@
 function.
