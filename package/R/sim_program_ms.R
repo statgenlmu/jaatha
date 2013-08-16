@@ -44,9 +44,7 @@ generateMsOptionsCommand <- function(dm) {
     feat <- unlist(dm@features[i, ])
 
     if (type == "mutation") {
-      if (dm@externalTheta) cmd <- c(cmd,'"-t 5"', ",")
-      else 
-        cmd <- c(cmd,'"-t"', ',', feat["parameter"], ',')
+      cmd <- c(cmd,'"-t"', ',', feat["parameter"], ',')
     }
 
     if (type == "split") {

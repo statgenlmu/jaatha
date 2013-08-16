@@ -55,8 +55,7 @@ simulateWithinBlock<- function(bObject, jaathaObject) {
   sumStats <- foreach(i = seq(along = sim.packages), .combine='rbind') %dopar% {
     set.seed(seeds[i])
     sim.pars <- .deNormalize(jaathaObject, 
-                             sim.packages[[i]],
-                             withoutTheta=jaathaObject@externalTheta)
+                             sim.packages[[i]])
     sumStats <- dm.simSumStats(jaathaObject@dm, sim.pars, jaathaObject@sum.stats.func)
     return(sumStats)
   }
@@ -101,7 +100,6 @@ Jaatha.normalize01 <- function(oldRange, value){
 ##Function to map value between 0 and 1 to oldRange
 ## Returns single value (in oldRange).
 Jaatha.deNormalize01 <- function(oldRange, value){
-  if ( all(is.na(oldRange)) ) return(value) #external Theta
   oldRange <- log(oldRange)    
   return (exp(value*(max(oldRange)-min(oldRange))+min(oldRange)))
 }
@@ -124,7 +122,7 @@ Jaatha.deNormalize01 <- function(oldRange, value){
   if (!is.jaatha(jObject)) stop("jObject is no Jaatha object!")
   if (!is.numeric(values)) stop("trying to deNomalize non-numeric values")
   if (!is.vector(values)) stop("trying to deNormalize non-vector values")
-  nPar <- jObject@nPar+jObject@externalTheta-withoutTheta
+  nPar <- jObject@nPar
   .log3("expecting",nPar,"parmeters")
   if (length(values) != nPar)
     stop("trying to deNormalize vector of wrong length")

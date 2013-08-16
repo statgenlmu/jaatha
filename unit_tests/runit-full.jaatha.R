@@ -7,19 +7,6 @@ library("RUnit")
 
 dm.thetaTau <- dm.createThetaTauModel(c(10,15), 20, 100)
 
-dm.extTheta <- dm.createDemographicModel(c(12,11), 30)
-dm.extTheta <- dm.addSpeciationEvent(dm.extTheta,0.1,5)
-dm.extTheta <- dm.addSymmetricMigration(dm.extTheta,1,5)
-dm.extTheta <- dm.addRecombination(dm.extTheta, fixed=20)
-dm.extTheta <- dm.addMutation(dm.extTheta)
-
-#External Theta Possible
-dm.eTp <- dm.createDemographicModel(c(12,13), 25)
-dm.eTp <- dm.addSpeciationEvent(dm.eTp,0.1,5)
-dm.eTp <- dm.addSymmetricMigration(dm.eTp,1,5)
-dm.eTp <- dm.addRecombination(dm.eTp, fixed=20)
-dm.eTp <- dm.addMutation(dm.eTp,1,5)
-
 
 ### --- Test functions ---
 
@@ -53,17 +40,6 @@ test.initialSearch.normal <- function(){
 	jaatha2 <- Jaatha.initialSearch(jaatha2, sim=10, blocks.per.par=2)
 	pStartPoints2 <- Jaatha.getStartingPoints(jaatha2)
 	checkEquals(pStartPoints[1:2,], pStartPoints2[1:2,])
-}
-
-test.initialSearch.extThet <- function(){
-    load("samples.save")
-	jaatha <- Jaatha.initialize(dm.extTheta, samples[["sumStats.extTheta"]],
-                                seed=5)
-	jaatha <- Jaatha.initialSearch(jaatha,sim=10,blocks.per.par=2)
-	pStartPoints <- Jaatha.getStartingPoints(jaatha)
-	if (rerecord.results) samples[["initialSearch.extTheta"]] <- pStartPoints
-	checkEquals(pStartPoints, samples[["initialSearch.extTheta"]])
-    if (rerecord.results) save(samples,file="samples.save")
 }
 
 test.initialSearch.seqgen <- function(){
@@ -113,17 +89,5 @@ test.refinedSearch <- function(){
 	lt <- Jaatha.getLikelihoods(jaatha)
 	if (rerecord.results) samples[["refineSearch.result"]] <- lt 
 	checkEquals(lt, samples[["refineSearch.result"]])
-    if (rerecord.results) save(samples,file="samples.save")
-}
-
-test.extThetaPossible <- function(){
-    load("samples.save")
-	jaatha <- Jaatha.initialize(dm.eTp, samples[["sumStats.extTheta"]], seed=10,
-                                cores=2, sim.package.size=5)
-	jaatha <- Jaatha.initialSearch(jaatha, sim=10, blocks.per.par=1)
-    jaatha <- Jaatha.refinedSearch(jaatha, 1, sim=10, max.steps=5)
-	lt <- Jaatha.getLikelihoods(jaatha)
-	if (rerecord.results) samples[["etp"]] <- lt 
-	checkEquals(lt, samples[["etp"]])
     if (rerecord.results) save(samples,file="samples.save")
 }

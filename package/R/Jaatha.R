@@ -44,7 +44,8 @@ NULL
 #'    \item{seeds}{A set of random seeds. First one to generate the other two.
 #'                 The next one is for the initial search, the last is for the
 #'                 refined search}
-#'    \item{externalTheta}{If TRUE theta will estimated using Watersons-estimator}
+#'    \item{externalTheta}{Option removed in Version 2.1. Use a Version 2.0.2 if
+#'    you want to use external Theta.}
 #'    \item{finiteSites}{If TRUE, we use a finite sites mutation model instead of an infinite sites one}
 #'    \item{parNames}{The name of the parameters we estimate}
 #'    \item{debugMode}{If TRUE, a debug output will be produced}
@@ -76,7 +77,6 @@ setClass("Jaatha",
       nLoci = "numeric",
       MLest="numeric", 
       seeds="numeric",
-      externalTheta= "logical", 
       finiteSites= "logical",
       parNames = "character",
       sumStats = "numeric",
@@ -104,7 +104,6 @@ setClass("Jaatha",
   # TODO: remove.
   .Object@nLoci <- demographicModel@nLoci
   .Object@popSampleSizes <- demographicModel@sampleSizes
-  .Object@externalTheta <- demographicModel@externalTheta
   .Object@finiteSites <- demographicModel@finiteSites
   .Object@nPar <- dm.getNPar(.Object@dm)
 
@@ -298,21 +297,6 @@ Jaatha.initialSearch <- function(jaatha, sim=200, blocks.per.par=3){
   set.seed(jObject@seeds[2])
   .log2("Seeting seed to", jObject@seeds[2])
   tmp.dir <- getTempDir(jObject@use.shm)
-  ## change slot values of jObject locally, so that only  
-  ## searches with externalTheta=T will be run for initial search
-  ## if theta is included into parRange, exclude it and decrese nPar
-  extThetaPossible <- !jObject@externalTheta & !jObject@finiteSites & jObject@nPar > 2
-  .log2( "extThetaPossible:",extThetaPossible)
-  jObject.bu <- jObject
-  if ( extThetaPossible ){
-    #origParRange <- jObject@parRange
-    #jObject@parRange <- jObject@parRange[-jObject@nPar]
-    jObject@dm <- dm.setExternalTheta(jObject@dm)
-    jObject@nPar <- jObject@nPar - 1
-    jObject@externalTheta <- TRUE
-    .print("externalTheta set to TRUE for initial search.")
-  }
-  #print(jObject)
 
   setParallelization(jObject)
       
@@ -329,7 +313,7 @@ Jaatha.initialSearch <- function(jaatha, sim=200, blocks.per.par=3){
     ## is being considered; dim=#nPar
     b <- .index2blocks(value=i-1, newBase=nBlocksPerPar,expo=jObject@nPar) + 1  ##+1 bc R indices start with 0
     boundry <- sapply(1:jObject@nPar, function(p) pRange[p,b[p],])  #dim=c(2,jObject@nPar)
-    boundry.readable <- round(.deNormalize(jObject, boundry, withoutTheta=jObject@externalTheta), 3)
+    boundry.readable <- round(.deNormalize(jObject, boundry), 3)
     .print("*** Block", i, 
            " (lowerB:", boundry.readable[1, ], 
             " upperB:", boundry.readable[2, ], ")")
@@ -357,11 +341,6 @@ Jaatha.initialSearch <- function(jaatha, sim=200, blocks.per.par=3){
     ##under consideration)
     firstBlocks[[i]]@score <- optimal$score
     
-    #Normalize theta to 0-1 range and ensure that it is inside its parameter range
-    if (extThetaPossible) {
-      optimal$theta <- min(max(Jaatha.normalize01(getThetaRange(jObject@dm),
-                                                  optimal$theta),0),1)
-    }
     firstBlocks[[i]]@MLest <- c(optimal$est, optimal$theta)
     printBestPar(jObject, firstBlocks[[i]])
     
@@ -372,19 +351,18 @@ Jaatha.initialSearch <- function(jaatha, sim=200, blocks.per.par=3){
     .print()
   }
   
-  #if ( extThetaPossible ) jObject@nPar <- jObject@nPar + 1
 
   #bestBlockIndex <- which((function(x) max(x)==x)
   #     (sapply(1:nTotalBlocks,function(x) firstBlocks[[x]]@score)))
   #.print("=> Best Block is:",bestBlockIndex,"with score:",
   #     firstBlocks[[bestBlockIndex]]@score,"with\n estimates:\n")
   #print( round( .deNormalize(jObject,firstBlocks[[bestBlockIndex]]@MLest), 3 ) )
-  jObject.bu@starting.positions <- firstBlocks
-  print(Jaatha.getStartingPoints(jObject.bu, extThetaPossible))
+  jObject@starting.positions <- firstBlocks
+  print(Jaatha.getStartingPoints(jObject))
 
   removeTempFiles()
 
-  return(jObject.bu)
+  return(jObject)
 }
 
 
@@ -491,8 +469,7 @@ Jaatha.refinedSearch <-
   searchBlock <- new("Block", nPar=jObject@nPar, score=-1e11,
                      MLest=jObject@MLest)
 
-  if (jObject@externalTheta) nTotalPar <- jObject@nPar +1
-  else nTotalPar <- jObject@nPar
+  nTotalPar <- jObject@nPar
 
   ## best ten parameters with score are kept for end evaluation
   topTen <- array(0,dim=c(10,(1+nTotalPar)), #dim=(10,likelihood+pars)
@@ -510,7 +487,6 @@ Jaatha.refinedSearch <-
     newBoarder <- .defineBoarders(point=
                                   searchBlock@MLest[1:jObject@nPar],
                                   radius=halfBlockSize)  #0.05 halfBlockSize
-    ## excludes theta in externalTheta    
     #cat("new Boarder around MLest[0-1]:\n ")
     #print(round(newBoarder,3))             
     searchBlock <- new("Block", lowerBound=newBoarder[1,],
@@ -526,7 +502,7 @@ Jaatha.refinedSearch <-
     ## use previous simulation results if the MLest is
     ## within that block and fit glm
     currentBlocks <-  .findReusableBlocks(MLpoint=
-                                          searchBlock@MLest[1:jObject@nPar],  # excludes theta in externalTheta
+                                          searchBlock@MLest[1:jObject@nPar],  
                                           blockList=currentBlocks, weighOld=weight)
     ## call R's garbage collector 
     .emptyGarbage()
@@ -548,7 +524,7 @@ Jaatha.refinedSearch <-
 
     ## likelihood of old newOptimum parameters based on new simulated data              
     oldParamLikeli <-  .calcLikelihoodWithModelfeld(param=
-                                                    searchBlock@MLest[1:jObject@nPar], # excludes theta in externalTheta
+                                                    searchBlock@MLest[1:jObject@nPar], 
                                                     modelCoefficients=glm,
                                                     observedSS=jObject@sumStats, jObject=jObject, 
                                                     bObject=searchBlock)
@@ -558,7 +534,7 @@ Jaatha.refinedSearch <-
 
     ## keep the best 10 parameter combinations with their score
     topTen <- .saveBestTen(currentTopTen=topTen, numSteps=nSteps,
-                           externalTheta=jObject@externalTheta, newOptimum=newOptimum)
+                           newOptimum=newOptimum)
 
     route[nSteps, ] <- c(newOptimum$score, newOptimum$est)
 
@@ -567,11 +543,7 @@ Jaatha.refinedSearch <-
     ## in parNsumstat only the newest simulation results
     ## should be kept, the old ones are kept in currentBlocks
     searchBlock@parNsumstat <- newParNsumstat
-    if (jObject@externalTheta){
-      searchBlock@MLest <- c(newOptimum$est,newOptimum$theta)
-    } else{
-      searchBlock@MLest <- newOptimum$est
-    } 
+    searchBlock@MLest <- newOptimum$est
     searchBlock@score <- newOptimum$score 
 
     currentBlocks[[length(currentBlocks)+1]] <- searchBlock
@@ -615,12 +587,7 @@ Jaatha.refinedSearch <-
   nBest <- min(nSteps, nrow(topTen))
 
   ## inlcude last optimum into top ten
-  if (jObject@externalTheta){
-    topTen[nBest,] <- c(newOptimum$score,newOptimum$est,
-                        newOptimum$theta)    # in range[0..1]
-  } else{
-    topTen[nBest,] <- c(newOptimum$score,newOptimum$est)
-  }
+  topTen[nBest,] <- c(newOptimum$score,newOptimum$est)
   #print(cbind(topTen[1:nBest,1],
   #     .calcAbsParamValue(jObject@dm,topTen[1:nBest,-1]) ))
 
@@ -694,27 +661,17 @@ Jaatha.pickBestStartPoints <- function(blocks, best){
 
 ## Function to save the ten best parameters along the search path with
 ## their likelihoods.
-.saveBestTen <- function (currentTopTen,numSteps,externalTheta,newOptimum){
+.saveBestTen <- function (currentTopTen,numSteps,newOptimum){
   if (numSteps<10){  # the first 9 estimates are kept
-    if (externalTheta){
-      currentTopTen[numSteps,] <- c(newOptimum$score,newOptimum$est,
-          newOptimum$theta)
-    }else{
-      currentTopTen[numSteps,] <- c(newOptimum$score,newOptimum$est)
-    }                  
+    currentTopTen[numSteps,] <- c(newOptimum$score,newOptimum$est)
   } else{  # the minimum score in the array is smaller than the new score -> replace
     minScore <- min(currentTopTen[1:9,1])
     #print(minScore)
     if(minScore < newOptimum$score){
       minIndex <- (1:9) [currentTopTen[,1] == minScore]
       #cat("minIndex:",minIndex,minScore,"\n")
-      if(externalTheta){
-        currentTopTen[minIndex,] <- c(newOptimum$score,
-            newOptimum$est,newOptimum$theta)
-      }else{
-        currentTopTen[minIndex,] <- c(newOptimum$score,
-            newOptimum$est)
-      } 
+      currentTopTen[minIndex,] <- c(newOptimum$score,
+                                    newOptimum$est)
     }#else{}
   }
   return(currentTopTen)
@@ -881,11 +838,7 @@ Jaatha.getMLest <- function(jObject){
   }else{
     est <- Jaatha.getMLest01(object=jObject)  
     #print(est)
-    if (jObject@externalTheta){
-      estLen <- length(est) -1
-    } else{
-      estLen <- length(est)
-    } 
+    estLen <- length(est)
     #cat("printLen",estLen,"\n")
     #cat(length(getparRange(jObject)),"\n")
     #if(length(getparRange(jObject))!=estLen){
@@ -905,40 +858,6 @@ Jaatha.getnPar <- function(object){
 Jaatha.getMLmax <- function(jObject){
   return (jObject@logMLmax)
 }
-
-## Sets the value of the slot parRange and nPar of the Jaatha or block object.
-## if newParNames is specified, parNames will also be set.
-#Jaatha.setparRange <- function(object,newParRanges,newParNames){
-# if (class(newParRanges)!="list"){
-#   stop(cat("Error: newParRanges is not a list! Please change it!\n"))
-# }
-# else if(!missing(newParNames) && (length(newParRanges)!=length(newParNames))){
-#   stop(cat("Error: newParRanges is not of the same length as newParNames! Please change it!\n"))
-# }
-# else {
-#   object@parRange <- newParRanges
-#   object@nPar <- length(newParRanges)
-#   if (!missing(newParNames)){
-#     object@parNames <- newParNames
-#   }else{        
-#     if (object@externalTheta){ 
-#       object@parNames <- c(paste("par",1:object@nPar,sep=""),"theta")
-#     }else{
-#       p <- 
-#       object@parNames <- c(paste("par",1:(object@nPar-1),sep=""),"theta")
-#     }
-#   } 
-#   message("'parNames' is set to *",object@parNames,"*,  'nPar' to *",object@nPar,
-#     "*, and 'parRange' set to:\n")
-#   print(object@parRange)
-#   return (object)
-# }
-#}
-
-## Returns the value of the slot parRange of the Jaatha object
-#Jaatha.getparRange <- function(jObject){
-# return (jObject@parRange)
-#}
 
 ## Sets the value of the slot nSampIni of the Jaatha object
 Jaatha.setnSampIni <- function(jObject, value){
@@ -989,23 +908,6 @@ Jaatha.setfiniteSites <- function(jObject,value){
 ## Returns the value of the slot finiteSites of the Jaatha object
 Jaatha.getfiniteSites <- function(jObject){
   return (jObject@finiteSites)
-}
-
-## Sets the value of the slot externalTheta of the Jaatha object
-Jaatha.setexternalTheta <- function(jObject,value){
-  if (jObject@externalTheta == value){
-    message("'externalTheta' is already ",value)
-  }
-  else{
-    jObject@externalTheta <- value
-    message("'externalTheta' is set to ",value)
-  }
-  return (jObject)
-}
-
-## Returns the value of the slot externalTheta of the Jaatha object
-Jaatha.getexternalTheta <- function(jObject){
-  return (jObject@externalTheta)
 }
 
 ## Returns the value of the slot nTotalSumstat of the Jaatha object
@@ -1152,23 +1054,18 @@ is.jaatha <- function(jObject){
 #' search sorted by score.
 #'
 #' @param jObject The Jaatha options
-#' @param extThetaPossible For internal use only.
 #' @return a matrix with score and parameters of each start point
 #' @export
-Jaatha.getStartingPoints <- function(jObject, extThetaPossible=F){
+Jaatha.getStartingPoints <- function(jObject){
   startPoints <- jObject@starting.positions
-  width <- dm.getNPar(jObject@dm) + 1 + jObject@externalTheta
+  width <- dm.getNPar(jObject@dm) + 1
   mat <- matrix(0,length(startPoints),width)
   col.names <- c("score", dm.getParameters(jObject@dm))
-  if (jObject@externalTheta)
-    col.names <- c(col.names, getThetaName(jObject@dm))
   colnames(mat) <- col.names
 
   for (i in 1:length(startPoints)){
-    if (jObject@externalTheta & !extThetaPossible) theta <- startPoints[[i]]@MLest[width-1]
     mat[i,1] <- round(startPoints[[i]]@score,2)
     mat[i,-1] <- round(.deNormalize(jObject,t(startPoints[[i]]@MLest))[1:(width-1)], 3)
-    if (jObject@externalTheta & !extThetaPossible) mat[i, width] <- round(theta,3)
   }
   perm <- sort.list(mat[,1],decreasing=T) 
   return(mat[perm,])

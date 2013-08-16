@@ -89,11 +89,6 @@ estimate <- function(bObject, jObject, modFeld, ssData, boarder=0.25){
   mitte <- OOO$par    ##the optimal parameters are contained in the vector mitte
   score <- -OOO$value  
 
-  if (jObject@externalTheta){ 
-    theta <- sum(ssData)/sum(exp(modFeld[1:jObject@nTotalSumstat,1:(bObject@nPar+1)]
-                                 %*%c(1,mitte))) * 5 * bObject@nLoci / jObject@nLoci
-  }
-
   #cat("-> best score:",round(score,2),
   #	"par:",round(.calcAbsParamValue(jObject@dm,mitte),3),"\n")
   return(list(est=mitte, score=score, theta=theta))                   
@@ -104,45 +99,20 @@ estimate <- function(bObject, jObject, modFeld, ssData, boarder=0.25){
                                          jObject, bObject){
   ##modelCoefficients: +3 bc intercept, convergence, sumOfSumstat
   score <- 0	
-  if (jObject@externalTheta){ ## theta gets only calculated for the middle 	
-    ## middle point of current block
-    point <- (bObject@upperBound-bObject@lowerBound)/2 + bObject@lowerBound
-    #scale <- 5*bObject@nLoci
-    thetaTotal <- sum(observedSS)/sum(exp(
-                                          modelCoefficients[1:jObject@nTotalSumstat,1:(bObject@nPar+1)] 
-                                          %*%	c(1,point)))   
+  point <- param
+  #scale <- bObject@nLoci/jObject@nLoci
 
-    for (s in 1:jObject@nTotalSumstat) {     
-      ##if glm did not converge, take sum(SS[s]) or a small number like 0.5
-      if (modelCoefficients[s,(bObject@nPar+2)]<0.5) {				  
-        loglambda <- max(0.5,modelCoefficients[s,(bObject@nPar+3)]) +
-        log(thetaTotal) 
-        ## 350 = 10 * 5 *7 = repetitions * no of loci * theta
-        ##cat("theta=",theta,"\n")
-      } else {                        
-        ## log(exp(modelC))=modelC; if scale is needed: - log(bObject@nLoci/jObject@nLoci)
-        loglambda <- (modelCoefficients[s,1:(bObject@nPar+1)]%*%
-                      c(1,param)) + log(thetaTotal) 
-      }
-      score <- score + observedSS[s]*loglambda - exp(loglambda)
+  for (s in 1:jObject@nTotalSumstat) {     
+    ##if glm did not converge, take sum(SS[s]) or a small number like 0.5
+    if (modelCoefficients[s,(bObject@nPar+2)]<0.5) {				  
+      loglambda <- max(0.5,modelCoefficients[s,(bObject@nPar+3)])	 
+      ## 350 = 10 * 5 *7 = repetitions * no of loci * theta
+      ##cat("theta=",theta,"\n")
+    } else {                        
+      ## log(exp(modelC))=modelC; if scale is needed: - log(bObject@nLoci/jObject@nLoci)
+      loglambda <- (modelCoefficients[s,1:(bObject@nPar+1)]%*%c(1,param))
     }
-  } 
-  else {  ##if NOT externalTheta		
-    point <- param
-    #scale <- bObject@nLoci/jObject@nLoci
-
-    for (s in 1:jObject@nTotalSumstat) {     
-      ##if glm did not converge, take sum(SS[s]) or a small number like 0.5
-      if (modelCoefficients[s,(bObject@nPar+2)]<0.5) {				  
-        loglambda <- max(0.5,modelCoefficients[s,(bObject@nPar+3)])	 
-        ## 350 = 10 * 5 *7 = repetitions * no of loci * theta
-        ##cat("theta=",theta,"\n")
-      } else {                        
-        ## log(exp(modelC))=modelC; if scale is needed: - log(bObject@nLoci/jObject@nLoci)
-        loglambda <- (modelCoefficients[s,1:(bObject@nPar+1)]%*%c(1,param))
-      }
-      score <- score + observedSS[s]*loglambda - exp(loglambda)
-    }
+    score <- score + observedSS[s]*loglambda - exp(loglambda)
   }
   ##cat("score:",score,"\n")
   return(score)
@@ -153,16 +123,8 @@ estimate <- function(bObject, jObject, modFeld, ssData, boarder=0.25){
                                              jObject, bObject){
   ##modelCoefficients: +3 bc intercept, convergence, sumOfSumstat
   score <- 0	
-  if (jObject@externalTheta){ ## theta gets only calculated for the middle 	
-    ## middle point of current block
-    point <- (bObject@upperBound-bObject@lowerBound)/2 + bObject@lowerBound
-    #scale <- 5*bObject@nLoci
-
-
-  } else{  ##if NOT externalTheta		
-    point <- param
-    #scale <- bObject@nLoci/jObject@nLoci
-  }
+  point <- param
+  #scale <- bObject@nLoci/jObject@nLoci
   thetaTotal <- sum(observedSS)/sum(exp(
                                         modelCoefficients[1:jObject@nTotalSumstat,1:(bObject@nPar+1)] 
                                         %*%	c(1,point)))   

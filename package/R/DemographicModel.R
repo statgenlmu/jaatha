@@ -16,7 +16,6 @@ setClass("DemographicModel" ,
                         nLoci="numeric",
                         seqLength="numeric",
                         tsTvRatio="numeric",
-                        externalTheta="logical",
                         finiteSites="logical",
                         currentSimProg="SimProgram",
                         options="list")
@@ -45,7 +44,6 @@ setClass("DemographicModel" ,
                                    stringsAsFactors=F )
 
 
-  .Object@externalTheta   <- F
   .Object@finiteSites     <- finiteSites
   .Object@sampleSizes     <- sampleSizes
   .Object@seqLength       <- seqLength
@@ -395,13 +393,6 @@ dm.getParRanges <- function(dm, inklExtTheta=T){
   return(par.ranges)
 }
 
-dm.setExternalTheta <- function(dm){
-  checkType(dm, "dm")
-  dm@externalTheta = T
-  dm <- fixTheta(dm)
-  return(dm)
-}
-
 fixTheta <- function(dm) {
   param <- dm@parameters
   param[nrow(param), "fixed"] <- T
@@ -570,9 +561,8 @@ dm.addMutation <- function(dm, lower.range, upper.range, fixed.value,
                            par.new=T, new.par.name="theta", parameter) {
 
   if ( missing(lower.range) & missing(upper.range) & missing(fixed.value) ){
-    dm@externalTheta <- T
-    upper.range <- 0
-    lower.range <- 0
+    stop("Either a parameter range or a fixed value is required. If you 
+          want to use 'externalTheta', please use Version 2.0.2")
   }
 
   if (par.new) parameter <- new.par.name
