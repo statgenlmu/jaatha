@@ -560,7 +560,8 @@ dm.createCustomModel <- function(par.number, par.names, par.ranges, sim.exe,
 dm.addMutation <- function(dm, lower.range, upper.range, fixed.value,
                            par.new=T, new.par.name="theta", parameter) {
 
-  if ( missing(lower.range) & missing(upper.range) & missing(fixed.value) ){
+  if ( missing(lower.range) & missing(upper.range) & 
+       missing(fixed.value) & missing(parameter) ) {
     stop("Either a parameter range or a fixed value is required. If you 
           want to use 'externalTheta', please use Version 2.0.2")
   }
