@@ -12,32 +12,33 @@
 ## needed to be between 0 and 1!!) and with the demographic
 ## model specified in simulate() with theta=5.  Returns the
 ## random parameters and the corresponding summary statistics. 
-simulateWithinBlock<- function(bObject, jaathaObject) {
+simulateWithinBlock<- function(block, jaatha) {
   #time1<-Sys.time()
   ##values in [0-1]
   ##dim=c(lower /upper Boundry, #parameters)
-  allBoundry <- array(sapply(1:bObject@nPar,
-                             function(p) c(bObject@lowerBound[p],
-                                           bObject@upperBound[p])),
-                      dim=c(2,bObject@nPar))
-  randompar <- aperm(array(runif(bObject@nPar*bObject@nSamp,
+  allBoundry <- array(sapply(1:block@nPar,
+                             function(p) c(block@lowerBound[p],
+                                           block@upperBound[p])),
+                      dim=c(2,block@nPar))
+
+  randompar <- aperm(array(runif(block@nPar*block@nSamp,
                                  min=allBoundry[1,],
                                  max=allBoundry[2,]),
-                           dim=c(bObject@nPar,bObject@nSamp)))
+                           dim=c(block@nPar,block@nSamp)))
 
   #Include corner points into simulation as well
   ##print(allBoundry)
-  nCorners <- 2^bObject@nPar
+  nCorners <- 2^block@nPar
   ##number of corners, corners will also be simulated
   for (c in 1:nCorners){
     ## converts 'c-1' to binary system,
     ##binary system bc corner is either at lower or upper Bound
     ##of parRange for each parameter
     digitalCorner <- .index2blocks(value=c-1, newBase=2,
-                                   expo=bObject@nPar) + 1
+                                   expo=block@nPar) + 1
     ## +1 bc R indices start at 1 (i.e. 1=lower and 2=upper bound)
     #cat("digital:",digitalCorner,"\n")
-    corner <- sapply(1: bObject@nPar,
+    corner <- sapply(1: block@nPar,
                      function(p) allBoundry[digitalCorner[p],p])
     #cat("   c",c," parameters:",corner,"\n")
     randompar <- rbind(randompar,corner,deparse.level = 0)
@@ -46,7 +47,7 @@ simulateWithinBlock<- function(bObject, jaathaObject) {
 
   # Create "packages" of parameters combinations for possible parallelization.
   sim.packages <- createSimulationPackages(randompar,
-                                           jaathaObject@sim.package.size)
+                                           jaatha@sim.package.size)
 
   seeds <- generateSeeds(length(sim.packages)+1)
 
@@ -54,21 +55,20 @@ simulateWithinBlock<- function(bObject, jaathaObject) {
   # Simulate each package, maybe on different cores
   sumStats <- foreach(i = seq(along = sim.packages), .combine='rbind') %dopar% {
     set.seed(seeds[i])
-    sim.pars <- .deNormalize(jaathaObject, 
+    sim.pars <- .deNormalize(jaatha, 
                              sim.packages[[i]])
-    sumStats <- dm.simSumStats(jaathaObject@dm, sim.pars, jaathaObject@sum.stats.func)
+    sumStats <- jaatha@simFunc(jaatha, sim.pars)
     return(sumStats)
   }
 
   set.seed(seeds[length(seeds)])
 
-  # Scale SumStats if we use scaling
-  sumStats <- sumStats * jaathaObject@scaling.factor
-
   # Create combined output
-  paraNsumstat <- cbind(randompar, sumStats) 
+  sim.result <- data.frame(cbind(randompar, sumStats))
+  colnames(sim.result) <- c(jaatha@par.names, paste("SS", 1:ncol(sumStats),
+                                                    sep=""))  
   .log2("Finished simulating for this block")
-  return (paraNsumstat)
+  return(sim.result)
 }
 
 createSimulationPackages <- function(random.par, package.size) {
@@ -128,13 +128,13 @@ Jaatha.deNormalize01 <- function(oldRange, value){
     stop("trying to deNormalize vector of wrong length")
 
   ret <- rep(0,nPar)
-  ranges <- dm.getParRanges(jObject@dm)
+  ranges <- jObject@par.ranges
   for (i in 1:nPar){
     ret[i] <- Jaatha.deNormalize01(ranges[i,],values[i])
   }
 
   #Add names
-  names(ret) <- dm.getParameters(jObject@dm)[1:jObject@nPar]
+  names(ret) <- jObject@par.names 
   #.log(jObject,"Finished .deNormalizeVector. Result:",ret)
   return(ret)
 }

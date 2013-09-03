@@ -68,130 +68,93 @@ NULL
 #' @exportClass Jaatha
 setClass("Jaatha",
   representation=representation(
-      dm="DemographicModel",
-      nPar = "numeric", 
-      logMLmax = "numeric",
-      nTotalSumstat = "numeric",
-      nNonJsfsSumstat = "numeric",
-      popSampleSizes= "numeric", 
-      nLoci = "numeric",
-      MLest="numeric", 
+      # Settings
+      simFunc="function",
+      nPar="numeric",
+      par.names = "character",
+      par.ranges = "matrix",
       seeds="numeric",
-      finiteSites= "logical",
-      parNames = "character",
       sumStats = "numeric",
-      starting.positions = "list",
-      likelihood.table = "matrix",
-      sum.stats.func = "function",
       sim.package.size = "numeric",
       cores = "numeric",
       scaling.factor = "numeric",
-      route = "list",
-      use.shm = "logical"
+      use.shm = "logical",
+      opts = "list",
+
+      # Results
+      logMLmax = "numeric",
+      MLest="numeric", 
+      starting.positions = "list",
+      likelihood.table = "matrix",
+      route = "list"
     ),
 )
 
 ## constructor method for Jaatha object
-.init <- function(.Object, demographicModel=NA, jsfs=NA, folded=F, seed=numeric(),
-                  summary.statistics=NA, cores, sim.package.size, scaling.factor,
-                  use.shm) {
+.init <- function(.Object, sim.func, par.ranges, 
+                  sum.stats, seed, cores, 
+                  sim.package.size, use.shm) {
 
   .log3("Starting initialization")
-  # Set demographic model
-  .Object@dm <- finalizeDM(demographicModel)
   
-  # Model parameters
-  # TODO: remove.
-  .Object@nLoci <- demographicModel@nLoci
-  .Object@popSampleSizes <- demographicModel@sampleSizes
-  .Object@finiteSites <- demographicModel@finiteSites
-  .Object@nPar <- dm.getNPar(.Object@dm)
+  .Object@simFunc <- sim.func
+  .Object@sumStats <- sum.stats
+  .Object@use.shm <- use.shm
+  .Object@opts <- list()
 
-  # Use summary statistics for folded JSFS?
-  if (folded) .Object@sum.stats.func <- Jaatha.defaultFoldedSumStats 
-  else        .Object@sum.stats.func <- Jaatha.defaultSumStats 
+  checkType(par.ranges, c("matrix"))
+  dim(par.ranges)[2] == 2 || stop("par.ranges must have two columns")
+  .Object@par.ranges <- par.ranges
+  .Object@nPar <- dim(par.ranges)[1]
+  
+  if (is.null(rownames(par.ranges))) 
+    rownames(par.ranges) <- as.character(1:.Object@nPar) 
+  .Object@par.names <- rownames(par.ranges)
+  
+  # Parallelization options
+  if (missing(sim.package.size)) sim.package.size <- 10
+  checkType(sim.package.size, c("num","single"))
+  .Object@sim.package.size <- sim.package.size
 
-  # Calculate summary statistics of real data if needed
-  if (any(is.na(summary.statistics)) & any(is.na(jsfs))) 
-    stop("Either summary.statistics or jsfs must be given")
-  if (any(!is.na(summary.statistics)) & any(!is.na(jsfs))) 
-    stop("Only summary.statistics or jsfs can be used, but not both")
-
-  if (!any(is.na(jsfs))) {
-    .log2("JSFS given. Calculating summary statistics")
-    summary.statistics <- .Object@sum.stats.func(jsfs = jsfs)
-  }
-
-  if ( is.matrix(summary.statistics) && dim(summary.statistics)[1] == 1) 
-    summary.statistics <- as.vector(summary.statistics)
-
-  .log2("summary.statistics:",summary.statistics)
-  .Object@sumStats <- summary.statistics
-  .Object@nTotalSumstat <- length(summary.statistics)
+  if (missing(cores)) cores <- 1
+  checkType(cores, c("num","single"))
+  .Object@cores <- cores
 
   .Object@likelihood.table <- matrix()
   .Object@starting.positions <- list()
-
-  .Object@use.shm <- use.shm
 
   # Seeds
   # Jaatha uses three seeds. The first is the "main seed" used to generate the
   # other two seeds if provided, the second is the seed for the initial search
   # and the refined search.
-  if (length(seed) == 0) seed <- generateSeeds(3)
+  if (missing(seed) || length(seed) == 0) seed <- generateSeeds(3)
   else if (length(seed) == 1) {
+    checkType(seed, "num")
     set.seed(seed)
     seed[2:3] <- generateSeeds(2)
   }
   else stop("Malformated argument: seed")
   .Object@seeds <- seed
 
-
-  #--------------------------------------------------------------------------
-  # Parallelization options
-  #--------------------------------------------------------------------------
-  if (missing(sim.package.size)) sim.package.size <- 10
-  checkType(sim.package.size, c("num","single"))
-  .Object@sim.package.size <- sim.package.size
-
-  if (missing(cores)) cores <- 1
-  .Object@cores <- cores
-  
   .log3("Finished initialization")
 
-
-  #--------------------------------------------------------------------------
-  # Scaling options
-  #--------------------------------------------------------------------------
-  if (missing(scaling.factor)) scaling.factor <- 1
-  checkType(scaling.factor, c("num","single"))
-  .Object@dm <- scaleDemographicModel(.Object@dm, scaling.factor)
-  if (.Object@dm@nLoci < 3) 
-    stop("Error: Simulating less then 3 Loci. Use more data or less scaling.")
-  .Object@scaling.factor <- scaling.factor
-  
   return (.Object)
 }
 
-setMethod(f="initialize", signature ="Jaatha",definition=.init)
+setMethod(f="initialize", signature ="Jaatha", definition=.init)
 rm(.init)
-    
-#' Basic initialization of a Jaatha estimation
+
+
+#' Initialization of a Jaatha estimation for population genetics
 #'
 #' This function sets the basic parameters for an analysis with
 #' Jaatha and is the first step for each application of it.
 #'
 #' @param demographic.model The demographic model to use
-#' @param summary.statistics The summary statistics calculated from the real data
-#' @param jsfs Instead of summary.statistics, you can also input the joint site
-#'             fequency spectrum of your data. Jaatha will then automatically
-#'             calulate summary statistics out of it.
+#' @param jsfs Your observed Joint Site Frequency Spectrum (JSFS). Jaatha uses
+#'        the JSFS as summary statistics.   
 #' @param folded If 'TRUE', Jaatha will assume that the JSFS is folded.
 #' @param seed An integer used as seed for both Jaatha and the simulation software
-#' @param log.level An integer from 0 to 3 indicating Jaatha's verbosity. 0 is
-#'              (almost) no output, 1 is normal output, and 2 and 3 are some and heavy debug
-#'              output respectively
-#' @param log.file If specified, the output will be redirected to this file
 #' @param sim.package.size When running Jaatha on multiple cores, a singe core
 #'              will always execute a whole "package" of simulations the reduce
 #'              the inter thread communication overhead. This gives the number
@@ -202,33 +165,52 @@ rm(.init)
 #' @param scaling.factor You can use this option if you have a large dataset. If
 #'              so, Jaatha only simulates only a fraction 1/scaling.factor of the
 #'              dataset and interpolates the missing data.
-#' @param use.shm Logical. Many modern linux distributions have a shared memory ramdisk
-#'              available under /dev/shm. Set this to TRUE to use it for
+#' @param use.shm Logical. Many modern linux distributions have a shared memory
+#'              file system available under /dev/shm. Set this to TRUE to use it for
 #'              temporary files. Usually gives a huge performance boost.
 #' @return A S4-Object of type jaatha containing the settings
+#' @examples
+#' dm <- dm.createThetaTauModel(c(20,25), 100) 
+#' jsfs <- matrix(rpois(21*26, 5), 21, 26)
+#' jaatha <- Jaatha.initialize(dm, jsfs) 
+#' 
 #' @export
-Jaatha.initialize <- function(demographic.model, summary.statistics, jsfs,
-                              folded=FALSE, seed=numeric(), 
-                              log.level=1, log.file="", 
-                              sim.package.size=10,
+Jaatha.initialize <- function(demographic.model, jsfs,
+                              seed, sim.package.size=10,
                               cores=1, scaling.factor=1,
-                              use.shm=FALSE) {
+                              use.shm=FALSE, folded=FALSE) {
 
-  setLogging(log.level, log.file)
+  if (is.list(jsfs)) jsfs <- jsfs[[1]]$jsfs
 
-  if (missing(summary.statistics)) summary.statistics <- NA
-  if (missing(jsfs)) jsfs <- NA
+  checkType(demographic.model, "dm")
+  checkType(jsfs, "num")
+  checkType(folded, c("bool", "single"))
 
-  jaatha <- new("Jaatha",
-                demographicModel=demographic.model,
-                summary.statistics=summary.statistics,
-                jsfs=jsfs,
-                folded=folded,
+  if (!folded) {
+    sum.stats <- summarizeJSFS(jsfs)
+    sim.func <- simulateDemographicModel
+  }
+  else {
+    sum.stats <- summarizeFoldedJSFS(jsfs)
+    sim.func <- simulateDemographicModelFolded
+  }
+
+  if (missing(seed)) seed <- numeric()
+
+  jaatha <- new("Jaatha", sim.func=sim.func, 
+                par.ranges=as.matrix(dm.getParRanges(demographic.model)),  
+                sum.stats=sum.stats,
                 seed=seed,
                 sim.package.size=sim.package.size,
                 cores=cores,
-                scaling.factor=scaling.factor,
                 use.shm=use.shm)
+
+  checkType(scaling.factor, c("num","single"))
+  demographic.model <- scaleDemographicModel(demographic.model, scaling.factor)
+  jaatha@opts[['scaling.factor']] <- scaling.factor
+
+  demographic.model <- finalizeDM(demographic.model)
+  jaatha@opts[['dm']] <- demographic.model
   return(jaatha)
 }
 
@@ -271,366 +253,9 @@ setMethod("show","Jaatha",.show)
 rm(.show)
 
 
-#' Search the parameter space for good starting positions
-#'
-#' This functions devides the parameter space in different parts (blocks).
-#' In each block, simulations for different parameter combinations are run
-#' to roughly predict the combination with the highest score (which is 
-#' equivalent to the highest composite log likelihood).
-#' This points can later be used as starting positions for the secound
-#' estimation phase of Jaatha (\code{\link{Jaatha.refinedSearch}})
-#'
-#' @param jaatha The Jaatha settings (create with \code{\link{Jaatha.initialize}})
-#' @param sim Numeric. The number of simulations that are performed in each bin
-#' @param blocks.per.par Numeric. The number of block per parameter. 
-#'          Will result in Par^blocks.per.par blocks
-#'
-#' @return The jaatha object with starting positions
-#'
-#' @export
-Jaatha.initialSearch <- function(jaatha, sim=200, blocks.per.par=3){
-  jObject <- jaatha
-  nSim <- sim 
-  nBlocksPerPar <- blocks.per.par
-  .log2("Called Jaatha.initialSearch()")
-  .log2("nSim:",nSim,"| nBlocksPerPar:",nBlocksPerPar)
-  set.seed(jObject@seeds[2])
-  .log2("Seeting seed to", jObject@seeds[2])
-  tmp.dir <- getTempDir(jObject@use.shm)
-
-  setParallelization(jObject)
-      
-  firstBlocks <- list() ## list blocks with simulated summary stats
-  ## pRange contains the boarders of all starting blocks
-  ## dim=c(#parameter,#blocks per dimension, start&end)
-  .log2("Calculation block sizes")
-  pRange <- .calcBlockParRanges01(jObject@nPar,nBlocksPerPar)  
-  nTotalBlocks <- (nBlocksPerPar^jObject@nPar)
-  .print("*** Starting position is being determined ***")
-  .print("Creating",nTotalBlocks,"initial blocks ... ")
-  for (i in 1:nTotalBlocks){
-    ## 'b' determines which block-index for each parameter
-    ## is being considered; dim=#nPar
-    b <- .index2blocks(value=i-1, newBase=nBlocksPerPar,expo=jObject@nPar) + 1  ##+1 bc R indices start with 0
-    boundry <- sapply(1:jObject@nPar, function(p) pRange[p,b[p],])  #dim=c(2,jObject@nPar)
-    boundry.readable <- round(.deNormalize(jObject, boundry), 3)
-    .print("*** Block", i, 
-           " (lowerB:", boundry.readable[1, ], 
-            " upperB:", boundry.readable[2, ], ")")
-
-    .log3("Creating block",i)
-    firstBlocks[[i]] <- new("Block", nPar=jObject@nPar,
-            lowerBound= boundry[1,], nLoci=70, weight=1,
-            upperBound= boundry[2,],
-            nSamp=nSim) 
-
-    .log3("Simulating in block",i)
-    firstBlocks[[i]]@parNsumstat <- simulateWithinBlock(bObject=firstBlocks[[i]],
-                    jaathaObject=jObject)       
-    #print(firstBlocks[[i]]@parNsumstat[,1:jObject@nPar])
-
-    .log3("Fitting GLM in block",i)        
-    glm <- glmFitting(bObject=firstBlocks[[i]],
-          nTotalSumstat=jObject@nTotalSumstat,
-          weighting=rep(1, dim(firstBlocks[[i]]@parNsumstat)[1]))
-
-    .log3("Searching optimal values in block",i)
-    optimal <- estimate(bObject=firstBlocks[[i]],jObject=jObject,
-            modFeld=glm, ssData=jObject@sumStats, boarder=0)
-    ##boarder of 0 is important! (otherwise not all param
-    ##under consideration)
-    firstBlocks[[i]]@score <- optimal$score
-    
-    firstBlocks[[i]]@MLest <- c(optimal$est, optimal$theta)
-    printBestPar(jObject, firstBlocks[[i]])
-    
-    ## parNsumstat will not be needed anymore -> can be
-    ## deleted to save memory
-    firstBlocks[[i]]@parNsumstat <- array(0,dim=c(0,0))
-    .emptyGarbage()
-    .print()
-  }
-  
-
-  #bestBlockIndex <- which((function(x) max(x)==x)
-  #     (sapply(1:nTotalBlocks,function(x) firstBlocks[[x]]@score)))
-  #.print("=> Best Block is:",bestBlockIndex,"with score:",
-  #     firstBlocks[[bestBlockIndex]]@score,"with\n estimates:\n")
-  #print( round( .deNormalize(jObject,firstBlocks[[bestBlockIndex]]@MLest), 3 ) )
-  jObject@starting.positions <- firstBlocks
-  print(Jaatha.getStartingPoints(jObject))
-
-  removeTempFiles()
-
-  return(jObject)
-}
 
 
 
-#' Iterative search for the maximum composite likelihood parameters
-#'
-#' This function searches for the parameter combination with the highest
-#' composite likelihood. Therefore it iteratively searches the area (=block) 
-#' around the last found value for a new maximum using simulations and a
-#' generalized linear model.
-#' 
-#' @param jaatha The Jaatha settings (create with \code{\link{Jaatha.initialize}})
-#' @param best.start.pos This is the number of best starting positions
-#'      found in the inital search that we will use. Jaatha runs a seperate 
-#'      search starting from each of this points.
-#' @param sim The number of simulations that are performed in each step
-#' @param sim.final The number of simulations that are performed after the search to estimate the 
-#'        composite log likelihood. If not specified, the value of \code{nSim} will be used
-#' @param epsilon The search stops if the improvement of the score is less than this for 5 times in a row. 
-#' @param half.block.size The size of the new block that is created around a new maximum.
-#' @param weight The weighting factor that will reduce the influence of old block in the estimation procedure
-#' @param max.steps The search will stop at this number of steps if not stopped before (see epsilon)
-#'              
-#' @return An Jaatha object. The found values are written to the slot likelihood.table.
-#'
-#' @export
-Jaatha.refinedSearch <- 
-  function(jaatha, best.start.pos, sim,
-           sim.final, epsilon=.2, half.block.size=.05,
-           weight=.9, max.steps=200) {
-
-  if (missing(sim.final)) sim.final <- sim
-
-  jObject <- jaatha
-  nSim <- sim
-  nFinalSim <- sim.final
-  halfBlockSize <- half.block.size
-  nMaxStep <- max.steps
-
-  # Check parameters
-  if (!is.jaatha(jObject)) stop("jObject is not of type Jaatha")
-  .log2("Called function Jaatha.refinedSearch()")
-
-  checkType(best.start.pos, c("num", "single"))
-  checkType(nSim, c("num", "single"))
-  checkType(nFinalSim, c("num", "single"), F)
-  checkType(epsilon, c("num", "single"))
-  checkType(halfBlockSize, c("num", "single"))
-  checkType(weight, c("num", "single"))
-  checkType(nMaxStep, c("num", "single"))
-
-  
-  if (length(jObject@starting.positions) == 0) 
-    stop("No starting positions available. Did you run a initial search first?")
-  startPoints <- Jaatha.pickBestStartPoints(blocks=jObject@starting.positions,
-                                            best=best.start.pos)
-  
-  jObject@likelihood.table <- matrix(0,0, jObject@nPar + 2)
-
-  # Setup enviroment for the refined search
-  set.seed(jObject@seeds[3])
-  .log2("Seeting seed to", jObject@seeds[3])
-  setParallelization(jObject)
-  tmp.dir <- getTempDir(jObject@use.shm)
-
-  # Start a search for every start point
-  for (s in 1:length(startPoints)){
-    jObject@MLest <- startPoints[[s]]@MLest
-      .print("*** Search with starting Point in Block",s,"of",length(startPoints),"****")
-      jObject <- .refinedSearchSingleBlock(jObject,nSim=nSim,nFinalSim=nFinalSim,
-                epsilon=epsilon,halfBlockSize=halfBlockSize,
-                weight=weight,nMaxStep=nMaxStep,blocknr=s)  
-  }
-
-  .print()
-  .print("Best log-composite-likelihood values are:")
-  print(Jaatha.getLikelihoods(jObject, 5))
-
-  removeTempFiles()
-  return(jObject)
-}
-
-
-## This is called from Jaatha.refinedSearch for each block. The actual search is done here.
-## Parameters are the same as in Jaatha.refinedSearch
-.refinedSearchSingleBlock <- function(jObject, nSim, nFinalSim,
-                                     epsilon, halfBlockSize, weight=weight,
-                                     nMaxStep=nMaxStep, blocknr){
-  ## initialize values 
-  .log3("Initializing")
-  currentBlocks <- list()
-  nSteps <- 1
-  noLchangeCount <- 0
-  lastNoChange <- -1        # has to be !=0 for the start
-  nNewSim <- nSim + 2^jObject@nPar   # no. sim + no. corners      
-
-  # Track route through parameter space
-  route <- matrix(0, nMaxStep, jObject@nPar+1)
-  route[1,  1] <- -1
-  route[1, -1] <- jObject@MLest
-
-  ##since the likelihood estimate for the starting point is
-  ##only a very rough estimate we don't keep that value 
-  searchBlock <- new("Block", nPar=jObject@nPar, score=-1e11,
-                     MLest=jObject@MLest)
-
-  nTotalPar <- jObject@nPar
-
-  ## best ten parameters with score are kept for end evaluation
-  topTen <- array(0,dim=c(10,(1+nTotalPar)), #dim=(10,likelihood+pars)
-                  dimnames= list(1:10, c("score",dm.getParameters(jObject@dm))))     
-
-  ##repeat until likelihood improvement gets smaller than epsilon
-  ## 5 times in a row or more than 200 steps used
-  repeat{
-    .print("-----------------")
-    .print("Step No",nSteps)
-
-    ## define parameter range for new block and simulate
-    ## within that block newBoarder[1,]=lower und [2,]=upper
-    ## Bound values between 0 and 1
-    newBoarder <- .defineBoarders(point=
-                                  searchBlock@MLest[1:jObject@nPar],
-                                  radius=halfBlockSize)  #0.05 halfBlockSize
-    #cat("new Boarder around MLest[0-1]:\n ")
-    #print(round(newBoarder,3))             
-    searchBlock <- new("Block", lowerBound=newBoarder[1,],
-                       upperBound=newBoarder[2,],
-                       nPar=jObject@nPar, nSamp=nSim,
-                       nLoci=70, weight=1,
-                       score=searchBlock@score,
-                       MLest=searchBlock@MLest)
-    newParNsumstat <-  simulateWithinBlock(bObject=searchBlock,
-                                           jaathaObject=jObject)
-    ##print(searchBlock@parNsumstat)
-
-    ## use previous simulation results if the MLest is
-    ## within that block and fit glm
-    currentBlocks <-  .findReusableBlocks(MLpoint=
-                                          searchBlock@MLest[1:jObject@nPar],  
-                                          blockList=currentBlocks, weighOld=weight)
-    ## call R's garbage collector 
-    .emptyGarbage()
-    ## only for glmFitting step all simulation results are stored in searchBlock
-    searchBlock@parNsumstat <-
-      .concatWithPrevSumstats(newParNss=newParNsumstat,
-                              blockList=currentBlocks)
-
-    currentWeights <- rep(1,nNewSim)
-    if (length(currentBlocks)!=0){
-      currentWeights <- c(currentWeights, 
-                          array(sapply(1:length(currentBlocks),
-                                       function(x) rep(currentBlocks[[x]]@weight,nNewSim))))
-    }
-
-    glm <- glmFitting(bObject=searchBlock,
-                      nTotalSumstat=jObject@nTotalSumstat,
-                      weighting=currentWeights)
-
-    ## likelihood of old newOptimum parameters based on new simulated data              
-    oldParamLikeli <-  .calcLikelihoodWithModelfeld(param=
-                                                    searchBlock@MLest[1:jObject@nPar], 
-                                                    modelCoefficients=glm,
-                                                    observedSS=jObject@sumStats, jObject=jObject, 
-                                                    bObject=searchBlock)
-
-    newOptimum <- estimate(bObject=searchBlock,jObject=jObject,
-                           modFeld=glm,ssData=jObject@sumStats,boarder=0)
-
-    ## keep the best 10 parameter combinations with their score
-    topTen <- .saveBestTen(currentTopTen=topTen, numSteps=nSteps,
-                           newOptimum=newOptimum)
-
-    route[nSteps, ] <- c(newOptimum$score, newOptimum$est)
-
-    ## prepare for next round
-    nSteps <- nSteps+1        
-    ## in parNsumstat only the newest simulation results
-    ## should be kept, the old ones are kept in currentBlocks
-    searchBlock@parNsumstat <- newParNsumstat
-    searchBlock@MLest <- newOptimum$est
-    searchBlock@score <- newOptimum$score 
-
-    currentBlocks[[length(currentBlocks)+1]] <- searchBlock
-
-    # Output current best position
-    printBestPar(jObject, searchBlock)
-
-    ## stop criterion 1: likelihood difference less than epsilon 
-    if ( (abs(newOptimum$score - oldParamLikeli) < epsilon)){
-      #if (lastNoChange==(nSteps-1)){  # if last noChange happend just last step
-        noLchangeCount <- noLchangeCount +1           
-        .print("No sigificant score changes in the last",noLchangeCount,"Step(s)")
-        ## if there has been no change 5 times in a row, stop 
-        if (noLchangeCount>4){
-          .print()
-          .print("*** Finished search ***")
-          .print("Score has not change much in the last 5 steps.")
-          .print("Seems we have converged.")
-          .print()
-          break
-        } else{}
-      } else{ # if first noChange, save old estimates
-        noLchangeCount <- 0
-      }
-    #  lastNoChange <- nSteps
-    #} else{}
-
-    ## stop criterion 2: more than nMaxStep search steps
-    if (nSteps>(nMaxStep-1)) {
-      .print()
-      .print("Maximimum number of search steps",nMaxStep,"reached.\n")
-      .print()
-      break
-    }
-
-    .print()
-
-  } #repeat loop end
-
-  ##last best estimates will be taken into topTen
-  nBest <- min(nSteps, nrow(topTen))
-
-  ## inlcude last optimum into top ten
-  topTen[nBest,] <- c(newOptimum$score,newOptimum$est)
-  #print(cbind(topTen[1:nBest,1],
-  #     .calcAbsParamValue(jObject@dm,topTen[1:nBest,-1]) ))
-
-  route <- route[route[,1] != 0,]
-  route[,-1] <- .deNormalize(jObject, route[ ,-1,drop=F])
-  jObject@route[[length(jObject@route) + 1]] <- route
-
-  likelihoods <- c()
-  .log3("Starting final sim.")
-  .print("Calulating log-composite-likelihoods for best estimates:")
-  for (t in 1:nBest){
-    topPar <- topTen[t,2:(nTotalPar+1)]    # in original parameter range
-    .print("* Parameter combination",t,"of",nBest)
-    likelihoods[t] <- Jaatha.calcLikelihood(jObject, 
-                                            nSimulations=nFinalSim, 
-                                            par=topPar)
-    #cat(t,likelihoods[t],"\n")
-  }
-  .log3("Finished final sim.")
-
-  likelihood.table <- cbind(log.cl=likelihoods,block=blocknr,topTen[topTen[,1]!=0,-1])
-  jObject@likelihood.table <- rbind(jObject@likelihood.table,likelihood.table)
-
-  ## in case 2 have the same likelihood only first is given back
-  best <- (1:nBest) [max(likelihoods)==likelihoods][1] 
-  #cat("best",best,"\n")
-  jObject@logMLmax <- likelihoods[best]
-  #cat("log",jObject@logMLmax,"\n")
-  jObject@MLest <- topTen[best,-1]   # in [0..1] range
-  #cat("ML",jObject@MLest,"\n")
-  .emptyGarbage()
-  #if (jObject@finiteSites){ 
-  # system(paste("rm treeFile simOutput"))
-  #} else{ 
-  # system(paste("rm simOutput"))       
-  #}
-  ## print results in original parameter ranges into file
-  #cat(Jaatha.getMLmax(jObject), round(Jaatha.getMLest(jObject),6),
-  #   "\n", file=jObject@resultFile, append=T, sep="\t")
-
-  .print()
-  return (jObject)
-}
 
 
 Jaatha.pickBestStartPoints <- function(blocks, best){
@@ -1058,9 +683,9 @@ is.jaatha <- function(jObject){
 #' @export
 Jaatha.getStartingPoints <- function(jObject){
   startPoints <- jObject@starting.positions
-  width <- dm.getNPar(jObject@dm) + 1
+  width <- jObject@nPar + 1
   mat <- matrix(0,length(startPoints),width)
-  col.names <- c("score", dm.getParameters(jObject@dm))
+  col.names <- c("score", jObject@par.names)
   colnames(mat) <- col.names
 
   for (i in 1:length(startPoints)){

@@ -17,7 +17,7 @@ slots <- representation(nPar="numeric",         # number of parameters = number 
 
                         # likelihood within block 
                         MLest="numeric",        # ML estimations of parameters [in range: 0-1] 
-                        parNsumstat ="array",   #contains the random parameters in this block and corresponding summary statistics 
+                        parNsumstat ="data.frame",   #contains the random parameters in this block and corresponding summary statistics 
                         weight="numeric")       #each simulation within this block will be weighted with this value in glmFitting
 
 

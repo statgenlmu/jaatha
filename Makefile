@@ -30,7 +30,7 @@ test: doc
 	R CMD INSTALL package
 	cd unit_tests; ./doRUnit.R
 
-quick-test:
+quick-test: doc
 	# Runs the unit tests without time-consuming whole algorithms tests
 	R CMD INSTALL package
 	cd unit_tests; ./doRUnit.R quick

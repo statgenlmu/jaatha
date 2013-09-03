@@ -17,15 +17,15 @@ test.dm.simSumStats <- function(){
 	checkException( dm.simSumStats(dm.thetaTau, 1:3 ) )
 	checkException( dm.simSumStats(dm.thetaTau, c(2,50)) )
 	set.seed(1)
-	sim <- dm.simSumStats(dm.thetaTau, c(2,10), Jaatha.defaultSumStats )
-	if (rerecord.results) samples[["simSumStats"]] <- sim
-	checkEquals( sim , samples[["simSumStats"]] )
+	sim <- dm.simSumStats(dm.thetaTau, c(2,10))[[1]]$jsfs
+	if (rerecord.results) samples[["jsfs"]] <- sim
+	checkEquals( sim , samples[["jsfs"]] )
     if (rerecord.results) save(samples,file="samples.save")
 }
 
 test.initialSearch.normal <- function(){
     load("samples.save")
-	jaatha <- Jaatha.initialize(dm.thetaTau, samples[["simSumStats"]], seed=1,
+	jaatha <- Jaatha.initialize(dm.thetaTau, samples[["jsfs"]], seed=1,
                                 sim.package.size=3)
 	jaatha <- Jaatha.initialSearch(jaatha, sim=10, blocks.per.par=2)
 	pStartPoints <- Jaatha.getStartingPoints(jaatha)
@@ -35,7 +35,7 @@ test.initialSearch.normal <- function(){
     if (rerecord.results) save(samples, file="samples.save")
 
     # Test reproducibility
-	jaatha2 <- Jaatha.initialize(dm.thetaTau, samples[["simSumStats"]], seed=1,
+	jaatha2 <- Jaatha.initialize(dm.thetaTau, samples[["jsfs"]], seed=1,
                                 sim.package.size=3)
 	jaatha2 <- Jaatha.initialSearch(jaatha2, sim=10, blocks.per.par=2)
 	pStartPoints2 <- Jaatha.getStartingPoints(jaatha2)
@@ -48,7 +48,7 @@ test.initialSearch.seqgen <- function(){
     dm.sq <- dm.setMutationModel(dm.thetaTau, "HKY", c(.2, .2, .2, .4), 0.5)
     jsfs <- dm.simSumStats(dm.sq, c(1.5, 7))
 	jaatha <- Jaatha.initialize(dm.sq, jsfs=jsfs, seed=18)
-	jaatha <- Jaatha.initialSearch(jaatha,sim=10,blocks.per.par=2)
+	jaatha <- Jaatha.initialSearch(jaatha, sim=10,blocks.per.par=2)
 	pStartPoints <- Jaatha.getStartingPoints(jaatha)
 	if (rerecord.results) samples[["initialSearch.seqgen"]] <- pStartPoints
 	checkEquals(pStartPoints, samples[["initialSearch.seqgen"]])
@@ -69,7 +69,7 @@ test.initialSearch.folded <- function() {
 
 test.initialSearch.parallel <- function() {
     load("samples.save")
-	jaatha <- Jaatha.initialize(dm.thetaTau, samples[["simSumStats"]], seed=100,
+	jaatha <- Jaatha.initialize(dm.thetaTau, samples[["jsfs"]], seed=100,
                                 sim.package.size=2)
 	jaatha <- Jaatha.initialSearch(jaatha, sim=10, blocks.per.par=2)
 	pStartPoints <- Jaatha.getStartingPoints(jaatha)

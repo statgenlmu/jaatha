@@ -1177,8 +1177,6 @@ dm.addOutgroup <- function(dm, separation.time) {
 #' @param dm          The demographic model according to which the simulations should be done
 #' @param parameters  A vector of parameters which should be used for the simulations. 
 #'            If a matrix is given, a simulation for each row of the matrix will be performed
-#' @param sumStatFunc The function to calculate summary statistics of the JSFS. It must return
-#'            a numeric vector.
 #' @return        A matrix where each row is the vector of summary statistics for 
 #'            the parameters in the same row of the "parameter" matrix
 #' @export
@@ -1188,54 +1186,21 @@ dm.addOutgroup <- function(dm, separation.time) {
 #' dm <- dm.addSpeciationEvent(dm,0.01,5)
 #' dm <- dm.addMutation(dm,1,20)
 #' dm.simSumStats(dm,c(1,10))
-dm.simSumStats <- function(dm, parameters, sumStatFunc){
+dm.simSumStats <- function(dm, parameters){
   .log3("Called dm.simSumStats()")
 
-  jsfs <- F
-  if (!is.matrix(parameters)) parameters <- matrix(parameters,1)
-  if (missing(sumStatFunc)) {
-    if (nrow(parameters) > 1) stop("Only one parameter combination is allowed
-                                   when not providing sumStatFunc.")
-    jsfs <- T
-    sumStatFunc  <- function(dm, jsfs){ return(as.vector(jsfs)) }
-  }
-
   checkType(dm, "dm")
+  if (!is.matrix(parameters)) parameters <- matrix(parameters, 1)
   if (dim(parameters)[2] != dm.getNPar(dm)) stop("Wrong number of parameters")
   if ( !.checkParInRange(dm,parameters) ) stop("Parameters out of range")
 
-  simProg   <- dm@currentSimProg
+  sumStats <- apply(parameters, 1, dm.simulate, dm=dm)
 
-  # nSumStats <- length(sumStatFunc(dm,jsfs=matrix(0,dm@sampleSizes[1],dm@sampleSizes[2])))
-  # nSims	  <- max(dim(parameters)[1],1)
-  # sumStats  <- matrix(0,nSims,nSumStats)
-
-  #.log2("Simulating",nSumStats,"summary statistics for",nSims,"parameter combination(s)")
-
-  if (!simProg@useSingleSimFunc) {
-    # Use the simFunc to simulate all parameter combinations at once.
-    # Still needs some thought about how to combine with the
-    # defaultSumStatFunc.
-    sumStats <- 0
-
-  } else {
-    # Use the singleSimFunc to simulate each of the parameter combinations
-    sumStats <- 
-      apply(parameters, 1,
-            function(parameter.combination){
-              .log3("Simulating for pars:", parameter.combination)
-              sim.out <- simProg@singleSimFunc(dm, parameter.combination)
-              sumStats <- sumStatFunc(dm, sim.out)
-              .log3("SumStats:", sumStats)
-              return(sumStats)
-            })
-
-    
-    sumStats <- t(sumStats)
-    if (jsfs) sumStats <- matrix(sumStats, dm@sampleSizes[1]+1,
-                                 dm@sampleSizes[2]+1)
-  }
-  
   .log3("Finished dm.simSumStats()")
   return(sumStats)
+}
+
+dm.simulate <- function(dm, pars) {
+  jsfs <- dm@currentSimProg@singleSimFunc(dm, pars)
+  return(list(pars=pars, jsfs=jsfs))
 }
