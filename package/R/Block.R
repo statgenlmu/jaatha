@@ -3,7 +3,7 @@
 # Class for repesenting a rectangular area of the parameter space
 # 
 # Authors:  Lisha Naduvilezhath & Paul R. Staab
-# Date:     2012-10-05
+# Date:     2013-09-04
 # Licence:  GPLv3 or later
 # --------------------------------------------------------------
 

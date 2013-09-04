@@ -2,7 +2,7 @@
 # sim_prog_ms.R
 # Adaptor to calling ms from a demographic model.
 # 
-# Authors:  Lisha Naduvilezhath & Paul R. Staab
+# Authors:  Lisha Mathew & Paul R. Staab
 # Date:     2012-10-05
 # Licence:  GPLv3 or later
 # --------------------------------------------------------------

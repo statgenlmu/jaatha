@@ -2,8 +2,8 @@
 # simulate_dm.R
 # Default simulation function for demographic models 
 # 
-# Authors:  Lisha Naduvilezhath & Paul R. Staab
-# Date:     2013-09-02
+# Authors:  Paul R. Staab
+# Date:     2013-09-04
 # Licence:  GPLv3 or later
 # --------------------------------------------------------------
 

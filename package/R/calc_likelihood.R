@@ -3,7 +3,7 @@
 # A function to calculate the likelihood of specific parsameter 
 # combinations using simulations. 
 # 
-# Authors:  Lisha Naduvilezhath & Paul R. Staab
+# Authors:  Paul R. Staab & Lisha Mathew 
 # Date:     2013-09-04
 # Licence:  GPLv3 or later
 # --------------------------------------------------------------

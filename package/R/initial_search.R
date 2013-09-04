@@ -1,3 +1,13 @@
+# --------------------------------------------------------------
+# initial_search.R 
+# Contains the initialSearch() and helper functions used nowhere else 
+# 
+# Authors:  Lisha Naduvilezhath & Paul R. Staab
+# Date:     2013-09-04
+# Licence:  GPLv3 or later
+# --------------------------------------------------------------
+
+
 #' Search the parameter space for good starting positions
 #'
 #' This functions devides the parameter space in different parts (blocks).

@@ -3,9 +3,9 @@
 # Class for representing a model of the evolutionary development
 # of two different species.
 # 
-# Authors:  Paul R. Staab & Lisha Naduvilezhath
+# Authors:  Paul R. Staab & Lisha Mathew 
 # Email:    staab ( at ) bio.lmu.de
-# Date:     2012-10-05
+# Date:     2013-09-04
 # Licence:  GPLv3 or later
 #--------------------------------------------------------------
 
@@ -1203,4 +1203,9 @@ dm.simSumStats <- function(dm, parameters){
 dm.simulate <- function(dm, pars) {
   jsfs <- dm@currentSimProg@singleSimFunc(dm, pars)
   return(list(pars=pars, jsfs=jsfs))
+}
+
+scaleDemographicModel <- function(dm, scaling.factor) {
+  dm@nLoci <- round(dm@nLoci / scaling.factor)
+  return(dm)
 }

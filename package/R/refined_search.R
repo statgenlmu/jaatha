@@ -1,3 +1,13 @@
+# --------------------------------------------------------------
+# refined_search.R
+# This file contains refinedSearch() and helper functions used only 
+# by it.
+# 
+# Authors:  Lisha Mathew & Paul R. Staab
+# Date:     2013-09-04
+# Licence:  GPLv3 or later
+# --------------------------------------------------------------
+
 #' Iterative search for the maximum composite likelihood parameters
 #'
 #' This function searches for the parameter combination with the highest
@@ -225,7 +235,7 @@ refinedSearchSingleBlock <- function(jaatha, sim, sim.final,
   .emptyGarbage()
 
   .print()
-  return (jaatha)
+  return(jaatha)
 }
 
 
@@ -292,4 +302,45 @@ findReusableBlocks <- function(MLpoint,blockList,weighOld,verbose=FALSE){
     cat("Number of blocks kept:",nKeep," / Number of blocks deleted:",nDel,"\n")
   }
   return(reusableBlocks)
+}
+
+
+## Function to save the ten best parameters along the search path with
+## their likelihoods.
+.saveBestTen <- function (currentTopTen,numSteps,newOptimum){
+  if (numSteps<10){  # the first 9 estimates are kept
+    currentTopTen[numSteps,] <- c(newOptimum$score,newOptimum$est)
+  } else{  # the minimum score in the array is smaller than the new score -> replace
+    minScore <- min(currentTopTen[1:9,1])
+    #print(minScore)
+    if(minScore < newOptimum$score){
+      minIndex <- (1:9) [currentTopTen[,1] == minScore]
+      #cat("minIndex:",minIndex,minScore,"\n")
+      currentTopTen[minIndex,] <- c(newOptimum$score,
+                                    newOptimum$est)
+    }#else{}
+  }
+  return(currentTopTen)
+}
+
+
+## Function to concatenate all parNsumstat-fields of the blocks in
+## 'blockList' with newParNsumstat, so they can later be used for the
+## glm-fitting.
+.concatWithPrevSumstats <- function(newParNss,blockList){
+  data <- newParNss
+  if(length(blockList)!=0){
+    for (b in seq(along = blockList)){
+      data <- rbind(data,blockList[[b]]@parNsumstat)
+    }
+  } else{}   
+  return (data)
+}
+
+
+## Calls the garbage collector of R. Has to be called explicitly to make memory free
+## twice because otherwise .Last.value allocates some memory.
+.emptyGarbage <- function(){
+  gc()   #verbose=TRUE
+  gc()
 }

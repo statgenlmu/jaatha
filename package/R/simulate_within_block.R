@@ -1,9 +1,9 @@
 # --------------------------------------------------------------
-# Simulator.R
-# Functions related to the simulation of DNA sequence data.
+# simulate_within_block.R
+# Jaatha main simulation function and related helpers 
 # 
-# Authors:  Lisha Naduvilezhath & Paul R. Staab
-# Date:     2012-10-05
+# Authors:  Paul R. Staab & Lisha Mathew
+# Date:     2013-09-04
 # Licence:  GPLv3 or later
 # --------------------------------------------------------------
 
@@ -63,53 +63,3 @@ createSimulationPackages <- function(random.par, package.size) {
   return(sim.packages)  
 }
 
-##Function to map 'value' in oldRange to values between 0 and
-##1. Returned will be a value between 0 and 1.
-Jaatha.normalize01 <- function(oldRange, value){
-  oldRange <- log(oldRange)
-  value <- log(value)
-  return ((value-min(oldRange))/(max(oldRange)-min(oldRange)))
-}
-
-
-##Function to map value between 0 and 1 to oldRange
-## Returns single value (in oldRange).
-Jaatha.deNormalize01 <- function(oldRange, value){
-  oldRange <- log(oldRange)    
-  return (exp(value*(max(oldRange)-min(oldRange))+min(oldRange)))
-}
-
-.deNormalize <- function(jObject, values, withoutTheta=F){
-  if (!is.jaatha(jObject)) stop("jObject is no Jaatha object")
-  if (!is.matrix(values)) stop("values is no matrix!") 
-  
-  result <- apply(values, 1, .deNormalizeVector,
-                  jObject=jObject, withoutTheta=withoutTheta)
-  if (!is.matrix(result)) result <- matrix(result,1)
-  result <- t(result)
-  return(result)
-}
-
-.deNormalizeVector <- function(jObject, values, withoutTheta){	
-  #.log(jObject,"Called .deNormalizeVector")
-  .log3("Denormalizing parameters...")
-  .log3("values:",values,"| withoutTheta:",withoutTheta)
-  if (!is.jaatha(jObject)) stop("jObject is no Jaatha object!")
-  if (!is.numeric(values)) stop("trying to deNomalize non-numeric values")
-  if (!is.vector(values)) stop("trying to deNormalize non-vector values")
-  nPar <- jObject@nPar
-  .log3("expecting",nPar,"parmeters")
-  if (length(values) != nPar)
-    stop("trying to deNormalize vector of wrong length")
-
-  ret <- rep(0,nPar)
-  ranges <- jObject@par.ranges
-  for (i in 1:nPar){
-    ret[i] <- Jaatha.deNormalize01(ranges[i,],values[i])
-  }
-
-  #Add names
-  names(ret) <- jObject@par.names 
-  #.log(jObject,"Finished .deNormalizeVector. Result:",ret)
-  return(ret)
-}

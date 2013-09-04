@@ -4,9 +4,9 @@
 # This file contains the default summary statistic functions for jaatha,
 # which take sums over different areas of the jsfs.
 # 
-# Author:   Lisha Naduvilezhath & Paul R. Staab 
+# Author:   Lisha Mathew & Paul R. Staab 
 # Email:    staab (at) bio.lmu.de
-# Date:     2012-09-14
+# Date:     2013-09-04
 # Licence:  GPLv3 or later
 # -------------------------------------------------------------------------
 
@@ -69,7 +69,8 @@ summarizeFoldedJSFS <- function(jsfs) {
       sum(jsfs[4:(n-3),2:3]),
       sum(jsfs[4:(n-3),(m-2):(m-1)]),
       sum(jsfs[4:(n-3),4:(m-3)]),
-      sum(jsfs[4:(n-3),m])              )
+      sum(jsfs[4:(n-3),m])              
+      )
 
   return(sumstats)
 }

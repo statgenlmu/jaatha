@@ -2,9 +2,9 @@
 # helper_functions.R
 # A collection of litte helper functions
 # 
-# Author:   Paul R. Staab & Lisha Naduvilezhath 
+# Author:   Paul R. Staab
 # Email:    staab (at) bio.lmu.de
-# Date:     2012-10-25
+# Date:     2013-09-04
 # Licence:  GPLv3 or later
 # ------------------------------------------------------------
 

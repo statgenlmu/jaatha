@@ -1,10 +1,10 @@
 # ----------------------------------------------------------------------
-# Parallelization.R
-# Functions for parallelizing Jaatha using the 'foreach' mechanism.
+# parallelization.R
+# Functions for parallelizing Jaatha using 'foreach'
 # 
-# Author:   Paul R. Staab & Lisha Naduvilezhath 
+# Author:   Paul R. Staab & Lisha Mathew 
 # Email:    staab (at) bio.lmu.de
-# Date:     2012-08-09
+# Date:     2013-09-04
 # Licence:  GPLv3 or later
 # ----------------------------------------------------------------------
 

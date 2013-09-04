@@ -1,9 +1,10 @@
 # --------------------------------------------------------------
 # Jaatha.R
-# This file contains the main algorithm of Jaatha. 
+# This file contains the Jaatha S4-Class and a few related 
+# helper functions 
 # 
-# Authors:  Lisha Naduvilezhath & Paul R. Staab
-# Date:     2012-10-05
+# Authors:  Lisha Mathew & Paul R. Staab
+# Date:     2013-09-04
 # Licence:  GPLv3 or later
 # --------------------------------------------------------------
 
@@ -284,59 +285,6 @@ Jaatha.pickBestStartPoints <- function(blocks, best){
 }
 
 
-## Function to save the ten best parameters along the search path with
-## their likelihoods.
-.saveBestTen <- function (currentTopTen,numSteps,newOptimum){
-  if (numSteps<10){  # the first 9 estimates are kept
-    currentTopTen[numSteps,] <- c(newOptimum$score,newOptimum$est)
-  } else{  # the minimum score in the array is smaller than the new score -> replace
-    minScore <- min(currentTopTen[1:9,1])
-    #print(minScore)
-    if(minScore < newOptimum$score){
-      minIndex <- (1:9) [currentTopTen[,1] == minScore]
-      #cat("minIndex:",minIndex,minScore,"\n")
-      currentTopTen[minIndex,] <- c(newOptimum$score,
-                                    newOptimum$est)
-    }#else{}
-  }
-  return(currentTopTen)
-}
-
-
-## Function to concatenate all parNsumstat-fields of the blocks in
-## 'blockList' with newParNsumstat, so they can later be used for the
-## glm-fitting.
-.concatWithPrevSumstats <- function(newParNss,blockList){
-  data <- newParNss
-  if(length(blockList)!=0){
-    for (b in seq(along = blockList)){
-      data <- rbind(data,blockList[[b]]@parNsumstat)
-    }
-  } else{}   
-  return (data)
-}
-
-
-
-
-
-
-## Function that divides the parameter range [0-1] by the number of
-## nBlocksPerPar. Returns an array which holds the new parameter
-## boarders [0-1]. These boarders are the same for all parameters but
-## to give the same array output as .calcBlockParRanges for all
-## parameters the boundrys are returned.
-.calcBlockParRanges01 <- function(nPar,nBlocksPerPar){
-  intervalSize <- 1/nBlocksPerPar
-  lowers <- (1:nBlocksPerPar-1)*intervalSize
-  ##dim=c(#blocks per dimension, start&end)
-  pRange <- array(rep(c(lowers,lowers+intervalSize),each=nPar),dim=c(nPar,nBlocksPerPar,2))
-    return (pRange)
-}
-
-
-
-
 ## Function to convert 'value' into a 'newBase'-system.  'expo'
 ## determines the length of the return vector, i.e. how many positions
 ## the result has. Each position has value: ('newBase'^('expo'-1)).
@@ -361,73 +309,11 @@ Jaatha.pickBestStartPoints <- function(blocks, best){
 }
 
 
-## Calls the garbage collector of R. Has to be called explicitly to make memory free
-## twice because otherwise .Last.value allocates some memory.
-.emptyGarbage <- function(){
-  gc()   #verbose=TRUE
-  gc()
-}
-
-## Finds blocks in 'blockList' that are reusable and concatenates
-## their parNsumstat slots. A block will be kept if 'MLpoint' falls
-## into the block. Returns a list with [[1]] new list of blocks and
-## [[2]] concatenated-parNsumstat array.
-.findBlocksNConcatenate <- function(MLpoint,newParNss,blockList){  
-  data <- newParNss
-  reusableBlocks <- list()
-  if (length(blockList)!=0) {
-    rlistLen <- 0
-    for (b in 1:length(blockList)){
-      if(isInBlock(blockList[[b]],MLpoint)){
-        rlistLen <- rlistLen+1
-        reusableBlocks[[rlistLen]] <- blockList[[b]]
-        data <- rbind(data,blockList[[b]]@parNsumstat)
-        cat("Keeping BLOCK",b," (lower:",blockList[[b]]@lowerBound,
-            " upper:",blockList[[b]]@upperBound,")\n")
-      }
-      else{        
-        cat("Deleting BLOCK",b," (lower:",blockList[[b]]@lowerBound,
-            " upper:",blockList[[b]]@upperBound,")\n")
-        #cat(MLpoint,blockList[[b]]@lowerBound,blockList[[b]]@upperBound)
-        #print(isInBlock(blockList[[b]],MLpoint))
-        #cat(blockList[[b]]@lowerBound<=MLpoint,MLpoint<=blockList[[b]]@upperBound)
-      }
-    }
-  }
-  return(list(reusableBlocks,data))
-}
-
-
-## Finds blocks in 'blockList' that are reusable and concatenates
-## their parNsumstat slots. A block will be kept if 'MLpoint' falls
-## into the block. Returns a list with [[1]] new list of blocks and
-## [[2]] concatenated-parNsumstat array.
-.findBlocksNConcatenate2 <- function(MLpoint,newParNss,blockList){  
-  reusableBlocks <- list()
-  data <- newParNss
-  if (length(blockList)!=0){     # if there are blocks to check
-    ## vector of logicals which blocks contain MLest
-    keepers <- sapply(blockList,function(b) isInBlock(b,MLpoint))
-    cat("Keeping which blocks?",keepers,"\n")
-    ## indices of those blocks
-    keeperIndex <- (1:length(blockList))[keepers]
-    #cat("Indices",keeperIndex"\n")
-    if (length(keeperIndex)!=0){ # if there are blocks to keep
-      for (k in 1:length(keeperIndex)) {
-        reusableBlocks[[k]] <- blockList[[keeperIndex[k]]]
-        data <- rbind(data,blockList[[keeperIndex[k]]]@parNsumstat)
-        #cat("Keeping BLOCK",keeperIndex[k]," (lower:",blockList[[keeperIndex[k]]]@lowerBound,
-        #     " upper:",blockList[[keeperIndex[k]]]@upperBound,")\n")
-      }       
-    }
-  }
-  
-  return(list(reusableBlocks,data))
-}
 
 is.jaatha <- function(jObject){
   return(class(jObject)[1] == "Jaatha")
 }
+
 
 #' Print Start points
 #'
@@ -473,13 +359,60 @@ Jaatha.getLikelihoods <- function(jObject, max.entries=NULL) {
   return(lt[1:min(max.entries, nrow(lt)), , drop=F])
 }
 
+
 printBestPar <- function(jObject, block) {
   .print("Best parameters: ", 
            round(.deNormalize(jObject, t(block@MLest)), 3), 
            "| Score:",  block@score)
 }
 
-scaleDemographicModel <- function(dm, scaling.factor) {
-  dm@nLoci <- round(dm@nLoci / scaling.factor)
-  return(dm)
+##Function to map 'value' in oldRange to values between 0 and
+##1. Returned will be a value between 0 and 1.
+Jaatha.normalize01 <- function(oldRange, value){
+  oldRange <- log(oldRange)
+  value <- log(value)
+  return ((value-min(oldRange))/(max(oldRange)-min(oldRange)))
+}
+
+
+##Function to map value between 0 and 1 to oldRange
+## Returns single value (in oldRange).
+Jaatha.deNormalize01 <- function(oldRange, value){
+  oldRange <- log(oldRange)    
+  return (exp(value*(max(oldRange)-min(oldRange))+min(oldRange)))
+}
+
+.deNormalize <- function(jObject, values, withoutTheta=F){
+  if (!is.jaatha(jObject)) stop("jObject is no Jaatha object")
+  if (!is.matrix(values)) stop("values is no matrix!") 
+  
+  result <- apply(values, 1, .deNormalizeVector,
+                  jObject=jObject, withoutTheta=withoutTheta)
+  if (!is.matrix(result)) result <- matrix(result,1)
+  result <- t(result)
+  return(result)
+}
+
+.deNormalizeVector <- function(jObject, values, withoutTheta){	
+  #.log(jObject,"Called .deNormalizeVector")
+  .log3("Denormalizing parameters...")
+  .log3("values:",values,"| withoutTheta:",withoutTheta)
+  if (!is.jaatha(jObject)) stop("jObject is no Jaatha object!")
+  if (!is.numeric(values)) stop("trying to deNomalize non-numeric values")
+  if (!is.vector(values)) stop("trying to deNormalize non-vector values")
+  nPar <- jObject@nPar
+  .log3("expecting",nPar,"parmeters")
+  if (length(values) != nPar)
+    stop("trying to deNormalize vector of wrong length")
+
+  ret <- rep(0,nPar)
+  ranges <- jObject@par.ranges
+  for (i in 1:nPar){
+    ret[i] <- Jaatha.deNormalize01(ranges[i,],values[i])
+  }
+
+  #Add names
+  names(ret) <- jObject@par.names 
+  #.log(jObject,"Finished .deNormalizeVector. Result:",ret)
+  return(ret)
 }

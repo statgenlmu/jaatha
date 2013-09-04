@@ -2,8 +2,8 @@
 # ModelFitting.R
 # Functions for the machine learning part of Jaatha. 
 # 
-# Authors:  Lisha Naduvilezhath & Paul R. Staab
-# Date:     2012-10-05
+# Authors:  Paul R. Staab & Lisha Mathew
+# Date:     2013-09-04
 # Licence:  GPLv3 or later
 # --------------------------------------------------------------
 
@@ -89,6 +89,7 @@ estimate <- function(bObject, jaatha, modFeld, boarder=0.25){
 
   return(list(est=mitte, score=score))                   
 }
+
 
 .calcScore <- function(param, model.coef, jaatha){
   loglambda <- model.coef[ ,1:(jaatha@nPar+1)] %*% c(1, param) 
