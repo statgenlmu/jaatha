@@ -1,7 +1,7 @@
 ### --- Test setup ---
 
-#rerecord.results = TRUE
 rerecord.results = FALSE
+rerecord.results = TRUE
  
 library("RUnit")
 

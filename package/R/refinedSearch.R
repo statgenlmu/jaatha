@@ -219,12 +219,11 @@ Jaatha.refinedSearch <-
 
   likelihoods <- c()
   .log3("Starting final sim.")
-  .print("Calulating log-composite-likelihoods for best estimates:")
+  .print("Calculating log-composite-likelihoods for best estimates:")
   for (t in 1:nBest){
     topPar <- topTen[t,-1]    # in original parameter range
     .print("* Parameter combination",t,"of",nBest)
-    likelihoods[t] <- Jaatha.calcLikelihood(jObject, nFinalSim, topPar)
-    #cat(t,likelihoods[t],"\n")
+    likelihoods[t] <- calcLikelihood(jObject, nFinalSim, topPar)
   }
   .log3("Finished final sim.")
 
