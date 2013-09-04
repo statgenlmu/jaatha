@@ -12,43 +12,18 @@
 ## needed to be between 0 and 1!!) and with the demographic
 ## model specified in simulate() with theta=5.  Returns the
 ## random parameters and the corresponding summary statistics. 
-simulateWithinBlock<- function(block, jaatha) {
-  #time1<-Sys.time()
-  ##values in [0-1]
-  ##dim=c(lower /upper Boundry, #parameters)
-  allBoundry <- array(sapply(1:block@nPar,
-                             function(p) c(block@lowerBound[p],
-                                           block@upperBound[p])),
-                      dim=c(2,block@nPar))
-
-  randompar <- aperm(array(runif(block@nPar*block@nSamp,
-                                 min=allBoundry[1,],
-                                 max=allBoundry[2,]),
-                           dim=c(block@nPar,block@nSamp)))
-
-  #Include corner points into simulation as well
-  ##print(allBoundry)
-  nCorners <- 2^block@nPar
-  ##number of corners, corners will also be simulated
-  for (c in 1:nCorners){
-    ## converts 'c-1' to binary system,
-    ##binary system bc corner is either at lower or upper Bound
-    ##of parRange for each parameter
-    digitalCorner <- .index2blocks(value=c-1, newBase=2,
-                                   expo=block@nPar) + 1
-    ## +1 bc R indices start at 1 (i.e. 1=lower and 2=upper bound)
-    #cat("digital:",digitalCorner,"\n")
-    corner <- sapply(1: block@nPar,
-                     function(p) allBoundry[digitalCorner[p],p])
-    #cat("   c",c," parameters:",corner,"\n")
-    randompar <- rbind(randompar,corner,deparse.level = 0)
-    ##deparse.level=0 makes no labels
-  }
+simulateWithinBlock<- function(sim, block, jaatha) {
+  # Sample random simulation parameters
+  randompar <- aperm(array(runif(jaatha@nPar*sim,
+                                 min=block@border[,1],
+                                 max=block@border[,2]),
+                           dim=c(jaatha@nPar,sim)))
+  
+  # Add the corners of the block to sim parameters
+  randompar <- rbind(randompar, getCorners(block))
 
   # Create "packages" of parameters combinations for possible parallelization.
-  sim.packages <- createSimulationPackages(randompar,
-                                           jaatha@sim.package.size)
-
+  sim.packages <- createSimulationPackages(randompar, jaatha@sim.package.size)
   seeds <- generateSeeds(length(sim.packages)+1)
 
   i <- NULL # To make R CMD check stop complaining

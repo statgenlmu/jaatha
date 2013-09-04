@@ -11,9 +11,9 @@
 ## Funtion to calculate the likelihood based on simulations with the
 ## given parameters.  Order of parameters should be the same as needed
 ## for the simulate-function (in Simulator.R).
-calcLikelihood <- function(jaatha, nSimulations, pars){
+calcLikelihood <- function(jaatha, sim, pars){
   .log2("Called Jaatha.calcLikelihood()")
-  pars <- matrix(rep(pars, each=nSimulations), nrow=nSimulations)
+  pars <- matrix(rep(pars, each=sim), nrow=sim)
 
   sim.packages <- createSimulationPackages(pars, jaatha@sim.package.size)
   seeds <- generateSeeds(length(sim.packages)+1)
@@ -33,13 +33,27 @@ calcLikelihood <- function(jaatha, nSimulations, pars){
 
   .log2("Calculating Likelihood...")
   simSS[simSS==0] <- 0.5
-  logL <- jaatha@sumStats * log(simSS) - simSS - .logfac(jaatha@sumStats)
+  logL <- sum(jaatha@sumStats * log(simSS) - simSS - calcLogFactorial(jaatha@sumStats))
   .log2("Finished Jaatha.calcLikelihood(). Return:",logL)
   return(logL)
 }
 
 
-## Returns the logarithm of the factorial of k. Recursively implemented.
-.logfac <- function(k) {
-  return( log(gamma( k+1 )) )
+calcLogFactorial <- function(k) {
+  if (!isJaathaVariable("logfacs")) setJaathaVariable("logfacs", c(0)) 
+  logfacs <- getJaathaVariable("logfacs")
+
+  maxk <- max(k)
+  if (maxk > length(logfacs)) {
+    l <- length(logfacs) + 1
+    logfacs[l:maxk] <- 0
+    for (i in l:maxk) {
+      logfacs[i] <- logfacs[i-1] + log(i)
+    }
+    setJaathaVariable("logfacs", logfacs)
+  }
+
+  ret <- rep(0, length(k))
+  ret[k!=0] <- logfacs[k[k!=0]] 
+  return(ret)
 }

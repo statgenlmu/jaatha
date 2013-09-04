@@ -61,8 +61,8 @@ glmFitting <- function(sim.result, jaatha, weighting=NULL){
 ## around the boundaries of the blocks should not be used for the
 ## optimization procedure. 
 estimate <- function(bObject, jaatha, modFeld, boarder=0.25){
-  dimSize <- bObject@upperBound-bObject@lowerBound
-  mitte <- dimSize/2 + bObject@lowerBound
+  dimSize <- bObject@border[,2] - bObject@border[,1]
+  mitte <- dimSize/2 + bObject@border[,1]
 
   # function for optimization  
   optfunk <- function(par) {                                 
@@ -76,9 +76,9 @@ estimate <- function(bObject, jaatha, modFeld, boarder=0.25){
   puffer <- boarder*dimSize   
   ##calculate limits for the optimization procedure
   untere <- sapply(1:jaatha@nPar,
-                   function(p) min(bObject@lowerBound[p] + puffer,1))
+                   function(p) min(bObject@border[p,1] + puffer,1))
   obere <-  sapply(1:jaatha@nPar,
-                   function(p) max(bObject@upperBound[p] - puffer,0))
+                   function(p) max(bObject@border[p,2] - puffer,0))
 
   ##describes 'boarder'% of values that will be excluded
   ##on either side of the block in optimization

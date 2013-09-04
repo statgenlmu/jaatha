@@ -24,46 +24,27 @@ Jaatha.initialSearch <- function(jaatha, sim=200, blocks.per.par=3){
 
   setParallelization(jaatha)
 
-  firstBlocks <- list() ## list blocks with simulated summary stats
-  ## pRange contains the boarders of all starting blocks
-  ## dim=c(#parameter,#blocks per dimension, start&end)
+  .print("*** Determining Starting positions ***")
+  .print("Creating initial blocks ... ")
+
+  firstBlocks <- createInitialBlocks(jaatha, blocks.per.par)
 
   .log2("Calculating block sizes")
-  pRange <- .calcBlockParRanges01(jaatha@nPar,blocks.per.par)  
-  nTotalBlocks <- (blocks.per.par^jaatha@nPar)
+  for (i in seq(along=firstBlocks)){
+    .print("*** Block", i, ":", printBorder(firstBlocks[[i]], jaatha))
 
-  .print("*** Determining Starting positions ***")
-  .print("Creating", nTotalBlocks, "initial blocks ... ")
-  for (i in 1:nTotalBlocks){
-    ## 'b' determines which block-index for each parameter
-    ## is being considered; dim=#nPar
-    b <- .index2blocks(value=i-1, newBase=blocks.per.par, expo=jaatha@nPar) + 1  
-    ##+1 bc R indices start with 0
+    .log3("Simulating in block", i)
+    parNsumstat <- simulateWithinBlock(sim, firstBlocks[[i]], jaatha)       
 
-    boundry <- sapply(1:jaatha@nPar, function(p) pRange[p,b[p],])  #dim=c(2,jaatha@nPar)
-    boundry.readable <- round(.deNormalize(jaatha, boundry), 3)
-    .print("*** Block", i, 
-           " (lowerB:", boundry.readable[1, ], 
-           " upperB:", boundry.readable[2, ], ")")
-
-    .log3("Creating block",i)
-    firstBlocks[[i]] <- new("Block", nPar=jaatha@nPar,
-                            lowerBound= boundry[1,], nLoci=70, weight=1,
-                            upperBound= boundry[2,],
-                            nSamp=sim) 
-
-    .log3("Simulating in block",i)
-    parNsumstat <- simulateWithinBlock(firstBlocks[[i]], jaatha)       
-
-    .log3("Fitting GLM in block",i)        
+    .log3("Fitting GLM in block", i)        
     glm <- glmFitting(parNsumstat, jaatha)
 
     .log3("Searching optimal values in block",i)
     optimal <- estimate(bObject=firstBlocks[[i]], jaatha,
                         modFeld=glm, boarder=0)
-
     ##boarder of 0 is important! (otherwise not all param
     ##under consideration)
+    
     firstBlocks[[i]]@score <- optimal$score
 
     firstBlocks[[i]]@MLest <- c(optimal$est, optimal$theta)
@@ -72,16 +53,21 @@ Jaatha.initialSearch <- function(jaatha, sim=200, blocks.per.par=3){
     .print()
   }
 
-
-  #bestBlockIndex <- which((function(x) max(x)==x)
-  #     (sapply(1:nTotalBlocks,function(x) firstBlocks[[x]]@score)))
-  #.print("=> Best Block is:",bestBlockIndex,"with score:",
-  #     firstBlocks[[bestBlockIndex]]@score,"with\n estimates:\n")
-  #print( round( .deNormalize(jObject,firstBlocks[[bestBlockIndex]]@MLest), 3 ) )
   jaatha@starting.positions <- firstBlocks
   print(Jaatha.getStartingPoints(jaatha))
 
   removeTempFiles()
 
   return(jaatha)
+}
+
+createInitialBlocks <- function(jaatha, blocks.per.par) {
+  basic.block <- matrix(c(0, 1/blocks.per.par), jaatha@nPar, 2, byrow=T) 
+  rownames(basic.block) <- jaatha@par.names
+  colnames(basic.block) <- c("lower", "upper")
+  getIthBlock <- function(i) {
+    b <- (.index2blocks(value=i-1, newBase=blocks.per.par, expo=jaatha@nPar)) / blocks.per.par  
+    return(new("Block", border=(basic.block + b)))
+  }
+  return(lapply(1:blocks.per.par^jaatha@nPar, getIthBlock)) 
 }

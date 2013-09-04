@@ -8,12 +8,8 @@
 # --------------------------------------------------------------
 
 
-slots <- representation(nPar="numeric",         # number of parameters = number of block dimensions
-                        nSamp="numeric",        # how many samples to take
-                        nLoci="numeric",        #number of loci to use for each sampling point
-                        lowerBound="numeric",   # vector of lower bounds [in range: 0-1] 
-                        upperBound="numeric",   # vector of upper bounds [in range: 0-1] 
-                        score="numeric",        # log of the maximum (composite)
+slots <- representation(border="matrix", #[in range: 0-1] 
+                        score="numeric", # log of the maximum (composite)
 
                         # likelihood within block 
                         MLest="numeric",        # ML estimations of parameters [in range: 0-1] 
@@ -27,11 +23,7 @@ setClass("Block" , representation=slots)
 ## Shows the content of the slots of the Block object.
 showBlock <- function(object) {
   cat("*** Object of class BLOCK ***\n")           
-  cat(" nPar =",object@nPar,"\n")            
-  cat(" lowerBound =",object@lowerBound,"\n")           
-  cat(" upperBound =",object@upperBound,"\n")
-  cat(" nSamp =",object@nSamp,"\n")             
-  cat(" nLoci =",object@nLoci,"\n")             
+  print(object@border)
   cat(" weight =",object@weight,"\n")                      
   cat(" dimensions of parNsumstat =",
       dim(object@parNsumstat)," ")
@@ -51,15 +43,31 @@ setMethod("show", "Block", showBlock)
 rm(showBlock)
 
 
-##Function to determine if a given point is within the parameter range
-##of the given block. Bounds and point are rounded to the 5th decimal
-##place.
-isInBlock <- function(object,point) {
-  if(length(point)!=object@nPar) {
-    print(list(ERROR="Parameter dimensions unequal to block dimensions! \n")) 
-  } else{}
-  lower <- round(object@lowerBound,5)
-  upper <- round(object@upperBound,5)
-  point <- round(point,5)
-  return(all(c(lower<=point,point<=upper)))
+isInBlock <- function(block, point) {
+  length(point) != nrow(block@border) && stop("Point and block dimensions
+                                              mismatch")
+  return(all(block@border[,1]<=point & point<=block@border[,2]))
+}
+
+getCorners <- function(block) {
+  corners <- foreach(c=1:2^nrow(block@border), .combine=rbind) %do% {
+    ## converts 'c-1' to binary system,
+    ##binary system bc corner is either at lower or upper Bound
+    ##of parRange for each parameter
+    digitalCorner <- .index2blocks(value=c-1, newBase=2,
+                                   expo=nrow(block@border)) + 1
+    ## +1 bc R indices start at 1 (i.e. 1=lower and 2=upper bound)
+    corner <- sapply(1:nrow(block@border), function(p) block@border[p, digitalCorner[p]])
+    return(corner)
+  }
+  rownames(corners) <- NULL
+  colnames(corners) <- rownames(block@border)
+  return(corners)
+}
+
+printBorder <- function(block, jaatha) {
+  lower <- .deNormalizeVector(jaatha, block@border[ ,1])
+  upper <- .deNormalizeVector(jaatha, block@border[ ,2])
+  return(paste0(round(lower,3), "-", round(upper,3),
+                collapse=" x "))
 }
