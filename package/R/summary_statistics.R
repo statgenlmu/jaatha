@@ -10,14 +10,14 @@
 # Licence:  GPLv3 or later
 # -------------------------------------------------------------------------
 
-#' These are the default summary statistics for Jaatha
-#' 
-#' @param jsfs    The joint site frequency spectrum of two populations
-#' @return        A vector with sums over different areas of the JSFS
-#'
-#' @examples
-#' jsfs <- matrix(rpois(26*26,5),26,26)
-#' summarizeJSFS(jsfs = jsfs)
+# These are the default summary statistics for Jaatha
+# 
+# @param jsfs    The joint site frequency spectrum of two populations
+# @return        A vector with sums over different areas of the JSFS
+#
+# @examples
+# jsfs <- matrix(rpois(26*26,5),26,26)
+# summarizeJSFS(jsfs = jsfs)
 summarizeJSFS <- function(jsfs){
   if (is.list(jsfs)) jsfs <- jsfs$jsfs 
   n <- nrow(jsfs)

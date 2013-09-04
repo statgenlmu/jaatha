@@ -218,7 +218,8 @@ know the real parameters:
 real.pars <- c(1,1,10) 
 
 # Simulate a JSFS with this parameters
-jsfs <- dm.simSumStats(dm, real.pars)
+sumStats <- dm.simSumStats(dm, real.pars)
+jsfs <- sumStats[[1]]$jsfs
 
 # Print the upper left part of the JSFS
 jsfs[1:10, 1:10]

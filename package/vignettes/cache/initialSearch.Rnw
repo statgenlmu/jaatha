@@ -3,12 +3,13 @@ library(jaatha)
 load('saved_objects/jaatha.Rsave')
 invisible(library(doMC, quietly=TRUE))
 jaatha@cores <- 2
+jaatha@sim.package.size <- 50
 @
 
 <<initialSearch>>=
 jaatha <- Jaatha.initialSearch(jaatha, 
                                sim=100, 
-                               blocks.per.par=3)
+                               blocks.per.par=2)
 @
 
 <<saveInitialSearchResults, include=FALSE, echo=FALSE>>=

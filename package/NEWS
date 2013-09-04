@@ -3,6 +3,8 @@ Version 2.1:
 + Reworte and cleaned up many of the internal functions
 + Further seperated Jaatha and Demographic Model to simplify use of Jaatha
 in other areas
++ Added caching for log factorials
++ Ported also msFile2jsfs to Rcpp
 
 Version 2.0.3:
 + Added link to github repo to package description
