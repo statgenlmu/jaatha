@@ -1,5 +1,5 @@
 # --------------------------------------------------------------
-# ModelFitting.R
+# glm_fitting.R
 # Functions for the machine learning part of Jaatha. 
 # 
 # Authors:  Paul R. Staab & Lisha Mathew
