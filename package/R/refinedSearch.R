@@ -11,7 +11,7 @@
 #'      search starting from each of this points.
 #' @param sim The number of simulations that are performed in each step
 #' @param sim.final The number of simulations that are performed after the search to estimate the 
-#'        composite log likelihood. If not specified, the value of \code{nSim} will be used
+#'        composite log likelihood. If not specified, the value of \code{sim} will be used
 #' @param epsilon The search stops if the improvement of the score is less than this for 5 times in a row. 
 #' @param half.block.size The size of the new block that is created around a new maximum.
 #' @param weight The weighting factor that will reduce the influence of old block in the estimation procedure
@@ -27,82 +27,76 @@ Jaatha.refinedSearch <-
 
     if (missing(sim.final)) sim.final <- sim
 
-    jObject <- jaatha
-    nSim <- sim
-    nFinalSim <- sim.final
-    halfBlockSize <- half.block.size
-    nMaxStep <- max.steps
-
     # Check parameters
-    if (!is.jaatha(jObject)) stop("jObject is not of type Jaatha")
+    if (!is.jaatha(jaatha)) stop("jaatha is not of type Jaatha")
     .log2("Called function Jaatha.refinedSearch()")
 
     checkType(best.start.pos, c("num", "single"))
-    checkType(nSim, c("num", "single"))
-    checkType(nFinalSim, c("num", "single"), F)
+    checkType(sim, c("num", "single"))
+    checkType(sim.final, c("num", "single"), F)
     checkType(epsilon, c("num", "single"))
-    checkType(halfBlockSize, c("num", "single"))
+    checkType(half.block.size, c("num", "single"))
     checkType(weight, c("num", "single"))
-    checkType(nMaxStep, c("num", "single"))
+    checkType(max.steps, c("num", "single"))
 
 
-    if (length(jObject@starting.positions) == 0) 
+    if (length(jaatha@starting.positions) == 0) 
       stop("No starting positions available. Did you run a initial search first?")
-    startPoints <- Jaatha.pickBestStartPoints(blocks=jObject@starting.positions,
+    startPoints <- Jaatha.pickBestStartPoints(blocks=jaatha@starting.positions,
                                               best=best.start.pos)
 
-    jObject@likelihood.table <- matrix(0,0, jObject@nPar + 2)
+    jaatha@likelihood.table <- matrix(0,0, jaatha@nPar + 2)
 
     # Setup enviroment for the refined search
-    set.seed(jObject@seeds[3])
-    .log2("Seeting seed to", jObject@seeds[3])
-    setParallelization(jObject)
-    tmp.dir <- getTempDir(jObject@use.shm)
+    set.seed(jaatha@seeds[3])
+    .log2("Seeting seed to", jaatha@seeds[3])
+    setParallelization(jaatha)
+    tmp.dir <- getTempDir(jaatha@use.shm)
 
     # Start a search for every start point
     for (s in 1:length(startPoints)){
-      jObject@MLest <- startPoints[[s]]@MLest
+      jaatha@MLest <- startPoints[[s]]@MLest
       .print("*** Search with starting Point in Block",s,"of",length(startPoints),"****")
-      jObject <- .refinedSearchSingleBlock(jObject,nSim=nSim,nFinalSim=nFinalSim,
-                                           epsilon=epsilon,halfBlockSize=halfBlockSize,
-                                           weight=weight,nMaxStep=nMaxStep,blocknr=s)  
+      jaatha <- .refinedSearchSingleBlock(jaatha,sim=sim,sim.final=sim.final,
+                                           epsilon=epsilon,half.block.size=half.block.size,
+                                           weight=weight,max.steps=max.steps,blocknr=s)  
     }
 
     .print()
     .print("Best log-composite-likelihood values are:")
-    print(Jaatha.getLikelihoods(jObject, 5))
+    print(Jaatha.getLikelihoods(jaatha, 5))
 
     removeTempFiles()
-    return(jObject)
+    return(jaatha)
   }
 
 
 ## This is called from Jaatha.refinedSearch for each block. The actual search is done here.
 ## Parameters are the same as in Jaatha.refinedSearch
-.refinedSearchSingleBlock <- function(jObject, nSim, nFinalSim,
-                                      epsilon, halfBlockSize, weight=weight,
-                                      nMaxStep=nMaxStep, blocknr){
+.refinedSearchSingleBlock <- function(jaatha, sim, sim.final,
+                                      epsilon, half.block.size, weight=weight,
+                                      max.steps=max.steps, blocknr){
   ## initialize values 
   .log3("Initializing")
   currentBlocks <- list()
   nSteps <- 1
   noLchangeCount <- 0
   lastNoChange <- -1        # has to be !=0 for the start
-  nNewSim <- nSim + 2^jObject@nPar   # no. sim + no. corners      
+  nNewSim <- sim + 2^jaatha@nPar   # no. sim + no. corners      
 
   # Track route through parameter space
-  route <- matrix(0, nMaxStep, jObject@nPar+1)
+  route <- matrix(0, max.steps, jaatha@nPar+1)
   route[1,  1] <- -1
-  route[1, -1] <- jObject@MLest
+  route[1, -1] <- jaatha@MLest
 
   ##since the likelihood estimate for the starting point is
   ##only a very rough estimate we don't keep that value 
-  searchBlock <- new("Block", nPar=jObject@nPar, score=-1e11,
-                     MLest=jObject@MLest)
+  searchBlock <- new("Block", nPar=jaatha@nPar, score=-1e11,
+                     MLest=jaatha@MLest)
 
   ## best ten parameters with score are kept for end evaluation
-  topTen <- array(0, dim=c(10,(1+jObject@nPar)), 
-                  dimnames= list(1:10, c("score", jObject@par.names)))     
+  topTen <- array(0, dim=c(10,(1+jaatha@nPar)), 
+                  dimnames= list(1:10, c("score", jaatha@par.names)))     
 
   ##repeat until likelihood improvement gets smaller than epsilon
   ## 5 times in a row or more than 200 steps used
@@ -114,24 +108,24 @@ Jaatha.refinedSearch <-
     ## within that block newBoarder[1,]=lower und [2,]=upper
     ## Bound values between 0 and 1
     newBoarder <- .defineBoarders(point=
-                                  searchBlock@MLest[1:jObject@nPar],
-                                  radius=halfBlockSize)  #0.05 halfBlockSize
+                                  searchBlock@MLest[1:jaatha@nPar],
+                                  radius=half.block.size)  #0.05 half.block.size
     #cat("new Boarder around MLest[0-1]:\n ")
     #print(round(newBoarder,3))             
     searchBlock <- new("Block", lowerBound=newBoarder[1,],
                        upperBound=newBoarder[2,],
-                       nPar=jObject@nPar, nSamp=nSim,
+                       nPar=jaatha@nPar, nSamp=sim,
                        nLoci=70, weight=1,
                        score=searchBlock@score,
                        MLest=searchBlock@MLest)
 
     # Simulate
-    newParNsumstat <-  simulateWithinBlock(searchBlock, jObject)
+    newParNsumstat <-  simulateWithinBlock(searchBlock, jaatha)
 
     ## use previous simulation results if the MLest is
     ## within that block and fit glm
     currentBlocks <-  .findReusableBlocks(MLpoint=
-                                          searchBlock@MLest[1:jObject@nPar],  
+                                          searchBlock@MLest[1:jaatha@nPar],  
                                           blockList=currentBlocks, weighOld=weight)
     ## call R's garbage collector 
     .emptyGarbage()
@@ -147,13 +141,13 @@ Jaatha.refinedSearch <-
                                        function(x) rep(currentBlocks[[x]]@weight,nNewSim))))
     }
 
-    glm <- glmFitting(searchBlock@parNsumstat, jObject, currentWeights)
+    glm <- glmFitting(searchBlock@parNsumstat, jaatha, currentWeights)
 
     ## likelihood of old newOptimum parameters based on new simulated data              
-    oldParamLikeli <-  .calcScore(param=searchBlock@MLest[1:jObject@nPar], glm,
-                                  jObject)
+    oldParamLikeli <-  .calcScore(param=searchBlock@MLest[1:jaatha@nPar], glm,
+                                  jaatha)
 
-    newOptimum <- estimate(searchBlock, jObject,
+    newOptimum <- estimate(searchBlock, jaatha,
                            modFeld=glm, boarder=0)
 
     ## keep the best 10 parameter combinations with their score
@@ -173,7 +167,7 @@ Jaatha.refinedSearch <-
     currentBlocks[[length(currentBlocks)+1]] <- searchBlock
 
     # Output current best position
-    printBestPar(jObject, searchBlock)
+    printBestPar(jaatha, searchBlock)
 
     ## stop criterion 1: likelihood difference less than epsilon 
     if ( (abs(newOptimum$score - oldParamLikeli) < epsilon)){
@@ -195,10 +189,10 @@ Jaatha.refinedSearch <-
     #  lastNoChange <- nSteps
     #} else{}
 
-    ## stop criterion 2: more than nMaxStep search steps
-    if (nSteps>(nMaxStep-1)) {
+    ## stop criterion 2: more than max.steps search steps
+    if (nSteps>(max.steps-1)) {
       .print()
-      .print("Maximimum number of search steps",nMaxStep,"reached.\n")
+      .print("Maximimum number of search steps",max.steps,"reached.\n")
       .print()
       break
     }
@@ -214,8 +208,8 @@ Jaatha.refinedSearch <-
   topTen[nBest,] <- c(newOptimum$score,newOptimum$est)
 
   route <- route[route[,1] != 0,]
-  route[,-1] <- .deNormalize(jObject, route[ ,-1,drop=F])
-  jObject@route[[length(jObject@route) + 1]] <- route
+  route[,-1] <- .deNormalize(jaatha, route[ ,-1,drop=F])
+  jaatha@route[[length(jaatha@route) + 1]] <- route
 
   likelihoods <- c()
   .log3("Starting final sim.")
@@ -223,19 +217,19 @@ Jaatha.refinedSearch <-
   for (t in 1:nBest){
     topPar <- topTen[t,-1]    # in original parameter range
     .print("* Parameter combination",t,"of",nBest)
-    likelihoods[t] <- calcLikelihood(jObject, nFinalSim, topPar)
+    likelihoods[t] <- calcLikelihood(jaatha, sim.final, topPar)
   }
   .log3("Finished final sim.")
 
   likelihood.table <- cbind(log.cl=likelihoods,block=blocknr,topTen[topTen[,1]!=0,-1])
-  jObject@likelihood.table <- rbind(jObject@likelihood.table,likelihood.table)
+  jaatha@likelihood.table <- rbind(jaatha@likelihood.table,likelihood.table)
 
   ## in case 2 have the same likelihood only first is given back
   best <- (1:nBest) [max(likelihoods)==likelihoods][1] 
-  jObject@logMLmax <- likelihoods[best]
-  jObject@MLest <- topTen[best,-1]   # in [0..1] range
+  jaatha@logMLmax <- likelihoods[best]
+  jaatha@MLest <- topTen[best,-1]   # in [0..1] range
   .emptyGarbage()
 
   .print()
-  return (jObject)
+  return (jaatha)
 }
