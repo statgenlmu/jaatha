@@ -37,7 +37,7 @@ Jaatha.initialSearch <- function(jaatha, sim=200, blocks.per.par=3){
   .print("*** Determining Starting positions ***")
   .print("Creating initial blocks ... ")
 
-  firstBlocks <- createInitialBlocks(jaatha, blocks.per.par)
+  firstBlocks <- createInitialBlocks(jaatha@par.ranges, blocks.per.par)
 
   .log2("Calculating block sizes")
   for (i in seq(along=firstBlocks)){
@@ -71,10 +71,11 @@ Jaatha.initialSearch <- function(jaatha, sim=200, blocks.per.par=3){
   return(jaatha)
 }
 
-createInitialBlocks <- function(jaatha, blocks.per.par) {
-  basic.block <- matrix(c(0, 1/blocks.per.par), jaatha@nPar, 2, byrow=T) 
-  rownames(basic.block) <- jaatha@par.names
-  colnames(basic.block) <- c("lower", "upper")
+createInitialBlocks <- function(par.ranges, blocks.per.par) {
+  basic.block <- par.ranges # Just to get dimensions & names
+  basic.block[,1] <- 0
+  basic.block[,2] <- 1/blocks.per.par
+
   getIthBlock <- function(i) {
     b <- (.index2blocks(value=i-1, newBase=blocks.per.par, expo=jaatha@nPar)) / blocks.per.par  
     return(new("Block", border=(basic.block + b)))

@@ -94,7 +94,7 @@ setClass("Jaatha",
 ## constructor method for Jaatha object
 .init <- function(.Object, sim.func, par.ranges, 
                   sum.stats, seed, cores, 
-                  sim.package.size, use.shm) {
+                  sim.package.size, use.shm=FALSE) {
 
   .log3("Starting initialization")
   

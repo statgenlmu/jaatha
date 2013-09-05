@@ -28,7 +28,7 @@ simulateWithinBlock<- function(sim, block, jaatha) {
 
   i <- NULL # To make R CMD check stop complaining
   # Simulate each package, maybe on different cores
-  sumStats <- foreach(i = seq(along = sim.packages), .combine='rbind') %dopar% {
+  sum.stats <- foreach(i = seq(along = sim.packages), .combine='rbind') %dopar% {
     set.seed(seeds[i])
     sim.pars <- .deNormalize(jaatha, 
                              sim.packages[[i]])
@@ -39,8 +39,8 @@ simulateWithinBlock<- function(sim, block, jaatha) {
   set.seed(seeds[length(seeds)])
 
   # Create combined output
-  sim.result <- data.frame(cbind(randompar, sumStats))
-  colnames(sim.result) <- c(jaatha@par.names, paste("SS", 1:ncol(sumStats),
+  sim.result <- data.frame(cbind(randompar, sum.stats))
+  colnames(sim.result) <- c(jaatha@par.names, paste("SS", 1:ncol(sum.stats),
                                                     sep=""))  
   .log2("Finished simulating for this block")
   return(sim.result)
