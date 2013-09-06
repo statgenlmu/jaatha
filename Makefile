@@ -11,7 +11,7 @@ howtos:
 	cp -r $(docPath)/* $(output)/
 	cd $(output);\
 	  ../misc/knitr.R ../$(docPath)/custom_simulator_howto.Rnw ../$(docPath)/cache/
-	#cd $(output); ../misc/knitr.R ../$(docPath)/jaatha_howto.Rnw ../$(docPath)/cache/
+	cd $(output); ../misc/knitr.R ../$(docPath)/jaatha_howto.Rnw ../$(docPath)/cache/
 
 doc: clean-doc
 	# Builds the roxygen2 documentation of Jaatha
