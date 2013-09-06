@@ -62,7 +62,7 @@ provide step-by-step instructions for a toy example. We recommend that you first
 ``The Jaatha HowTo'' or your current publication about Jaatha (\cite{mathew_why_2013}) to
 understand how the algorithm works.
 
-For the sake of simplicity, we will assume the toy model just consists of $30$
+For the sake of simplicity, we will assume that the toy model just consists of $30$
 independent Poisson variables, where the first ten have mean $x$, the second
 ten have mean $y$ and the last ten have mean $z$, with 
 $x, y, z \in (0,\infty)$. For given values of $x$, $y$ and $z$ we can simulate
@@ -74,14 +74,16 @@ sampleFromModel <- function(x, y, z){
 }
 @
 
+\noindent
 Assume that we have observed data that was generated with the true, but
-unknown parameters $x=3$, $y=5$ and $z=7.5$ which we want to estimate from the
-observed data.
+unknown parameters $x=3$, $y=5$ and $z=7.5$. Lets try to estimate this values 
+from the data.
 <<SampleData>>=
 set.seed(5)
 data.observed <- sampleFromModel(3, 5, 7.5)
 data.observed
 @
+\noindent
 Of course, the arithmetic mean is a well-known unbiased, maximum likelihoods estimator 
 for $x$, $y$ and $z$ 
 <<MLEstimates>>=
@@ -89,8 +91,9 @@ c(x=mean(data.observed[1:10]),
   y=mean(data.observed[11:20]), 
   z=mean(data.observed[21:30]))
 @
-but for this example, we will pretend that we could not analytically verify
-this.
+
+\noindent
+but for this example, we will try using Jaatha for the estimation.
 
 Additionally to the observed data \verb@data.observed@, we need two more objects to run Jaatha
 with our model:
@@ -100,12 +103,12 @@ with our model:
 \item A $n\times 2$-Matrix that gives the minimal and maximal values for the
   $n$ parameters we want to estimate.
 \end{itemize}
-
+%
 The function for the simulation must take exactly two arguments, first the
-jaatha object and second a $n\times m$-Matrix, in which each of the $m$ rows is
-a complete set of the $n$ model parameters. The function should do simulations for
-each of this sets and return the simulated values, again as a Matrix with $m$
-rows, each row giving the simulation result of the corresponding row in the
+jaatha object and second an $n\times m$-matrix, in which each of the $m$ rows is
+a complete set of the $n$ model parameters. The function should do a simulation for
+each row and return the simulated values, again as a matrix with $m$
+rows, stating the simulation result of the corresponding rows in the
 input matrix. 
 
 In our example $n = 3$ and we can write a simple wrapper functions for
@@ -113,20 +116,22 @@ In our example $n = 3$ and we can write a simple wrapper functions for
 %
 <<sim.func>>=
 sim.func <- function(jaatha, sim.pars) {
-  t(apply(sim.pars, 1, function(x) sampleFromModel(x[1], x[2], x[3])))
+  t(apply(sim.pars, 1, 
+          function(x) sampleFromModel(x[1], x[2], x[3])))
 }
 # An example call
 sim.pars <- matrix(1:6, 2, 3, byrow=TRUE)
 print(sim.pars)
 sim.func(sim.pars=sim.pars)
 @
-%
-Here, we did not need the \verb@jaatha@ parameter. We could use it for instance
-to pass additional parameters to the simulation function. How to do this will be
-explained in a moment.
+
+\noindent
+Here we don't need the \verb@jaatha@ parameter. It could be used for passing 
+additional parameters to the simulation function. We will explain how to do 
+this in a moment.
 
 As mentioned, the matrix that gives the parameter ranges should be of dimension
-$m\times 2$ given the minimal and maximal values of the range that the parameter can
+$m\times 2$. Each row consists of the minimal and maximal values of the range that the parameter can
 take. Restricting the range of the parameters is required at the moment. Jaatha
 also reads the names of the parameters from this matrix, so providing row names
 makes the output of Jaatha easier to read, but is not required for it to run. In
@@ -144,7 +149,8 @@ library(jaatha)
 jaatha <- new('Jaatha', sim.func, par.ranges, data.observed) 
 @
 
-Form this point on, you can continue as described in ``The Jaatha HowTo'' by
+\noindent
+From this point on, we can continue as described in ``The Jaatha HowTo'' by
 calling \verb@Jaatha.initialSearch@ and a \verb@Jaatha.refinedSearch@. We will
 do so in a moment, but first cover a few open points.
 
@@ -155,14 +161,16 @@ you could call
 <<setAdditionalParameters>>=
 jaatha@opts[['variable.number']] <- 10 
 @
+\noindent
 after you created the jaatha object with \verb@new@, and use 
 <<getAdditionalParameters>>=
 jaatha@opts[['variable.number']]
 @
-in \verb@sim.func@ to access this value. Note that this values must be the same
-for all simulations. It is better to save this vales in the Jaatha object rather
-than in the normal R-Workspace, as this ensures that Jaatha call are
-reproducible as long as the same Jaatha-Object is used.  
+\noindent
+in \verb@sim.func@ to access it again. Note that this values must be the same
+for all simulations. It is better to save variables need for the simulation
+in the Jaatha object rather than in the normal R-Workspace, as this ensures 
+that Jaatha call are reproducible as long as the same Jaatha-Object is used.  
 
 Second, if your simulation requires temporary files, we strongly recommend to use 
 the function \verb@jaatha:::getTempFile(``some.identifier'')@ to generate a file
@@ -182,6 +190,7 @@ jaatha <- Jaatha.initialSearch(jaatha, 100, 2)
 jaatha <- Jaatha.refinedSearch(jaatha, 2, 100)
 @
 
+\noindent
 Hence, Jaatha's best estimates are quite comparable to the direct maximum likelihoods
 estimates for this simple model.
 
