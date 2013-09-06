@@ -4,22 +4,14 @@ rnwfile = jaatha
 
 default: package
 
-howto:
+howtos: 
 	# Builds and opens Jaatha's vignette 
-	- mkdir $(output); cp -r $(docPath)/* $(output)/
-	cd $(output); R CMD Sweave $(rnwfile).Rnw;
-	cd $(output); pdflatex $(rnwfile).tex;
-	cd $(output); bibtex $(rnwfile);
-	cd $(output); pdflatex $(rnwfile).tex;
-	cd $(output); pdflatex $(rnwfile).tex;
-	cd $(output); evince $(rnwfile).pdf &
-
-howto-cache:
-	- cd $(docPath); R CMD Sweave jaatha.Rnw
-	cd $(docPath)/cache; R CMD Sweave initialSearch.Rnw
-	#- cd $(docPath); R CMD Sweave jaatha.Rnw
-	cd $(docPath)/cache; R CMD Sweave refineSearch.Rnw
-	rm $(docPath)/jaatha.tex
+	- mkdir $(output) 2> /dev/null;
+	- mkdir $(docPath)/cache 2> /dev/null;
+	cp -r $(docPath)/* $(output)/
+	cd $(output);\
+	  ../misc/knitr.R ../$(docPath)/custom_simulator_howto.Rnw ../$(docPath)/cache/
+	#cd $(output); ../misc/knitr.R ../$(docPath)/jaatha_howto.Rnw ../$(docPath)/cache/
 
 doc: clean-doc
 	# Builds the roxygen2 documentation of Jaatha
@@ -40,7 +32,7 @@ check: doc clean-package
 	R CMD check package
 	make clean-package
 
-package: test howto-cache check
+package: test check 
 	# Build the R package out of the sources
 	R CMD build package
 
@@ -58,3 +50,6 @@ clean-doc:
 	- rm package/man/*.Rd 2> /dev/null
 	- rm package/DESCRIPTION 2> /dev/null 
 	cp DESCRIPTION.template package/DESCRIPTION
+
+package/vignettes/jaatha_ascii.bib: package/vignettes/jaatha_utf8.bib
+	cd package/vignettes; iconv -f=utf8 -t=ascii jaatha.utf8.bib > jaatha_ascii.bib

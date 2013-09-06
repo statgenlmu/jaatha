@@ -4,7 +4,9 @@ Version 2.1:
 + Further seperated Jaatha and Demographic Model to simplify use of Jaatha
 in other areas
 + Added caching for log factorials
-+ Ported also msFile2jsfs to Rcpp
++ Ported msFile2jsfs to Rcpp
++ Changed vignette "The Jaatha HowTo" to use knitr
++ Added a vignette with instructions using custom simulation functions
 
 Version 2.0.3:
 + Added link to github repo to package description

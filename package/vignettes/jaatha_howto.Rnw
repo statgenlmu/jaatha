@@ -1,6 +1,7 @@
 % \VignetteIndexEntry{The Jaatha HowTo}
 % \VignetteDepends{jaatha}
 % \VignettePackage{jaatha}
+% \VignetteEngine{knitr::knitr}
 
 \documentclass[a4paper]{article}
 
@@ -14,7 +15,7 @@
 \usepackage{indentfirst}
 \usepackage{hyperref}
 
-<<foo,include=FALSE,echo=FALSE>>=
+<<setup, include=FALSE, echo=FALSE>>=
 options(keep.source = TRUE, width = 60)
 jinfo <- packageDescription("jaatha")
 @
@@ -23,11 +24,12 @@ jinfo <- packageDescription("jaatha")
 	pdftitle={The Jaatha HowTo \Sexpr{jinfo$Version}},
 	pdfauthor={\Sexpr{jinfo$Author}},
 	colorlinks=true,
-	linkcolor=black,          % color of internal links
-	citecolor=black,        % color of links to bibliography
+	linkcolor=black,      % color of internal links
+	citecolor=black,      % color of links to bibliography
 	filecolor=black,      % color of file links
-	urlcolor=blue           % color of external links
+	urlcolor=blue         % color of external links
 }
+
 
 \begin{document}
 
@@ -57,7 +59,7 @@ OS X (Mac) and Linux  with the following restrictions: On Windows the paralleliz
 and finite sites simulation using Seq-Gen is currently not supported.
 
 A more detailed description of the algorithm can be found in
-\cite{mathew_composite_2012}. 
+\cite{mathew_why_2013}. 
 Further information about the
 \verb@R@ functions used in this document can be obtained by calling 
 \verb@help()@ with the functions name as argument.
@@ -95,13 +97,13 @@ known rate $\rho$.}
 \end{figure}
 
 To specify that model in \verb@R@, we first need to load \verb@jaatha@.
-<<Loading Jaatha>>=
+<<loadingJaatha>>=
 library(jaatha)
 @
 We can now create an 'empty' demographic model \verb@dm@ using the\\ 
 \verb@dm.createDemographicModel()@ function:
 
-<<Creating a demographic model in R>>=
+<<creatingDm>>=
 dm <- dm.createDemographicModel(sample.sizes=c(12,14),
                                 loci.num=50,
                                 seq.length=1000)
@@ -114,7 +116,7 @@ while \verb@seq.length@ gives the (average) length of each loci\footnote{This
 is only used when a finite sites model is assumed or if intra-locus recombination is included.}.
 
 We can now successively add the other assumptions of our model:
-<<Creating a demographic model in R>>=
+<<addingFeaturesToDM>>=
 dm <- dm.addSpeciationEvent(dm, .1, 5, new.time.point.name='tau')
 dm <- dm.addSymmetricMigration(dm, .01, 5, new.par.name='M')
 dm <- dm.addMutation(dm, 1, 20, new.par.name='theta')
@@ -190,7 +192,7 @@ one, population two, and the outgroup, respectively.
 Please consult the documentation of \emph{ape} in order to get more information
 about \verb@read.dna()@. For example, the import of the data could look like this:  
 
-<<Load Fasta files>>=
+<<LoadFastafiles, cache=TRUE>>=
 library(ape)
 # The path to the data
 sample.file <- system.file('example_fasta_files/sample.fasta', 
@@ -213,7 +215,7 @@ sample.jsfs
 For the purpose of this HowTo, we will use a simulated JSFS, for which we 
 know the real parameters:
 
-<<Summary Statistics>>=
+<<Summary Statistics, cache=TRUE>>=
 # Real parameters: M = 1, tau = 1 and theta = 10
 real.pars <- c(1,1,10) 
 
@@ -239,10 +241,6 @@ statistics of the real data, and a seed to ensure reproducibility:
 jaatha <- Jaatha.initialize(dm, jsfs=jsfs, seed=12345)
 @
 
-<<SaveJaatha, include=FALSE, echo=FALSE>>=
-if(!file.exists('cache/saved_objects')) dir.create('cache/saved_objects')
-save(jaatha, file='cache/saved_objects/jaatha.Rsave')
-@
 
 \noindent
 For more options refer to \verb@?Jaatha.initialize@ or the Jaatha manual.
@@ -265,11 +263,10 @@ Each of the blocks provides a single best parameter combination.
 
 In R, the initial search is performed with the command
 
-% Don't run a complete jaatha search; would take tooo long
-\input{cache/initialSearch}
-
-<<LoadStartPoints, include=FALSE, echo=FALSE>>=
-load('cache/saved_objects/start-points.Rsave')
+<<runInitialSearch, cache=TRUE>>=
+jaatha <- Jaatha.initialSearch(jaatha, 
+                               sim=100, 
+                               blocks.per.par=2)
 @
 
 \noindent
@@ -285,15 +282,14 @@ spend. For now, we will just use the first two points.
 
 \subsection{The Refined Search}
 
-<<LoadFinalResults, include=FALSE, echo=FALSE>>=
-load('cache/saved_objects/jaatha-complete.Rsave')
-@
 
 \noindent
 Now we can conduct the more thorough refined search described above to improve the
 likelihood approximations. 
 
-\input{cache/refineSearch}
+<<runRefinedSearch, cache=TRUE>>=
+jaatha <- Jaatha.refinedSearch(jaatha, best.start.pos=2, sim=100)
+@
 
 \noindent
 Hence we perform two independent searches, starting in the \verb@best.start.pos@
@@ -364,8 +360,8 @@ To create a finite sites model, you must specify a mutation model using the
 to your model using \verb@dm.addMutationRateHeterogenity@.
 
 \bibliographystyle{plainnat}
-\inputencoding{latin1}
-\bibliography{jaatha}
 \inputencoding{utf8}
+\bibliography{jaatha_utf8}
+%\inputencoding{utf8}
 
 \end{document}

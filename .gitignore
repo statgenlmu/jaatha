@@ -39,5 +39,5 @@ package/man/*
 package.Rcheck
 package/NAMESPACE
 package/DESCRIPTION
-package/vignettes/cache/saved_objects
+package/vignettes/cache
 unit_tests/results
