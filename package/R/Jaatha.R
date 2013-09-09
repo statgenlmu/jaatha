@@ -26,6 +26,9 @@
 #' @title Fast estimation of demographic parameters
 #' @keywords package
 #' @importFrom phyclust ms
+#' @importFrom foreach foreach 
+#' @importFrom methods new 
+#' @importFrom methods representation 
 #' @useDynLib jaatha
 NULL
 

@@ -1,6 +1,6 @@
 Package:    jaatha
 Version:    2.1
-Date:       2013-08-16
+Date:       2013-09-09
 License:    GPL (>= 3)
 Title:      A Fast Parameter Estimation Method for Evolutionary Biology
 Author:     Lisha Mathew, Paul R. Staab and Dirk Metzler
@@ -11,7 +11,6 @@ Description:
     using genetic data. Given a model of the evolutionary history of two
     biological populations as well as SNP data from multiple individuals from
     each population, it estimates model parameters like the time of separation of both species.
-Depends: R (>= 2.14.2) , methods, foreach (>= 1.2.0-1), phyclust (>= 0.1-14), ape (>= 2.7), Rcpp (>= 0.9.9)
+Depends: R (>= 2.14.2) , methods, foreach (>= 1.2.0-1), phyclust (>= 0.1-14), Rcpp (>= 0.9.9)
 LinkingTo: Rcpp
-Suggests: doMC (>= 1.1.1), knitr
-VignetteBuilder: knitr
+Suggests: doMC (>= 1.1.1), ape (>= 2.7)

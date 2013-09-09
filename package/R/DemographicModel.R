@@ -1009,13 +1009,13 @@ dm.setMutationModel <- function(dm, mutation.model,
     stop("Allowed values: ", paste(mutation.models, collapse=" "))
   
   mutation.model.nr <- seq(along = mutation.models)[mutation.models == mutation.model]
-  dm <- jaatha:::addFeature(dm, "mutation.model", "mutation.model", 
+  dm <- addFeature(dm, "mutation.model", "mutation.model", 
                             fixed.value=mutation.model.nr)
 
   if ( !missing(tstv.ratio) ) {
     if (!mutation.model %in% c("HKY", "F84"))
       stop("This mutation model does not support a ts/tv ratio")
-    dm <- jaatha:::addFeature(dm, "tstv.ratio", "tstv.ratio", fixed.value=tstv.ratio)
+    dm <- addFeature(dm, "tstv.ratio", "tstv.ratio", fixed.value=tstv.ratio)
   }
 
   if ( !missing(base.frequencies) ) {
