@@ -34,7 +34,7 @@ Jaatha.initialSearch <- function(jaatha, sim=200, blocks.per.par=3){
 
   setParallelization(jaatha)
 
-  .print("*** Determining Starting positions ***")
+  .print("*** Searching starting positions ***")
   .print("Creating initial blocks ... ")
 
   firstBlocks <- createInitialBlocks(jaatha@par.ranges, blocks.per.par)
