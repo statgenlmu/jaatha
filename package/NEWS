@@ -5,8 +5,9 @@ Version 2.1:
 in other areas
 + Added caching for log factorials
 + Ported msFile2jsfs to Rcpp
-+ Changed vignette "The Jaatha HowTo" to use knitr
-+ Added a vignette with instructions using custom simulation functions
++ Removed vignettes from the package due to their long build time; The pdfs will
+be provided on Jaatha's homepage instead 
++ Added citation information to the package  
 
 Version 2.0.3:
 + Added link to github repo to package description
