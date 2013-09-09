@@ -51,7 +51,7 @@ Please refer to the
 for usage information.
 
 # Links
-* (Jaatha's Homepage)[http://evol.bio.lmu.de/_statgen/software/jaatha]
-* (Source Code on GitHub)[https://github.com/paulstaab/jaatha]
-* (Bug tracker)[https://github.com/paulstaab/jaatha/issues]
-* (Jaatha's page on CRAN)[http://cran.r-project.org/web/packages/jaatha/index.html]
+* [Jaatha's Homepage](http://evol.bio.lmu.de/_statgen/software/jaatha)
+* [Source Code on GitHub](https://github.com/paulstaab/jaatha)
+* [Bug tracker](https://github.com/paulstaab/jaatha/issues)
+* [Jaatha's page on CRAN](http://cran.r-project.org/web/packages/jaatha/index.html)
