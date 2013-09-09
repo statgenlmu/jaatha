@@ -1,17 +1,8 @@
-output = tmp
-docPath = package/vignettes
-rnwfile = jaatha
-
 default: package
 
 howtos: 
-	# Builds and opens Jaatha's vignette 
-	- mkdir $(output) 2> /dev/null;
-	- mkdir $(docPath)/cache 2> /dev/null;
-	cp -r $(docPath)/* $(output)/
-	cd $(output);\
-	  ../misc/knitr.R ../$(docPath)/custom_simulator_howto.Rnw ../$(docPath)/cache/
-	cd $(output); ../misc/knitr.R ../$(docPath)/jaatha_howto.Rnw ../$(docPath)/cache/
+	R CMD INSTALL package
+	cd howtos; make
 
 doc: clean-doc
 	# Builds the roxygen2 documentation of Jaatha
@@ -32,7 +23,7 @@ check: doc clean-package
 	R CMD check package
 	make clean-package
 
-package: test check 
+package: test check howtos 
 	# Build the R package out of the sources
 	R CMD build package
 
@@ -50,6 +41,3 @@ clean-doc:
 	- rm package/man/*.Rd 2> /dev/null
 	- rm package/DESCRIPTION 2> /dev/null 
 	cp DESCRIPTION.template package/DESCRIPTION
-
-package/vignettes/jaatha_ascii.bib: package/vignettes/jaatha_utf8.bib
-	cd package/vignettes; iconv -f=utf8 -t=ascii jaatha.utf8.bib > jaatha_ascii.bib
