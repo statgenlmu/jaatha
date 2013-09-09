@@ -23,9 +23,14 @@ check: doc clean-package
 	R CMD check package
 	make clean-package
 
-package: test check howtos 
+package: test check package/README.html
 	# Build the R package out of the sources
 	R CMD build package
+
+package/README.html: README.md
+	Rscript -e 'library(knitr); knit2html("README.md", output="package/README.html")'
+
+release: package howtos
 
 clean:
 	# Deletes temoral output

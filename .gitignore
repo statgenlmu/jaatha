@@ -37,7 +37,7 @@ package/man/*
 package.Rcheck
 package/NAMESPACE
 package/DESCRIPTION
-package/vignettes/cache
+package/README.html
 unit_tests/results
 howtos/cache
 

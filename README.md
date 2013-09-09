@@ -2,7 +2,7 @@ jaatha
 ======
 
 Jaatha is a fast parameter estimation method primarily designed for Evolutionary
-Biology. Details are describe in
+Biology. Details are described in
 
 > Mathew, L. A., Staab, P. R., Rose, L. E. and Metzler, D. (2013), 
 [Why to account for finite sites in population genetic studies and how to do this with Jaatha 2.0](http://onlinelibrary.wiley.com/doi/10.1002/ece3.722/abstract). 
