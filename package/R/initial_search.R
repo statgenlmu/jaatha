@@ -77,8 +77,8 @@ createInitialBlocks <- function(par.ranges, blocks.per.par) {
   basic.block[,2] <- 1/blocks.per.par
 
   getIthBlock <- function(i) {
-    b <- (.index2blocks(value=i-1, newBase=blocks.per.par, expo=jaatha@nPar)) / blocks.per.par  
+    b <- (.index2blocks(value=i-1, newBase=blocks.per.par, expo=nrow(par.ranges))) / blocks.per.par  
     return(new("Block", border=(basic.block + b)))
   }
-  return(lapply(1:blocks.per.par^jaatha@nPar, getIthBlock)) 
+  return(lapply(1:blocks.per.par^nrow(par.ranges), getIthBlock)) 
 }
