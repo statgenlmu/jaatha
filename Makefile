@@ -1,5 +1,7 @@
 default: package
 
+.PHONY: howtos
+
 howtos: 
 	R CMD INSTALL package
 	cd howtos; make

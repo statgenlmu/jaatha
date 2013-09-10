@@ -27,6 +27,7 @@ test.oneParModel <- function() {
 }
 
 test.ApeCodeInVignette <- function() {
+  require('ape') || stop('Package "ape" is required for unit tests')
   sample.file <- system.file('example_fasta_files/sample.fasta', package='jaatha')
   sample.data <- read.dna(sample.file, format='fasta', as.character=TRUE)
   sample.jsfs <- calculateJsfs(sample.data,

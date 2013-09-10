@@ -12,3 +12,6 @@ all: $(howtos)
 
 clean:
 	rm *.aux *.bbl *.blg *.log *.out *.tex *.pdf 2> /dev/null; true
+
+publish:
+	scp *.pdf webserver:_statgen/software/jaatha/
