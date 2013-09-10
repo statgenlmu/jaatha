@@ -23,12 +23,12 @@ check: doc clean-package
 	R CMD check package
 	make clean-package
 
-package: test check package/README.html
+package: test check package/README
 	# Build the R package out of the sources
 	R CMD build package
 
-package/README.html: README.md
-	Rscript -e 'library(knitr); knit2html("README.md", output="package/README.html")'
+package/README: README.md
+	grep -v "\`\`\`" README.md > package/README
 
 release: package howtos
 

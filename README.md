@@ -1,20 +1,21 @@
-jaatha
-======
+Jaatha's README
+===============
 
 Jaatha is a fast parameter estimation method primarily designed for Evolutionary
 Biology. Details are described in
 
 > Mathew, L. A., Staab, P. R., Rose, L. E. and Metzler, D. (2013), 
-[Why to account for finite sites in population genetic studies and how to do this with Jaatha 2.0](http://onlinelibrary.wiley.com/doi/10.1002/ece3.722/abstract). 
-Ecology and Evolution.
+> [Why to account for finite sites in population genetic studies and 
+> how to do this with Jaatha 2.0][1]. Ecology and Evolution.
 
-Instructions for a quick-start are provided in the 
-[The Jaatha HowTo](http://evol.bio.lmu.de/_statgen/software/jaatha/jaatha_howto.pdf). 
-Instructions how to use Jaatha with a non-standard simulation method are given
-in the 
-[Custom Simulation Method HowTo](http://evol.bio.lmu.de/_statgen/software/jaatha/custom_simulator_howto.pdf).
+Practical instructions for running Jaatha are provided in the 
+[The Jaatha HowTo][2]. Instructions how to use Jaatha with a non-standard 
+simulation method are given in the [Custom Simulation Method HowTo][3].
 
-# Installation
+
+Installation
+------------
+
 ## From CRAN:
 To install the current stable version of jaatha from cran, simply type
 
@@ -45,12 +46,20 @@ Afterwards you can install the created package with
 R CMD INSTALL jaatha_x.y.tar.gz
 ```
 
-# Usage
-Please refer to the 
-[The Jaatha HowTo](http://evol.bio.lmu.de/_statgen/software/jaatha/jaatha_howto.pdf)
-for usage information.
 
-# Links
+Usage
+-----
+
+Please refer to the [The Jaatha HowTo][2] for usage information.
+
+
+Links
+-----
+
+[1]: http://onlinelibrary.wiley.com/doi/10.1002/ece3.722/abstract "Jaathas last publication"
+[2]: http://evol.bio.lmu.de/_statgen/software/jaatha/jaatha_howto.pdf "The Jaatha HowTo"
+[3]: http://evol.bio.lmu.de/_statgen/software/jaatha/custom_simulator_howto.pdf "The Custom Simulation HowTo"
+
 * [Jaatha's Homepage](http://evol.bio.lmu.de/_statgen/software/jaatha)
 * [Source Code on GitHub](https://github.com/paulstaab/jaatha)
 * [Bug tracker](https://github.com/paulstaab/jaatha/issues)
