@@ -1,0 +1,19 @@
+\name{callMs}
+\alias{callMs}
+\title{Function to perform simulation using ms}
+\usage{
+  callMs(opts, dm)
+}
+\arguments{
+  \item{opts}{The options to pass to ms. Must either be a
+  character or character vector.}
+
+  \item{dm}{The demographic model we are using}
+}
+\value{
+  The file containing the output of ms
+}
+\description{
+  Function to perform simulation using ms
+}
+

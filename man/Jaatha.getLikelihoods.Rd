@@ -1,0 +1,21 @@
+\name{Jaatha.getLikelihoods}
+\alias{Jaatha.getLikelihoods}
+\title{Gives the best estimates after a Jaatha search}
+\usage{
+  Jaatha.getLikelihoods(jObject, max.entries = NULL)
+}
+\arguments{
+  \item{jObject}{The Jaatha options}
+
+  \item{max.entries}{If given, no more than this number of
+  entries will be returned.}
+}
+\value{
+  A matrix with log composite likelihoods and parameters of
+  The best estimates
+}
+\description{
+  This method extracts the best estimates with log
+  composite likelihood vales from an Jaatha object.
+}
+

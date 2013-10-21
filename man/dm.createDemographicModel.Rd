@@ -1,0 +1,40 @@
+\name{dm.createDemographicModel}
+\alias{dm.createDemographicModel}
+\title{Create a basic demographic model}
+\usage{
+  dm.createDemographicModel(sample.sizes, loci.num,
+    seq.length = 1000, log.level, log.file)
+}
+\arguments{
+  \item{sample.sizes}{Number of individuals that are
+  sampled. If your model consists of multiple populations,
+  this needs to be a vector containing the sample sizes
+  from each population.}
+
+  \item{loci.num}{Number of loci that will be simulated}
+
+  \item{seq.length}{(Average) number of bases for each
+  locus}
+
+  \item{log.level}{An integer specifing the amount of user
+  readable output that will be produced.  0 = no output, 1
+  = normal verbosity, ..., 3 = maximal verbosity.}
+
+  \item{log.file}{If set, the debug output will be written
+  into the given file}
+}
+\value{
+  The demographic model
+}
+\description{
+  This function creates a basic empty demographic model,
+  which is returned. Features like mutation, pop.source
+  splits and migration can be added afterwards.
+}
+\examples{
+dm <- dm.createDemographicModel(sample.sizes=c(25,25), loci.num=100)
+dm <- dm.addSpeciationEvent(dm,0.01,5)
+dm <- dm.addMutation(dm,1,20)
+dm
+}
+

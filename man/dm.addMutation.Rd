@@ -1,0 +1,67 @@
+\name{dm.addMutation}
+\alias{dm.addMutation}
+\title{Adds mutations to a demographic model}
+\usage{
+  dm.addMutation(dm, lower.range, upper.range, fixed.value,
+    par.new = T, new.par.name = "theta", parameter)
+}
+\arguments{
+  \item{dm}{The demographic model to which mutations should
+  be added}
+
+  \item{par.new}{If 'TRUE' a new parameter will be created
+  using the arguments 'lower.range' and 'upper.range' or
+  'fixed.value'. It will be named 'new.par.name'.  If
+  'FALSE' the argument 'parameter' will be evaluated
+  instead.}
+
+  \item{lower.range}{If you want to estimate the mutation
+  rate, this will be used as the smallest possible value.}
+
+  \item{upper.range}{If you want to estimate the mutation
+  rate, this will be used as the largest possible value.}
+
+  \item{fixed.value}{If specified, the mutation rate will
+  not be estimated, but assumed to be fixed at the given
+  value.}
+
+  \item{new.par.name}{The name for the new parameter.}
+
+  \item{parameter}{Instead of creating a new parameter, you
+  can also set the mutation rate to an expression based on
+  existing parameters. For example setting this to "theta"
+  will use an parameter with name theta that you have
+  previously created. You can also use R expression here,
+  so "2*theta" or "5*theta+2*tau" (if tau is another
+  parameter) will also work (also it does not make much
+  sense).}
+}
+\value{
+  The demographic model with mutation.
+}
+\description{
+  This functions adds the assumption to the model that
+  neutral mutations occur in the genomes at a constant
+  rate. The rate is quantified through a parameter usually
+  named theta in population genetics. It equals 4*Ne*mu,
+  where Ne is the (effective) number of diploid individuals
+  in the ancestral population and mu is the neutral
+  mutation rate for an entire locus.
+}
+\examples{
+# Create a new parameter
+dm <- dm.createDemographicModel(c(25,25), 100)
+dm <- dm.addSpeciationEvent(dm, 0.01, 5)
+dm <- dm.addMutation(dm, 1, 20)
+
+# Create a new fixed parameter
+dm <- dm.createDemographicModel(c(25,25), 100)
+dm <- dm.addSpeciationEvent(dm, 0.01,5)
+dm <- dm.addMutation(dm, fixed.value=7)
+
+# Use an existing parameter
+dm <- dm.createDemographicModel(c(25,25), 100)
+dm <- dm.addParameter(dm, "theta", 0.01, 5)
+dm <- dm.addMutation(dm, par.new=FALSE, parameter="2*log(theta)+1")
+}
+

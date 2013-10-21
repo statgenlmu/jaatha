@@ -1,0 +1,25 @@
+\name{dm.addOutgroup}
+\alias{dm.addOutgroup}
+\title{Adds an outgroup to a demographic model}
+\usage{
+  dm.addOutgroup(dm, separation.time)
+}
+\arguments{
+  \item{dm}{The demographic model to which we add the
+  outgroup}
+
+  \item{separation.time}{The time point at which the
+  outgroup splited from the ancestral population. This can
+  be an absolute value (e.g. 10) or relative to another
+  time points (e.g. '5*t_split_1').}
+}
+\value{
+  The extended demographic model
+}
+\description{
+  This function adds an outgroup consisting of one
+  individual to a demographic model. The outgroup consists
+  of one individual. An outgroup is required for a finite
+  sites analysis.
+}
+
