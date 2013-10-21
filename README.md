@@ -38,11 +38,6 @@ library('devtools')
 install_github("jaatha", "paulstaab", ref="v2.2")
 ```
 
-Afterwards you can install the created package with 
-```bash
-R CMD INSTALL jaatha_x.y.tar.gz
-```
-
 
 Usage
 -----
