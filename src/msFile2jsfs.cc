@@ -30,14 +30,12 @@ void parseLine(string line, std::vector<int> &jsfs, const int &s1, const int &s2
 
 RcppExport SEXP msFile2jsfs(SEXP filename_, 
                             SEXP s1_,
-                            SEXP s2_,
-                            SEXP nLoci_) {
+                            SEXP s2_) {
 
   BEGIN_RCPP    
   std::string filename = Rcpp::as<std::string>(filename_);
   int s1 = Rcpp::as<int>(s1_);
   int s2 = Rcpp::as<int>(s2_);
-  int nLoci = Rcpp::as<int>(nLoci_);
 
   std::vector<int> jsfs = std::vector<int>((s1+1)*(s2+1), 0);
 
