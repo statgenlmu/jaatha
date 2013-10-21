@@ -29,16 +29,13 @@ in R.
 You can download and build the development version from GitHub following the
 commands: 
 
-```bash
+```R
 # Install Jaatha's dependencies from CRAN
-Rscript -e "install.packages(c('Rcpp', 'ape', 'doMC', 'RUnit'))"
+install.packages(c('Rcpp', 'ape', 'doMC', 'RUnit'))
 
-# Download Jaatha from GitHub
-git clone https://github.com/paulstaab/jaatha.git
-cd jaatha
-
-# And build the package using the Makefile
-make
+# Download & install Jaatha
+library('devtools')
+install_github("jaatha", "paulstaab", ref="v2.2")
 ```
 
 Afterwards you can install the created package with 
