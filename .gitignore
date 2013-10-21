@@ -33,11 +33,11 @@ Rseed.txt
 # Jaatha #
 jaatha_*.tar.gz
 jaatha_*.zip
-package/man/*
+man/*
 package.Rcheck
-package/NAMESPACE
-package/DESCRIPTION
-package/README
+NAMESPACE
+DESCRIPTION
+README
 unit_tests/results
 howtos/cache
 
