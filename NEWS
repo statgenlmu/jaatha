@@ -1,3 +1,6 @@
+Version 2.2:
++ Updated Makevars
+
 Version 2.1:
 + Removed the "externalTheta" option to simplify further development
 + Reworte and cleaned up many of the internal functions

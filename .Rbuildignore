@@ -5,5 +5,3 @@ howtos
 unit_tests
 misc
 jaatha_
-^\.git
-^\.gitignore

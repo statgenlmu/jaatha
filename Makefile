@@ -1,4 +1,3 @@
-
 .PHONY: howtos install test quick-test check clean
 
 VERSION=$(shell grep Version DESCRIPTION.template | awk '{print $$2}')
