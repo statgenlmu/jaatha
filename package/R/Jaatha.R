@@ -302,7 +302,7 @@ Jaatha.initialSearch <- function(jaatha, sim=200, blocks.per.par=3){
   ## searches with externalTheta=T will be run for initial search
   ## if theta is included into parRange, exclude it and decrese nPar
   extThetaPossible <- !jObject@externalTheta & !jObject@finiteSites & jObject@nPar > 2
-  if (dm@currentSimProg@name == "simulbands") extThetaPossible <- FALSE
+  if (jaatha@dm@currentSimProg@name == "simulbands") extThetaPossible <- FALSE
   .log2( "extThetaPossible:",extThetaPossible)
   jObject.bu <- jObject
   if ( extThetaPossible ){
@@ -383,7 +383,7 @@ Jaatha.initialSearch <- function(jaatha, sim=200, blocks.per.par=3){
   jObject.bu@starting.positions <- firstBlocks
   print(Jaatha.getStartingPoints(jObject.bu, extThetaPossible))
 
-  removeTempFiles()
+  #removeTempFiles()
 
   return(jObject.bu)
 }
@@ -464,7 +464,7 @@ Jaatha.refinedSearch <-
   .print("Best log-composite-likelihood values are:")
   print(Jaatha.getLikelihoods(jObject, 5))
 
-  removeTempFiles()
+  #removeTempFiles()
   return(jObject)
 }
 

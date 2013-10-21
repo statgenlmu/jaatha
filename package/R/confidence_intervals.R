@@ -11,7 +11,7 @@
 require(foreach)
 require(doMC)
 
-Jaatha.confidenceIntervals <- function(jaatha, conf.level=0.95, replicas, cores, log.folder=NULL) {
+Jatha.confidenceIntervals <- function(jaatha, conf.level=0.95, replicas, cores, log.folder=NULL) {
   # Get a seed for each replica plus for simulating data 
   set.seed(jaatha@seeds[1])
   seeds <- jaatha:::generateSeeds(replicas+3)[-(1:2)]

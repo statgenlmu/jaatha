@@ -207,7 +207,7 @@ getTempDir <- function(use.shm = FALSE) {
   while (file.exists(paste(tmp.dir, "-", i, sep="")))
     i <- i + 1
 
-  .jaatha$temp.dir <- paste(tmp.dir, "-", i, sep="")
+  .jaatha$temp.dir <- tmp.dir
   dir.create(.jaatha$temp.dir)
   return(.jaatha$temp.dir)
 }

@@ -26,7 +26,12 @@ callMs <- function(opts, dm){
   ms.file <- getTempFile("ms")
 
   .log3("Calling ms...")
-  ms(sum(dm@sampleSizes), dm@nLoci, opts, ms.file)
+  cmd <- paste(getJaathaVariable("ms.exe"), sum(dm@sampleSizes), 
+               dm@nLoci, paste(opts, collapse=" "), "-seed",
+               paste(generateSeeds(3), collapse=" "), ">", ms.file)
+  .log3(cmd)
+  #ms(sum(dm@sampleSizes), dm@nLoci, opts, ms.file)
+  system(cmd) 
   .log3("ms finished. Finished callMs()")
   return(ms.file)
 }
