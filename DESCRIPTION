@@ -27,7 +27,6 @@ Collate:
     'aaa_SimProgram.R'
     'Block.R'
     'calc_likelihood.R'
-    'confidence_intervals.R'
     'DemographicModel.R'
     'glm_fitting.R'
     'helper_functions.R'
