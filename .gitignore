@@ -33,7 +33,7 @@ Rseed.txt
 # Jaatha #
 jaatha_*.tar.gz
 jaatha_*.zip
-package.Rcheck
+jaatha.Rcheck
 unit_tests/results
 howtos/cache
 
