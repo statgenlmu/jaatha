@@ -88,6 +88,8 @@ setClass("Jaatha",
       scaling.factor = "numeric",
       use.shm = "logical",
       opts = "list",
+      calls = "list",
+      conf.ints = "lists",
 
       # Results
       logMLmax = "numeric",
@@ -109,6 +111,8 @@ setClass("Jaatha",
   .Object@sumStats <- sum.stats
   .Object@use.shm <- use.shm
   .Object@opts <- list()
+  .Object@calls <- list()
+  .Object@conf.ints <- list()
 
   checkType(par.ranges, c("matrix"))
   dim(par.ranges)[2] == 2 || stop("par.ranges must have two columns")

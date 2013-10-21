@@ -4,14 +4,41 @@
 # confidence intervals 
 # 
 # Authors:  Paul R. Staab
-# Date:     2013-09-24
+# Date:     2013-10-21
 # Licence:  GPLv3 or later
 # --------------------------------------------------------------
 
-Jatha.confidenceIntervals <- function(jaatha, conf.level=0.95, replicas, cores, log.folder=NULL) {
+#' Function for calculating bootstrap confidence intervals for 
+#' jaatha estimates.
+#' 
+#' This functions calculates bias-corrected and accelerated (BCa)
+#' bootstrap confidence intervals as described in Section 14.3 of
+#' "An introduction to the bootstrap" by Efron and Tibshirani. 
+#' Basically, we simulate many datasets under the model using the estimated
+#' parameters and do a complete Jaatha estimation procedure on each dataset.
+#' We can then use the thereby estimated values
+#' to calculate approximate confidence intervals.
+#'
+#' Warning: This requires a large number of Jaatha runs and should
+#' be best executed on a small cluster rather than on a desktop computer.
+#'
+#' @param jaatha A jaatha object that was returned by Jaatha.refinedSearch.
+#' @param conf.level The intended confidence level of the interval. The actual
+#' level can vary slightly.
+#' @param replicas The number of Jaatha runs that we perform for calculating 
+#'  the confidence interval. Should be reasonable large.
+#' @param cores The number of CPU cores that will be used.
+#' @param log.folder A folder were log-files for the single runs are placed.
+#'      Highly recommended.
+#' @return The Jaatha Object with confidence intervals included.
+#' @export
+Jaatha.confidenceIntervals <- function(jaatha, conf.level=0.95, 
+                                      replicas=100, cores = 1, 
+                                      log.folder=NULL) {
+  
   # Get a seed for each replica plus for simulating data 
   set.seed(jaatha@seeds[1])
-  seeds <- jaatha:::generateSeeds(replicas+3)[-(1:2)]
+  seeds <- generateSeeds(replicas+3)[-(1:2)]
 
   if (!is.null(log.folder)) dir.create(log.folder, showWarnings=FALSE)
 
@@ -19,29 +46,39 @@ Jatha.confidenceIntervals <- function(jaatha, conf.level=0.95, replicas, cores, 
   set.seed(seeds[length(seeds)])
   est.pars <- Jaatha.getLikelihoods(jaatha, 1)[-(1:2)]
   sim.pars <- matrix(est.pars, replicas, jaatha@nPar, byrow=TRUE)
-  data.sim <- dm.simSumStats(jaatha@dm, sim.pars, jaatha::Jaatha.defaultSumStats)
+  sim.data <- jaatha@simFunc(jaatha, sim.pars)
 
-  registerDoMC(cores)
+  setParallelization(cores)
+
   bs.results <- foreach(i=1:replicas, .combine=rbind) %dopar% {
     cat("Starting run", i, "...\n")
     if (!is.null(log.folder)) sink(paste0(log.folder, "/run_", i, ".log"))
-    jaatha.rep <- Jaatha.initialize(jaatha@dm, data.sim[i, ], seed=seeds[i]) 
-    # Important: Use the same settings as in the original calls here:
-    jaatha.rep <- Jaatha.initialSearch(jaatha.rep, 10, 2) 
-    jaatha.rep <- Jaatha.refinedSearch(jaatha.rep, 2, 10)
 
-    if (!is.null(log.folder)) save(jaatha.rep, file=paste0(log.folder, "/run_", i, ".Rda"))
-    sink()
+    # Initialize a copy of the jaatha object
+    set.seed(seeds[i])
+    jaatha.rep <- jaatha
+    jaatha.rep@seeds <- c(seeds[i], generateSeeds(2))
+    jaatha.rep@sumStats <- sim.data[i, ]
+    jaatha.rep@cores <- 1
+
+    jaatha.rep <- Jaatha.initialSearch(jaatha.rep, rerun=TRUE) 
+    jaatha.rep <- Jaatha.refinedSearch(jaatha.rep, rerun=TRUE)
+
+    if (!is.null(log.folder)) {
+      save(jaatha.rep, file=paste0(log.folder, "/run_", i, ".Rda"))
+      sink()
+    }
+
     return(Jaatha.getLikelihoods(jaatha.rep, 1)[-(1:2)])
   }
 
-  conf.intervals <- list()
   for (i in 1:ncol(bs.results)) {
-    par.name <- dm.getParameters(jaatha@dm)[i]
-    conf.intervals[[par.name]] <- calcBCaConfInt(conf.level, bs.results[,i], est.pars[i], replicas)
+    par.name <- jaatha@par.names[i]
+    jaatha@conf.ints[[par.name]] <- calcBCaConfInt(conf.level, bs.results[,i], est.pars[i], replicas)
   }
-  
-  return(conf.intervals)
+
+  .print(jaatha@conf.ints[[par.name]])
+  return(jaatha)
 }
 
 

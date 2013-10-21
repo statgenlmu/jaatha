@@ -21,18 +21,33 @@
 #' @param sim Numeric. The number of simulations that are performed in each bin
 #' @param blocks.per.par Numeric. The number of block per parameter. 
 #'          Will result in Par^blocks.per.par blocks
+#' @param rerun You can repeat a previously done initial search in Jaatha.
+#'        Do do so, just call the initial search function with the jaatha 
+#'        object result of the first initial search and set rerun to 'TRUE'.
 #'
 #' @return The jaatha object with starting positions
 #'
 #' @export
-Jaatha.initialSearch <- function(jaatha, sim=200, blocks.per.par=3){
+Jaatha.initialSearch <- function(jaatha, sim=200, blocks.per.par=3, rerun=FALSE){
+
+  if (rerun) {
+    if( is.null(jaatha@calls[['initial.search']]) ) 
+      stop("No arguments found. Did you run the initial search before?")
+    if( !is.call(jaatha@calls[['initial.search']]) ) 
+      stop("Call for initial search is no call!")
+    #jaatha@calls[['initial.search']][[2]] <- jaatha
+    return(eval(jaatha@calls[['initial.search']]))
+  } else {
+    jaatha@calls[['initial.search']] <- match.call() 
+  }
+
   .log2("Called Jaatha.initialSearch()")
   .log2("sim:", sim, "| blocks.per.par:", blocks.per.par)
   set.seed(jaatha@seeds[2])
   .log2("Seeting seed to", jaatha@seeds[2])
   tmp.dir <- getTempDir(jaatha@use.shm)
 
-  setParallelization(jaatha)
+  setParallelization(jaatha@cores)
 
   .print("*** Searching starting positions ***")
   .print("Creating initial blocks ... ")

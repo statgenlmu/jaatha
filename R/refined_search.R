@@ -27,13 +27,27 @@
 #' @param weight The weighting factor that will reduce the influence of old block in the estimation procedure
 #' @param max.steps The search will stop at this number of steps if not stopped
 #' before (see \code{epsilon})
+#' @param rerun You can repeat a previously done refined search in Jaatha.
+#'        Do do so, just call the refined search function with the jaatha 
+#'        object result of the first refined search and set rerun to 'TRUE'.
 #'              
 #' @return An Jaatha object. The found values are written to the slot likelihood.table.
 #'
 #' @export
 Jaatha.refinedSearch <- function(jaatha, best.start.pos, sim,
                                  sim.final, epsilon=.2, half.block.size=.05,
-                                 weight=.9, max.steps=200) {
+                                 weight=.9, max.steps=200, rerun=FALSE) {
+
+  if (rerun) {
+    if( is.null(jaatha@calls[['refined.search']]) ) 
+      stop("No arguments found. Did you run the refined search before?")
+    if( !is.call(jaatha@calls[['refined.search']]) ) 
+      stop("Call for refined search is no call!")
+
+    return(eval(jaatha@calls[['refined.search']]))
+  } else {
+    jaatha@calls[['refined.search']] <- match.call() 
+  }
 
   if (missing(sim.final)) sim.final <- sim
 
@@ -49,6 +63,7 @@ Jaatha.refinedSearch <- function(jaatha, best.start.pos, sim,
   checkType(weight, c("num", "single"))
   checkType(max.steps, c("num", "single"))
 
+
   if (length(jaatha@starting.positions) == 0) 
     stop("No starting positions available. Did you run a initial search first?")
   startPoints <- Jaatha.pickBestStartPoints(blocks=jaatha@starting.positions,
@@ -59,7 +74,7 @@ Jaatha.refinedSearch <- function(jaatha, best.start.pos, sim,
   # Setup environment for the refined search
   set.seed(jaatha@seeds[3])
   .log2("Seeting seed to", jaatha@seeds[3])
-  setParallelization(jaatha)
+  setParallelization(jaatha@cores)
   tmp.dir <- getTempDir(jaatha@use.shm)
 
   # Start a search for every start point
