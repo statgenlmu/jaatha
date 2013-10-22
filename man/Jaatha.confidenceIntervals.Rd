@@ -4,7 +4,8 @@
 jaatha estimates.}
 \usage{
   Jaatha.confidenceIntervals(jaatha, conf.level = 0.95,
-    replicas = 100, cores = 1, log.folder = NULL)
+    replicas = 100, cores = 1,
+    log.folder = paste(tempdir(), "jaatha-logs", sep = "/"))
 }
 \arguments{
   \item{jaatha}{A jaatha object that was returned by
@@ -19,8 +20,8 @@ jaatha estimates.}
 
   \item{cores}{The number of CPU cores that will be used.}
 
-  \item{log.folder}{A folder were log-files for the single
-  runs are placed.  Highly recommended.}
+  \item{log.folder}{A folder were log-files for the
+  indiviual runs are placed.}
 }
 \value{
   The Jaatha Object with confidence intervals included.

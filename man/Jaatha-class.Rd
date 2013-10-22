@@ -33,6 +33,8 @@ procedure}
   \item{scaling.factor}{Only simulate this part of the data
   and interpolate the rest} \item{route}{Tracks the best
   estimates of each step.} \item{use.shm}{Use the shared
-  memory /dev/shm for temporary files (Linux only)} }
+  memory /dev/shm for temporary files (Linux only)}
+  \item{conf.ints}{Confidence Intervals for parameter
+  estimates produced by Jaatha.confidenceIntervals} }
 }
 

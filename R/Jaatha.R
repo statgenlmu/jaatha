@@ -69,6 +69,8 @@ NULL
 #'                          the rest}
 #'    \item{route}{Tracks the best estimates of each step.}
 #'    \item{use.shm}{Use the shared memory /dev/shm for temporary files (Linux only)}
+#'    \item{conf.ints}{Confidence Intervals for parameter estimates produced by
+#'    Jaatha.confidenceIntervals} 
 #' }
 #'
 #' @name Jaatha-class
@@ -89,7 +91,7 @@ setClass("Jaatha",
       use.shm = "logical",
       opts = "list",
       calls = "list",
-      conf.ints = "lists",
+      conf.ints = "matrix",
 
       # Results
       logMLmax = "numeric",
@@ -112,7 +114,7 @@ setClass("Jaatha",
   .Object@use.shm <- use.shm
   .Object@opts <- list()
   .Object@calls <- list()
-  .Object@conf.ints <- list()
+  .Object@conf.ints <- matrix()
 
   checkType(par.ranges, c("matrix"))
   dim(par.ranges)[2] == 2 || stop("par.ranges must have two columns")
