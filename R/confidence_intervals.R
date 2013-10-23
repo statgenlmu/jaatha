@@ -82,26 +82,31 @@ Jaatha.confidenceIntervals <- function(jaatha, conf.level=0.95,
   return(jaatha)
 }
 
-
-calcBCaConfInt <- function(conf.level, boot, ML, replicas) {
-  z.hat.null <- calcBiasCorrection(log(boot), ML=log(ML), replicas)
-  a.hat <- calcAcceleration(log(boot))
+calcBCaConfInt <- function(conf.level, bs.values, estimates, replicas) {
+  z.hat.null <- calcBiasCorrection(log(bs.values), log(estimates), replicas)
+  a.hat <- calcAcceleration(log(bs.values))
   z.alpha <- qnorm(p=c((1-conf.level)/2, 1-(1-conf.level)/2)) 
-  corr.quantiles <- pnorm(z.hat.null + (z.hat.null + z.alpha) / (1-a.hat*(z.hat.null + z.alpha)))  
-  conf.int <- quantile(log(boot), probs=corr.quantiles) 
+  quantiles.corrected <- pnorm(z.hat.null + (z.hat.null + z.alpha) / (1-a.hat*(z.hat.null + z.alpha)))  
+  conf.int <- quantile(log(bs.values), probs=quantiles.corrected) 
   names(conf.int) <- c('lower', 'upper')
   return(exp(conf.int))
 }
 
-
-calcBiasCorrection <- function(parE, ML, replicas){
-  return(qnorm(sum(parE < ML)/replicas))
+calcBiasCorrection <- function(bs.values, estimates, replicas){
+  bias <- sum(bs.values < estimates)
+  # Maybe 0 if the estimate hit the lower boundary
+  if (bias == 0) bias <- sum(bs.values <= estimates) 
+  if (bias == 0) stop("Error: All bootstrap estimate are larger 
+                       than the estimate. Please try more replicas")
+  if (bias == 1) stop("Error: All bootstrap estimate are smaller 
+                       than the estimate. Please try more replicas")
+  bc <- qnorm(bias/replicas)
+  return(bc)
 }
 
-
-calcAcceleration <- function(parE) {
-  m <- mean(parE)
-  nominator <- sum((m-parE)^3)
-  denom <- 6*(sum((m-parE)^2))^(3/2)
+calcAcceleration <- function(bs.values) {
+  m <- mean(bs.values)
+  nominator <- sum((m-bs.values)^3)
+  denom <- 6*(sum((m-bs.values)^2))^(3/2)
   return(nominator/denom)
 }
