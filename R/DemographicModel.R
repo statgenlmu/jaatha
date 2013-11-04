@@ -1189,15 +1189,28 @@ dm.addOutgroup <- function(dm, separation.time) {
 dm.simSumStats <- function(dm, parameters){
   .log3("Called dm.simSumStats()")
 
+  if( is(dm) == "Jaatha" ) {
+    dm <- jaatha@opts[['dm']] 
+    for.jaatha <- TRUE
+  }
+  else for.jaatha <- FALSE
   checkType(dm, "dm")
+
   if (!is.matrix(parameters)) parameters <- matrix(parameters, 1)
   if (dim(parameters)[2] != dm.getNPar(dm)) stop("Wrong number of parameters")
   if ( !.checkParInRange(dm,parameters) ) stop("Parameters out of range")
 
-  sumStats <- apply(parameters, 1, dm.simulate, dm=dm)
+  if (!for.jaatha) {
+    sum.stats <- apply(parameters, 1, dm.simulate, dm=dm)
+  } else {
+    sum.stats <- array(0, c(nrow(parameters), dm@sampleSizes+1))
+    for (i in 1:nrow(parameters)) {
+      sum.stats[i, , ] <- dm@currentSimProg@singleSimFunc(dm, parameters[i, ])
+    }
+  }
 
   .log3("Finished dm.simSumStats()")
-  return(sumStats)
+  return(sum.stats)
 }
 
 dm.simulate <- function(dm, pars) {

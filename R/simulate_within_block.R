@@ -14,24 +14,23 @@
 ## random parameters and the corresponding summary statistics. 
 simulateWithinBlock<- function(sim, block, jaatha) {
   # Sample random simulation parameters
-  randompar <- aperm(array(runif(jaatha@nPar*sim,
+  sim.pars <- aperm(array(runif(jaatha@nPar*sim,
                                  min=block@border[,1],
                                  max=block@border[,2]),
                            dim=c(jaatha@nPar,sim)))
   
   # Add the corners of the block to sim parameters
-  randompar <- rbind(randompar, getCorners(block))
+  sim.pars <- rbind(sim.pars, getCorners(block))
 
   # Create "packages" of parameters combinations for possible parallelization.
-  sim.packages <- createSimulationPackages(randompar, jaatha@sim.package.size)
+  sim.packages <- createSimulationPackages(sim.pars, jaatha@sim.package.size)
   seeds <- generateSeeds(length(sim.packages)+1)
 
   i <- NULL # To make R CMD check stop complaining
   # Simulate each package, maybe on different cores
-  sum.stats <- foreach(i = seq(along = sim.packages), .combine='rbind') %dopar% {
+  sum.stats <- foreach(i = seq(along = sim.packages), .combine='abind', along=1) %dopar% {
     set.seed(seeds[i])
-    sim.pars <- .deNormalize(jaatha, 
-                             sim.packages[[i]])
+    sim.pars <- .deNormalize(jaatha, sim.packages[[i]])
     sumStats <- jaatha@simFunc(jaatha, sim.pars)
     return(sumStats)
   }
@@ -39,9 +38,8 @@ simulateWithinBlock<- function(sim, block, jaatha) {
   set.seed(seeds[length(seeds)])
 
   # Create combined output
-  sim.result <- data.frame(cbind(randompar, sum.stats))
-  colnames(sim.result) <- c(jaatha@par.names, paste("SS", 1:ncol(sum.stats),
-                                                    sep=""))  
+  sim.result <- list(pars=sim.pars, sum.stats=sum.stats) 
+
   .log2("Finished simulating for this block")
   return(sim.result)
 }
@@ -62,4 +60,3 @@ createSimulationPackages <- function(random.par, package.size) {
 
   return(sim.packages)  
 }
-

@@ -59,10 +59,10 @@ Jaatha.initialSearch <- function(jaatha, sim=200, blocks.per.par=3, rerun=FALSE)
     .print("*** Block", i, ":", printBorder(firstBlocks[[i]], jaatha))
 
     .log3("Simulating in block", i)
-    parNsumstat <- simulateWithinBlock(sim, firstBlocks[[i]], jaatha)       
+    sum.stats <- simulateWithinBlock(sim, firstBlocks[[i]], jaatha)       
 
     .log3("Fitting GLM in block", i)        
-    glm <- glmFitting(parNsumstat, jaatha)
+    glm <- glmFitting(sum.stats, jaatha)
 
     .log3("Searching optimal values in block",i)
     optimal <- estimate(bObject=firstBlocks[[i]], jaatha,

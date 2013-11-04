@@ -84,7 +84,7 @@ setClass("Jaatha",
       par.names = "character",
       par.ranges = "matrix",
       seeds="numeric",
-      sumStats = "numeric",
+      sumStats = "array",
       sim.package.size = "numeric",
       cores = "numeric",
       scaling.factor = "numeric",
@@ -92,6 +92,7 @@ setClass("Jaatha",
       opts = "list",
       calls = "list",
       conf.ints = "matrix",
+      learning.method = "character",
 
       # Results
       logMLmax = "numeric",
@@ -104,17 +105,23 @@ setClass("Jaatha",
 
 ## constructor method for Jaatha object
 .init <- function(.Object, sim.func, par.ranges, 
-                  sum.stats, seed, cores, 
+                  sum.stats, 
+                  learning.method = "independent", 
+                  seed, cores, 
                   sim.package.size, use.shm=FALSE) {
 
   .log3("Starting initialization")
   
+  if (!is.array(sum.stats)) sum.stats <- as.array(sum.stats)
   .Object@simFunc <- sim.func
-  .Object@sumStats <- sum.stats
+  .Object@sumStats <- as.array(sum.stats)
   .Object@use.shm <- use.shm
   .Object@opts <- list()
   .Object@calls <- list()
   .Object@conf.ints <- matrix()
+
+  checkType(learning.method, "char")
+  .Object@learning.method <- learning.method 
 
   checkType(par.ranges, c("matrix"))
   dim(par.ranges)[2] == 2 || stop("par.ranges must have two columns")
@@ -199,32 +206,28 @@ Jaatha.initialize <- function(demographic.model, jsfs,
   checkType(demographic.model, "dm")
   checkType(jsfs, "num")
   checkType(folded, c("bool", "single"))
-
-  if (!folded) {
-    sum.stats <- summarizeJSFS(jsfs)
-    sim.func <- simulateDemographicModel
-  }
-  else {
-    sum.stats <- summarizeFoldedJSFS(jsfs)
-    sim.func <- simulateDemographicModelFolded
-  }
+  checkType(scaling.factor, c("num","single"))
 
   if (missing(seed)) seed <- numeric()
 
-  jaatha <- new("Jaatha", sim.func=sim.func, 
+  jaatha <- new("Jaatha", 
+                sim.func=dm.simSumStats, 
                 par.ranges=as.matrix(dm.getParRanges(demographic.model)),  
-                sum.stats=sum.stats,
+                sum.stats=jsfs,
                 seed=seed,
                 sim.package.size=sim.package.size,
                 cores=cores,
-                use.shm=use.shm)
+                use.shm=use.shm,
+                learning.method="areas")
 
-  checkType(scaling.factor, c("num","single"))
-  demographic.model <- scaleDemographicModel(demographic.model, scaling.factor)
-  jaatha@opts[['scaling.factor']] <- scaling.factor
+  if (scaling.factor != 1) {
+    demographic.model <- scaleDemographicModel(demographic.model, scaling.factor)
+    jaatha@opts[['scaling.factor']] <- scaling.factor
+  }
 
-  demographic.model <- finalizeDM(demographic.model)
-  jaatha@opts[['dm']] <- demographic.model
+  jaatha@opts[['dm']] <- finalizeDM(demographic.model)
+  jaatha@opts[['jsfs.folded']] <- folded
+
   return(jaatha)
 }
 

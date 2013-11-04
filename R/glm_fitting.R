@@ -12,7 +12,8 @@
 ## columns are assumed to be the columns for the parameters, the
 ## following 'nTotalSumstat' colums contain the results for the summary
 ## statistic.
-glmFitting <- function(sim.result, jaatha, weighting=NULL){ 
+glmFitting <- function(sim.data, jaatha, weighting=NULL){ 
+
   #cat("Fitting model ... \n")
   ##+3 bc intercept, convergence, sumOfSumstat
   nTotalSumstat <- ncol(sim.result)-jaatha@nPar
@@ -48,6 +49,20 @@ glmFitting <- function(sim.result, jaatha, weighting=NULL){
   return (modFeld)
 }
 
+
+glmFitting.independent <- function(sim.data, jaatha, weighting) {
+  dims <- (1:length(dim(sim.data$sum.stats)))[-1]
+  glms.fitted <- apply(sim.data$sum.stats, dims, glm.call,
+                       pars=sim.data$pars, weighting=weighting)
+  return(glms.fitted)
+}
+
+
+glm.call <- function(response, pars, weighting) {
+  glm.fitted <- glm(response ~ pars, family=poisson, 
+                    weights=weighting, control = list(maxit = 200)) 
+  return(glm.fitted)
+}
 
 
 ## Function to estimate the best parameters within the block and for
