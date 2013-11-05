@@ -15,7 +15,8 @@ howtos: install
 
 test: install
 	# Runs the unit tests
-	cd unit_tests; ./doRUnit.R
+	export RCMDCHECK=FALSE
+	cd tests; ./doRUnit.R
 
 quick-test: install
 	# Runs the unit tests without time-consuming whole algorithms tests
