@@ -5,6 +5,7 @@ PACKAGE=jaatha_$(VERSION).tar.gz
 
 R_SOURCES=$(wildcard R/*.R) 
 CPP_SOURCES=$(wildcard src/*.cc)
+TESTS=$(wildcard inst/unitTests/*.R)
 
 default: $(PACKAGE)
 
@@ -15,8 +16,7 @@ howtos: install
 
 test: install
 	# Runs the unit tests
-	export RCMDCHECK=FALSE
-	cd tests; ./doRUnit.R
+	cd tests; export RCMDCHECK=FALSE; ./doRUnit.R
 
 quick-test: install
 	# Runs the unit tests without time-consuming whole algorithms tests
@@ -33,8 +33,7 @@ package: test check
 install: $(PACKAGE)
 	R CMD INSTALL $(PACKAGE)
 
-
-$(PACKAGE): $(R_SOURCES) $(CPP_SOURCES) README DESCRIPTION man
+$(PACKAGE): $(R_SOURCES) $(CPP_SOURCES) $(TESTS) README DESCRIPTION man
 	R CMD build .
 
 README: README.md
