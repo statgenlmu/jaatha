@@ -13,50 +13,30 @@
 ## following 'nTotalSumstat' colums contain the results for the summary
 ## statistic.
 glmFitting <- function(sim.data, jaatha, weighting=NULL){ 
-
-  #cat("Fitting model ... \n")
-  ##+3 bc intercept, convergence, sumOfSumstat
-  nTotalSumstat <- ncol(sim.result)-jaatha@nPar
-  modFeld <- array(-1,dim=c(nTotalSumstat,(jaatha@nPar+3)))
-  colnames(modFeld) <- c("Intercept", jaatha@par.names, "conv", "ss.sum")
-
-  explanatory <- paste(jaatha@par.names ,collapse= "+")
-
-  ## suppresses warnings; which ocurr whenever sumstat is 0 "suppressWarnings()"		   
-  for(s in 1:nTotalSumstat) {
-    if ( sum(sim.result[,s+jaatha@nPar]) == 0 ) {
-      modFeld[s, ] <- 0 
-      next()
+  for (i in seq(along = jaatha@sum.stats)) {
+    name <- names(sum.stats)[i] 
+    if (sum.stats[[i]]$method == "poisson.transformed") {
+      glm.fitted <- glmFitting.transformed(sim.data, name, sum.stats[[i]]$transformation, jaatha)
     }
+  }
 
-    ## if glm function did not converge, set coefficients & convergence to 0
-    tryCatch({
-      mod <- suppressWarnings(glm(as.formula(paste0("SS", s," ~ ", explanatory)),
-                                  data=sim.result, family=poisson, weights=weighting,
-                                  control = list(maxit = 200)))}, 
-             error=function(e) {
-               print(list("Caught error of GLM function!"))
-               print(e)
-               cat("sumstat",s," sum=",sum(sim.result[,s+jaatha@nPar]), ": ", "\n")
-               mod <- list(coef=rep(0,jaatha@nPar+1),conv=0) })
-
-    modFeld[s,] <- c(mod$coef,mod$conv,sum(sim.result[,s+jaatha@nPar])) 
-    if (!mod$conv){
-      cat("WARNING: sumstat",s," did not converge, sum = ",
-          sum(sim.result[,s+jaatha@nPar]),"\n")
-    }
-  }  
-  return (modFeld)
+  return(glm.fitted)
 }
 
+fitGlmTransformed <- function(sim.data, sum.stat, transformation, weighting, jaatha) {
+  stats.sim <- t(sapply(sim.data, 
+                        function(x) c(x$pars, transformation(x[[sum.stat]])))) 
+  stats.names <- paste("S", 1:(ncol(stats.sim)-length(jaatha@par.names)), sep="")
+  colnames(stats.sim) <- c(jaatha@par.names, stats.names) 
 
-glmFitting.independent <- function(sim.data, jaatha, weighting) {
-  dims <- (1:length(dim(sim.data$sum.stats)))[-1]
-  glms.fitted <- apply(sim.data$sum.stats, dims, glm.call,
-                       pars=sim.data$pars, weighting=weighting)
-  return(glms.fitted)
+  formulas <- paste0(stats.names, "~", paste(jaatha@par.names ,collapse= "+"))
+  lapply(formulas, glm, data=data.frame(stats.sim), family=poisson,
+         control = list(maxit = 200))
 }
 
+fitGlmIndependent <- function(sim.data, sum.stat, weighting, jaatha) {
+  fitGlmTransformed(sim.data, sum.stat, as.vector, weighting, jaatha) 
+}
 
 glm.call <- function(response, pars, weighting) {
   glm.fitted <- glm(response ~ pars, family=poisson, 

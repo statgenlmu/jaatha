@@ -11,11 +11,8 @@
 setParallelization <- function(cores=1) {
   checkType(cores, c("num", "single"))
   if (cores > 1) {
-    if (!require(doMC)) 
-      stop("You need the package 'doMC' to run Jaatha on multiple cores.
+    if (!require(multicore)) 
+      stop("You need the package 'multicore' to run Jaatha on multiple cores.
             This package is not available on Windows systems.") 
-    doMC::registerDoMC(cores)
-  } else {
-    foreach::registerDoSEQ()
   }
 }

@@ -121,15 +121,10 @@ refinedSearchSingleBlock <- function(jaatha, sim, sim.final,
   topTen <- array(0, dim=c(10,(1+jaatha@nPar)), 
                   dimnames= list(1:10, c("score", jaatha@par.names)))     
 
-  ##repeat until likelihood improvement gets smaller than epsilon
-  ## 5 times in a row or more than 200 steps used
   repeat{
     .print("-----------------")
     .print("Step No",nSteps)
 
-    ## define parameter range for new block and simulate
-    ## within that block newBoarder[1,]=lower und [2,]=upper
-    ## Bound values between 0 and 1
     border <- calcBorders(searchBlock@MLest, radius=half.block.size)
 
     searchBlock <- new("Block", border=border,
@@ -217,7 +212,6 @@ refinedSearchSingleBlock <- function(jaatha, sim, sim.final,
     }
 
     .print()
-
   }
 
   #last best estimates will be taken into topTen

@@ -1,6 +1,6 @@
 Package: jaatha
 Version: 2.2
-Date: 2013-11-05
+Date: 2013-11-07
 License: GPL (>= 3)
 Title: A Fast Parameter Estimation Method for Evolutionary Biology
 Author: Lisha Mathew, Paul R. Staab and Dirk Metzler
@@ -23,6 +23,7 @@ LinkingTo: Rcpp
 Suggests:
     doMC (>= 1.1.1),
     ape (>= 2.7),
+    multicore (>= 0.1-7),
     RUnit
 Collate:
     'aaa_SimProgram.R'

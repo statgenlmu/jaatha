@@ -12,29 +12,17 @@
 ## given parameters.  Order of parameters should be the same as needed
 ## for the simulate-function (in Simulator.R).
 calcLikelihood <- function(jaatha, sim, pars){
-  .log2("Called Jaatha.calcLikelihood()")
-  pars <- matrix(rep(pars, each=sim), nrow=sim)
+  sim.pars <- matrix(pars, nrow=sim)
 
-  sim.packages <- createSimulationPackages(pars, jaatha@sim.package.size)
-  seeds <- generateSeeds(length(sim.packages)+1)
-
-  # Simulate each package, maybe on different cores
-  i <- NULL   # To make R CMD check stop complaining
-  simSS  <- foreach(i = seq(along = sim.packages), .combine='rbind') %dopar% {
-    set.seed(seeds[i])
-    sim.pars <- .deNormalize(jaatha, sim.packages[[i]])
-    sumStats <- jaatha@simFunc(jaatha, sim.pars)
-    return(sumStats)
-  }
-  set.seed(seeds[length(seeds)])
+  simSS <- runSimulations(sim.pars, jaatha@cores, jaatha)
 
   # Average the values of each summary statistic
+  stop()
+  # needs to be changed 
   simSS <- apply(simSS, 2, mean)
 
-  .log2("Calculating Likelihood...")
   simSS[simSS==0] <- 0.5
   logL <- sum(jaatha@sumStats * log(simSS) - simSS - calcLogFactorial(jaatha@sumStats))
-  .log2("Finished Jaatha.calcLikelihood(). Return:",logL)
   return(logL)
 }
 

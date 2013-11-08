@@ -1,9 +1,3 @@
-library("RUnit")
-
-#------------------------------------------------------------------
-# Tests 
-#------------------------------------------------------------------
-
 test.addParameter <- function() {
   dm <- dm.createDemographicModel(11:12, 100)
   dm <- dm.addParameter(dm, "theta", 1, 5)
@@ -39,9 +33,16 @@ test.setMutationModel <- function() {
   checkException(dm <- dm.setMutationModel(dm, "bla"))
 }
 
+test.simSumStats <- function() {
+  dm <- dm.createThetaTauModel(11:12, 10)
+  sum.stats <- dm.simSumStats(dm, c(1,5), "jsfs")
+  checkTrue( is.list(sum.stats) )
+  checkTrue( !is.null(sum.stats$jsfs) )
+  checkTrue( sum(sum.stats$jsfs) > 0 )
+}
+
 ## -- Fixed bugs ----------------------------------------
-#print() failed for empty demographic models
 test.showEmptyModel <- function() {
   dm <- dm.createDemographicModel(25:26, 100)
-  print(dm)
+  invisible(print(dm))
 }

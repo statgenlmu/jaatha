@@ -1,20 +1,3 @@
-#!/usr/bin/Rscript --vanilla
-#
-# DemographicModel-ms.test
-# Unit test for the ms-adapter to the demographic model class
-# 
-# Author:   Paul R. Staab 
-# Email:    staab (at) bio.lmu.de
-# Date:     2012-07-27
-# Licence:  GPLv3 or later
-#
-
-# - Test setup -----------------------------------
- 
-library("RUnit")
-
-# ------------------------------------------------
-
 dm <- dm.createThetaTauModel(c(10,25), 100)
 
 test.callMS <- function() {
@@ -23,10 +6,10 @@ test.callMS <- function() {
 }
 
 test.msSingleSimFunc <- function() {
-  set.seed(100)
-  jsfs <- msSingleSimFunc(dm, c(1,10))
-  print(jsfs[1, 2])
-  checkEquals(jsfs[1, 2], 1042)
+  sum.stats <- msSingleSimFunc(dm, c(1,10))
+  checkTrue(is.list(sum.stats))
+  checkTrue(is.array(sum.stats$jsfs))
+  checkTrue(sum(sum.stats$jsfs) > 0)
 }
 
 test.simProg <- function(){

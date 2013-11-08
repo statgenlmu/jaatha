@@ -62,8 +62,6 @@ NULL
 #'    \item{likelihood.table}{A matrix with the best composite log likelihood values and 
 #'                            corresponding parameters}
 #'    \item{sum.stats.func}{The function for summarizing the JSFS}
-#'    \item{sim.package.size}{Execute this number of simulations on a core in a
-#'                            row}
 #'    \item{cores}{The number of CPU cores to use for simulations}
 #'    \item{scaling.factor}{Only simulate this part of the data and interpolate
 #'                          the rest}
@@ -84,15 +82,13 @@ setClass("Jaatha",
       par.names = "character",
       par.ranges = "matrix",
       seeds="numeric",
-      sumStats = "array",
-      sim.package.size = "numeric",
+      sum.stats = "list",
       cores = "numeric",
       scaling.factor = "numeric",
       use.shm = "logical",
       opts = "list",
       calls = "list",
       conf.ints = "matrix",
-      learning.method = "character",
 
       # Results
       logMLmax = "numeric",
@@ -105,23 +101,27 @@ setClass("Jaatha",
 
 ## constructor method for Jaatha object
 .init <- function(.Object, sim.func, par.ranges, 
-                  sum.stats, 
-                  learning.method = "independent", 
-                  seed, cores, 
-                  sim.package.size, use.shm=FALSE) {
+                  sum.stats, seed, cores, use.shm = FALSE) {
 
-  .log3("Starting initialization")
-  
-  if (!is.array(sum.stats)) sum.stats <- as.array(sum.stats)
+  is.list(sum.stats) || stop("sum.stats needs to be a list")
+  for (sum.stat in sum.stats) {
+    is.null(sum.stat$value) && stop("Every summary stastistic need a field
+                                    'value'")
+    is.null(sum.stat$method) && stop("Every summary stastistic need a field
+                                    'method'")
+
+    sum.stat$method %in% c("poisson.transformed", "poisson.independent") || 
+      stop("Unknown summary stastic type: ", sum.stat$method)
+    is.array(sum.stat$value) || stop("SumStats value needs to be an array")
+  }
+  .Object@sum.stats <- sum.stats
+
   .Object@simFunc <- sim.func
-  .Object@sumStats <- as.array(sum.stats)
   .Object@use.shm <- use.shm
   .Object@opts <- list()
   .Object@calls <- list()
   .Object@conf.ints <- matrix()
 
-  checkType(learning.method, "char")
-  .Object@learning.method <- learning.method 
 
   checkType(par.ranges, c("matrix"))
   dim(par.ranges)[2] == 2 || stop("par.ranges must have two columns")
@@ -133,9 +133,6 @@ setClass("Jaatha",
   .Object@par.names <- rownames(par.ranges)
   
   # Parallelization options
-  if (missing(sim.package.size)) sim.package.size <- 10
-  checkType(sim.package.size, c("num","single"))
-  .Object@sim.package.size <- sim.package.size
 
   if (missing(cores)) cores <- 1
   checkType(cores, c("num","single"))
@@ -157,8 +154,6 @@ setClass("Jaatha",
   else stop("Malformated argument: seed")
   .Object@seeds <- seed
 
-  .log3("Finished initialization")
-
   return (.Object)
 }
 
@@ -176,11 +171,6 @@ rm(.init)
 #'        the JSFS as summary statistics.   
 #' @param folded If 'TRUE', Jaatha will assume that the JSFS is folded.
 #' @param seed An integer used as seed for both Jaatha and the simulation software
-#' @param sim.package.size When running Jaatha on multiple cores, a singe core
-#'              will always execute a whole "package" of simulations the reduce
-#'              the inter thread communication overhead. This gives the number
-#'              of simulations in such a package. Choose a number such that the
-#'              execution of the simulations takes at least 15 seconds.
 #' @param cores The number of cores to use in parallel. If 0, it tries to
 #'              guess the number of available cores and use them all.
 #' @param scaling.factor You can use this option if you have a large dataset. If
@@ -197,11 +187,10 @@ rm(.init)
 #' 
 #' @export
 Jaatha.initialize <- function(demographic.model, jsfs,
-                              seed, sim.package.size=10,
-                              cores=1, scaling.factor=1,
+                              seed, cores=1, scaling.factor=1,
                               use.shm=FALSE, folded=FALSE) {
 
-  if (is.list(jsfs)) jsfs <- jsfs[[1]]$jsfs
+  if (is.list(jsfs)) jsfs <- jsfs$jsfs
 
   checkType(demographic.model, "dm")
   checkType(jsfs, "num")
@@ -210,15 +199,22 @@ Jaatha.initialize <- function(demographic.model, jsfs,
 
   if (missing(seed)) seed <- numeric()
 
+  sum.stats <- list()
+  sum.stats[['jsfs']] <- list(method="poisson.transformed",
+                              transformation=summarizeJSFS,
+                              value=jsfs)
+
+  if (folded) sum.stats$jsfs$tranformation <- summarizeFoldedJSFS
+
   jaatha <- new("Jaatha", 
-                sim.func=dm.simSumStats, 
+                sim.func=function(jaatha, sim.pars)
+                  dm.simSumStats(jaatha@opts[['dm']], sim.pars,
+                                 names(jaatha@sum.stats)), 
                 par.ranges=as.matrix(dm.getParRanges(demographic.model)),  
-                sum.stats=jsfs,
+                sum.stats=sum.stats,
                 seed=seed,
-                sim.package.size=sim.package.size,
                 cores=cores,
-                use.shm=use.shm,
-                learning.method="areas")
+                use.shm=use.shm)
 
   if (scaling.factor != 1) {
     demographic.model <- scaleDemographicModel(demographic.model, scaling.factor)
@@ -366,12 +362,10 @@ Jaatha.getStartingPoints <- function(jObject){
 #' best estimates
 #' @export
 Jaatha.getLikelihoods <- function(jObject, max.entries=NULL) {
-  .log3("Called Jaatha.getLikelihoods")
   lt <- jObject@likelihood.table
   lt[,-(1:2)] <- .deNormalize(jObject, lt[,-(1:2), drop=F])
   perm <- sort.list(lt[,1],decreasing=T)  
   lt <- lt[perm, , drop=F]
-  .log3("Finished Jaatha.getLikelihoods")
   return(lt[1:min(max.entries, nrow(lt)), , drop=F])
 }
 
@@ -410,7 +404,6 @@ Jaatha.deNormalize01 <- function(oldRange, value){
 }
 
 .deNormalizeVector <- function(jObject, values, withoutTheta){	
-  #.log(jObject,"Called .deNormalizeVector")
   .log3("Denormalizing parameters...")
   .log3("values:",values,"| withoutTheta:",withoutTheta)
   if (!is.jaatha(jObject)) stop("jObject is no Jaatha object!")

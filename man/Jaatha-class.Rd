@@ -26,10 +26,8 @@ procedure}
   statistics from the real data} \item{likelihood.table}{A
   matrix with the best composite log likelihood values and
   corresponding parameters} \item{sum.stats.func}{The
-  function for summarizing the JSFS}
-  \item{sim.package.size}{Execute this number of
-  simulations on a core in a row} \item{cores}{The number
-  of CPU cores to use for simulations}
+  function for summarizing the JSFS} \item{cores}{The
+  number of CPU cores to use for simulations}
   \item{scaling.factor}{Only simulate this part of the data
   and interpolate the rest} \item{route}{Tracks the best
   estimates of each step.} \item{use.shm}{Use the shared

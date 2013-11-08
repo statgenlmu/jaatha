@@ -3,16 +3,11 @@
 # Jaatha main simulation function and related helpers 
 # 
 # Authors:  Paul R. Staab & Lisha Mathew
-# Date:     2013-09-04
+# Date:     2013-11-07
 # Licence:  GPLv3 or later
 # --------------------------------------------------------------
 
-## This function simulates nSamp random parameter combinations within
-## lower and upper bounds for each parameter (boarders values
-## needed to be between 0 and 1!!) and with the demographic
-## model specified in simulate() with theta=5.  Returns the
-## random parameters and the corresponding summary statistics. 
-simulateWithinBlock<- function(sim, block, jaatha) {
+simulateWithinBlock <- function(sim, block, jaatha) {
   # Sample random simulation parameters
   sim.pars <- aperm(array(runif(jaatha@nPar*sim,
                                  min=block@border[,1],
@@ -20,43 +15,30 @@ simulateWithinBlock<- function(sim, block, jaatha) {
                            dim=c(jaatha@nPar,sim)))
   
   # Add the corners of the block to sim parameters
-  sim.pars <- rbind(sim.pars, getCorners(block))
+  sim.pars <- .deNormalize(jaatha, rbind(sim.pars, getCorners(block)))
 
-  # Create "packages" of parameters combinations for possible parallelization.
-  sim.packages <- createSimulationPackages(sim.pars, jaatha@sim.package.size)
-  seeds <- generateSeeds(length(sim.packages)+1)
+  runSimulations(sim.pars, jaatha@cores, jaatha)
+}
 
-  i <- NULL # To make R CMD check stop complaining
-  # Simulate each package, maybe on different cores
-  sum.stats <- foreach(i = seq(along = sim.packages), .combine='abind', along=1) %dopar% {
-    set.seed(seeds[i])
-    sim.pars <- .deNormalize(jaatha, sim.packages[[i]])
-    sumStats <- jaatha@simFunc(jaatha, sim.pars)
-    return(sumStats)
+
+runSimulations <- function(pars, cores, jaatha) {
+  seeds <- generateSeeds(length(pars)+1)
+
+  if (cores == 1) {
+    sum.stats <- lapply(1:nrow(pars), 
+                        function(i) {
+                          set.seed(seeds[i]) 
+                          jaatha@simFunc(jaatha, pars[i, ])
+                        })
+  } else {
+    sum.stats <- mclapply(1:nrow(pars), 
+                          function(i) {
+                            set.seed(seeds[i]) 
+                            jaatha@simFunc(jaatha, pars[i, ])
+                          },
+                          mc.preschedule=TRUE, mc.cores=cores)
   }
 
   set.seed(seeds[length(seeds)])
-
-  # Create combined output
-  sim.result <- list(pars=sim.pars, sum.stats=sum.stats) 
-
-  .log2("Finished simulating for this block")
-  return(sim.result)
-}
-
-createSimulationPackages <- function(random.par, package.size) {
-  if (package.size == 0) return(list(random.par))
-
-  sim.packages <- list()
-  num.pars <- nrow(random.par)
-  i <- 0
-  
-  while (i < num.pars/package.size) {
-    i <- i + 1
-    lower <- (i-1)*package.size+1
-    upper <-  min(i*package.size, num.pars)
-    sim.packages[[i]] <- random.par[lower:upper, , drop=F]
-  }
-
-  return(sim.packages)  
+  return(sum.stats)
 }
