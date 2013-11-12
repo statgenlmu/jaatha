@@ -35,7 +35,7 @@
 #'
 #' @export
 Jaatha.refinedSearch <- function(jaatha, best.start.pos, sim,
-                                 sim.final, epsilon=.2, half.block.size=.05,
+                                 sim.final, epsilon=1, half.block.size=.05,
                                  weight=.9, max.steps=200, rerun=FALSE) {
 
   if (rerun) {
@@ -102,7 +102,6 @@ refinedSearchSingleBlock <- function(jaatha, sim, sim.final,
                                      max.steps=max.steps, block.nr){
   ## initialize values 
   .log3("Initializing")
-  currentBlocks <- list()
   nSteps <- 1
   noLchangeCount <- 0
   lastNoChange <- -1        # has to be !=0 for the start
@@ -116,6 +115,7 @@ refinedSearchSingleBlock <- function(jaatha, sim, sim.final,
   ##since the likelihood estimate for the starting point is
   ##only a very rough estimate we don't keep that value 
   searchBlock <- new("Block", score=-1e11, MLest=jaatha@MLest)
+  sim.saved <- list()
 
   ## best ten parameters with score are kept for end evaluation
   topTen <- array(0, dim=c(10,(1+jaatha@nPar)), 
@@ -133,50 +133,33 @@ refinedSearchSingleBlock <- function(jaatha, sim, sim.final,
                        MLest=searchBlock@MLest)
 
     # Simulate
-    newParNsumstat <- simulateWithinBlock(sim, searchBlock, jaatha)
+    sim.data <- simulateWithinBlock(sim, searchBlock, jaatha)
+    sim.saved <- getReusableSimulations(searchBlock, jaatha, sim.saved,
+                                        sim.data, nSteps)
 
-    ## use previous simulation results if the MLest is
-    ## within that block and fit glm
-    currentBlocks <-  findReusableBlocks(MLpoint=
-                                         searchBlock@MLest[1:jaatha@nPar],  
-                                         blockList=currentBlocks, weighOld=weight)
-
-    ## call R's garbage collector 
-    .emptyGarbage()
-    ## only for glmFitting step all simulation results are stored in searchBlock
-    searchBlock@parNsumstat <-
-      .concatWithPrevSumstats(newParNss=newParNsumstat,
-                              blockList=currentBlocks)
-
-    currentWeights <- rep(1, nNewSim)
-    if (length(currentBlocks)!=0){
-      currentWeights <- c(currentWeights, 
-                          array(sapply(1:length(currentBlocks),
-                                       function(x) rep(currentBlocks[[x]]@weight,nNewSim))))
-    }
-
-    glm <- glmFitting(searchBlock@parNsumstat, jaatha, currentWeights)
+    .print("Using", length(sim.saved), "Simulations")
+    glm.fitted <- glmFitting(sim.data, jaatha)
 
     ## likelihood of old newOptimum parameters based on new simulated data              
-    oldParamLikeli <-  .calcScore(param=searchBlock@MLest[1:jaatha@nPar], glm,
-                                  jaatha)
+    oldParamLikeli <- calcLogLikelihood(searchBlock@MLest[1:jaatha@nPar], glm.fitted,
+                                  jaatha@sum.stats)
+    .print(oldParamLikeli)
 
-    newOptimum <- estimate(searchBlock, jaatha,
-                           modFeld=glm, boarder=0)
+    #newOptimum <- estimateMlInBlock(searchBlock, jaatha, , boarder=0)
+    optimal <- estimateMlInBlock(searchBlock, glm.fitted, jaatha@sum.stats) 
 
     ## keep the best 10 parameter combinations with their score
     topTen <- .saveBestTen(currentTopTen=topTen, numSteps=nSteps,
-                           newOptimum=newOptimum)
+                           newOptimum=optimal)
 
-    route[nSteps, ] <- c(newOptimum$score, newOptimum$est)
+    route[nSteps, ] <- c(optimal$score, optimal$est)
 
     ## prepare for next round
     nSteps <- nSteps+1        
     ## in parNsumstat only the newest simulation results
     ## should be kept, the old ones are kept in currentBlocks
-    searchBlock@parNsumstat <- newParNsumstat
-    searchBlock@MLest <- newOptimum$est
-    searchBlock@score <- newOptimum$score 
+    searchBlock@MLest <- optimal$est
+    searchBlock@score <- optimal$score 
 
     currentBlocks[[length(currentBlocks)+1]] <- searchBlock
 
@@ -184,7 +167,7 @@ refinedSearchSingleBlock <- function(jaatha, sim, sim.final,
     printBestPar(jaatha, searchBlock)
 
     ## stop criterion 1: likelihood difference less than epsilon 
-    if ( (abs(newOptimum$score - oldParamLikeli) < epsilon)){
+    if ( (abs(optimal$score - oldParamLikeli) < epsilon)){
       #if (lastNoChange==(nSteps-1)){  # if last noChange happend just last step
       noLchangeCount <- noLchangeCount +1           
       .print("No sigificant score changes in the last",noLchangeCount,"Step(s)")
@@ -200,8 +183,6 @@ refinedSearchSingleBlock <- function(jaatha, sim, sim.final,
     } else{ # if first noChange, save old estimates
       noLchangeCount <- 0
     }
-    #  lastNoChange <- nSteps
-    #} else{}
 
     ## stop criterion 2: more than max.steps search steps
     if (nSteps>(max.steps-1)) {
@@ -218,7 +199,7 @@ refinedSearchSingleBlock <- function(jaatha, sim, sim.final,
   nBest <- min(nSteps, nrow(topTen))
 
   ## inlcude last optimum into top ten
-  topTen[nBest,] <- c(newOptimum$score,newOptimum$est)
+  topTen[nBest,] <- c(optimal$score, optimal$est)
 
   route <- route[route[,1] != 0,]
   route[,-1] <- .deNormalize(jaatha, route[ ,-1,drop=F])
@@ -228,7 +209,7 @@ refinedSearchSingleBlock <- function(jaatha, sim, sim.final,
   .log3("Starting final sim.")
   .print("Calculating log-composite-likelihoods for best estimates:")
   for (t in 1:nBest){
-    topPar <- topTen[t,-1]    # in original parameter range
+    topPar <- topTen[t,-1]
     .print("* Parameter combination",t,"of",nBest)
     likelihoods[t] <- calcLikelihood(jaatha, sim.final, topPar)
   }
@@ -270,6 +251,15 @@ calcBorders <- function(point, radius) {
 }
 
 
+getReusableSimulations <- function(block, jaatha, sim.saved, sim.data, step.current) {
+  if (length(sim.saved) == 0) return(lapply(sim.data, function(x) { x$step <- step.current; x }))
+  c(lapply(sim.data, function(x) { x$step <- step.current; x }),
+    sim.saved[sapply(sim.saved, 
+                     function(x) isInBlock(block, normalize(x$pars, jaatha)))]) 
+}
+
+
+
 ## Function to go through the list of 'blockList' (old blocks) and
 ## determine which blocks to keep. A block will be kept if 'MLpoint'
 ## falls into the block.  A list of blocks that contain 'MLpoint' will
@@ -278,7 +268,7 @@ calcBorders <- function(point, radius) {
 ## written out. If verbose=TRUE details of the blocks that will be kept and 
 ## deleted will be written into logFile. 
 ## 
-findReusableBlocks <- function(MLpoint,blockList,weighOld,verbose=FALSE){  
+findReusableBlocks <- function(MLpoint, blockList, weighOld, verbose=FALSE){  
   reusableBlocks <- list()
   listLen <- 1
   nKeep <- 0

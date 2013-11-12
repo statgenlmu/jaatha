@@ -3,7 +3,7 @@
 # Functions for the machine learning part of Jaatha. 
 # 
 # Authors:  Paul R. Staab & Lisha Mathew
-# Date:     2013-09-04
+# Date:     2013-11-08
 # Licence:  GPLv3 or later
 # --------------------------------------------------------------
 
@@ -14,18 +14,24 @@
 ## statistic.
 glmFitting <- function(sim.data, jaatha, weighting=NULL){ 
   for (i in seq(along = jaatha@sum.stats)) {
-    name <- names(sum.stats)[i] 
-    if (sum.stats[[i]]$method == "poisson.transformed") {
-      glm.fitted <- glmFitting.transformed(sim.data, name, sum.stats[[i]]$transformation, jaatha)
+    name <- names(jaatha@sum.stats)[i] 
+    if (jaatha@sum.stats[[i]]$method == "poisson.transformed") {
+      glm.fitted <- fitGlmTransformed(sim.data, name, 
+                                      jaatha@sum.stats[[i]]$transformation, 
+                                      weighting, jaatha)
     }
+    else if (jaatha@sum.stats[[i]]$method == "poisson.independent") {
+      glm.fitted <- fitGlmIndependent(sim.data, name, weighting, jaatha)
+    }
+    else stop("method not found")
   }
-
   return(glm.fitted)
 }
 
 fitGlmTransformed <- function(sim.data, sum.stat, transformation, weighting, jaatha) {
+  stopifnot(!is.null(sum.stat))
   stats.sim <- t(sapply(sim.data, 
-                        function(x) c(x$pars, transformation(x[[sum.stat]])))) 
+                        function(x) c(normalize(x$pars, jaatha), transformation(x[[sum.stat]])))) 
   stats.names <- paste("S", 1:(ncol(stats.sim)-length(jaatha@par.names)), sep="")
   colnames(stats.sim) <- c(jaatha@par.names, stats.names) 
 
@@ -36,12 +42,6 @@ fitGlmTransformed <- function(sim.data, sum.stat, transformation, weighting, jaa
 
 fitGlmIndependent <- function(sim.data, sum.stat, weighting, jaatha) {
   fitGlmTransformed(sim.data, sum.stat, as.vector, weighting, jaatha) 
-}
-
-glm.call <- function(response, pars, weighting) {
-  glm.fitted <- glm(response ~ pars, family=poisson, 
-                    weights=weighting, control = list(maxit = 200)) 
-  return(glm.fitted)
 }
 
 
@@ -55,40 +55,39 @@ glm.call <- function(response, pars, weighting) {
 ## which parameters to search. 'boarder' determines how much of the
 ## around the boundaries of the blocks should not be used for the
 ## optimization procedure. 
-estimate <- function(bObject, jaatha, modFeld, boarder=0.25){
-  dimSize <- bObject@border[,2] - bObject@border[,1]
-  mitte <- dimSize/2 + bObject@border[,1]
-
-  # function for optimization  
-  optfunk <- function(par) {                                 
-    if(min(par)<0 || max(par)>1){ return(1e11)} else{}
-    score <- .calcScore(param=par, modFeld, jaatha)
-    return(-score)  ## '-' enables Maximization
-  }
-
-  ##boarder to leave free in the block for optimization
-  ##(depends on boundaries)
-  puffer <- boarder*dimSize   
-  ##calculate limits for the optimization procedure
-  untere <- sapply(1:jaatha@nPar,
-                   function(p) min(bObject@border[p,1] + puffer,1))
-  obere <-  sapply(1:jaatha@nPar,
-                   function(p) max(bObject@border[p,2] - puffer,0))
+estimateMlInBlock <- function(block, glm.fitted, sum.stats) {
+  block.size <- block@border[,2] - block@border[,1]
+  block.middle <- block.size/2 + block@border[,1]
 
   ##describes 'boarder'% of values that will be excluded
   ##on either side of the block in optimization
-  OOO <- optim(mitte, optfunk, lower=untere, upper=obere,
-               method="L-BFGS-B")
+  best.value <- optim(mitte, calcLogLikelihood, glm.fitted=glm.fitted, sum.stats=sum.stats,  
+                      lower=block@border[ ,1], upper=block@border[ ,2],
+                      method="L-BFGS-B", control=list(fnscale=-1))
   mitte <- OOO$par    ##the optimal parameters are contained in the vector mitte
   score <- -OOO$value  
 
-  return(list(est=mitte, score=score))                   
+  return(list(est=best.value$par, score=best.value$value))                   
 }
 
 
-.calcScore <- function(param, model.coef, jaatha){
-  loglambda <- model.coef[ ,1:(jaatha@nPar+1)] %*% c(1, param) 
-  #if glm did not converge, take sum(SS[s]) or a small number like 0.5 
-  loglambda[model.coef[ , 'conv'] < 0.5] <- 0.5 
-  return(sum( jaatha@sumStats * loglambda - exp(loglambda) )) 
+calcLogLikelihood <- function(param, glm.fitted, sum.stats) {
+  if(min(param)<0 || max(param)>1){ stop("Optimization outside par space") }
+  #print(param)
+  log.likelihood <- 0
+
+  log.likelihood <- sum(sapply(sum.stats, function(sum.stat) {
+    if (sum.stat$method %in% c("poisson.transformed", "poisson.independent")) {
+      loglambda <- sapply(glm.fitted, predict, newdata=data.frame(t(as.matrix(param))))
+
+      #if glm did not converge, take sum(SS[s]) or a small number like 0.5 
+      loglambda[!sapply(glm.fitted, function(x) x$converged)] <- 0.5 
+
+      sum.stat.value <- sum.stat$transformation(sum.stat$value)
+      sum(sum.stat.value * loglambda - exp(loglambda) - calcLogFactorial(sum.stat.value)) 
+    }
+  }))
+
+  #print(log.likelihood)
+  return(log.likelihood)
 }

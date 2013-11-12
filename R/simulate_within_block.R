@@ -15,7 +15,7 @@ simulateWithinBlock <- function(sim, block, jaatha) {
                            dim=c(jaatha@nPar,sim)))
   
   # Add the corners of the block to sim parameters
-  sim.pars <- .deNormalize(jaatha, rbind(sim.pars, getCorners(block)))
+  sim.pars <- rbind(sim.pars, getCorners(block))
 
   runSimulations(sim.pars, jaatha@cores, jaatha)
 }
@@ -28,13 +28,15 @@ runSimulations <- function(pars, cores, jaatha) {
     sum.stats <- lapply(1:nrow(pars), 
                         function(i) {
                           set.seed(seeds[i]) 
-                          jaatha@simFunc(jaatha, pars[i, ])
+                          sim.pars <- denormalize(pars[i, ], jaatha)
+                          jaatha@simFunc(jaatha, sim.pars)
                         })
   } else {
     sum.stats <- mclapply(1:nrow(pars), 
                           function(i) {
                             set.seed(seeds[i]) 
-                            jaatha@simFunc(jaatha, pars[i, ])
+                            sim.pars <- denormalize(pars[i, ], jaatha)
+                            jaatha@simFunc(jaatha, sim.pars)
                           },
                           mc.preschedule=TRUE, mc.cores=cores)
   }

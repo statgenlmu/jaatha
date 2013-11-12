@@ -12,17 +12,22 @@
 ## given parameters.  Order of parameters should be the same as needed
 ## for the simulate-function (in Simulator.R).
 calcLikelihood <- function(jaatha, sim, pars){
-  sim.pars <- matrix(pars, nrow=sim)
+  sim.pars <- matrix(pars, sim, length(pars), byrow=TRUE)
 
-  simSS <- runSimulations(sim.pars, jaatha@cores, jaatha)
+  sim.data <- runSimulations(sim.pars, jaatha@cores, jaatha)
 
+  logL <- 0
   # Average the values of each summary statistic
-  stop()
-  # needs to be changed 
-  simSS <- apply(simSS, 2, mean)
+  for (sum.stat in jaatha@sum.stats) {
+    if (sum.stat$method == "poisson.transformed") {
+    values <- t(sapply(sim.data, function(x) sum.stat$transformation(x$jsfs))) 
+    simSS <- apply(values, 2, mean)
 
-  simSS[simSS==0] <- 0.5
-  logL <- sum(jaatha@sumStats * log(simSS) - simSS - calcLogFactorial(jaatha@sumStats))
+    simSS[simSS==0] <- 0.5
+    sum.stat.value <- sum.stat$transformation(sum.stat$value)
+    logL <- logL + sum(sum.stat.value * log(simSS) - simSS - calcLogFactorial(sum.stat.value)) 
+    }
+  }
   return(logL)
 }
 

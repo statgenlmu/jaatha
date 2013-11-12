@@ -11,5 +11,4 @@
 
 dm <- dm.createThetaTauModel(11:12, 20)
 jsfs <- dm.simSumStats(dm, c(1,5))
-jaatha <- Jaatha.initialize(dm, jsfs=jsfs, use.shm=TRUE) 
-
+jaatha <- Jaatha.initialize(dm, jsfs=jsfs, cores=2, use.shm=TRUE) 

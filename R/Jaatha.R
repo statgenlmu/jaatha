@@ -265,12 +265,6 @@ Jaatha.initialize <- function(demographic.model, jsfs,
 setMethod("show","Jaatha",.show)
 rm(.show)
 
-
-
-
-
-
-
 Jaatha.pickBestStartPoints <- function(blocks, best){
   returnPoints <- list()
   nBlocks <- length(blocks)
@@ -320,12 +314,9 @@ Jaatha.pickBestStartPoints <- function(blocks, best){
   }
 }
 
-
-
 is.jaatha <- function(jObject){
   return(class(jObject)[1] == "Jaatha")
 }
-
 
 #' Print Start points
 #'
@@ -371,36 +362,23 @@ Jaatha.getLikelihoods <- function(jObject, max.entries=NULL) {
 
 
 printBestPar <- function(jObject, block) {
-  .print("Best parameters: ", 
-           round(.deNormalize(jObject, t(block@MLest)), 3), 
-           "| Score:",  block@score)
+  .print("Best parameters", 
+         round(denormalize(block@MLest, jaatha), 3),
+         "with estimated log-likelihood", round(block@score, 3))
 }
 
 ##Function to map 'value' in oldRange to values between 0 and
 ##1. Returned will be a value between 0 and 1.
-Jaatha.normalize01 <- function(oldRange, value){
-  oldRange <- log(oldRange)
-  value <- log(value)
-  return ((value-min(oldRange))/(max(oldRange)-min(oldRange)))
+normalize <- function(value, jaatha) {
+  log.range <- log(jaatha@par.ranges) 
+  log.value <- log(value)
+  (log.value - log.range[,'lower.range']) / 
+          (log.range[,'upper.range'] - log.range[,'lower.range'] ) 
 }
 
-
-##Function to map value between 0 and 1 to oldRange
-## Returns single value (in oldRange).
-Jaatha.deNormalize01 <- function(oldRange, value){
-  oldRange <- log(oldRange)    
-  return (exp(value*(max(oldRange)-min(oldRange))+min(oldRange)))
-}
-
-.deNormalize <- function(jObject, values, withoutTheta=F){
-  if (!is.jaatha(jObject)) stop("jObject is no Jaatha object")
-  if (!is.matrix(values)) stop("values is no matrix!") 
-  
-  result <- apply(values, 1, .deNormalizeVector,
-                  jObject=jObject, withoutTheta=withoutTheta)
-  if (!is.matrix(result)) result <- matrix(result,1)
-  result <- t(result)
-  return(result)
+denormalize <- function(values, jaatha) {
+  log.range <- log(jaatha@par.ranges) 
+  exp(values*(log.range[,'upper.range']-log.range[,'lower.range'])+log.range[,'lower.range'])
 }
 
 .deNormalizeVector <- function(jObject, values, withoutTheta){	
