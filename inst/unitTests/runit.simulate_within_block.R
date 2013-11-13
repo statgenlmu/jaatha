@@ -1,7 +1,7 @@
 # 
 # Author:   Paul R. Staab 
 # Email:    staab (at) bio.lmu.de
-# Date:     2013-11-07
+# Date:     2013-11-13
 # Licence:  GPLv3 or later
 #
 
@@ -21,11 +21,12 @@ test.runSimulatinos <- function() {
   jaatha <- Jaatha.initialize(dm, jsfs=matrix(1,12,13)) 
 
   set.seed(15)
-  pars <- matrix(1:6, 3)
+  pars <- matrix(0.5, 3, 2)
   sum.stats1 <- runSimulations(pars, 1, jaatha)
   checkEquals( length(sum.stats1), 3 )
   for (i in 1:3) {
-    checkTrue( all(pars[i, ] == sum.stats1[[i]]$pars) )
+    checkTrue( all(denormalize(pars[i, ], jaatha) == sum.stats1[[i]]$pars) )
+    checkTrue( all(pars[i, ] == sum.stats1[[i]]$pars.normal) )
     checkTrue( !is.null(sum.stats1[[i]]$jsfs) )
     checkTrue( sum(sum.stats1[[i]]$jsfs) > 0 )
   }
@@ -35,7 +36,8 @@ test.runSimulatinos <- function() {
     sum.stats2 <- runSimulations(pars, 2, jaatha)
     checkEquals( length(sum.stats2), 3 )
     for (i in 1:3) {
-      checkTrue( all(pars[i, ] == sum.stats2[[i]]$pars) )
+      checkTrue( all(denormalize(pars[i, ], jaatha) == sum.stats1[[i]]$pars) )
+      checkTrue( all(pars[i, ] == sum.stats1[[i]]$pars.normal) )
       checkTrue( !is.null(sum.stats2[[i]]$jsfs) )
       checkTrue( sum(sum.stats2[[i]]$jsfs) > 0 )
       checkEquals( sum.stats1[[i]]$jsfs, sum.stats2[[i]]$jsfs )
