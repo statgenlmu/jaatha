@@ -2,6 +2,13 @@ Version 2.2
 ---------------
 + Added function for calculating BCa confidence intervals
 + Added "rerun" option to initial & refined search 
++ switched form doMC to multicore for parallelization
++ Support for multiple independent summary statistics, even though this is not 
+  yet used in the default front end.
++ Differentiated between unit and integration tests and moved the unit tests
+  back into the package.
++ Reworked the reusing of simulations from previous steps in the refined search.
+  Now only simulations that actually are inside the current block are reused. 
 
 Version 2.1.1
 ---------------
