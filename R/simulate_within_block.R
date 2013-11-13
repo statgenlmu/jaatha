@@ -14,10 +14,10 @@
 #'         summary statistics.
 simulateWithinBlock <- function(sim, block, jaatha) {
   # Sample random simulation parameters
-  sim.pars <- aperm(array(runif(jaatha@nPar*sim,
+  sim.pars <- aperm(array(runif(getParNumber(jaatha)*sim,
                                  min=block@border[,1],
                                  max=block@border[,2]),
-                           dim=c(jaatha@nPar,sim)))
+                           dim=c(getParNumber(jaatha),sim)))
   
   # Add the corners of the block to sim parameters
   sim.pars <- rbind(sim.pars, getCorners(block))

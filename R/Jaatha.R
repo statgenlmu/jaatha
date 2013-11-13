@@ -41,34 +41,30 @@ NULL
 #'
 #' Slots:
 #' \describe{
-#'    \item{dm}{The demographic model to use}
-#'    \item{nPar}{The number of parameters to estimate}
-#'    \item{logMLmax}{The maximum log composite likelihood over all block}
-#'    \item{nTotalSumstat}{The total number of summary statistics}
-#'    \item{nNonJsfsSumstat}{The number of summary statistics that are not calculated from the JSFS}
-#'    \item{popSampleSizes=}{Sample sizes of both populations. Vector of length 2.}
-#'    \item{nLoci}{The number of loci}
-#'    \item{MLest}{ML estimations of parameters (transformed between 0 and 1)}
+#'    \item{simFunc}{Function used for simulating}
+#'    \item{par.ranges}{A nx2 matrix stating the ranges for the n model
+#'    parameters we want to estimate. The first row gives the lower range for
+#'    the parameters, the second row the upper ranges. Each row stands for one
+#'    parameter and the row-names will be used as names for the parameters.} 
+#'    \item{sum.stats}{The observed summary statistics.}
 #'    \item{seeds}{A set of random seeds. First one to generate the other two.
 #'                 The next one is for the initial search, the last is for the
 #'                 refined search}
-#'    \item{externalTheta}{Option removed in Version 2.1. Use a Version 2.0.2 if
-#'    you want to use external Theta.}
-#'    \item{finiteSites}{If TRUE, we use a finite sites mutation model instead of an infinite sites one}
-#'    \item{parNames}{The name of the parameters we estimate}
-#'    \item{debugMode}{If TRUE, a debug output will be produced}
-#'    \item{logFile}{If set, the debug output will be written into this file}
-#'    \item{sumStats}{The summary statistics from the real data}
+#'    \item{cores}{The number of CPU cores to use for simulations}
+#'    \item{use.shm}{Use the shared memory /dev/shm for temporary files (Linux only)}
+#'    \item{opts}{Placeholder for additional arguments, for instance ones that
+#'    needs to be passed to simFunc.}
+#'    \item{calls}{The function calls for the initial & refined search. These
+#'    are used to rerun the searches with the exactly same settings for
+#'    generating bootstrap confidence intervals and the likelihood-ratio
+#'    statistic.} 
+#'    \item{starting.positions}{A list of the starting positions, returned by
+#'    the initial search}
 #'    \item{likelihood.table}{A matrix with the best composite log likelihood values and 
 #'                            corresponding parameters}
-#'    \item{sum.stats.func}{The function for summarizing the JSFS}
-#'    \item{cores}{The number of CPU cores to use for simulations}
-#'    \item{scaling.factor}{Only simulate this part of the data and interpolate
-#'                          the rest}
-#'    \item{route}{Tracks the best estimates of each step.}
-#'    \item{use.shm}{Use the shared memory /dev/shm for temporary files (Linux only)}
 #'    \item{conf.ints}{Confidence Intervals for parameter estimates produced by
 #'    Jaatha.confidenceIntervals} 
+#'    \item{route}{Tracks the best estimates of each step.}
 #' }
 #'
 #' @name Jaatha-class
@@ -78,70 +74,57 @@ setClass("Jaatha",
   representation=representation(
       # Settings
       simFunc="function",
-      nPar="numeric",
-      par.names = "character",
       par.ranges = "matrix",
-      seeds="numeric",
       sum.stats = "list",
+      seeds="numeric",
       cores = "numeric",
-      scaling.factor = "numeric",
       use.shm = "logical",
+
       opts = "list",
       calls = "list",
-      conf.ints = "matrix",
-
-      # Results
-      logMLmax = "numeric",
-      MLest="numeric", 
       starting.positions = "list",
       likelihood.table = "matrix",
+      conf.ints = "matrix",
       route = "list"
     ),
 )
 
 ## constructor method for Jaatha object
-.init <- function(.Object, sim.func, par.ranges, 
+init <- function(.Object, sim.func, par.ranges, 
                   sum.stats, seed, cores, use.shm = FALSE) {
 
-  is.list(sum.stats) || stop("sum.stats needs to be a list")
-  for (sum.stat in sum.stats) {
-    is.null(sum.stat$value) && stop("Every summary stastistic need a field
-                                    'value'")
-    is.null(sum.stat$method) && stop("Every summary stastistic need a field
-                                    'method'")
+  # Check sim.func
+  checkType(sim.func, c("fun", "s"))
+  .Object@simFunc <- sim.func
 
-    sum.stat$method %in% c("poisson.transformed", "poisson.independent") || 
-      stop("Unknown summary stastic type: ", sum.stat$method)
-    is.array(sum.stat$value) || stop("SumStats value needs to be an array")
+  # Check par.ranges
+  checkType(par.ranges, c("mat", "num"))
+  dim(par.ranges)[2] == 2 || stop("par.ranges must have two columns")
+  if (is.null(rownames(par.ranges))) 
+    rownames(par.ranges) <- as.character(1:nrow(par.ranges)) 
+  .Object@par.ranges <- par.ranges
+
+  # Check sum.stats
+  is.list(sum.stats) || stop("sum.stats needs to be a list")
+  for (i in names(sum.stats)) {
+    checkType(sum.stats[[i]]$value, c("array", "num"))
+    checkType(sum.stats[[i]]$method, c("char", "s"))
+
+    if (sum.stats[[i]]$method == "poisson.independent") {
+      sum.stats[[i]]$transformation <- as.vector 
+      sum.stats[[i]]$value.transformed <- as.vector(sum.stats[[i]]$value)
+    }
+    else if (sum.stats[[i]]$method == "poisson.transformed") {
+      checkType(sum.stats[[i]]$transformation, c("fun", "s"))
+      sum.stats[[i]]$value.transformed <- sum.stats[[i]]$transformation(sum.stats[[i]]$value)
+    }
+    else {
+      stop("Unknown summary statistic type: ", sum.stats[[i]]$method)
+    }
   }
   .Object@sum.stats <- sum.stats
 
-  .Object@simFunc <- sim.func
-  .Object@use.shm <- use.shm
-  .Object@opts <- list()
-  .Object@calls <- list()
-  .Object@conf.ints <- matrix()
-
-
-  checkType(par.ranges, c("matrix"))
-  dim(par.ranges)[2] == 2 || stop("par.ranges must have two columns")
-  .Object@par.ranges <- par.ranges
-  .Object@nPar <- dim(par.ranges)[1]
-  
-  if (is.null(rownames(par.ranges))) 
-    rownames(par.ranges) <- as.character(1:.Object@nPar) 
-  .Object@par.names <- rownames(par.ranges)
-  
-  # Parallelization options
-
-  if (missing(cores)) cores <- 1
-  checkType(cores, c("num","single"))
-  .Object@cores <- cores
-
-  .Object@likelihood.table <- matrix()
-  .Object@starting.positions <- list()
-
-  # Seeds
+  # Check seed
   # Jaatha uses three seeds. The first is the "main seed" used to generate the
   # other two seeds if provided, the second is the seed for the initial search
   # and the refined search.
@@ -154,11 +137,27 @@ setClass("Jaatha",
   else stop("Malformated argument: seed")
   .Object@seeds <- seed
 
+  # Check use.shm
+  checkType(use.shm, c("bool", "s"))
+  .Object@use.shm <- use.shm
+
+  # Check cores 
+  if (missing(cores)) cores <- 1
+  checkType(cores, c("num","single"))
+  if (cores > 1) setParallelization(cores)
+  .Object@cores <- cores
+
+  # Placeholders
+  .Object@opts <- list()
+  .Object@calls <- list()
+  .Object@conf.ints <- matrix()
+  .Object@likelihood.table <- matrix()
+  .Object@starting.positions <- list()
+
   return (.Object)
 }
-
-setMethod(f="initialize", signature ="Jaatha", definition=.init)
-rm(.init)
+setMethod(f="initialize", signature ="Jaatha", definition=init)
+rm(init)
 
 
 #' Initialization of a Jaatha estimation for population genetics
@@ -192,8 +191,8 @@ Jaatha.initialize <- function(demographic.model, jsfs,
 
   if (is.list(jsfs)) jsfs <- jsfs$jsfs
 
-  checkType(demographic.model, "dm")
-  checkType(jsfs, "num")
+  checkType(demographic.model, c("dm", "s"))
+  checkType(jsfs, c("num", "ar"))
   checkType(folded, c("bool", "single"))
   checkType(scaling.factor, c("num","single"))
 
@@ -204,7 +203,7 @@ Jaatha.initialize <- function(demographic.model, jsfs,
                               transformation=summarizeJSFS,
                               value=jsfs)
 
-  if (folded) sum.stats$jsfs$tranformation <- summarizeFoldedJSFS
+  if (folded) sum.stats$jsfs$transformation <- summarizeFoldedJSFS
 
   jaatha <- new("Jaatha", 
                 sim.func=function(jaatha, sim.pars)
@@ -323,20 +322,13 @@ is.jaatha <- function(jObject){
 #' Method to print the start Points given by an initial Jaatha
 #' search sorted by score.
 #'
-#' @param jObject The Jaatha options
+#' @param jaatha The Jaatha options
 #' @return a matrix with score and parameters of each start point
 #' @export
-Jaatha.getStartingPoints <- function(jObject){
-  startPoints <- jObject@starting.positions
-  width <- jObject@nPar + 1
-  mat <- matrix(0,length(startPoints),width)
-  col.names <- c("score", jObject@par.names)
-  colnames(mat) <- col.names
+Jaatha.getStartingPoints <- function(jaatha){
+  mat <- t(sapply(jaatha@starting.positions, 
+                  function(x) round(c(log.likelihood=x@score, x@MLest), 3)) )
 
-  for (i in 1:length(startPoints)){
-    mat[i,1] <- round(startPoints[[i]]@score,2)
-    mat[i,-1] <- round(.deNormalize(jObject,t(startPoints[[i]]@MLest))[1:(width-1)], 3)
-  }
   perm <- sort.list(mat[,1],decreasing=T) 
   return(mat[perm,])
 }
@@ -354,7 +346,7 @@ Jaatha.getStartingPoints <- function(jObject){
 #' @export
 Jaatha.getLikelihoods <- function(jObject, max.entries=NULL) {
   lt <- jObject@likelihood.table
-  lt[,-(1:2)] <- .deNormalize(jObject, lt[,-(1:2), drop=F])
+  lt[,-(1:2)] <- t(sapply(1:nrow(lt), function(n) denormalize(lt[n,-(1:2), drop=F], jObject)))
   perm <- sort.list(lt[,1],decreasing=T)  
   lt <- lt[perm, , drop=F]
   return(lt[1:min(max.entries, nrow(lt)), , drop=F])
@@ -367,3 +359,6 @@ printBestPar <- function(jObject, block) {
          "with estimated log-likelihood", round(block@score, 3))
 }
 
+
+getParNumber <- function(jaatha) nrow(jaatha@par.ranges) 
+getParNames <- function(jaatha) rownames(jaatha@par.ranges) 

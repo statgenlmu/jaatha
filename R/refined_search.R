@@ -69,7 +69,7 @@ Jaatha.refinedSearch <- function(jaatha, best.start.pos, sim,
   startPoints <- Jaatha.pickBestStartPoints(blocks=jaatha@starting.positions,
                                             best=best.start.pos)
 
-  jaatha@likelihood.table <- matrix(0,0, jaatha@nPar + 2)
+  jaatha@likelihood.table <- matrix(0,0, getParNumber(jaatha) + 2)
 
   # Setup environment for the refined search
   set.seed(jaatha@seeds[3])
@@ -79,9 +79,8 @@ Jaatha.refinedSearch <- function(jaatha, best.start.pos, sim,
 
   # Start a search for every start point
   for (s in 1:length(startPoints)){
-    jaatha@MLest <- startPoints[[s]]@MLest
     .print("*** Search with starting Point in Block",s,"of",length(startPoints),"****")
-    jaatha <- refinedSearchSingleBlock(jaatha,sim=sim,sim.final=sim.final,
+    jaatha <- refinedSearchSingleBlock(jaatha, startPoints[[s]]@MLest, sim=sim,sim.final=sim.final,
                                         epsilon=epsilon,half.block.size=half.block.size,
                                         weight=weight,max.steps=max.steps,block.nr=s)  
   }
@@ -97,7 +96,7 @@ Jaatha.refinedSearch <- function(jaatha, best.start.pos, sim,
 
 ## This is called from Jaatha.refinedSearch for each block. The actual search is done here.
 ## Parameters are the same as in Jaatha.refinedSearch
-refinedSearchSingleBlock <- function(jaatha, sim, sim.final,
+refinedSearchSingleBlock <- function(jaatha, start.point, sim, sim.final,
                                      epsilon, half.block.size, weight=weight,
                                      max.steps=max.steps, block.nr){
   ## initialize values 
@@ -105,21 +104,20 @@ refinedSearchSingleBlock <- function(jaatha, sim, sim.final,
   nSteps <- 1
   noLchangeCount <- 0
   lastNoChange <- -1        # has to be !=0 for the start
-  nNewSim <- sim + 2^jaatha@nPar   # no. sim + no. corners      
 
   # Track route through parameter space
-  route <- matrix(0, max.steps, jaatha@nPar+1)
+  route <- matrix(0, max.steps, getParNumber(jaatha)+1)
   route[1,  1] <- -1
-  route[1, -1] <- jaatha@MLest
+  route[1, -1] <- denormalize(start.point, jaatha) 
 
   ##since the likelihood estimate for the starting point is
   ##only a very rough estimate we don't keep that value 
-  searchBlock <- new("Block", score=-1e11, MLest=jaatha@MLest)
+  searchBlock <- new("Block", score=-1e11, MLest=start.point)
   sim.saved <- list()
 
   ## best ten parameters with score are kept for end evaluation
-  topTen <- array(0, dim=c(10,(1+jaatha@nPar)), 
-                  dimnames= list(1:10, c("score", jaatha@par.names)))     
+  topTen <- array(0, dim=c(10,(1+getParNumber(jaatha))), 
+                  dimnames= list(1:10, c("score", getParNames(jaatha))))     
 
   repeat{
     .print("-----------------")
@@ -138,10 +136,10 @@ refinedSearchSingleBlock <- function(jaatha, sim, sim.final,
                                         sim.data, nSteps)
 
     .print("Using", length(sim.saved), "Simulations")
-    glm.fitted <- glmFitting(sim.data, jaatha)
+    glm.fitted <- fitGlm(sim.data, jaatha)
 
     ## likelihood of old newOptimum parameters based on new simulated data              
-    oldParamLikeli <- calcLogLikelihood(searchBlock@MLest[1:jaatha@nPar], glm.fitted,
+    oldParamLikeli <- calcLogLikelihood(searchBlock@MLest[1:getParNumber(jaatha)], glm.fitted,
                                   jaatha@sum.stats)
     .print(oldParamLikeli)
 
@@ -152,16 +150,13 @@ refinedSearchSingleBlock <- function(jaatha, sim, sim.final,
     topTen <- .saveBestTen(currentTopTen=topTen, numSteps=nSteps,
                            newOptimum=optimal)
 
-    route[nSteps, ] <- c(optimal$score, optimal$est)
+    route[nSteps, ] <- c(optimal$score, denormalize(optimal$est, jaatha))
 
     ## prepare for next round
     nSteps <- nSteps+1        
     ## in parNsumstat only the newest simulation results
-    ## should be kept, the old ones are kept in currentBlocks
     searchBlock@MLest <- optimal$est
     searchBlock@score <- optimal$score 
-
-    currentBlocks[[length(currentBlocks)+1]] <- searchBlock
 
     # Output current best position
     printBestPar(jaatha, searchBlock)
@@ -202,7 +197,6 @@ refinedSearchSingleBlock <- function(jaatha, sim, sim.final,
   topTen[nBest,] <- c(optimal$score, optimal$est)
 
   route <- route[route[,1] != 0,]
-  route[,-1] <- .deNormalize(jaatha, route[ ,-1,drop=F])
   jaatha@route[[length(jaatha@route) + 1]] <- route
 
   likelihoods <- c()
@@ -218,10 +212,6 @@ refinedSearchSingleBlock <- function(jaatha, sim, sim.final,
   likelihood.table <- cbind(log.cl=likelihoods, block=block.nr,topTen[topTen[,1]!=0,-1])
   jaatha@likelihood.table <- rbind(jaatha@likelihood.table,likelihood.table)
 
-  ## in case 2 have the same likelihood only first is given back
-  best <- (1:nBest) [max(likelihoods)==likelihoods][1] 
-  jaatha@logMLmax <- likelihoods[best]
-  jaatha@MLest <- topTen[best,-1]   # in [0..1] range
   .emptyGarbage()
 
   .print()

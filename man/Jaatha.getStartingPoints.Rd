@@ -2,10 +2,10 @@
 \alias{Jaatha.getStartingPoints}
 \title{Print Start points}
 \usage{
-  Jaatha.getStartingPoints(jObject)
+  Jaatha.getStartingPoints(jaatha)
 }
 \arguments{
-  \item{jObject}{The Jaatha options}
+  \item{jaatha}{The Jaatha options}
 }
 \value{
   a matrix with score and parameters of each start point

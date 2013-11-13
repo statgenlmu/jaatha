@@ -62,7 +62,7 @@ Jaatha.initialSearch <- function(jaatha, sim=200, blocks.per.par=3, rerun=FALSE)
     sim.data <- simulateWithinBlock(sim, firstBlocks[[i]], jaatha)       
 
     .log3("Fitting GLM in block", i)        
-    glms.fitted <- glmFitting(sim.data, jaatha)
+    glms.fitted <- fitGlm(sim.data, jaatha)
 
     .log3("Searching optimal values in block",i)
     optimal <- estimateMlInBlock(firstBlocks[[i]], glms.fitted, jaatha@sum.stats) 

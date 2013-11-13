@@ -3,16 +3,11 @@
 # Functions for the machine learning part of Jaatha. 
 # 
 # Authors:  Paul R. Staab & Lisha Mathew
-# Date:     2013-11-08
+# Date:     2013-11-13
 # Licence:  GPLv3 or later
 # --------------------------------------------------------------
 
-## Function to fit a glm for each summary statistic with the generated
-## parameter combinations in the block. The first 'bObject@nPar'
-## columns are assumed to be the columns for the parameters, the
-## following 'nTotalSumstat' colums contain the results for the summary
-## statistic.
-glmFitting <- function(sim.data, jaatha, weighting=NULL){ 
+fitGlm <- function(sim.data, jaatha, weighting=NULL){ 
   for (i in seq(along = jaatha@sum.stats)) {
     name <- names(jaatha@sum.stats)[i] 
     if (jaatha@sum.stats[[i]]$method == "poisson.transformed") {
@@ -31,11 +26,11 @@ glmFitting <- function(sim.data, jaatha, weighting=NULL){
 fitGlmTransformed <- function(sim.data, sum.stat, transformation, weighting, jaatha) {
   stopifnot(!is.null(sum.stat))
   stats.sim <- t(sapply(sim.data, 
-                        function(x) c(normalize(x$pars, jaatha), transformation(x[[sum.stat]])))) 
-  stats.names <- paste("S", 1:(ncol(stats.sim)-length(jaatha@par.names)), sep="")
-  colnames(stats.sim) <- c(jaatha@par.names, stats.names) 
+                        function(x) c(x$pars.normal, transformation(x[[sum.stat]])))) 
+  stats.names <- paste("S", 1:(ncol(stats.sim)-length(getParNames(jaatha))), sep="")
+  colnames(stats.sim) <- c(getParNames(jaatha), stats.names) 
 
-  formulas <- paste0(stats.names, "~", paste(jaatha@par.names ,collapse= "+"))
+  formulas <- paste0(stats.names, "~", paste(getParNames(jaatha) ,collapse= "+"))
   lapply(formulas, glm, data=data.frame(stats.sim), family=poisson,
          control = list(maxit = 200))
 }
@@ -61,11 +56,10 @@ estimateMlInBlock <- function(block, glm.fitted, sum.stats) {
 
   ##describes 'boarder'% of values that will be excluded
   ##on either side of the block in optimization
-  best.value <- optim(mitte, calcLogLikelihood, glm.fitted=glm.fitted, sum.stats=sum.stats,  
+  best.value <- optim(block.middle, calcLogLikelihood, 
+                      glm.fitted=glm.fitted, sum.stats=sum.stats,  
                       lower=block@border[ ,1], upper=block@border[ ,2],
                       method="L-BFGS-B", control=list(fnscale=-1))
-  mitte <- OOO$par    ##the optimal parameters are contained in the vector mitte
-  score <- -OOO$value  
 
   return(list(est=best.value$par, score=best.value$value))                   
 }

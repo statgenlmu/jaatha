@@ -46,7 +46,7 @@ Jaatha.confidenceIntervals <- function(jaatha, conf.level=0.95,
   .print("Simulating data...\n")
   set.seed(seeds[length(seeds)])
   est.pars <- Jaatha.getLikelihoods(jaatha, 1)[-(1:2)]
-  sim.pars <- matrix(est.pars, replicas, jaatha@nPar, byrow=TRUE)
+  sim.pars <- matrix(est.pars, replicas, getParNumber(jaatha), byrow=TRUE)
   sim.data <- jaatha@simFunc(jaatha, sim.pars)
 
   setParallelization(cores)
@@ -72,10 +72,10 @@ Jaatha.confidenceIntervals <- function(jaatha, conf.level=0.95,
   }
 
   jaatha@conf.ints <- foreach(i=1:ncol(bs.results), .combine=rbind) %do% {
-    par.name <- jaatha@par.names[i]
+    par.name <- getParNames(jaatha)[i]
     return( calcBCaConfInt(conf.level, bs.results[,i], est.pars[i], replicas) )
   }
-  rownames(jaatha@conf.ints) <- jaatha@par.names 
+  rownames(jaatha@conf.ints) <- getParNames(jaatha)
 
   .print("\nConfidence Intervals are:")
   print(jaatha@conf.ints)

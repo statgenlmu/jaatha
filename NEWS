@@ -9,6 +9,7 @@ Version 2.2
   back into the package.
 + Reworked the reusing of simulations from previous steps in the refined search.
   Now only simulations that actually are inside the current block are reused. 
++ Removed the "score". We are always using the log-likelihood now.
 
 Version 2.1.1
 ---------------
