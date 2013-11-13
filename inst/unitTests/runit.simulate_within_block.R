@@ -1,9 +1,8 @@
-# 
-# Author:   Paul R. Staab 
-# Email:    staab (at) bio.lmu.de
+# --------------------------------------------------------------
+# Authors:  Paul R. Staab
 # Date:     2013-11-13
 # Licence:  GPLv3 or later
-#
+# --------------------------------------------------------------
 
 test.simulateWithinBlock <- function() {
   dm <- dm.createThetaTauModel(11:12, 10)

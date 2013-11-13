@@ -367,39 +367,3 @@ printBestPar <- function(jObject, block) {
          "with estimated log-likelihood", round(block@score, 3))
 }
 
-##Function to map 'value' in oldRange to values between 0 and
-##1. Returned will be a value between 0 and 1.
-normalize <- function(value, jaatha) {
-  log.range <- log(jaatha@par.ranges) 
-  log.value <- log(value)
-  (log.value - log.range[,'lower.range']) / 
-          (log.range[,'upper.range'] - log.range[,'lower.range'] ) 
-}
-
-denormalize <- function(values, jaatha) {
-  log.range <- log(jaatha@par.ranges) 
-  exp(values*(log.range[,'upper.range']-log.range[,'lower.range'])+log.range[,'lower.range'])
-}
-
-.deNormalizeVector <- function(jObject, values, withoutTheta){	
-  .log3("Denormalizing parameters...")
-  .log3("values:",values,"| withoutTheta:",withoutTheta)
-  if (!is.jaatha(jObject)) stop("jObject is no Jaatha object!")
-  if (!is.numeric(values)) stop("trying to deNomalize non-numeric values")
-  if (!is.vector(values)) stop("trying to deNormalize non-vector values")
-  nPar <- jObject@nPar
-  .log3("expecting",nPar,"parmeters")
-  if (length(values) != nPar)
-    stop("trying to deNormalize vector of wrong length")
-
-  ret <- rep(0,nPar)
-  ranges <- jObject@par.ranges
-  for (i in 1:nPar){
-    ret[i] <- Jaatha.deNormalize01(ranges[i,],values[i])
-  }
-
-  #Add names
-  names(ret) <- jObject@par.names 
-  #.log(jObject,"Finished .deNormalizeVector. Result:",ret)
-  return(ret)
-}

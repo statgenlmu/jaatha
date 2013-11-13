@@ -66,8 +66,8 @@ getCorners <- function(block) {
 }
 
 printBorder <- function(block, jaatha) {
-  lower <- .deNormalizeVector(jaatha, block@border[ ,1])
-  upper <- .deNormalizeVector(jaatha, block@border[ ,2])
+  lower <- denormalize(block@border[ ,1], jaatha)
+  upper <- denormalize(block@border[ ,2], jaatha)
   return(paste0(round(lower,3), "-", round(upper,3),
                 collapse=" x "))
 }
