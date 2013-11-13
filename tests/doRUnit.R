@@ -29,6 +29,7 @@ if(require("RUnit", quietly=TRUE)) {
   ## If desired, load the name space to allow testing of private functions
   if (is.element(pkg, loadedNamespaces()))
       attach(loadNamespace(pkg), name=paste("namespace", pkg, sep=":"), pos=3)
+  source(paste(path, "test_setup.R", sep="/"))
  
   ## --- Testing ---
  
