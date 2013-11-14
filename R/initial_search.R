@@ -1,5 +1,4 @@
 # --------------------------------------------------------------
-# initial_search.R 
 # Contains the initialSearch() and helper functions used nowhere else 
 # 
 # Authors:  Lisha Naduvilezhath & Paul R. Staab
@@ -65,7 +64,7 @@ Jaatha.initialSearch <- function(jaatha, sim=200, blocks.per.par=3, rerun=FALSE)
     glms.fitted <- fitGlm(sim.data, jaatha)
 
     .log3("Searching optimal values in block",i)
-    optimal <- estimateMlInBlock(firstBlocks[[i]], glms.fitted, jaatha@sum.stats) 
+    optimal <- findBestParInBlock(firstBlocks[[i]], glms.fitted, jaatha@sum.stats) 
     
     firstBlocks[[i]]@score <- optimal$score
 

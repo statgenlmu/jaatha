@@ -1,0 +1,23 @@
+\name{fitGlm}
+\alias{fitGlm}
+\title{Fits a Generalized Linear Model within a block.}
+\usage{
+  fitGlm(sim.data, jaatha, weighting = NULL)
+}
+\arguments{
+  \item{sim.data}{Simulation data in this block.}
+
+  \item{jaatha}{A Jaatha Object.}
+
+  \item{weighting}{Potentially weights for the
+  simulations.}
+}
+\value{
+  A list containing a list of fitted GLMs for each summary
+  statistic.
+}
+\description{
+  The model describes how the summary statistics depend on
+  the parameters.
+}
+

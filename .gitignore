@@ -36,6 +36,7 @@ jaatha_*.zip
 jaatha.Rcheck
 unit_tests/results
 howtos/cache
+src/symbols.rds
 
 # Latex
 *.aux
