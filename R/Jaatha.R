@@ -338,22 +338,22 @@ Jaatha.getStartingPoints <- function(jaatha){
 #' This method extracts the best estimates with log composite likelihood
 #' vales from an Jaatha object.
 #'
-#' @param jObject The Jaatha options
+#' @param jaatha The Jaatha options
 #' @param max.entries If given, no more than this number of entries will be 
 #'                returned.
 #' @return A matrix with log composite likelihoods and parameters of The
 #' best estimates
 #' @export
-Jaatha.getLikelihoods <- function(jObject, max.entries=NULL) {
-  lt <- jObject@likelihood.table
-  lt[,-(1:2)] <- t(sapply(1:nrow(lt), function(n) denormalize(lt[n,-(1:2), drop=F], jObject)))
+Jaatha.getLikelihoods <- function(jaatha, max.entries=NULL) {
+  lt <- jaatha@likelihood.table
+  lt[,-(1:2)] <- t(sapply(1:nrow(lt), function(n) denormalize(lt[n,-(1:2), drop=F], jaatha)))
   perm <- sort.list(lt[,1],decreasing=T)  
   lt <- lt[perm, , drop=F]
   return(lt[1:min(max.entries, nrow(lt)), , drop=F])
 }
 
 
-printBestPar <- function(jObject, block) {
+printBestPar <- function(jaatha, block) {
   .print("Best parameters", 
          round(denormalize(block@MLest, jaatha), 3),
          "with estimated log-likelihood", round(block@score, 3))
