@@ -21,22 +21,25 @@ runSimulations <- function(pars, cores, jaatha) {
   seeds <- generateSeeds(length(pars)+1)
 
   if (cores == 1) {
-    sum.stats <- lapply(1:nrow(pars), runSimulation, pars=pars, 
+    sim.data <- lapply(1:nrow(pars), runSimulation, pars=pars, 
                         seeds=seeds, jaatha=jaatha) 
   } else {
-    sum.stats <- mclapply(1:nrow(pars), runSimulation, pars=pars, 
+    sim.data <- mclapply(1:nrow(pars), runSimulation, pars=pars, 
                           seeds=seeds, jaatha=jaatha,
                           mc.preschedule=TRUE, mc.cores=cores)
   }
 
+  if ( "try-error" %in% unlist(sapply(sim.data, is)) ) 
+    stop("Error while simulating. Check your sim.func") 
+
   set.seed(seeds[length(seeds)])
-  return(sum.stats)
+  return(sim.data)
 }
 
 runSimulation <- function(i, pars, seeds, jaatha) {
   set.seed(seeds[i]) 
   sim.pars <- denormalize(pars[i, ], jaatha)
-  sim.results <- jaatha@simFunc(jaatha, sim.pars)
+  sim.results <- jaatha@simFunc(sim.pars, jaatha)
   sim.results$pars <- sim.pars
   sim.results$pars.normal <- pars[i, ]
   return(sim.results)

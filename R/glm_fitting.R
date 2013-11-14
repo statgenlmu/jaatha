@@ -10,13 +10,11 @@
 fitGlm <- function(sim.data, jaatha, weighting=NULL){ 
   for (i in seq(along = jaatha@sum.stats)) {
     name <- names(jaatha@sum.stats)[i] 
-    if (jaatha@sum.stats[[i]]$method == "poisson.transformed") {
+    if (jaatha@sum.stats[[i]]$method %in% c("poisson.transformed",
+                                            "poisson.independent")) {
       glm.fitted <- fitGlmTransformed(sim.data, name, 
                                       jaatha@sum.stats[[i]]$transformation, 
                                       weighting, jaatha)
-    }
-    else if (jaatha@sum.stats[[i]]$method == "poisson.independent") {
-      glm.fitted <- fitGlmIndependent(sim.data, name, weighting, jaatha)
     }
     else stop("method not found")
   }
@@ -25,6 +23,8 @@ fitGlm <- function(sim.data, jaatha, weighting=NULL){
 
 fitGlmTransformed <- function(sim.data, sum.stat, transformation, weighting, jaatha) {
   stopifnot(!is.null(sum.stat))
+  stopifnot(is(sim.data[[1]]) != "try-error")
+
   stats.sim <- t(sapply(sim.data, 
                         function(x) c(x$pars.normal, transformation(x[[sum.stat]])))) 
   stats.names <- paste("S", 1:(ncol(stats.sim)-length(getParNames(jaatha))), sep="")
@@ -33,10 +33,6 @@ fitGlmTransformed <- function(sim.data, sum.stat, transformation, weighting, jaa
   formulas <- paste0(stats.names, "~", paste(getParNames(jaatha) ,collapse= "+"))
   lapply(formulas, glm, data=data.frame(stats.sim), family=poisson,
          control = list(maxit = 200))
-}
-
-fitGlmIndependent <- function(sim.data, sum.stat, weighting, jaatha) {
-  fitGlmTransformed(sim.data, sum.stat, as.vector, weighting, jaatha) 
 }
 
 

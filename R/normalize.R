@@ -12,8 +12,7 @@
 normalize <- function(value, jaatha) {
   log.range <- log(jaatha@par.ranges) 
   log.value <- log(value)
-  (log.value - log.range[,'lower.range']) / 
-          (log.range[,'upper.range'] - log.range[,'lower.range'] ) 
+  (log.value - log.range[,'min']) / (log.range[,'max'] - log.range[,'min'] ) 
 }
 
 #' Convert parameters from Jaatha's internal scale into their natural scale
@@ -23,5 +22,5 @@ normalize <- function(value, jaatha) {
 #' @return The parameter from value, converted into their natural scale
 denormalize <- function(values, jaatha) {
   log.range <- log(jaatha@par.ranges) 
-  exp(values*(log.range[,'upper.range']-log.range[,'lower.range'])+log.range[,'lower.range'])
+  exp(values*(log.range[,'max']-log.range[,'min'])+log.range[,'min'])
 }

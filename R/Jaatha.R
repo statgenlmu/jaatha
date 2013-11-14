@@ -100,6 +100,7 @@ init <- function(.Object, sim.func, par.ranges,
   # Check par.ranges
   checkType(par.ranges, c("mat", "num"))
   dim(par.ranges)[2] == 2 || stop("par.ranges must have two columns")
+  colnames(par.ranges) <- c("min", "max")
   if (is.null(rownames(par.ranges))) 
     rownames(par.ranges) <- as.character(1:nrow(par.ranges)) 
   .Object@par.ranges <- par.ranges
@@ -107,7 +108,7 @@ init <- function(.Object, sim.func, par.ranges,
   # Check sum.stats
   is.list(sum.stats) || stop("sum.stats needs to be a list")
   for (i in names(sum.stats)) {
-    checkType(sum.stats[[i]]$value, c("array", "num"))
+    checkType(sum.stats[[i]]$value, c("num"))
     checkType(sum.stats[[i]]$method, c("char", "s"))
 
     if (sum.stats[[i]]$method == "poisson.independent") {
@@ -206,7 +207,7 @@ Jaatha.initialize <- function(demographic.model, jsfs,
   if (folded) sum.stats$jsfs$transformation <- summarizeFoldedJSFS
 
   jaatha <- new("Jaatha", 
-                sim.func=function(jaatha, sim.pars)
+                sim.func=function(sim.pars, jaatha)
                   dm.simSumStats(jaatha@opts[['dm']], sim.pars,
                                  names(jaatha@sum.stats)), 
                 par.ranges=as.matrix(dm.getParRanges(demographic.model)),  

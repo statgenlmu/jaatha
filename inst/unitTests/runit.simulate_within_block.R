@@ -5,41 +5,44 @@
 # --------------------------------------------------------------
 
 test.simulateWithinBlock <- function() {
-  dm <- dm.createThetaTauModel(11:12, 10)
-  jaatha <- Jaatha.initialize(dm, jsfs=matrix(1,12,13)) 
+  checkSumStat <- function(x, block) { 
+    if (is.null(x$pars) || is.null(x$pars.normal)) return(FALSE)
+    isInBlock(block, x$pars.normal)
+  }
 
-  block <- new("Block")
-  block@border <- matrix(c(0, 0, 0.1, 0.1), 2, 2) 
+  sum.stats <- simulateWithinBlock(10, block.test, jaatha.csi)
+  checkTrue( is.list(sum.stats) )
+  checkEquals( length(sum.stats), 14 )
+  checkTrue( all(sapply(sum.stats, checkSumStat, block=block.test) ) ) 
 
-  sum.stats <- simulateWithinBlock(3, block, jaatha)
-  checkEquals( length(sum.stats), 7 )
+  sum.stats <- simulateWithinBlock(2, block.test, jaatha.tt)
+  checkEquals( length(sum.stats), 6 )
+  checkTrue( all(sapply(sum.stats, checkSumStat, block=block.test) ) ) 
 }
 
 test.runSimulatinos <- function() {
-  dm <- dm.createThetaTauModel(11:12, 10)
-  jaatha <- Jaatha.initialize(dm, jsfs=matrix(1,12,13)) 
-
   set.seed(15)
-  pars <- matrix(0.5, 3, 2)
-  sum.stats1 <- runSimulations(pars, 1, jaatha)
+  pars.test <- matrix(0.5, 3, 2)
+  sum.stats1 <- runSimulations(pars.test, 1, jaatha.csi)
   checkEquals( length(sum.stats1), 3 )
   for (i in 1:3) {
-    checkTrue( all(denormalize(pars[i, ], jaatha) == sum.stats1[[i]]$pars) )
-    checkTrue( all(pars[i, ] == sum.stats1[[i]]$pars.normal) )
-    checkTrue( !is.null(sum.stats1[[i]]$jsfs) )
-    checkTrue( sum(sum.stats1[[i]]$jsfs) > 0 )
+    checkTrue( all(denormalize(pars.test[i, ], jaatha.csi) == sum.stats1[[i]]$pars) )
+    checkTrue( all(pars.test[i, ] == sum.stats1[[i]]$pars.normal) )
+    checkTrue( !is.null(sum.stats1[[i]]$poisson.vector) )
+    checkTrue( sum(sum.stats1[[i]]$poisson.vector) > 0 )
   }
 
   if (require(multicore)) {
     set.seed(15)
-    sum.stats2 <- runSimulations(pars, 2, jaatha)
+    sum.stats2 <- runSimulations(pars.test, 2, jaatha.csi)
     checkEquals( length(sum.stats2), 3 )
     for (i in 1:3) {
-      checkTrue( all(denormalize(pars[i, ], jaatha) == sum.stats1[[i]]$pars) )
-      checkTrue( all(pars[i, ] == sum.stats1[[i]]$pars.normal) )
-      checkTrue( !is.null(sum.stats2[[i]]$jsfs) )
-      checkTrue( sum(sum.stats2[[i]]$jsfs) > 0 )
-      checkEquals( sum.stats1[[i]]$jsfs, sum.stats2[[i]]$jsfs )
+      checkTrue( all(denormalize(pars.test[i, ], jaatha.csi) == sum.stats1[[i]]$pars) )
+      checkTrue( all(pars.test[i, ] == sum.stats1[[i]]$pars.normal) )
+      checkTrue( !is.null(sum.stats2[[i]]$poisson.vector) )
+      checkTrue( sum(sum.stats2[[i]]$poisson.vector) > 0 )
+      checkEquals( sum.stats1[[i]]$poisson.vector,
+                   sum.stats2[[i]]$poisson.vector )
     }
   }
 }
