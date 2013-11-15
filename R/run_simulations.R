@@ -20,14 +20,9 @@ runSimulations <- function(pars, cores, jaatha) {
   colnames(pars) <- getParNames(jaatha)
   seeds <- generateSeeds(length(pars)+1)
 
-  if (cores == 1) {
-    sim.data <- lapply(1:nrow(pars), runSimulation, pars=pars, 
-                        seeds=seeds, jaatha=jaatha) 
-  } else {
-    sim.data <- mclapply(1:nrow(pars), runSimulation, pars=pars, 
-                          seeds=seeds, jaatha=jaatha,
-                          mc.preschedule=TRUE, mc.cores=cores)
-  }
+  sim.data <- mclapply(1:nrow(pars), runSimulation, pars=pars, 
+                       seeds=seeds, jaatha=jaatha,
+                       mc.preschedule=TRUE, mc.cores=cores)
 
   if ( "try-error" %in% unlist(sapply(sim.data, is)) ) 
     stop("Error while simulating. Check your sim.func") 
