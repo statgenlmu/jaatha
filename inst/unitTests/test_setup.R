@@ -1,8 +1,15 @@
+#!/usr/bin/Rscript
+#
 # --------------------------------------------------------------
 # Authors:  Paul R. Staab
 # Date:     2013-11-13
 # Licence:  GPLv3 or later
 # --------------------------------------------------------------
+
+library(jaatha)
+
+if (is.element("jaatha", loadedNamespaces()))
+  attach(loadNamespace("jaatha"), name=paste("namespace", "jaatha", sep=":"), pos=3)
 
 # Setup for tests
 dm.tt        <- dm.createThetaTauModel(11:12, 10)
@@ -31,3 +38,5 @@ block.test@border <- matrix(c(0, 0, 0.1, 0.1), 2, 2)
 
 sim.data.csi <- simulateWithinBlock(10, block.test, jaatha.csi)
 sim.data.tt  <- simulateWithinBlock(10, block.test, jaatha.tt)
+
+save(list=ls(), file="test_setup.Rda")

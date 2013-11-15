@@ -37,6 +37,7 @@ jaatha.Rcheck
 unit_tests/results
 howtos/cache
 src/symbols.rds
+inst/unitTests/test_setup.Rda
 
 # Latex
 *.aux

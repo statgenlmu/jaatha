@@ -1,3 +1,9 @@
+# --------------------------------------------------------------
+# Authors:  Paul R. Staab
+# Date:     2013-11-14
+# Licence:  GPLv3 or later
+# --------------------------------------------------------------
+
 test.init <- function() {
   sum.stat1 <- list(method="poisson.independent", value=1:10)
   sum.stat2 <- list(method="poisson.transformed", value=matrix(1, 3, 3),
@@ -19,13 +25,13 @@ test.init <- function() {
   checkTrue( length(jaatha@sum.stats) == 2 )
   checkTrue( !is.null(jaatha@sum.stats$ss1) )
   checkTrue( !is.null(jaatha@sum.stats$ss2) )
+
   checkTrue( all(jaatha@sum.stats$ss1$value == 1:10) )
   checkTrue( !is.null(jaatha@sum.stats$ss1$transformation) )
+
   checkTrue( all(jaatha@sum.stats$ss2$value == 1) )
   checkTrue( !is.null(jaatha@sum.stats$ss2$transformation) )
   checkTrue( all(jaatha@sum.stats$ss2$value.transformed == c(1, 1, 1)) )
-
-
 }
 
 test.getParNames <- function() {

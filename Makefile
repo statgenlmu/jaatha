@@ -1,4 +1,4 @@
-.PHONY: howtos install test quick-test check clean
+.PHONY: howtos install test test-setup quick-test check clean
 
 VERSION=$(shell grep Version DESCRIPTION.template | awk '{print $$2}')
 PACKAGE=jaatha_$(VERSION).tar.gz
@@ -9,20 +9,19 @@ TESTS=$(wildcard inst/unitTests/*.R)
 
 default: $(PACKAGE)
 
-release: $(PACKAGE) test check howtos 
+release: test-setup $(PACKAGE) check howtos 
 
 howtos: install 
 	cd howtos; make
 
-test: install
+test: install inst/unitTests/test_setup.Rda
 	# Runs the unit tests
-	cd tests; export RCMDCHECK=FALSE; ./doRUnit.R
+	cd tests; export RCMDCHECK=FALSE; Rscript doRUnit.R
 
-quick-test: install
-	# Runs the unit tests without time-consuming whole algorithms tests
-	cd unit_tests; ./doRUnit.R quick
+test-setup: install
+	cd inst/unitTests; Rscript test_setup.R
 
-check: install 
+check: $(PACKAGE)
 	# Runs an R CMD check
 	R CMD check --as-cran $(PACKAGE)
 
@@ -33,7 +32,7 @@ package: test check
 install: $(PACKAGE)
 	R CMD INSTALL $(PACKAGE)
 
-$(PACKAGE): $(R_SOURCES) $(CPP_SOURCES) $(TESTS) README DESCRIPTION man
+$(PACKAGE): $(R_SOURCES) $(CPP_SOURCES) $(TESTS) README DESCRIPTION man inst/unitTests/test_setup.Rda
 	R CMD build .
 
 README: README.md
@@ -41,6 +40,9 @@ README: README.md
 
 DESCRIPTION: DESCRIPTION.template 
 	cp DESCRIPTION.template DESCRIPTION
+
+inst/unitTests/test_setup.Rda: inst/unitTests/test_setup.R
+	make test-setup
 
 man: $(R_SOURCES) DESCRIPTION
 	- rm -r man 2> /dev/null
