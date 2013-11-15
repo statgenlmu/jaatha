@@ -27,11 +27,10 @@
 #' @keywords package
 #' @importFrom phyclust ms
 #' @importFrom foreach foreach 
-#' @importFrom foreach registerDoSEQ
 #' @importFrom foreach %do% 
-#' @importFrom foreach %dopar% 
 #' @importFrom methods new 
 #' @importFrom methods representation 
+#' @importFrom parallel mclapply
 #' @import Rcpp
 #' @useDynLib jaatha
 NULL
