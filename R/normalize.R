@@ -20,7 +20,7 @@ normalize <- function(value, jaatha) {
 #' @param value A parameter combination in Jaatha's internal scale
 #' @param jaatha The current jaatha object
 #' @return The parameter from value, converted into their natural scale
-denormalize <- function(values, jaatha) {
+denormalize <- function(value, jaatha) {
   log.range <- log(jaatha@par.ranges) 
-  exp(values*(log.range[,'max']-log.range[,'min'])+log.range[,'min'])
+  exp(value*(log.range[,'max']-log.range[,'min'])+log.range[,'min'])
 }

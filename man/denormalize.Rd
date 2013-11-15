@@ -2,7 +2,7 @@
 \alias{denormalize}
 \title{Convert parameters from Jaatha's internal scale into their natural scale}
 \usage{
-  denormalize(values, jaatha)
+  denormalize(value, jaatha)
 }
 \arguments{
   \item{value}{A parameter combination in Jaatha's internal
