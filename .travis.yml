@@ -1,0 +1,11 @@
+language: c
+script: make release
+before_install:
+  - sudo apt-get update -qq
+  - sudo apt-get install -qq r-base
+  - Rscript --version
+branches:
+  only:
+    - master
+    - /^v[0-9.]+$/
+    - travis_ci
