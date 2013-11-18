@@ -1,8 +1,14 @@
+Version 2.1.2
+-------------
++ Fixed problem with Rcpp in size_t on 64 bit windows
+
 Version 2.1.1
+-------------
 + Fixed warning messages in cpp files
 + Updated Makevars
 
-Version 2.1:
+Version 2.1
+-------------
 + Removed the "externalTheta" option to simplify further development
 + Reworte and cleaned up many of the internal functions
 + Further seperated Jaatha and Demographic Model to simplify use of Jaatha
@@ -13,18 +19,22 @@ in other areas
 be provided on Jaatha's homepage instead 
 + Added citation information to the package  
 
-Version 2.0.3:
+Version 2.0.3
+-------------
 + Added link to github repo to package description
 + Removed unused optimization strategies
 
-Version 2.0.2:
+Version 2.0.2
+-------------
 + Bugfix: Changed the example fasta file for compatibility with next ape version
 + Bugfix: Fixed encoding issue with bibtex for the packages vignette
 
-Version 2.0.1:
+Version 2.0.1
+-------------
 + Bugfix: Removed debug functions in C++ files that prevented installation on R-2.14
 
-Version 2.0.0:
+Version 2.0.0
+-------------
 + Testing
 + Updated Documentation and Vignette
 + New Feature: Added caching of ms and seqgen commands
@@ -32,25 +42,29 @@ Version 2.0.0:
 + Bugfix: Multiple tmp-dirs used during multicore refined search
 + Bugfix: Multiple searches for seqgen binary if running on multiple cores
 
-Version 1.9.12:
+Version 1.9.12
+-------------
 + Fixed a bug with one parameter models
 + Added support for seqgen
 + GLM fitting algorithm can now take more steps to converge
 + Updated the vignette
 + Ported seqgenFile2Jsfs.cc to Rcpp
 
-Version 1.9.11:
+Version 1.9.11
+-------------
 + Added parallelization using doMC.
 + Some improvements to the UI.
 + Updated copyright information.
 + Added import from ape.
 + Updated the vignette.
 
-Version 1.9.10:
+Version 1.9.10
+-------------
 + Use /dev/shm for temp files if available
 + Added "folded" option to use a folded JSFS
 + Added documentation for fasta2jsfs()
 + Made fasta2jsfs calculate the folded JSFS if no outgroup is given.
 
-Version 1.9.9:
+Version 1.9.9
+-------------
 + Reworked the demographic model class to be more flexible and consistent.

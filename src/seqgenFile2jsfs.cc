@@ -5,14 +5,14 @@
 #include <algorithm>
 #include <stdexcept>
 
-void seqFile2jsfs(const std::string &filename, const size_t &s1, 
-                  const size_t &s2, const size_t &nLoci, std::vector<size_t> &jsfs) {
+void seqFile2jsfs(const std::string &filename, const unsigned int &s1, 
+                  const unsigned int &s2, const unsigned int &nLoci, std::vector<unsigned int> &jsfs) {
 
   std::ifstream datei(filename.c_str());
 
   std::string currentSeq, seqName_tmp;
-  size_t numSeq, seqLen, seqName;   
-  size_t sampleS[2]={s1, s2};
+  unsigned int numSeq, seqLen, seqName;   
+  unsigned int sampleS[2]={s1, s2};
   char outg;
   numSeq=sampleS[0]+sampleS[1]+1;  // +1for outgroup
   std::vector<std::vector<char> > sequence(numSeq);
@@ -21,12 +21,12 @@ void seqFile2jsfs(const std::string &filename, const size_t &s1,
   jsfs.assign((s1+1)*(s2+1), 0);
 
   if ( datei.good() ) {
-    for (size_t c=0; c<nLoci; c++){
+    for (unsigned int c=0; c<nLoci; c++){
       //std::cout << "**** locus " << c << " :" << std::endl;
       datei >>  numSeq >> seqLen;  //first 2 numbers of datei are #seq and #positions
       //cout<<"numSeq:   "<<numSeq<<" seqLen: "<<seqLen<<"    ss1: "<<sampleS[0]<<"    ss2: "<<sampleS[1]<<endl;
       // read sequences into 'sequence[][]' (includes outgroup) and simultaneously sort them
-      for(size_t i=0; i<numSeq; ++i) {
+      for(unsigned int i=0; i<numSeq; ++i) {
         datei >> seqName_tmp >> currentSeq;	
 
         //ms from phyclust adds an "s" to the seqName. So remove it if it is
@@ -41,18 +41,18 @@ void seqFile2jsfs(const std::string &filename, const size_t &s1,
       }
 
       //look at each position seperately
-      for(size_t pos=0; pos<seqLen; ++pos) {   
+      for(unsigned int pos=0; pos<seqLen; ++pos) {   
         int derivedCount[2]= {0};     // per pop	     
         outg=sequence[numSeq-1][pos];
         //cout<<"**** position "<<pos<<" :"<<outg<<endl;
 
         // which nucleotides are present at position pos, including outgroup
-        for(size_t i=0; i<sampleS[0]; ++i) {
+        for(unsigned int i=0; i<sampleS[0]; ++i) {
           if (sequence[i][pos]!=outg){
             ++derivedCount[0];
           }
         }
-        for(size_t i=sampleS[0]; i<(numSeq-1); ++i) {   //without outgroup
+        for(unsigned int i=sampleS[0]; i<(numSeq-1); ++i) {   //without outgroup
           if (sequence[i][pos]!= outg){
             ++derivedCount[1];
           }
@@ -76,13 +76,12 @@ RcppExport SEXP seqgen2jsfs(SEXP filename_,
                             SEXP s2_,
                             SEXP nLoci_) {
 
-  BEGIN_RCPP    
-      std::string filename = Rcpp::as<std::string>(filename_);
-  size_t s1 = Rcpp::as<size_t>(s1_);
-  size_t s2 = Rcpp::as<size_t>(s2_);
-  size_t nLoci = Rcpp::as<size_t>(nLoci_);
+  BEGIN_RCPP std::string filename = Rcpp::as<std::string>(filename_);
+  unsigned int s1 = Rcpp::as<unsigned int>(s1_);
+  unsigned int s2 = Rcpp::as<unsigned int>(s2_);
+  unsigned int nLoci = Rcpp::as<unsigned int>(nLoci_);
 
-  std::vector<size_t> jsfs;
+  std::vector<unsigned int> jsfs;
   seqFile2jsfs(filename, s1, s2, nLoci, jsfs);
 
   return Rcpp::wrap( jsfs );
