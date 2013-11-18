@@ -1,6 +1,6 @@
 .PHONY: howtos install test test-setup quick-test check clean
 
-VERSION=$(shell grep Version DESCRIPTION.template | awk '{print $$2}')
+VERSION=$(shell grep Version DESCRIPTION | awk '{print $$2}')
 PACKAGE=jaatha_$(VERSION).tar.gz
 
 R_SOURCES=$(wildcard R/*.R) 
@@ -39,9 +39,6 @@ $(PACKAGE): $(R_SOURCES) $(CPP_SOURCES) $(TESTS) $(VIGNETTES) README DESCRIPTION
 
 README: README.md
 	grep -v "\`\`\`" README.md > README
-
-DESCRIPTION: DESCRIPTION.template 
-	cp DESCRIPTION.template DESCRIPTION
 
 inst/unitTests/test_setup.Rda: inst/unitTests/test_setup.R
 	make test-setup
