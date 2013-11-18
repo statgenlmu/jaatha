@@ -5,14 +5,16 @@ PACKAGE=jaatha_$(VERSION).tar.gz
 
 R_SOURCES=$(wildcard R/*.R) 
 CPP_SOURCES=$(wildcard src/*.cc)
+VIGNETTES=$(wildcard vignettes/*.pdf)
 TESTS=$(wildcard inst/unitTests/*.R)
 
 default: $(PACKAGE)
 
-release: test-setup $(PACKAGE) check howtos 
+release: test-setup howtos $(PACKAGE) check  
 
 howtos: install 
 	cd howtos; make
+	cp howtos/*.pdf vignettes/
 
 test: install inst/unitTests/test_setup.Rda
 	# Runs the unit tests
@@ -32,7 +34,7 @@ package: test check
 install: $(PACKAGE)
 	R CMD INSTALL $(PACKAGE)
 
-$(PACKAGE): $(R_SOURCES) $(CPP_SOURCES) $(TESTS) README DESCRIPTION man inst/unitTests/test_setup.Rda
+$(PACKAGE): $(R_SOURCES) $(CPP_SOURCES) $(TESTS) $(VIGNETTES) README DESCRIPTION man inst/unitTests/test_setup.Rda
 	R CMD build .
 
 README: README.md

@@ -1,7 +1,7 @@
-DESCRIPTION.template
-README.md
-Makefile
-howtos
-unit_tests
-misc
-jaatha_
+^DESCRIPTION.template$
+^README.md$
+^Makefile$
+^howtos$
+^unit_tests$
+^misc$
+.tar.gz$
