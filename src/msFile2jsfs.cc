@@ -68,9 +68,9 @@ void parseLine(string line, std::vector<int> &jsfs, const int &s1, const int &s2
 
       //Calc JSFS
       for(int i=0; i<L; ++i){
-        if (debug) cout << MutOfSitePop1[i] << " : " << MutOfSitePop2[i] << endl;
+        // if (debug) cout << MutOfSitePop1[i] << " : " << MutOfSitePop2[i] << endl;
         int index =  MutOfSitePop1[i] * (s2+1) + MutOfSitePop2[i];
-        if (debug) cout << "index:" << index << endl;
+        // if (debug) cout << "index:" << index << endl;
         if (index < 0 || index >= (s1+1)*(s2+1)) throw std::runtime_error("Wrong array index!");
         jsfs[ index ]++;
       }
@@ -80,7 +80,7 @@ void parseLine(string line, std::vector<int> &jsfs, const int &s1, const int &s2
       //Unset Site spezific variables
       individual = 0;
       L = 0;
-      if (debug) cout << "> Site ended detected" << endl;
+      // if (debug) cout << "> Site ended detected" << endl;
     }
   }
   else if (line == "//") {
@@ -101,7 +101,7 @@ void parseLine(string line, std::vector<int> &jsfs, const int &s1, const int &s2
       }
     }
 
-    if (debug) cout << "> Individual " << individual << "| Population " << individual / s1 << endl;
+    // if (debug) cout << "> Individual " << individual << "| Population " << individual / s1 << endl;
 
     //Parse the individual
     if (individual / s1 == 0){
