@@ -6,7 +6,7 @@ PACKAGE=jaatha_$(VERSION).tar.gz
 R_SOURCES=$(wildcard R/*.R) 
 CPP_SOURCES=$(wildcard src/*.cc)
 VIGNETTES=$(wildcard vignettes/*.pdf)
-TESTS=$(wildcard inst/unitTests/*.R)
+TESTS=$(wildcard inst/unitTests/*.R) $(wildcard tests/*.R)
 
 default: $(PACKAGE)
 
@@ -27,9 +27,7 @@ check: $(PACKAGE)
 	# Runs an R CMD check
 	R CMD check --as-cran $(PACKAGE)
 
-package: test check
-	# Build the R package out of the sources
-	R CMD build .
+package: $(PACKAGE) 
 
 install: 
 	R CMD INSTALL .
