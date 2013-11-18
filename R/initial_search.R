@@ -32,12 +32,11 @@ Jaatha.initialSearch <- function(jaatha, sim=200, blocks.per.par=3, rerun=FALSE)
   if (rerun) {
     if( is.null(jaatha@calls[['initial.search']]) ) 
       stop("No arguments found. Did you run the initial search before?")
-    if( !is.call(jaatha@calls[['initial.search']]) ) 
-      stop("Call for initial search is no call!")
-    #jaatha@calls[['initial.search']][[2]] <- jaatha
-    return(eval(jaatha@calls[['initial.search']]))
+    sim <- jaatha@calls[['initial.search']]$sim
+    blocks.per.par <- jaatha@calls[['initial.search']]$blocks.per.par
   } else {
-    jaatha@calls[['initial.search']] <- match.call() 
+    jaatha@calls[['initial.search']] <- list(sim=sim,
+                                             blocks.per.par=blocks.per.par) 
   }
 
   .log2("Called Jaatha.initialSearch()")

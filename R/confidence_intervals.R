@@ -42,34 +42,22 @@ Jaatha.confidenceIntervals <- function(jaatha, conf.level=0.95,
   #if (is.null(log.folder)) log.folder <- paste(tempdir(), "jaatha-logs", sep="/") 
   dir.create(log.folder, showWarnings=FALSE)
 
+  setParallelization(cores)
+
   # Simulate data under the fitted model
   .print("Simulating data...\n")
   set.seed(seeds[length(seeds)])
-  est.pars <- Jaatha.getLikelihoods(jaatha, 1)[-(1:2)]
+  est.pars <- jaatha@likelihood.table[1, -(1:2)]
   sim.pars <- matrix(est.pars, replicas, getParNumber(jaatha), byrow=TRUE)
-  sim.data <- jaatha@simFunc(jaatha, sim.pars)
+  sim.data <- runSimulations(sim.pars, cores, jaatha) 
+  sum.stats <- lapply(sim.data, convertSimDataToSumStats, sum.stats=jaatha@sum.stats)
 
-  setParallelization(cores)
+  bs.results <- mclapply(1:replicas, rerunAnalysis, 
+                         seeds=seeds, jaatha=jaatha, sum.stats=sim.data,
+                         log.folder=log.folder, mc.cores=cores)
 
-  bs.results <- foreach(i=1:replicas, .combine=rbind) %dopar% {
-    .print("Starting run", i, "...")
-    sink(paste0(log.folder, "/run_", i, ".log"))
-
-    # Initialize a copy of the jaatha object
-    set.seed(seeds[i])
-    jaatha.rep <- jaatha
-    jaatha.rep@seeds <- c(seeds[i], generateSeeds(2))
-    jaatha.rep@sumStats <- sim.data[i, ]
-    jaatha.rep@cores <- 1
-
-    jaatha.rep <- Jaatha.initialSearch(jaatha.rep, rerun=TRUE) 
-    jaatha.rep <- Jaatha.refinedSearch(jaatha.rep, rerun=TRUE)
-
-    save(jaatha.rep, file=paste0(log.folder, "/run_", i, ".Rda"))
-    sink()
-
-    return(Jaatha.getLikelihoods(jaatha.rep, 1)[-(1:2)])
-  }
+  bs.results.li <- t(sapply(bs.results, Jaatha.getLikelihoods,
+                            max.entries=1))[,-(1:2)] 
 
   jaatha@conf.ints <- foreach(i=1:ncol(bs.results), .combine=rbind) %do% {
     par.name <- getParNames(jaatha)[i]
@@ -80,6 +68,37 @@ Jaatha.confidenceIntervals <- function(jaatha, conf.level=0.95,
   .print("\nConfidence Intervals are:")
   print(jaatha@conf.ints)
   return(jaatha)
+}
+
+rerunAnalysis <- function(idx, jaatha, seeds, sum.stats=NULL, log.folder) {
+  .print("Starting run", idx, "...")
+
+  # Initialize a copy of the jaatha object
+  set.seed(seeds[idx])
+  jaatha@seeds <- c(seeds[idx], generateSeeds(2))
+  print(jaatha@seeds)
+  sink(paste0(log.folder, "/run_", idx, ".log"))
+  if( !is.null(sum.stats) ) jaatha@sum.stats <- sum.stats[idx]
+  jaatha@cores <- 1
+
+  jaatha <- Jaatha.initialSearch(jaatha, rerun=TRUE) 
+  jaatha <- Jaatha.refinedSearch(jaatha, rerun=TRUE)
+
+  save(jaatha, file=paste0(log.folder, "/run_", idx, ".Rda"))
+  sink()
+
+  return(jaatha)
+}
+
+convertSimDataToSumStats <- function(sim.data, sum.stats) {
+  for (sum.stat in names(sum.stats)) {
+    sum.stats[[sum.stat]]$value <- sim.data[[sum.stat]]
+    if(!is.null(sum.stats[[sum.stat]]$transformation)) {
+      sum.stats[[sum.stat]]$value.transformed <-
+        sum.stats[[sum.stat]]$transformation(sum.stats[[sum.stat]]$value) 
+    }
+  }
+  return(sum.stats)
 }
 
 calcBCaConfInt <- function(conf.level, bs.values, estimates, replicas) {

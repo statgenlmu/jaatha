@@ -34,22 +34,32 @@
 #' @return An Jaatha object. The found values are written to the slot likelihood.table.
 #'
 #' @export
-Jaatha.refinedSearch <- function(jaatha, best.start.pos, sim,
-                                 sim.final, epsilon=1, half.block.size=.05,
+Jaatha.refinedSearch <- function(jaatha, best.start.pos=2, sim=100,
+                                 sim.final=100, epsilon=1, half.block.size=.05,
                                  weight=.9, max.steps=200, rerun=FALSE) {
 
   if (rerun) {
     if( is.null(jaatha@calls[['refined.search']]) ) 
       stop("No arguments found. Did you run the refined search before?")
-    if( !is.call(jaatha@calls[['refined.search']]) ) 
-      stop("Call for refined search is no call!")
 
-    return(eval(jaatha@calls[['refined.search']]))
+    best.start.pos <- jaatha@calls[['refined.search']]$best.start.pos
+    sim <- jaatha@calls[['refined.search']]$sim
+    sim.final <- jaatha@calls[['refined.search']]$sim.final
+    epsilon <- jaatha@calls[['refined.search']]$epsilon
+    half.block.size <- jaatha@calls[['refined.search']]$half.block.size
+    weight <- jaatha@calls[['refined.search']]$weight
+    max.steps <- jaatha@calls[['refined.search']]$max.steps
+
   } else {
-    jaatha@calls[['refined.search']] <- match.call() 
+    arguments <- list(best.start.pos=best.start.pos,
+                      sim=sim,
+                      sim.final=sim.final,
+                      epsilon=epsilon,
+                      half.block.size=half.block.size,
+                      weight=weight,
+                      max.steps=max.steps)
+    jaatha@calls[['refined.search']] <- arguments 
   }
-
-  if (missing(sim.final)) sim.final <- sim
 
   # Check parameters
   if (!is.jaatha(jaatha)) stop("jaatha is not of type Jaatha")
