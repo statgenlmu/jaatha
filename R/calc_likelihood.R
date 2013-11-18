@@ -11,24 +11,29 @@
 ## Funtion to calculate the likelihood based on simulations with the
 ## given parameters.  Order of parameters should be the same as needed
 ## for the simulate-function (in Simulator.R).
-calcLikelihood <- function(jaatha, sim, pars){
+simLikelihood <- function(jaatha, sim, pars) {
   sim.pars <- matrix(pars, sim, length(pars), byrow=TRUE)
 
   sim.data <- runSimulations(sim.pars, jaatha@cores, jaatha)
 
-  logL <- 0
   # Average the values of each summary statistic
-  for (sum.stat in jaatha@sum.stats) {
-    if (sum.stat$method == "poisson.transformed") {
-    values <- t(sapply(sim.data, function(x) sum.stat$transformation(x$jsfs))) 
-    simSS <- apply(values, 2, mean)
+  log.cl <- 0
 
-    simSS[simSS==0] <- 0.5
-    sum.stat.value <- sum.stat$transformation(sum.stat$value)
-    logL <- logL + sum(sum.stat.value * log(simSS) - simSS - calcLogFactorial(sum.stat.value)) 
+  sum.stats <- jaatha@sum.stats
+  for (sum.stat in names(sum.stats)) {
+    if (sum.stats[[sum.stat]]$method %in% c("poisson.transformed", "poisson.independent")) {
+      values <- t(sapply(sim.data, 
+                         function(x) sum.stats[[sum.stat]]$transformation(x[[sum.stat]]))) 
+      simSS <- apply(values, 2, mean)
+
+      simSS[simSS==0] <- 0.5
+      sum.stat.value <- sum.stats[[sum.stat]]$value.transformed
+      log.cl <- log.cl + 
+      sum(sum.stat.value * log(simSS) - simSS - calcLogFactorial(sum.stat.value)) 
     }
+    else stop("Unsupported SumStat method")
   }
-  return(logL)
+  return(log.cl)
 }
 
 

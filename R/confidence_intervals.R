@@ -59,6 +59,7 @@ Jaatha.confidenceIntervals <- function(jaatha, conf.level=0.95,
   bs.results.li <- t(sapply(bs.results, Jaatha.getLikelihoods,
                             max.entries=1))[,-(1:2)] 
 
+  i <- NULL
   jaatha@conf.ints <- foreach(i=1:ncol(bs.results), .combine=rbind) %do% {
     par.name <- getParNames(jaatha)[i]
     return( calcBCaConfInt(conf.level, bs.results[,i], est.pars[i], replicas) )
@@ -78,7 +79,7 @@ rerunAnalysis <- function(idx, jaatha, seeds, sum.stats=NULL, log.folder) {
   jaatha@seeds <- c(seeds[idx], generateSeeds(2))
   print(jaatha@seeds)
   sink(paste0(log.folder, "/run_", idx, ".log"))
-  if( !is.null(sum.stats) ) jaatha@sum.stats <- sum.stats[idx]
+  if( !is.null(sum.stats) ) jaatha@sum.stats <- sum.stats[[idx]]
   jaatha@cores <- 1
 
   jaatha <- Jaatha.initialSearch(jaatha, rerun=TRUE) 

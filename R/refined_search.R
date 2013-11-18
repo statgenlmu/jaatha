@@ -213,7 +213,7 @@ refinedSearchSingleBlock <- function(jaatha, start.point, sim, sim.final,
   for (t in 1:nBest){
     topPar <- topTen[t,-1]
     .print("* Parameter combination",t,"of",nBest)
-    likelihoods[t] <- calcLikelihood(jaatha, sim.final, topPar)
+    likelihoods[t] <- simLikelihood(jaatha, sim.final, topPar)
   }
   .log3("Finished final sim.")
 
