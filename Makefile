@@ -31,8 +31,8 @@ package: test check
 	# Build the R package out of the sources
 	R CMD build .
 
-install: $(PACKAGE)
-	R CMD INSTALL $(PACKAGE)
+install: 
+	R CMD INSTALL .
 
 $(PACKAGE): $(R_SOURCES) $(CPP_SOURCES) $(TESTS) $(VIGNETTES) README DESCRIPTION man inst/unitTests/test_setup.Rda
 	R CMD build .
