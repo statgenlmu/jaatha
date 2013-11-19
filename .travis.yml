@@ -13,7 +13,7 @@ before_install:
 install:
   - ./travis-tool.sh install_deps
   - ./travis-tool.sh r_install knitr
-  - ./travis-tool.sh aptget_install seq-gen texinfo
+  - ./travis-tool.sh aptget_install seq-gen texinfo qpdf
 notifications:
   email:
     on_success: change
