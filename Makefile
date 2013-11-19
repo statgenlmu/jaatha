@@ -1,4 +1,4 @@
-.PHONY: howtos install test test-setup quick-test check clean
+.PHONY: howtos install test test-setup travis-test check clean
 
 VERSION=$(shell grep Version DESCRIPTION | awk '{print $$2}')
 PACKAGE=jaatha_$(VERSION).tar.gz
@@ -11,6 +11,7 @@ TESTS=$(wildcard inst/unitTests/*.R) $(wildcard tests/*.R)
 default: $(PACKAGE)
 
 release: test-setup howtos $(PACKAGE) check  
+travis-test: $(PACKAGE) test check
 
 howtos: install 
 	cd howtos; make
@@ -35,8 +36,9 @@ install:
 $(PACKAGE): $(R_SOURCES) $(CPP_SOURCES) $(TESTS) $(VIGNETTES) README DESCRIPTION man inst/unitTests/test_setup.Rda
 	R CMD build .
 
+
 README: README.md
-	grep -v "\`\`\`" README.md > README
+	grep -v "\`\`\`" README.md | grep -v "Build Status" > README
 
 inst/unitTests/test_setup.Rda: inst/unitTests/test_setup.R
 	make test-setup

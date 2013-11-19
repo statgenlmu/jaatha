@@ -1,6 +1,8 @@
 Jaatha's README
 ===============
 
+[![Build Status](https://travis-ci.org/paulstaab/jaatha.png?branch=master)](https://travis-ci.org/paulstaab/jaatha)
+
 Jaatha is a fast parameter estimation method primarily designed for Evolutionary
 Biology. The method is described in 
 
@@ -11,6 +13,7 @@ Biology. The method is described in
 Practical instructions for running Jaatha are provided in the 
 [The Jaatha HowTo][2]. Instructions how to use Jaatha with a non-standard 
 simulation method are given in the [Custom Simulation Method HowTo][3].
+
 
 
 Installation
@@ -26,6 +29,7 @@ install.packages('jaatha')
 in R.
 
 ## Development version from GitHub  
+Development Version Status: [![Build Status](https://travis-ci.org/paulstaab/jaatha.png?branch=develop)](https://travis-ci.org/paulstaab/jaatha)
 You can download and build the development version from GitHub following the
 commands: 
 

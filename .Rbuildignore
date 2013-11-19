@@ -5,3 +5,4 @@
 ^unit_tests$
 ^misc$
 .tar.gz$
+^.travis.yml
