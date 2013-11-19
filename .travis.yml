@@ -13,7 +13,7 @@ before_install:
 install:
   - ./travis-tool.sh install_deps
   - ./travis-tool.sh r_install knitr
-  - sudo apt-get install -qq seq-gen
+  - ./travis-tool.sh aptget_install seq-gen texinfo
 notifications:
   email:
     on_success: change
