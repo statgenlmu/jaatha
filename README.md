@@ -35,7 +35,7 @@ install.packages(c('Rcpp', 'ape', 'doMC', 'RUnit'))
 
 # Download & install Jaatha
 library('devtools')
-install_github("jaatha", "paulstaab", ref="v2.2")
+install_github("jaatha", "paulstaab", ref="develop")
 ```
 
 
