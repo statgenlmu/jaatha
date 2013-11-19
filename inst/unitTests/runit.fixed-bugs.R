@@ -15,17 +15,6 @@ test.showEmptyModel <- function() {
   print(dm)
 }
 
-#Jaatha was not able to run on one parameter models
-test.oneParModel <- function() {
-  dm.onePar <- dm.createDemographicModel(10:11, 20)
-  dm.onePar <- dm.addSpeciationEvent(dm.onePar, fixed.time=0)
-  dm.onePar <- dm.addMutation(dm.onePar, 1, 20)
-  jsfs <- matrix(rpois(11*12, 10), 11, 12)
-  jaatha <- Jaatha.initialize(dm.onePar, jsfs=jsfs, seed=100)
-  jaatha <- Jaatha.initialSearch(jaatha, sim=10, blocks.per.par=2)
-  checkEquals(nrow(Jaatha.getStartingPoints(jaatha)), 2)
-}
-
 test.ApeCodeInVignette <- function() {
   require('ape') || stop('Package "ape" is required for unit tests')
   sample.file <- system.file('example_fasta_files/sample.fasta', package='jaatha')

@@ -1,5 +1,4 @@
 # --------------------------------------------------------------
-# initial_search.R 
 # Contains the initialSearch() and helper functions used nowhere else 
 # 
 # Authors:  Lisha Naduvilezhath & Paul R. Staab
@@ -33,12 +32,11 @@ Jaatha.initialSearch <- function(jaatha, sim=200, blocks.per.par=3, rerun=FALSE)
   if (rerun) {
     if( is.null(jaatha@calls[['initial.search']]) ) 
       stop("No arguments found. Did you run the initial search before?")
-    if( !is.call(jaatha@calls[['initial.search']]) ) 
-      stop("Call for initial search is no call!")
-    #jaatha@calls[['initial.search']][[2]] <- jaatha
-    return(eval(jaatha@calls[['initial.search']]))
+    sim <- jaatha@calls[['initial.search']]$sim
+    blocks.per.par <- jaatha@calls[['initial.search']]$blocks.per.par
   } else {
-    jaatha@calls[['initial.search']] <- match.call() 
+    jaatha@calls[['initial.search']] <- list(sim=sim,
+                                             blocks.per.par=blocks.per.par) 
   }
 
   .log2("Called Jaatha.initialSearch()")
@@ -59,16 +57,13 @@ Jaatha.initialSearch <- function(jaatha, sim=200, blocks.per.par=3, rerun=FALSE)
     .print("*** Block", i, ":", printBorder(firstBlocks[[i]], jaatha))
 
     .log3("Simulating in block", i)
-    parNsumstat <- simulateWithinBlock(sim, firstBlocks[[i]], jaatha)       
+    sim.data <- simulateWithinBlock(sim, firstBlocks[[i]], jaatha)       
 
     .log3("Fitting GLM in block", i)        
-    glm <- glmFitting(parNsumstat, jaatha)
+    glms.fitted <- fitGlm(sim.data, jaatha)
 
     .log3("Searching optimal values in block",i)
-    optimal <- estimate(bObject=firstBlocks[[i]], jaatha,
-                        modFeld=glm, boarder=0)
-    ##boarder of 0 is important! (otherwise not all param
-    ##under consideration)
+    optimal <- findBestParInBlock(firstBlocks[[i]], glms.fitted, jaatha@sum.stats) 
     
     firstBlocks[[i]]@score <- optimal$score
 

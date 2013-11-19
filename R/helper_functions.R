@@ -151,22 +151,25 @@ checkType <- function(variable, type, required=T, allow.na=T) {
 
   for (i in seq(along=type)){
     if (type[i] == "char" || type[i] == "character") {
-      func <- function(x) { is.character(x) }
+      func <- is.character
       error <- "has to be of type character"
     } else if (type[i] == "bool" || type[i] == "boolean") {
-      func <- function(x) { is.logical(x) }
+      func <- is.logical
       error <- "has to be of type boolean"
+    } else if (type[i] == "int" || type[i] == "integer") {
+      func <- is.integer
+      error <- "has to be of type integer"
     } else if (type[i] == "num" || type[i] == "numeric") {
-      func <- function(x) { is.numeric(x) }
+      func <- is.numeric
       error <- "has to be of type numeric"
     } else if (type[i]  == "vec" || type[i]  == "vector") {
-      func <- function(x) { is.vector(x) }
+      func <- is.vector
       error <- "has to be a vector"
     } else if (type[i] == "mat" || type[i] == "matrix") {
-      func <- function(x) { is.matrix(x) }
+      func <- is.matrix
       error <- "has to be a matrix"
     } else if (type[i] == "fun" || type[i] == "function") {
-      func <- function(x) { is.function(x) }
+      func <- is.function
       error <- "has to be a function"
     } else if (type[i] == "s" || type[i] == "single") {
       func <- function(x) {length(x) == 1}
@@ -177,6 +180,9 @@ checkType <- function(variable, type, required=T, allow.na=T) {
     } else if (type[i] == "jat" || type[i] == "jaatha") {
       func <- function(x) {class(x)[1] == "Jaatha"}
       error <- "is no Jaatha object"
+    } else if (type[i] == "ar" || type[i] == "array") {
+      func <- is.array 
+      error <- "is not an array"
     } else {
       stop("Unknown type: ",type[i])
     }

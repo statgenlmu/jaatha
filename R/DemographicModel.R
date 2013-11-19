@@ -1172,13 +1172,18 @@ dm.addOutgroup <- function(dm, separation.time) {
 
 
 
-#' Simulates data according to a demographic model and calculates summary statistics form it
+#-------------------------------------------------------------------
+# dm.simSumStats
+#-------------------------------------------------------------------
+#' Simulates data according to a demographic model
 #' 
-#' @param dm          The demographic model according to which the simulations should be done
-#' @param parameters  A vector of parameters which should be used for the simulations. 
-#'            If a matrix is given, a simulation for each row of the matrix will be performed
-#' @return        A matrix where each row is the vector of summary statistics for 
-#'            the parameters in the same row of the "parameter" matrix
+#' @param dm The demographic model according to which the simulations should be done
+#' @param parameters A vector of parameters which should be used for the simulations. 
+#'           If a matrix is given, a simulation for each row of the matrix will be performed
+#' @param sum.stats A vector with names of the summary statistics to simulate,
+#'           or "all" for simulating all possible statistics.
+#' @return A matrix where each row is the vector of summary statistics for 
+#'         the parameters in the same row of the "parameter" matrix
 #' @export
 #'
 #' @examples
@@ -1186,24 +1191,15 @@ dm.addOutgroup <- function(dm, separation.time) {
 #' dm <- dm.addSpeciationEvent(dm,0.01,5)
 #' dm <- dm.addMutation(dm,1,20)
 #' dm.simSumStats(dm,c(1,10))
-dm.simSumStats <- function(dm, parameters){
-  .log3("Called dm.simSumStats()")
-
+dm.simSumStats <- function(dm, parameters, sum.stats=c("all")) {
   checkType(dm, "dm")
-  if (!is.matrix(parameters)) parameters <- matrix(parameters, 1)
-  if (dim(parameters)[2] != dm.getNPar(dm)) stop("Wrong number of parameters")
-  if ( !.checkParInRange(dm,parameters) ) stop("Parameters out of range")
 
-  sumStats <- apply(parameters, 1, dm.simulate, dm=dm)
+  if (length(parameters) != dm.getNPar(dm)) stop("Wrong number of parameters")
+  #if ( !.checkParInRange(dm, parameters) ) stop("Parameters out of range")
 
-  .log3("Finished dm.simSumStats()")
-  return(sumStats)
+  dm@currentSimProg@singleSimFunc(dm, parameters)
 }
 
-dm.simulate <- function(dm, pars) {
-  jsfs <- dm@currentSimProg@singleSimFunc(dm, pars)
-  return(list(pars=pars, jsfs=jsfs))
-}
 
 scaleDemographicModel <- function(dm, scaling.factor) {
   dm@nLoci <- round(dm@nLoci / scaling.factor)

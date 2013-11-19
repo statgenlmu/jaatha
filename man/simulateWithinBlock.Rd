@@ -1,0 +1,24 @@
+\name{simulateWithinBlock}
+\alias{simulateWithinBlock}
+\title{This function executes simulations for a number of random
+parameter values inside a block.}
+\usage{
+  simulateWithinBlock(sim, block, jaatha)
+}
+\arguments{
+  \item{sim}{the number of simulations to execute.}
+
+  \item{block}{the block in which the simulations are
+  executed.}
+
+  \item{jaatha}{The current jaatha object}
+}
+\value{
+  A list of simulation results, where is simulation result
+  is a list of summary statistics.
+}
+\description{
+  This function executes simulations for a number of random
+  parameter values inside a block.
+}
+

@@ -146,8 +146,9 @@ msSingleSimFunc <- function(dm, parameters) {
   jsfs  <- msOut2Jsfs(dm, ms.out)
   .log3("done. Removing tmp files...")
   unlink(ms.out)
-  return(jsfs)
+  return(list(jsfs=jsfs, pars=parameters))
 }
+
 
 finalizeMs <- function(dm) {
   dm@options[['ms.cmd']] <- generateMsOptionsCommand(dm)

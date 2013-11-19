@@ -2,9 +2,10 @@
 \alias{Jaatha.refinedSearch}
 \title{Iterative search for the maximum composite likelihood parameters}
 \usage{
-  Jaatha.refinedSearch(jaatha, best.start.pos, sim,
-    sim.final, epsilon = 0.2, half.block.size = 0.05,
-    weight = 0.9, max.steps = 200, rerun = FALSE)
+  Jaatha.refinedSearch(jaatha, best.start.pos = 2,
+    sim = 100, sim.final = 100, epsilon = 1,
+    half.block.size = 0.05, weight = 0.9, max.steps = 200,
+    rerun = FALSE)
 }
 \arguments{
   \item{jaatha}{The Jaatha settings (create with

@@ -11,31 +11,29 @@
 ## Funtion to calculate the likelihood based on simulations with the
 ## given parameters.  Order of parameters should be the same as needed
 ## for the simulate-function (in Simulator.R).
-calcLikelihood <- function(jaatha, sim, pars){
-  .log2("Called Jaatha.calcLikelihood()")
-  pars <- matrix(rep(pars, each=sim), nrow=sim)
+simLikelihood <- function(jaatha, sim, pars) {
+  sim.pars <- matrix(pars, sim, length(pars), byrow=TRUE)
 
-  sim.packages <- createSimulationPackages(pars, jaatha@sim.package.size)
-  seeds <- generateSeeds(length(sim.packages)+1)
-
-  # Simulate each package, maybe on different cores
-  i <- NULL   # To make R CMD check stop complaining
-  simSS  <- foreach(i = seq(along = sim.packages), .combine='rbind') %dopar% {
-    set.seed(seeds[i])
-    sim.pars <- .deNormalize(jaatha, sim.packages[[i]])
-    sumStats <- jaatha@simFunc(jaatha, sim.pars)
-    return(sumStats)
-  }
-  set.seed(seeds[length(seeds)])
+  sim.data <- runSimulations(sim.pars, jaatha@cores, jaatha)
 
   # Average the values of each summary statistic
-  simSS <- apply(simSS, 2, mean)
+  log.cl <- 0
 
-  .log2("Calculating Likelihood...")
-  simSS[simSS==0] <- 0.5
-  logL <- sum(jaatha@sumStats * log(simSS) - simSS - calcLogFactorial(jaatha@sumStats))
-  .log2("Finished Jaatha.calcLikelihood(). Return:",logL)
-  return(logL)
+  sum.stats <- jaatha@sum.stats
+  for (sum.stat in names(sum.stats)) {
+    if (sum.stats[[sum.stat]]$method %in% c("poisson.transformed", "poisson.independent")) {
+      values <- t(sapply(sim.data, 
+                         function(x) sum.stats[[sum.stat]]$transformation(x[[sum.stat]]))) 
+      simSS <- apply(values, 2, mean)
+
+      simSS[simSS==0] <- 0.5
+      sum.stat.value <- sum.stats[[sum.stat]]$value.transformed
+      log.cl <- log.cl + 
+      sum(sum.stat.value * log(simSS) - simSS - calcLogFactorial(sum.stat.value)) 
+    }
+    else stop("Unsupported SumStat method")
+  }
+  return(log.cl)
 }
 
 

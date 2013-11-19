@@ -1,0 +1,58 @@
+#!/usr/bin/Rscript --vanilla
+#
+# Script to run Jaatha's unit tests
+# 
+# Taken form:
+# http://rwiki.sciviews.org/doku.php?id=developers:runit
+#
+
+stopifnot(require("RUnit", quietly=TRUE))
+
+## --- Setup ---
+
+pkg <- "jaatha"
+if(Sys.getenv("RCMDCHECK") == "FALSE") {
+  ## Path to unit tests for standalone running under Makefile (not R CMD check)
+  ## PKG/tests/../inst/unitTests
+  path <- file.path(getwd(), "..", "inst", "unitTests")
+} else {
+  ## Path to unit tests for R CMD check
+  ## PKG.Rcheck/tests/../PKG/unitTests
+  path <- system.file(package=pkg, "unitTests")
+}
+
+cat("\nRunning unit tests\n")
+print(list(pkg=pkg, getwd=getwd(), pathToUnitTests=path))
+
+library(package=pkg, character.only=TRUE)
+
+## load the name space to allow testing of private functions
+if (is.element(pkg, loadedNamespaces()))
+  attach(loadNamespace(pkg), name=paste("namespace", pkg, sep=":"), pos=3)
+
+test.setup <- paste(path, "test_setup.Rda", sep="/")
+if (!file.exists(test.setup)) stop("Failed to load test_setup.Rda") 
+load(test.setup)
+rm(test.setup)
+
+
+
+## --- Testing ---
+
+## Define tests
+testSuite <- defineTestSuite(name=paste(pkg, "unit testing"),
+                             dirs=path)
+## Run
+tests <- runTestSuite(testSuite)
+
+cat("------------------- UNIT TEST SUMMARY ---------------------\n\n")
+printTextProtocol(tests, showDetails=FALSE)
+
+## Return stop() to cause R CMD check stop in case of
+##  - failures i.e. FALSE to unit tests or
+##  - errors i.e. R errors
+tmp <- getErrors(tests)
+if(tmp$nFail > 0 | tmp$nErr > 0) {
+  stop(paste("\n\nunit testing failed (#test failures: ", tmp$nFail,
+             ", #R errors: ",  tmp$nErr, ")\n\n", sep=""))
+}

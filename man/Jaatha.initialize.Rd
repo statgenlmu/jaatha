@@ -3,8 +3,8 @@
 \title{Initialization of a Jaatha estimation for population genetics}
 \usage{
   Jaatha.initialize(demographic.model, jsfs, seed,
-    sim.package.size = 10, cores = 1, scaling.factor = 1,
-    use.shm = FALSE, folded = FALSE)
+    cores = 1, scaling.factor = 1, use.shm = FALSE,
+    folded = FALSE)
 }
 \arguments{
   \item{demographic.model}{The demographic model to use}
@@ -17,13 +17,6 @@
 
   \item{seed}{An integer used as seed for both Jaatha and
   the simulation software}
-
-  \item{sim.package.size}{When running Jaatha on multiple
-  cores, a singe core will always execute a whole "package"
-  of simulations the reduce the inter thread communication
-  overhead. This gives the number of simulations in such a
-  package. Choose a number such that the execution of the
-  simulations takes at least 15 seconds.}
 
   \item{cores}{The number of cores to use in parallel. If
   0, it tries to guess the number of available cores and

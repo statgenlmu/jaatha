@@ -1,0 +1,21 @@
+\name{denormalize}
+\alias{denormalize}
+\title{Convert parameters from Jaatha's internal scale into their natural scale}
+\usage{
+  denormalize(value, jaatha)
+}
+\arguments{
+  \item{value}{A parameter combination in Jaatha's internal
+  scale}
+
+  \item{jaatha}{The current jaatha object}
+}
+\value{
+  The parameter from value, converted into their natural
+  scale
+}
+\description{
+  Convert parameters from Jaatha's internal scale into
+  their natural scale
+}
+
