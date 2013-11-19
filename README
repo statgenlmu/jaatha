@@ -26,6 +26,7 @@ install.packages('jaatha')
 in R.
 
 ## Development version from GitHub  
+
 You can download and build the development version from GitHub following the
 commands: 
 

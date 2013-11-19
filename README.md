@@ -30,6 +30,7 @@ in R.
 
 ## Development version from GitHub  
 Development Version Status: [![Build Status](https://travis-ci.org/paulstaab/jaatha.png?branch=develop)](https://travis-ci.org/paulstaab/jaatha)
+
 You can download and build the development version from GitHub following the
 commands: 
 
