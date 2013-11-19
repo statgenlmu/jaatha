@@ -1,6 +1,7 @@
 Jaatha's README
 ===============
 
+
 Jaatha is a fast parameter estimation method primarily designed for Evolutionary
 Biology. The method is described in 
 
@@ -11,6 +12,7 @@ Biology. The method is described in
 Practical instructions for running Jaatha are provided in the 
 [The Jaatha HowTo][2]. Instructions how to use Jaatha with a non-standard 
 simulation method are given in the [Custom Simulation Method HowTo][3].
+
 
 
 Installation
@@ -28,17 +30,11 @@ You can download and build the development version from GitHub following the
 commands: 
 
 # Install Jaatha's dependencies from CRAN
-Rscript -e "install.packages(c('Rcpp', 'ape', 'doMC', 'RUnit'))"
+install.packages(c('Rcpp', 'ape', 'doMC', 'RUnit'))
 
-# Download Jaatha from GitHub
-git clone https://github.com/paulstaab/jaatha.git
-cd jaatha
-
-# And build the package using the Makefile
-make
-
-Afterwards you can install the created package with 
-R CMD INSTALL jaatha_x.y.tar.gz
+# Download & install Jaatha
+library('devtools')
+install_github("jaatha", "paulstaab", ref="develop")
 
 
 Usage
