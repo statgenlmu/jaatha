@@ -29,9 +29,8 @@ package: test check
 	# Build the R package out of the sources
 	R CMD build .
 
-install: $(PACKAGE)
-	R CMD INSTALL $(PACKAGE)
-
+install:
+	R CMD INSTALL .
 
 $(PACKAGE): $(R_SOURCES) $(CPP_SOURCES) README DESCRIPTION man
 	R CMD build .
