@@ -18,6 +18,7 @@
 <<setup, include=FALSE, echo=FALSE>>=
 options(keep.source = TRUE, width = 60)
 jinfo <- packageDescription("jaatha")
+opts_chunk$set(error = FALSE)
 @
 
 \hypersetup{
@@ -220,8 +221,8 @@ know the real parameters:
 real.pars <- c(1,1,10) 
 
 # Simulate a JSFS with this parameters
-sumStats <- dm.simSumStats(dm, real.pars)
-jsfs <- sumStats[[1]]$jsfs
+sum.stats <- dm.simSumStats(dm, real.pars)
+jsfs <- sum.stats$jsfs
 
 # Print the upper left part of the JSFS
 jsfs[1:10, 1:10]
