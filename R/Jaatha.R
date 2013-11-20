@@ -400,7 +400,7 @@ Jaatha.deNormalize01 <- function(oldRange, value){
   return(result)
 }
 
-.deNormalizeVector <- function(jObject, values, withoutTheta){	
+.deNormalizeVector <- function(jObject, values, withoutTheta=F){	
   #.log(jObject,"Called .deNormalizeVector")
   .log3("Denormalizing parameters...")
   .log3("values:",values,"| withoutTheta:",withoutTheta)
