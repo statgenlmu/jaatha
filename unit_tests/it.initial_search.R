@@ -1,7 +1,9 @@
 ### --- Test setup ---
 
-rerecord.results = FALSE
-#rerecord.results = TRUE
+#rerecord.results = FALSE
+rerecord.results = TRUE
+
+library("RUnit")
 
 test.dm.simSumStats <- function(){
   load("samples.save")
