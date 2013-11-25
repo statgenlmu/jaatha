@@ -11,7 +11,7 @@ TESTS=$(wildcard inst/unitTests/*.R) $(wildcard tests/*.R)
 default: $(PACKAGE)
 
 release: clean test-setup howtos $(PACKAGE) check  
-travis-test: $(PACKAGE) integration-test check
+travis-test: $(PACKAGE) test-setup integration-test check
 
 howtos: install 
 	cd howtos; make
@@ -20,7 +20,7 @@ howtos: install
 test: install
 	cd tests; export RCMDCHECK=FALSE; Rscript doRUnit.R
 
-integration-test: install inst/unitTests/test_setup.Rda 
+integration-test: inst/unitTests/test_setup.Rda install 
 	cd tests; export RCMDCHECK=FALSE; export INTEGRATION_TESTS=TRUE; Rscript doRUnit.R
 
 test-setup: install
@@ -37,7 +37,6 @@ install:
 
 $(PACKAGE): $(R_SOURCES) $(CPP_SOURCES) $(TESTS) $(VIGNETTES) README DESCRIPTION man inst/unitTests/test_setup.Rda
 	R CMD build .
-
 
 README: README.md
 	grep -v "\`\`\`" README.md | grep -v "Build Status" > README

@@ -11,6 +11,8 @@ library(jaatha)
 if (is.element("jaatha", loadedNamespaces()))
   attach(loadNamespace("jaatha"), name=paste("namespace", "jaatha", sep=":"), pos=3)
 
+set.seed(13579)
+
 # Setup for tests
 dm.tt        <- dm.createThetaTauModel(11:12, 10)
 sum.stats.tt <- dm.simSumStats(dm.tt, c(1, 5))
