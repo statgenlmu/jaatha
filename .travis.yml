@@ -5,6 +5,9 @@
 #   https://github.com/craigcitro/r-travis/wiki
 
 language: c
+env:
+  - global:
+    - R_BUILD_ARGS=" " R_CHECK_ARGS="--as-cran" BOOTSTRAP_LATEX="1"
 script: make travis-test
 before_install:
   - curl -OL http://raw.github.com/craigcitro/r-travis/master/scripts/travis-tool.sh
@@ -13,12 +16,9 @@ before_install:
 install:
   - ./travis-tool.sh install_deps
   - ./travis-tool.sh r_install knitr
-  - sudo apt-get install -qq seq-gen
+  - ./travis-tool.sh aptget_install seq-gen
+on_failure:
+  - ./travis-tool.sh dump_logs
 notifications:
   email:
     on_success: change
-    on_failure: change
-braches:
-  only:
-    - master
-    - develop
