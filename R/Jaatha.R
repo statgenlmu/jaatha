@@ -324,7 +324,8 @@ Jaatha.pickBestStartPoints <- function(blocks, best){
 Jaatha.getStartingPoints <- function(jaatha){
   checkType(jaatha, "jaatha")
   mat <- t(sapply(jaatha@starting.positions, 
-                  function(x) round(c(log.likelihood=x@score, x@MLest), 3)) )
+                  function(x) round(c(log.likelihood=x@score,
+                                      denormalize(x@MLest, jaatha)), 3)) )
 
   perm <- sort.list(mat[,1],decreasing=T) 
   return(mat[perm,])
