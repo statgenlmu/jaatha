@@ -39,7 +39,6 @@ Jaatha.confidenceIntervals <- function(jaatha, conf.level=0.95,
   set.seed(jaatha@seeds[1])
   seeds <- generateSeeds(replicas+3)[-(1:2)]
 
-  #if (is.null(log.folder)) log.folder <- paste(tempdir(), "jaatha-logs", sep="/") 
   dir.create(log.folder, showWarnings=FALSE)
 
   setParallelization(cores)
@@ -67,11 +66,11 @@ Jaatha.confidenceIntervals <- function(jaatha, conf.level=0.95,
 
   bs.results.li <- t(sapply(bs.results, Jaatha.getLikelihoods,
                             max.entries=1))[,-(1:2)] 
+  print(bs.results.li)
 
-  i <- NULL
   jaatha@conf.ints <- t(sapply(1:ncol(bs.results.li), function(i) {
     par.name <- getParNames(jaatha)[i]
-    return( calcBCaConfInt(conf.level, bs.results.li[,i], est.pars.unscaled, replicas) )
+    return( calcBCaConfInt(conf.level, bs.results.li[,i], est.pars.unscaled[i], replicas) )
   }))
   rownames(jaatha@conf.ints) <- getParNames(jaatha)
 
