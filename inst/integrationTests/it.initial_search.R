@@ -1,18 +1,16 @@
 test.initialSearch.normal <- function() {
-  jaatha <- Jaatha.initialize(dm.tt, sum.stats.tt, seed=1)
-  jaatha <- Jaatha.initialSearch(jaatha, sim=10, blocks.per.par=2)
+  jaatha <- Jaatha.initialSearch(jaatha.tt, sim=10, blocks.per.par=2)
   pStartPoints <- Jaatha.getStartingPoints(jaatha)
   checkEquals(4, nrow(pStartPoints))
 
   # Test reproducibility
-  jaatha2 <- Jaatha.initialize(dm.tt, sum.stats.tt, seed=1)
-  jaatha2 <- Jaatha.initialSearch(jaatha2, sim=10, blocks.per.par=2)
-  pStartPoints2 <- Jaatha.getStartingPoints(jaatha2)
+  jaatha <- Jaatha.initialSearch(jaatha.tt, sim=10, blocks.per.par=2)
+  pStartPoints2 <- Jaatha.getStartingPoints(jaatha)
   checkEquals(pStartPoints, pStartPoints2)
 
   # Parallel version
-  jaatha <- Jaatha.initialize(dm.tt, sum.stats.tt, seed=1, cores=2)
-  jaatha <- Jaatha.initialSearch(jaatha, sim=10, blocks.per.par=2)
+  jaatha.tt@cores <- 2 
+  jaatha <- Jaatha.initialSearch(jaatha.tt, sim=10, blocks.per.par=2)
   pStartPoints3 <- Jaatha.getStartingPoints(jaatha)
   checkEquals(pStartPoints, pStartPoints3)
 }
