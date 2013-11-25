@@ -22,7 +22,3 @@ on_failure:
 notifications:
   email:
     on_success: change
-branches:
-  only:
-    - master
-    - develop
