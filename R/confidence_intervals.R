@@ -47,7 +47,7 @@ Jaatha.confidenceIntervals <- function(jaatha, conf.level=0.95,
   .print("ML estimates are:", est.pars.unscaled)
 
   # Simulate data under the fitted model
-  .print("Simulating data...\n")
+  .print("Simulating data...")
   set.seed(seeds[length(seeds)])
   sim.pars <- matrix(est.pars, replicas, getParNumber(jaatha), byrow=TRUE)
   sim.data <- runSimulations(sim.pars, cores, jaatha) 
@@ -66,7 +66,6 @@ Jaatha.confidenceIntervals <- function(jaatha, conf.level=0.95,
 
   bs.results.li <- t(sapply(bs.results, Jaatha.getLikelihoods,
                             max.entries=1))[,-(1:2)] 
-  print(bs.results.li)
 
   jaatha@conf.ints <- t(sapply(1:ncol(bs.results.li), function(i) {
     par.name <- getParNames(jaatha)[i]
@@ -74,14 +73,14 @@ Jaatha.confidenceIntervals <- function(jaatha, conf.level=0.95,
   }))
   rownames(jaatha@conf.ints) <- getParNames(jaatha)
 
-  .print("\nConfidence Intervals are:")
+  .print("Confidence Intervals are:")
   print(jaatha@conf.ints)
   return(jaatha)
 }
 
 
 rerunAnalysis <- function(idx, jaatha, seeds, sum.stats=NULL, log.folder) {
-  .print("Starting run", idx, "...")
+  .print("* Starting run", idx, "...")
 
   # Initialize a copy of the jaatha object
   set.seed(seeds[idx])
