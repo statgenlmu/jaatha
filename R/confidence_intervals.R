@@ -44,7 +44,7 @@ Jaatha.confidenceIntervals <- function(jaatha, conf.level=0.95,
   setParallelization(cores)
   est.pars <- jaatha@likelihood.table[1, -(1:2)]
   est.pars.unscaled <- denormalize(est.pars, jaatha)
-  .print("ML estimates are:", est.pars.unscaled)
+  .print("ML estimates are:", round(est.pars.unscaled, 3), "\n")
 
   # Simulate data under the fitted model
   .print("Simulating data...")
@@ -73,7 +73,7 @@ Jaatha.confidenceIntervals <- function(jaatha, conf.level=0.95,
   }))
   rownames(jaatha@conf.ints) <- getParNames(jaatha)
 
-  .print("Confidence Intervals are:")
+  .print("\nConfidence Intervals are:")
   print(jaatha@conf.ints)
   return(jaatha)
 }
