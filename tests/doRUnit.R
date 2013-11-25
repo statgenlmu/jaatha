@@ -9,7 +9,7 @@
 stopifnot(require("RUnit", quietly=TRUE))
 
 run.integration.tests <- Sys.getenv("INTEGRATION_TESTS") == "TRUE"
-rcmdcheck <- Sys.getenv("RCMDCHECK") == "TRUE"
+rcmdcheck <- Sys.getenv("RCMDCHECK") != "FALSE"
 pkg <- "jaatha"
 
 
@@ -32,7 +32,7 @@ if (is.element(pkg, loadedNamespaces()))
   attach(loadNamespace(pkg), name=paste("namespace", pkg, sep=":"), pos=3)
 
 test.setup <- paste(path.unit.tests, "test_setup.Rda", sep="/")
-if (!file.exists(test.setup)) stop("Failed to load test_setup.Rda") 
+if (!file.exists(test.setup)) stop("Failed to load ", test.setup) 
 load(test.setup)
 rm(test.setup)
 

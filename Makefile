@@ -50,7 +50,7 @@ man: $(R_SOURCES) DESCRIPTION
 
 clean:
 	- rm -rv jaatha.Rcheck
-	- rm -rv unit_tests/results
 	- cd src/; rm *.so *.o *.rds ms/*.o 2> /dev/null
 	- rm -r man 2> /dev/null
 	- cd howtos; make clean
+	- rm -rv inst/unitTests/test_setup.Rda
