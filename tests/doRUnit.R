@@ -8,21 +8,22 @@
 
 stopifnot(require("RUnit", quietly=TRUE))
 
+run.integration.tests <- Sys.getenv("INTEGRATION_TESTS") == "TRUE"
+rcmdcheck <- Sys.getenv("RCMDCHECK") == "TRUE"
+pkg <- "jaatha"
+
+
+
 ## --- Setup ---
 
-pkg <- "jaatha"
-if(Sys.getenv("RCMDCHECK") == "FALSE") {
-  ## Path to unit tests for standalone running under Makefile (not R CMD check)
-  ## PKG/tests/../inst/unitTests
-  path <- file.path(getwd(), "..", "inst", "unitTests")
+if(rcmdcheck) {
+  path.unit.tests <- system.file(package=pkg, "unitTests")
+  path.integration.tests <- system.file(package=pkg, "integrationTests")
 } else {
-  ## Path to unit tests for R CMD check
-  ## PKG.Rcheck/tests/../PKG/unitTests
-  path <- system.file(package=pkg, "unitTests")
+  path.unit.tests <- file.path(getwd(), "..", "inst", "unitTests")
+  path.integration.tests <- file.path(getwd(), "..", "inst", "integrationTests")
 }
 
-cat("\nRunning unit tests\n")
-print(list(pkg=pkg, getwd=getwd(), pathToUnitTests=path))
 
 library(package=pkg, character.only=TRUE)
 
@@ -30,29 +31,37 @@ library(package=pkg, character.only=TRUE)
 if (is.element(pkg, loadedNamespaces()))
   attach(loadNamespace(pkg), name=paste("namespace", pkg, sep=":"), pos=3)
 
-test.setup <- paste(path, "test_setup.Rda", sep="/")
+test.setup <- paste(path.unit.tests, "test_setup.Rda", sep="/")
 if (!file.exists(test.setup)) stop("Failed to load test_setup.Rda") 
 load(test.setup)
 rm(test.setup)
 
 
 
-## --- Testing ---
+## ---  Define tests ---
+test.suites <- list()
+test.suites[['unit.tests']] <- defineTestSuite(name="Unit Tests",
+                                               dirs=path.unit.tests)
 
-## Define tests
-testSuite <- defineTestSuite(name=paste(pkg, "unit testing"),
-                             dirs=path)
-## Run
-tests <- runTestSuite(testSuite)
+if (run.integration.tests) {
+  test.suites[['integration.tests']] <- defineTestSuite(name="Integration Tests",
+                                                        testFileRegexp = "^it.+\\.[rR]$",
+                                                        dirs=path.integration.tests)
+}
 
-cat("------------------- UNIT TEST SUMMARY ---------------------\n\n")
+
+
+## --- Run tests ---
+tests <- runTestSuite(test.suites)
+
+
+
+## --- Evaluate Results ---
+cat("------------------- TEST SUMMARY ---------------------\n\n")
 printTextProtocol(tests, showDetails=FALSE)
-
-## Return stop() to cause R CMD check stop in case of
-##  - failures i.e. FALSE to unit tests or
-##  - errors i.e. R errors
 tmp <- getErrors(tests)
+
 if(tmp$nFail > 0 | tmp$nErr > 0) {
-  stop(paste("\n\nunit testing failed (#test failures: ", tmp$nFail,
+  stop(paste("\n\nunit testing (#test failures: ", tmp$nFail,
              ", #R errors: ",  tmp$nErr, ")\n\n", sep=""))
 }

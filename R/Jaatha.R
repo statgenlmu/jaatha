@@ -313,10 +313,6 @@ Jaatha.pickBestStartPoints <- function(blocks, best){
   }
 }
 
-is.jaatha <- function(jObject){
-  return(class(jObject)[1] == "Jaatha")
-}
-
 #' Print Start points
 #'
 #' Method to print the start Points given by an initial Jaatha
@@ -326,6 +322,7 @@ is.jaatha <- function(jObject){
 #' @return a matrix with score and parameters of each start point
 #' @export
 Jaatha.getStartingPoints <- function(jaatha){
+  checkType(jaatha, "jaatha")
   mat <- t(sapply(jaatha@starting.positions, 
                   function(x) round(c(log.likelihood=x@score, x@MLest), 3)) )
 
@@ -345,6 +342,7 @@ Jaatha.getStartingPoints <- function(jaatha){
 #' best estimates
 #' @export
 Jaatha.getLikelihoods <- function(jaatha, max.entries=NULL) {
+  checkType(jaatha, "jaatha")
   lt <- jaatha@likelihood.table
   lt[,-(1:2)] <- t(sapply(1:nrow(lt), function(n) denormalize(lt[n,-(1:2), drop=F], jaatha)))
   perm <- sort.list(lt[,1],decreasing=T)  

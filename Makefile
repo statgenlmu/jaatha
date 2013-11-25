@@ -1,4 +1,4 @@
-.PHONY: howtos install test test-setup travis-test check clean
+.PHONY: howtos install test test-setup integration-test travis-test check clean
 
 VERSION=$(shell grep Version DESCRIPTION | awk '{print $$2}')
 PACKAGE=jaatha_$(VERSION).tar.gz
@@ -11,15 +11,17 @@ TESTS=$(wildcard inst/unitTests/*.R) $(wildcard tests/*.R)
 default: $(PACKAGE)
 
 release: clean test-setup howtos $(PACKAGE) check  
-travis-test: $(PACKAGE) test check
+travis-test: $(PACKAGE) integration-test check
 
 howtos: install 
 	cd howtos; make
 	cp howtos/*.pdf vignettes/
 
-test: install inst/unitTests/test_setup.Rda
-	# Runs the unit tests
+test: install
 	cd tests; export RCMDCHECK=FALSE; Rscript doRUnit.R
+
+integration-test: install inst/unitTests/test_setup.Rda 
+	cd tests; export RCMDCHECK=FALSE; export INTEGRATION_TESTS=TRUE; Rscript doRUnit.R
 
 test-setup: install
 	cd inst/unitTests; Rscript test_setup.R

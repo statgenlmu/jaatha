@@ -43,27 +43,36 @@ Jaatha.confidenceIntervals <- function(jaatha, conf.level=0.95,
   dir.create(log.folder, showWarnings=FALSE)
 
   setParallelization(cores)
+  est.pars <- jaatha@likelihood.table[1, -(1:2)]
+  est.pars.unscaled <- denormalize(est.pars, jaatha)
+  .print("ML estimates are:", est.pars.unscaled)
 
   # Simulate data under the fitted model
   .print("Simulating data...\n")
   set.seed(seeds[length(seeds)])
-  est.pars <- jaatha@likelihood.table[1, -(1:2)]
   sim.pars <- matrix(est.pars, replicas, getParNumber(jaatha), byrow=TRUE)
   sim.data <- runSimulations(sim.pars, cores, jaatha) 
   sum.stats <- lapply(sim.data, convertSimDataToSumStats, sum.stats=jaatha@sum.stats)
 
   bs.results <- mclapply(1:replicas, rerunAnalysis, 
-                         seeds=seeds, jaatha=jaatha, sum.stats=sim.data,
+                         seeds=seeds, jaatha=jaatha, sum.stats=sum.stats,
                          log.folder=log.folder, mc.cores=cores)
+
+  sapply(bs.results, function(x) { 
+         if(class(x) == "try-error") {
+           print(x)
+           stop("Error while runing the bootstrap replicas")
+         }
+        })
 
   bs.results.li <- t(sapply(bs.results, Jaatha.getLikelihoods,
                             max.entries=1))[,-(1:2)] 
 
   i <- NULL
-  jaatha@conf.ints <- foreach(i=1:ncol(bs.results), .combine=rbind) %do% {
+  jaatha@conf.ints <- t(sapply(1:ncol(bs.results.li), function(i) {
     par.name <- getParNames(jaatha)[i]
-    return( calcBCaConfInt(conf.level, bs.results[,i], est.pars[i], replicas) )
-  }
+    return( calcBCaConfInt(conf.level, bs.results.li[,i], est.pars.unscaled, replicas) )
+  }))
   rownames(jaatha@conf.ints) <- getParNames(jaatha)
 
   .print("\nConfidence Intervals are:")
@@ -71,13 +80,13 @@ Jaatha.confidenceIntervals <- function(jaatha, conf.level=0.95,
   return(jaatha)
 }
 
+
 rerunAnalysis <- function(idx, jaatha, seeds, sum.stats=NULL, log.folder) {
   .print("Starting run", idx, "...")
 
   # Initialize a copy of the jaatha object
   set.seed(seeds[idx])
   jaatha@seeds <- c(seeds[idx], generateSeeds(2))
-  print(jaatha@seeds)
   sink(paste0(log.folder, "/run_", idx, ".log"))
   if( !is.null(sum.stats) ) jaatha@sum.stats <- sum.stats[[idx]]
   jaatha@cores <- 1
@@ -91,6 +100,7 @@ rerunAnalysis <- function(idx, jaatha, seeds, sum.stats=NULL, log.folder) {
   return(jaatha)
 }
 
+
 convertSimDataToSumStats <- function(sim.data, sum.stats) {
   for (sum.stat in names(sum.stats)) {
     sum.stats[[sum.stat]]$value <- sim.data[[sum.stat]]
@@ -102,6 +112,7 @@ convertSimDataToSumStats <- function(sim.data, sum.stats) {
   return(sum.stats)
 }
 
+
 calcBCaConfInt <- function(conf.level, bs.values, estimates, replicas) {
   z.hat.null <- calcBiasCorrection(log(bs.values), log(estimates), replicas)
   a.hat <- calcAcceleration(log(bs.values))
@@ -111,6 +122,7 @@ calcBCaConfInt <- function(conf.level, bs.values, estimates, replicas) {
   names(conf.int) <- c('lower', 'upper')
   return(exp(conf.int))
 }
+
 
 calcBiasCorrection <- function(bs.values, estimates, replicas){
   bias <- sum(bs.values < estimates)
@@ -123,6 +135,7 @@ calcBiasCorrection <- function(bs.values, estimates, replicas){
   bc <- qnorm(bias/replicas)
   return(bc)
 }
+
 
 calcAcceleration <- function(bs.values) {
   m <- mean(bs.values)

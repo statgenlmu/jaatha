@@ -331,22 +331,12 @@ makeThetaLast <- function(dm) {
 
 
 # Checks if a vector of parameters is within the ranges of the model
-.checkParInRange <- function(dm, param) {
-  ranges <- dm.getParRanges(dm,inklExtTheta=F)
-  #Seems there can be rounding errors during scaling
-  lower <- t(ranges[, rep("lower.range", nrow(param))]) - 1e-5
-  upper <- t(ranges[, rep("upper.range", nrow(param))]) + 1e-5
-  inRange <- lower <= param & param <= upper
-  all.in.range <- all(inRange)
-  if (!all.in.range) {
-    inRange <- inRange[, 1] & inRange[, 2]
-    .print("The following parameter combinations are out of range:")
-    out.of.range <- param[!inRange, ]
-    for (i in 1:nrow(out.of.range)) {
-      .print(out.of.range[i, ])
-    }
-  }
-  return(all.in.range)
+checkParInRange <- function(dm, param) {
+  if (length(param) != dm.getNPar(dm)) stop("Wrong number of parameters")
+
+  ranges <- dm.getParRanges(dm)
+  in.range <- all(ranges[, 1]-1e-11 <= param & param <= ranges[, 2]+1e-11)
+  if (!in.range) stop("Parameter combination out of range")
 }
 
 # Selects a program for simulation that is capable of all current features
@@ -1194,8 +1184,7 @@ dm.addOutgroup <- function(dm, separation.time) {
 dm.simSumStats <- function(dm, parameters, sum.stats=c("all")) {
   checkType(dm, "dm")
 
-  if (length(parameters) != dm.getNPar(dm)) stop("Wrong number of parameters")
-  #if ( !.checkParInRange(dm, parameters) ) stop("Parameters out of range")
+  checkParInRange(dm, parameters)
 
   dm@currentSimProg@singleSimFunc(dm, parameters)
 }

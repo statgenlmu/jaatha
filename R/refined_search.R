@@ -62,9 +62,9 @@ Jaatha.refinedSearch <- function(jaatha, best.start.pos=2, sim=100,
   }
 
   # Check parameters
-  if (!is.jaatha(jaatha)) stop("jaatha is not of type Jaatha")
   .log2("Called function Jaatha.refinedSearch()")
 
+  checkType(jaatha, c("jaatha", "single"))
   checkType(best.start.pos, c("num", "single"))
   checkType(sim, c("num", "single"))
   checkType(sim.final, c("num", "single"), F)

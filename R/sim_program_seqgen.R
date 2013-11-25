@@ -2,8 +2,8 @@
 # sim_prog_seqgen.R
 # Adaptor to calling ms from a demographic model.
 # 
-# Authors:  Lisha Mathew & Paul R. Staab
-# Date:     2012-10-25
+# Authors:  Paul R. Staab
+# Date:     2013-11-21
 # Licence:  GPLv3 or later
 # --------------------------------------------------------------
 
@@ -223,7 +223,7 @@ seqgenSingleSimFunc <- function(dm, parameters) {
   unlink(seqgen.file)
   unlink(ms.file)
   .log3("Seq-gen simulation succesfully finished")
-  return(jsfs)
+  return(list(jsfs=jsfs))
 }
 
 finalizeSeqgen <- function(dm) {

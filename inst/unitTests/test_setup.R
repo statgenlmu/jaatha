@@ -20,6 +20,11 @@ dm.mig        <- dm.addSymmetricMigration(dm.tt, 1, 5)
 sum.stats.mig <- dm.simSumStats(dm.mig, c(1, 1, 5))
 jaatha.mig    <- Jaatha.initialize(dm.mig, jsfs=sum.stats.mig) 
 
+dm.sg <- dm.addOutgroup(dm.tt, "2*tau")
+dm.hky <- dm.setMutationModel(dm.sg, "HKY", c(0.2, 0.2, 0.3, 0.3), 2)
+dm.f81 <- dm.setMutationModel(dm.sg, "F84", c(0.3, 0.2, 0.3, 0.2), 2)
+dm.gtr <- dm.setMutationModel(dm.sg, "GTR", gtr.rates=c(0.2, 0.2, 0.1, 0.1, 0.1, 0.2))
+
 csi.sim.func <- function(x, jaatha) {
   list(poisson.vector=c(rpois(3, x[1]), rpois(3, x[2])))
 }
