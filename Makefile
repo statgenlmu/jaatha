@@ -2,6 +2,8 @@
 
 VERSION=$(shell grep Version DESCRIPTION | awk '{print $$2}')
 PACKAGE=jaatha_$(VERSION).tar.gz
+R_CHECK_ARGS?="--as-cran"
+R_BUILD_ARGS?=""
 
 R_SOURCES=$(wildcard R/*.R) 
 CPP_SOURCES=$(wildcard src/*.cc)
@@ -28,7 +30,7 @@ test-setup: install
 
 check: $(PACKAGE)
 	# Runs an R CMD check
-	R CMD check --as-cran $(PACKAGE)
+	R CMD check $(R_CHECK_ARGS) $(PACKAGE)
 
 package: $(PACKAGE) 
 
@@ -36,7 +38,7 @@ install:
 	R CMD INSTALL .
 
 $(PACKAGE): $(R_SOURCES) $(CPP_SOURCES) $(TESTS) $(VIGNETTES) README DESCRIPTION man inst/unitTests/test_setup.Rda
-	R CMD build .
+	R CMD build $(R_BUILD_ARGS) .
 
 README: README.md
 	grep -v "\`\`\`" README.md | grep -v "Build Status" > README
