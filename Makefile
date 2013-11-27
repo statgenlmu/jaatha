@@ -2,6 +2,8 @@
 
 VERSION=$(shell grep Version DESCRIPTION.template | awk '{print $$2}')
 PACKAGE=jaatha_$(VERSION).tar.gz
+R_CHECK_ARGS?="--as-cran"
+R_BUILD_ARGS?=""
 
 R_SOURCES=$(wildcard R/*.R) 
 CPP_SOURCES=$(wildcard src/*.cc)
@@ -24,11 +26,11 @@ quick-test: install
 
 check: install 
 	# Runs an R CMD check
-	R CMD check --as-cran $(PACKAGE)
+	R CMD check $(R_CHECK_ARGS) $(PACKAGE)
 
 package: test check
 	# Build the R package out of the sources
-	R CMD build .
+	R CMD build $(R_BUILD_ARGS) .
 
 install:
 	R CMD INSTALL .
