@@ -7,7 +7,10 @@
 language: c
 env:
   - global:
-    - R_BUILD_ARGS=" " R_CHECK_ARGS="--as-cran" BOOTSTRAP_LATEX="1"
+    - CRAN: http://cran.rstudio.com
+    - R_BUILD_ARGS="--no-build-vignettes --no-manual"
+    - R_CHECK_ARGS="--no-build-vignettes --no-manual --as-cran"
+    - BOOTSTRAP_LATEX=""
 script: make travis-test
 before_install:
   - curl -OL http://raw.github.com/craigcitro/r-travis/master/scripts/travis-tool.sh
@@ -17,8 +20,5 @@ install:
   - ./travis-tool.sh install_deps
   - ./travis-tool.sh r_install knitr
   - ./travis-tool.sh aptget_install seq-gen
-on_failure:
+after_failure:
   - ./travis-tool.sh dump_logs
-notifications:
-  email:
-    on_success: change
