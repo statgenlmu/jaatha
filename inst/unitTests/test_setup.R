@@ -78,8 +78,7 @@ smooth.par.ranges <- matrix(c(2, 1, 7, 7), 2, 2)
 rownames(smooth.par.ranges) <- c('x', 'y')
 
 smooth.jaatha <- new("Jaatha", smooth.simfunc, smooth.par.ranges, smooth.sum.stats, 123)
-smooth.sim.data <- jaatha:::simulateWithinBlock(10, block.test, smooth.jaatha)
-#smooth.jaatha <- Jaatha.initialSearch(smooth.jaatha, 20, 2)
+smooth.sim.data <- simulateWithinBlock(10, block.test, smooth.jaatha)
 
 
 save(list=ls(), file="test_setup.Rda")
