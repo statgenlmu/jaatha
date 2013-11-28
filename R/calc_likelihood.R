@@ -4,7 +4,7 @@
 # combinations using simulations. 
 # 
 # Authors:  Paul R. Staab & Lisha Mathew 
-# Date:     2013-09-04
+# Date:     2013-11-28
 # Licence:  GPLv3 or later
 # --------------------------------------------------------------
 
@@ -29,7 +29,13 @@ simLikelihood <- function(jaatha, sim, pars) {
       simSS[simSS==0] <- 0.5
       sum.stat.value <- sum.stats[[sum.stat]]$value.transformed
       log.cl <- log.cl + 
-      sum(sum.stat.value * log(simSS) - simSS - calcLogFactorial(sum.stat.value)) 
+        sum(sum.stat.value * log(simSS) - simSS - calcLogFactorial(sum.stat.value)) 
+    }
+    else if (sum.stats[[sum.stat]]$method == "poisson.smoothing") {
+      sum.stat.value <- as.vector(sum.stats[[sum.stat]]$value)
+      sim.mean <- apply(sapply(sim.data, function(x) as.vector(x$mat)), 1, mean)
+      log.cl <- log.cl + 
+        sum(sum.stat.value * log(sim.mean) - sim.mean - calcLogFactorial(sum.stat.value)) 
     }
     else stop("Unsupported SumStat method")
   }
