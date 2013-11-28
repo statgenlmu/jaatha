@@ -8,7 +8,7 @@ test.init <- function() {
   sum.stat1 <- list(method="poisson.independent", value=1:10)
   sum.stat2 <- list(method="poisson.transformed", value=matrix(1, 3, 3),
                     transformation=diag)
-  sum.stat3 <- list(method="poisson.smoothing", value=matrix(1, 3, 3))
+  sum.stat3 <- list(method="poisson.smoothing", model="a+b", value=matrix(1, 3, 3))
   sum.stats <- list("ss1"=sum.stat1, "ss2"=sum.stat2, "ss3"=sum.stat3)
 
   jaatha <- new("Jaatha", csi.sim.func, csi.par.ranges, csi.sum.stats)

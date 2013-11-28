@@ -31,7 +31,7 @@ test.fitGlm <- function() {
 
   checkTrue( is.list(glms.fitted.smooth$mat) )
   checkEquals( length(glms.fitted.smooth$mat), 1 )
-  checkTrue( is(glms.fitted.smooth$mat[[1]]) == "glm")
+  checkTrue( "glm" %in% is(glms.fitted.smooth$mat[[1]]))
 }
 
 test.convertSimResultsToDataFrame <- function() {

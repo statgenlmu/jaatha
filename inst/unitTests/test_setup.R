@@ -65,11 +65,13 @@ smooth.func <- function(x) {
 smooth.simfunc <- function(x, jaatha) {
   stopifnot(length(x) == 2)
   idxs <- cbind(rep(1:10, each=12), rep(1:12, 10), x[1], x[2])
-  list(mat=matrix(apply(idxs, 1, smooth.func), 10, 12, byrow=TRUE))
+  sampled.values <- sapply(apply(idxs, 1, smooth.func), function(x) rpois(1, x))
+  list(mat=matrix(sampled.values, 10, 12, byrow=TRUE))
 }
 
 smooth.obs <- smooth.simfunc(c(3, 4))
 smooth.sum.stats <- list("mat"=list(method="poisson.smoothing",
+                                    model="(i^2)*(j^2)+log(i)*log(j)",
                                     value=smooth.obs$mat))
 
 smooth.par.ranges <- matrix(c(2, 1, 7, 7), 2, 2)

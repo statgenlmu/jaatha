@@ -64,10 +64,23 @@ fitGlmPoiTransformed <- function(sim.data, sum.stat, transformation, weighting, 
 #' @param jaatha A Jaatha Object.
 #' @return A list with one fitted GLMs
 fitPoiSmoothed <- function(sim.data, sum.stat, weighting, jaatha) {
+  model <- paste0("sum.stat ~ ",
+                  "(", jaatha@sum.stats[[sum.stat]]$model, ")",  
+                  "*(", paste(getParNames(jaatha), collapse="+"), ")") 
 
+  sim.data.df <- convertSimResultsToDataFrame(sim.data, sum.stat)
+  list(glm(model, data=sim.data.df, family=poisson("log")))
 }
 
 
+#' Converts simulation results into a data frame that is usable for fitting a
+#' glm.
+#'
+#' Currently only works with nx2 matix summary statistics and vectorizes thoose.
+#' 
+#' @param sim.data Results from simulations
+#' @param sum.stat Name of the summary statistics which should get converted
+#' @return The summary statistics as data.frame 
 convertSimResultsToDataFrame <- function(sim.data, sum.stat) {
   do.call(rbind, lapply(sim.data, function(sim.result) {
     i <- as.vector(row(sim.result[[sum.stat]]))
