@@ -118,6 +118,9 @@ init <- function(.Object, sim.func, par.ranges,
       checkType(sum.stats[[i]]$transformation, c("fun", "s"))
       sum.stats[[i]]$value.transformed <- sum.stats[[i]]$transformation(sum.stats[[i]]$value)
     }
+    else if (sum.stats[[i]]$method == "poisson.smoothing") {
+      
+    }
     else {
       stop("Unknown summary statistic type: ", sum.stats[[i]]$method)
     }
@@ -207,8 +210,7 @@ Jaatha.initialize <- function(demographic.model, jsfs,
 
   jaatha <- new("Jaatha", 
                 sim.func=function(sim.pars, jaatha)
-                  dm.simSumStats(jaatha@opts[['dm']], sim.pars,
-                                 names(jaatha@sum.stats)), 
+                  dm.simSumStats(jaatha@opts[['dm']], sim.pars, names(jaatha@sum.stats)), 
                 par.ranges=as.matrix(dm.getParRanges(demographic.model)),  
                 sum.stats=sum.stats,
                 seed=seed,

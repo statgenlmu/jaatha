@@ -8,7 +8,8 @@ test.init <- function() {
   sum.stat1 <- list(method="poisson.independent", value=1:10)
   sum.stat2 <- list(method="poisson.transformed", value=matrix(1, 3, 3),
                     transformation=diag)
-  sum.stats <- list("ss1"=sum.stat1, "ss2"=sum.stat2)
+  sum.stat3 <- list(method="poisson.smoothing", value=matrix(1, 3, 3))
+  sum.stats <- list("ss1"=sum.stat1, "ss2"=sum.stat2, "ss3"=sum.stat3)
 
   jaatha <- new("Jaatha", csi.sim.func, csi.par.ranges, csi.sum.stats)
   jaatha <- new("Jaatha", csi.sim.func, csi.par.ranges, sum.stats)
@@ -22,9 +23,10 @@ test.init <- function() {
   checkEquals( jaatha@cores, 1 )
   checkEquals( jaatha@use.shm, FALSE )
 
-  checkTrue( length(jaatha@sum.stats) == 2 )
+  checkTrue( length(jaatha@sum.stats) == 3 )
   checkTrue( !is.null(jaatha@sum.stats$ss1) )
   checkTrue( !is.null(jaatha@sum.stats$ss2) )
+  checkTrue( !is.null(jaatha@sum.stats$ss3) )
 
   checkTrue( all(jaatha@sum.stats$ss1$value == 1:10) )
   checkTrue( !is.null(jaatha@sum.stats$ss1$transformation) )
@@ -32,6 +34,8 @@ test.init <- function() {
   checkTrue( all(jaatha@sum.stats$ss2$value == 1) )
   checkTrue( !is.null(jaatha@sum.stats$ss2$transformation) )
   checkTrue( all(jaatha@sum.stats$ss2$value.transformed == c(1, 1, 1)) )
+
+  checkTrue( all(jaatha@sum.stats$ss3$value == 1) )
 }
 
 test.getParNames <- function() {
