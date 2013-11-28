@@ -26,6 +26,9 @@ fitGlm <- function(sim.data, jaatha, weighting=NULL){
                                       jaatha@sum.stats[[i]]$transformation, 
                                       weighting, jaatha)
     }
+    else if (jaatha@sum.stats[[i]]$method == "poisson.smoothing") {
+      glm.fitted[[name]] <- fitPoiSmoothed(sim.data, name, weighting, jaatha)
+    } 
     else stop("method not found")
   }
   return(glm.fitted)
@@ -51,4 +54,28 @@ fitGlmPoiTransformed <- function(sim.data, sum.stat, transformation, weighting, 
   formulas <- paste0(stats.names, "~", paste(getParNames(jaatha) ,collapse= "+"))
   lapply(formulas, glm, data=data.frame(stats.sim), family=poisson,
          control = list(maxit = 200))
+}
+
+#' Fits a GLM for a summary statistics of type "poisson.smoothed"
+#'
+#' @param sim.data Results from simulations
+#' @param sum.stat Name of the summary statistics
+#' @param weighting Potentially weights for the simulations.
+#' @param jaatha A Jaatha Object.
+#' @return A list with one fitted GLMs
+fitPoiSmoothed <- function(sim.data, sum.stat, weighting, jaatha) {
+
+}
+
+
+convertSimResultsToDataFrame <- function(sim.data, sum.stat) {
+  do.call(rbind, lapply(sim.data, function(sim.result) {
+    i <- as.vector(row(sim.result[[sum.stat]]))
+    j <- as.vector(col(sim.result[[sum.stat]]))
+    value <- as.vector(sim.result[[sum.stat]])
+    pars <- matrix(sim.result$pars.normal, length(i),
+                   length(sim.result$pars.normal), byrow=TRUE)
+    colnames(pars) <- names(sim.result$pars.normal)
+    data.frame(pars, i, j, sum.stat=value)
+  }))
 }
