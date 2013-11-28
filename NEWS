@@ -10,6 +10,7 @@ Version 2.2
 + Reworked the reusing of simulations from previous steps in the refined search.
   Now only simulations that actually are inside the current block are reused. 
 + Removed the "score". We are always using the log-likelihood now.
++ Added support for a new "poisson.smoothing" type of summary statistics. 
 
 Version 2.1.3
 -------------
