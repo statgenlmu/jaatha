@@ -191,23 +191,34 @@ rm(init)
 #' @export
 Jaatha.initialize <- function(demographic.model, jsfs,
                               seed, cores=1, scaling.factor=1,
-                              use.shm=FALSE, folded=FALSE) {
+                              use.shm=FALSE, folded=FALSE, 
+                              smoothing=FALSE) {
 
   if (is.list(jsfs)) jsfs <- jsfs$jsfs
 
   checkType(demographic.model, c("dm", "s"))
   checkType(jsfs, c("num", "ar"))
   checkType(folded, c("bool", "single"))
+  checkType(smoothing, c("bool", "single"))
   checkType(scaling.factor, c("num","single"))
+  if (smoothing && folded) 
+    stop("You can't use smoothing together with a folded JSFS")
 
   if (missing(seed)) seed <- numeric()
 
   sum.stats <- list()
-  sum.stats[['jsfs']] <- list(method="poisson.transformed",
-                              transformation=summarizeJSFS,
-                              value=jsfs)
+  if (!smoothing) {
+    sum.stats[['jsfs']] <- list(method="poisson.transformed",
+                                transformation=summarizeJSFS,
+                                value=jsfs)
 
-  if (folded) sum.stats$jsfs$transformation <- summarizeFoldedJSFS
+    if (folded) sum.stats$jsfs$transformation <- summarizeFoldedJSFS
+  } else {
+    model <- "( i + I(i^2) + j + I(j^2) + log(i) + log(ni) + log(j) + log(nj) )^2"
+    sum.stats[['jsfs']] <- list(method="poisson.smoothing",
+                                        model=model,
+                                        value=jsfs)
+  }
 
   jaatha <- new("Jaatha", 
                 sim.func=function(sim.pars, jaatha)
