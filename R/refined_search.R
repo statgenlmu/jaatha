@@ -35,7 +35,7 @@
 #'
 #' @export
 Jaatha.refinedSearch <- function(jaatha, best.start.pos=2, sim=100,
-                                 sim.final=100, epsilon=1, half.block.size=.05,
+                                 sim.final=sim, epsilon=1, half.block.size=.05,
                                  weight=.9, max.steps=200, rerun=FALSE) {
 
   if (rerun) {

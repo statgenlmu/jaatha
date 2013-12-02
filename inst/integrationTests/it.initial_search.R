@@ -29,3 +29,10 @@ test.initialSearch.folded <- function() {
   pStartPoints <- Jaatha.getStartingPoints(jaatha)
   checkEquals(4, nrow(pStartPoints))
 }
+
+test.initialSearch.smoothing <- function() {
+  jaatha <- Jaatha.initialize(dm.tt, sum.stats.tt, 30, smoothing=TRUE)
+  jaatha <- Jaatha.initialSearch(jaatha, sim=20, blocks.per.par=2)
+  pStartPoints <- Jaatha.getStartingPoints(jaatha)
+  checkEquals(4, nrow(pStartPoints))
+}
