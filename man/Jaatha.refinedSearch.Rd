@@ -3,7 +3,7 @@
 \title{Iterative search for the maximum composite likelihood parameters}
 \usage{
   Jaatha.refinedSearch(jaatha, best.start.pos = 2,
-    sim = 100, sim.final = 100, epsilon = 1,
+    sim = 100, sim.final = sim, epsilon = 1,
     half.block.size = 0.05, weight = 0.9, max.steps = 200,
     rerun = FALSE)
 }
