@@ -13,7 +13,6 @@
 ## for the simulate-function (in Simulator.R).
 simLikelihood <- function(jaatha, sim, pars) {
   sim.pars <- matrix(pars, sim, length(pars), byrow=TRUE)
-
   sim.data <- runSimulations(sim.pars, jaatha@cores, jaatha)
 
   # Average the values of each summary statistic
@@ -33,7 +32,11 @@ simLikelihood <- function(jaatha, sim, pars) {
     }
     else if (sum.stats[[sum.stat]]$method == "poisson.smoothing") {
       sum.stat.value <- as.vector(sum.stats[[sum.stat]]$value)
-      sim.mean <- apply(sapply(sim.data, function(x) as.vector(x$mat)), 1, mean)
+      sim.mean <- apply(sapply(sim.data, function(x) as.vector(x[[sum.stat]])), 1, mean)
+      if (any(sim.mean == 0)) warning("Warning: A summary statistic was always 0,
+                                      likelihood will be inaccurate. Try
+                                      increasing sim.final") 
+      sim.mean[sim.mean == 0] <- .5
       log.cl <- log.cl + 
         sum(sum.stat.value * log(sim.mean) - sim.mean - calcLogFactorial(sum.stat.value)) 
     }

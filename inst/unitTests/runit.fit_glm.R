@@ -43,3 +43,11 @@ test.convertSimResultsToDataFrame <- function() {
   checkTrue( !is.null(colnames(smooth.df)) )
   checkTrue( all(colnames(smooth.df) == c("x", "y", "i", "j", "sum.stat")) )
 }
+
+test.fitGlm.Smoothing <- function() {
+  jaatha <- Jaatha.initialize(dm.tt, sum.stats.tt, 30, smoothing=TRUE)
+  glm.fitted <- fitGlm(sim.data.tt, jaatha)
+  checkTrue( is.list(glm.fitted$jsfs) )
+  checkEquals( length(glm.fitted$jsfs), 1 )
+  checkTrue( "glm" %in% is(glm.fitted$jsfs[[1]]))
+}

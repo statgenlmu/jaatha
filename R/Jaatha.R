@@ -214,7 +214,11 @@ Jaatha.initialize <- function(demographic.model, jsfs,
 
     if (folded) sum.stats$jsfs$transformation <- summarizeFoldedJSFS
   } else {
-    model <- "( i + I(i^2) + j + I(j^2) + log(i) + log(ni) + log(j) + log(nj) )^2"
+    model <- paste0("( i + I(i^2) + j + I(j^2) + log(i) + log(",
+                    demographic.model@sampleSizes[1]+2,
+                    "-i) + log(j) + log(",
+                    demographic.model@sampleSizes[2]+2,
+                    "-j) )^2")
     sum.stats[['jsfs']] <- list(method="poisson.smoothing",
                                         model=model,
                                         value=jsfs)
