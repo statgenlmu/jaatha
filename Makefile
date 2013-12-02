@@ -3,7 +3,7 @@
 VERSION=$(shell grep Version DESCRIPTION | awk '{print $$2}')
 PACKAGE=jaatha_$(VERSION).tar.gz
 R_CHECK_ARGS?="--as-cran"
-R_BUILD_ARGS?=""
+R_BUILD_ARGS?=
 
 R_SOURCES=$(wildcard R/*.R) 
 CPP_SOURCES=$(wildcard src/*.cc)
