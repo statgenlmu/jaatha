@@ -149,8 +149,8 @@ refinedSearchSingleBlock <- function(jaatha, start.point, sim, sim.final,
     glm.fitted <- fitGlm(sim.data, jaatha)
 
     ## likelihood of old newOptimum parameters based on new simulated data              
-    oldParamLikeli <- estimateLogLikelihood(searchBlock@MLest[1:getParNumber(jaatha)], glm.fitted,
-                                  jaatha@sum.stats)
+    oldParamLikeli <- estimateLogLikelihood(searchBlock@MLest[1:getParNumber(jaatha)], 
+                                            glm.fitted, jaatha@sum.stats)
 
     optimal <- findBestParInBlock(searchBlock, glm.fitted, jaatha@sum.stats) 
 
