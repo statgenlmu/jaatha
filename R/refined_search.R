@@ -34,8 +34,9 @@
 #' @return An Jaatha object. The found values are written to the slot likelihood.table.
 #'
 #' @export
-Jaatha.refinedSearch <- function(jaatha, best.start.pos=2, sim=100,
-                                 sim.final=sim, epsilon=1, half.block.size=.05,
+Jaatha.refinedSearch <- function(jaatha, best.start.pos=2,
+                                 sim=length(getParNames(jaatha))*25,
+                                 sim.final=min(sim, 100), epsilon=2, half.block.size=.025,
                                  weight=.9, max.steps=200, rerun=FALSE) {
 
   if (rerun) {
