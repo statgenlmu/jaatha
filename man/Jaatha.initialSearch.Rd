@@ -3,7 +3,7 @@
 \title{Search the parameter space for good starting positions}
 \usage{
   Jaatha.initialSearch(jaatha, sim = 200,
-    blocks.per.par = 3)
+    blocks.per.par = 2, rerun = FALSE)
 }
 \arguments{
   \item{jaatha}{The Jaatha settings (create with
@@ -14,6 +14,11 @@
 
   \item{blocks.per.par}{Numeric. The number of block per
   parameter.  Will result in Par^blocks.per.par blocks}
+
+  \item{rerun}{You can repeat a previously done initial
+  search in Jaatha.  Do do so, just call the initial search
+  function with the jaatha object result of the first
+  initial search and set rerun to 'TRUE'.}
 }
 \value{
   The jaatha object with starting positions

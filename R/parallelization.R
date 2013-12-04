@@ -4,18 +4,12 @@
 # 
 # Author:   Paul R. Staab & Lisha Mathew 
 # Email:    staab (at) bio.lmu.de
-# Date:     2013-09-04
+# Date:     2013-11-15
 # Licence:  GPLv3 or later
 # ----------------------------------------------------------------------
 
-setParallelization <- function(jaatha) {
-  cores <- jaatha@cores
-  if (cores > 1) {
-    if (!require(doMC)) 
-      stop("You need the package 'doMC' to run Jaatha on multiple cores.
-            This package is not available on Windows systems.") 
-    doMC::registerDoMC(cores)
-  } else {
-    foreach::registerDoSEQ()
-  }
+setParallelization <- function(cores=1) {
+  checkType(cores, c("num", "single"))
+  if (cores > 1 && .Platform$OS.type == "windows")
+    stop("Parallelization is not supported on Windows.") 
 }

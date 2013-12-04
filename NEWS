@@ -1,15 +1,28 @@
+Version 2.2
+---------------
++ Added function for calculating BCa confidence intervals
++ Added "rerun" option to initial & refined search 
++ Switched form doMC to multicore for parallelization
++ Support for multiple independent summary statistics, even though this is not 
+  yet used in the default front end.
++ Differentiated between unit and integration tests and moved the unit tests
+  back into the package.
++ Reworked the reusing of simulations from previous steps in the refined search.
+  Now only simulations that actually are inside the current block are reused. 
++ Removed the "score". We are always using the log-likelihood now.
++ Added support for a new "poisson.smoothing" type of summary statistics. 
+
 Version 2.1.3
 -------------
 + Fixed problem with naming of temporary directories if Jaatha was executed
 multiple times in different threads
-
 
 Version 2.1.2
 -------------
 + Fixed problem with Rcpp in size_t on 64 bit windows
 
 Version 2.1.1
--------------
+---------------
 + Fixed warning messages in cpp files
 + Updated Makevars
 
@@ -50,6 +63,7 @@ Version 2.0.0
 
 Version 1.9.12
 -------------
+
 + Fixed a bug with one parameter models
 + Added support for seqgen
 + GLM fitting algorithm can now take more steps to converge

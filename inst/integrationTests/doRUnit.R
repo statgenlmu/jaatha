@@ -27,11 +27,12 @@ require("jaatha")
 if (is.element("jaatha", loadedNamespaces()))
   attach(loadNamespace("jaatha"), name=paste("namespace", "jaatha", sep=":"), pos=3)
 
+load("../inst/unitTests/test_setup.Rda")
+
 ## --- Testing ---
 
 ## Define tests
-files <- "^runit.+\\.[rR]$"
-if (quick) files <- "^runit\\..+\\.[rR]$"
+files <- "^it.+\\.[rR]$"
 testSuite <- defineTestSuite(name="Jaatha Unit Testing", dirs=".",
                              testFileRegexp = files)
 

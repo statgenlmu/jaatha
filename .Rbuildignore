@@ -1,8 +1,8 @@
-DESCRIPTION.template
-README.md
-Makefile
-howtos
-unit_tests
-misc
-jaatha_
-.travis.yml
+^DESCRIPTION.template$
+^README.md$
+^Makefile$
+^howtos$
+^unit_tests$
+^misc$
+.tar.gz$
+^.travis.yml

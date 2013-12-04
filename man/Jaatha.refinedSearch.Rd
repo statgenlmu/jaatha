@@ -2,9 +2,11 @@
 \alias{Jaatha.refinedSearch}
 \title{Iterative search for the maximum composite likelihood parameters}
 \usage{
-  Jaatha.refinedSearch(jaatha, best.start.pos, sim,
-    sim.final, epsilon = 0.2, half.block.size = 0.05,
-    weight = 0.9, max.steps = 200)
+  Jaatha.refinedSearch(jaatha, best.start.pos = 2,
+    sim = length(getParNames(jaatha)) * 25,
+    sim.final = min(sim, 100), epsilon = 2,
+    half.block.size = 0.025, weight = 0.9, max.steps = 200,
+    rerun = FALSE)
 }
 \arguments{
   \item{jaatha}{The Jaatha settings (create with
@@ -34,6 +36,11 @@
 
   \item{max.steps}{The search will stop at this number of
   steps if not stopped before (see \code{epsilon})}
+
+  \item{rerun}{You can repeat a previously done refined
+  search in Jaatha.  Do do so, just call the refined search
+  function with the jaatha object result of the first
+  refined search and set rerun to 'TRUE'.}
 }
 \value{
   An Jaatha object. The found values are written to the

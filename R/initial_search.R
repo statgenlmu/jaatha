@@ -1,5 +1,4 @@
 # --------------------------------------------------------------
-# initial_search.R 
 # Contains the initialSearch() and helper functions used nowhere else 
 # 
 # Authors:  Lisha Naduvilezhath & Paul R. Staab
@@ -21,18 +20,32 @@
 #' @param sim Numeric. The number of simulations that are performed in each bin
 #' @param blocks.per.par Numeric. The number of block per parameter. 
 #'          Will result in Par^blocks.per.par blocks
+#' @param rerun You can repeat a previously done initial search in Jaatha.
+#'        Do do so, just call the initial search function with the jaatha 
+#'        object result of the first initial search and set rerun to 'TRUE'.
 #'
 #' @return The jaatha object with starting positions
 #'
 #' @export
-Jaatha.initialSearch <- function(jaatha, sim=200, blocks.per.par=3){
+Jaatha.initialSearch <- function(jaatha, sim=200, blocks.per.par=2, rerun=FALSE){
+
+  if (rerun) {
+    if( is.null(jaatha@calls[['initial.search']]) ) 
+      stop("No arguments found. Did you run the initial search before?")
+    sim <- jaatha@calls[['initial.search']]$sim
+    blocks.per.par <- jaatha@calls[['initial.search']]$blocks.per.par
+  } else {
+    jaatha@calls[['initial.search']] <- list(sim=sim,
+                                             blocks.per.par=blocks.per.par) 
+  }
+
   .log2("Called Jaatha.initialSearch()")
   .log2("sim:", sim, "| blocks.per.par:", blocks.per.par)
   set.seed(jaatha@seeds[2])
   .log2("Seeting seed to", jaatha@seeds[2])
   tmp.dir <- getTempDir(jaatha@use.shm)
 
-  setParallelization(jaatha)
+  setParallelization(jaatha@cores)
 
   .print("*** Searching starting positions ***")
   .print("Creating initial blocks ... ")
@@ -44,16 +57,13 @@ Jaatha.initialSearch <- function(jaatha, sim=200, blocks.per.par=3){
     .print("*** Block", i, ":", printBorder(firstBlocks[[i]], jaatha))
 
     .log3("Simulating in block", i)
-    parNsumstat <- simulateWithinBlock(sim, firstBlocks[[i]], jaatha)       
+    sim.data <- simulateWithinBlock(sim, firstBlocks[[i]], jaatha)       
 
     .log3("Fitting GLM in block", i)        
-    glm <- glmFitting(parNsumstat, jaatha)
+    glms.fitted <- fitGlm(sim.data, jaatha)
 
     .log3("Searching optimal values in block",i)
-    optimal <- estimate(bObject=firstBlocks[[i]], jaatha,
-                        modFeld=glm, boarder=0)
-    ##boarder of 0 is important! (otherwise not all param
-    ##under consideration)
+    optimal <- findBestParInBlock(firstBlocks[[i]], glms.fitted, jaatha@sum.stats) 
     
     firstBlocks[[i]]@score <- optimal$score
 

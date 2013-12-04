@@ -9,9 +9,7 @@ all: $(howtos)
 	pdflatex $<
 	bibtex $(<:%.tex=%) 
 	pdflatex $<
+	pdflatex $<
 
 clean:
-	rm *.aux *.bbl *.blg *.log *.out *.tex *.pdf 2> /dev/null; true
-
-publish:
-	scp *.pdf webserver:_statgen/software/jaatha/
+	rm -r cache *.aux *.bbl *.blg *.log *.out *.tex *.pdf 2> /dev/null; true

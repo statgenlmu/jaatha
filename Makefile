@@ -1,49 +1,50 @@
-.PHONY: howtos install test quick-test travis-test check clean
+.PHONY: howtos install test test-setup integration-test travis-test check clean
 
-VERSION=$(shell grep Version DESCRIPTION.template | awk '{print $$2}')
+VERSION=$(shell grep Version DESCRIPTION | awk '{print $$2}')
 PACKAGE=jaatha_$(VERSION).tar.gz
 R_CHECK_ARGS?="--as-cran"
-R_BUILD_ARGS?=""
+R_BUILD_ARGS?=
 
 R_SOURCES=$(wildcard R/*.R) 
 CPP_SOURCES=$(wildcard src/*.cc)
+VIGNETTES=$(wildcard vignettes/*.pdf)
+TESTS=$(wildcard inst/unitTests/*.R) $(wildcard tests/*.R)
 
 default: $(PACKAGE)
 
-release: $(PACKAGE) test check howtos 
-travis-test: $(PACKAGE) test check
+release: clean test-setup howtos $(PACKAGE) check  
+travis-test: $(PACKAGE) test-setup integration-test check
 
 howtos: install 
 	cd howtos; make
+	cp howtos/*.pdf vignettes/
 
 test: install
-	# Runs the unit tests
-	cd unit_tests; ./doRUnit.R
+	cd tests; export RCMDCHECK=FALSE; Rscript doRUnit.R
 
-quick-test: install
-	# Runs the unit tests without time-consuming whole algorithms tests
-	cd unit_tests; ./doRUnit.R quick
+integration-test: inst/unitTests/test_setup.Rda install 
+	cd tests; export RCMDCHECK=FALSE; export INTEGRATION_TESTS=TRUE; Rscript doRUnit.R
 
-check: install 
+test-setup: install
+	cd inst/unitTests; Rscript test_setup.R
+
+check: $(PACKAGE)
 	# Runs an R CMD check
 	R CMD check $(R_CHECK_ARGS) $(PACKAGE)
 
-package: test check
-	# Build the R package out of the sources
-	R CMD build $(R_BUILD_ARGS) .
+package: $(PACKAGE) 
 
-install:
+install: 
 	R CMD INSTALL .
 
-$(PACKAGE): $(R_SOURCES) $(CPP_SOURCES) README DESCRIPTION man
-	R CMD build .
-
+$(PACKAGE): $(R_SOURCES) $(CPP_SOURCES) $(TESTS) $(VIGNETTES) README DESCRIPTION man inst/unitTests/test_setup.Rda
+	R CMD build $(R_BUILD_ARGS) .
 
 README: README.md
 	grep -v "\`\`\`" README.md | grep -v "Build Status" > README
 
-DESCRIPTION: DESCRIPTION.template 
-	cp DESCRIPTION.template DESCRIPTION
+inst/unitTests/test_setup.Rda: inst/unitTests/test_setup.R
+	make test-setup
 
 man: $(R_SOURCES) DESCRIPTION
 	- rm -r man 2> /dev/null
@@ -51,7 +52,7 @@ man: $(R_SOURCES) DESCRIPTION
 
 clean:
 	- rm -rv jaatha.Rcheck
-	- rm -rv unit_tests/results
 	- cd src/; rm *.so *.o *.rds ms/*.o 2> /dev/null
-	- rm -v DESCRIPTION README 2>/dev/null
 	- rm -r man 2> /dev/null
+	- cd howtos; make clean
+	- rm -rv inst/unitTests/test_setup.Rda

@@ -331,22 +331,12 @@ makeThetaLast <- function(dm) {
 
 
 # Checks if a vector of parameters is within the ranges of the model
-.checkParInRange <- function(dm, param) {
-  ranges <- dm.getParRanges(dm,inklExtTheta=F)
-  #Seems there can be rounding errors during scaling
-  lower <- t(ranges[, rep("lower.range", nrow(param))]) - 1e-5
-  upper <- t(ranges[, rep("upper.range", nrow(param))]) + 1e-5
-  inRange <- lower <= param & param <= upper
-  all.in.range <- all(inRange)
-  if (!all.in.range) {
-    inRange <- inRange[, 1] & inRange[, 2]
-    .print("The following parameter combinations are out of range:")
-    out.of.range <- param[!inRange, ]
-    for (i in 1:nrow(out.of.range)) {
-      .print(out.of.range[i, ])
-    }
-  }
-  return(all.in.range)
+checkParInRange <- function(dm, param) {
+  if (length(param) != dm.getNPar(dm)) stop("Wrong number of parameters")
+
+  ranges <- dm.getParRanges(dm)
+  in.range <- all(ranges[, 1]-1e-11 <= param & param <= ranges[, 2]+1e-11)
+  if (!in.range) stop("Parameter combination out of range")
 }
 
 # Selects a program for simulation that is capable of all current features
@@ -1172,13 +1162,18 @@ dm.addOutgroup <- function(dm, separation.time) {
 
 
 
-#' Simulates data according to a demographic model and calculates summary statistics form it
+#-------------------------------------------------------------------
+# dm.simSumStats
+#-------------------------------------------------------------------
+#' Simulates data according to a demographic model
 #' 
-#' @param dm          The demographic model according to which the simulations should be done
-#' @param parameters  A vector of parameters which should be used for the simulations. 
-#'            If a matrix is given, a simulation for each row of the matrix will be performed
-#' @return        A matrix where each row is the vector of summary statistics for 
-#'            the parameters in the same row of the "parameter" matrix
+#' @param dm The demographic model according to which the simulations should be done
+#' @param parameters A vector of parameters which should be used for the simulations. 
+#'           If a matrix is given, a simulation for each row of the matrix will be performed
+#' @param sum.stats A vector with names of the summary statistics to simulate,
+#'           or "all" for simulating all possible statistics.
+#' @return A matrix where each row is the vector of summary statistics for 
+#'         the parameters in the same row of the "parameter" matrix
 #' @export
 #'
 #' @examples
@@ -1186,24 +1181,14 @@ dm.addOutgroup <- function(dm, separation.time) {
 #' dm <- dm.addSpeciationEvent(dm,0.01,5)
 #' dm <- dm.addMutation(dm,1,20)
 #' dm.simSumStats(dm,c(1,10))
-dm.simSumStats <- function(dm, parameters){
-  .log3("Called dm.simSumStats()")
-
+dm.simSumStats <- function(dm, parameters, sum.stats=c("all")) {
   checkType(dm, "dm")
-  if (!is.matrix(parameters)) parameters <- matrix(parameters, 1)
-  if (dim(parameters)[2] != dm.getNPar(dm)) stop("Wrong number of parameters")
-  if ( !.checkParInRange(dm,parameters) ) stop("Parameters out of range")
 
-  sumStats <- apply(parameters, 1, dm.simulate, dm=dm)
+  checkParInRange(dm, parameters)
 
-  .log3("Finished dm.simSumStats()")
-  return(sumStats)
+  dm@currentSimProg@singleSimFunc(dm, parameters)
 }
 
-dm.simulate <- function(dm, pars) {
-  jsfs <- dm@currentSimProg@singleSimFunc(dm, pars)
-  return(list(pars=pars, jsfs=jsfs))
-}
 
 scaleDemographicModel <- function(dm, scaling.factor) {
   dm@nLoci <- round(dm@nLoci / scaling.factor)

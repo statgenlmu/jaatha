@@ -1,6 +1,6 @@
 Package: jaatha
-Version: 2.1.3
-Date: 2013-11-20
+Version: 2.2
+Date: 2013-12-04
 License: GPL (>= 3)
 Title: A Fast Parameter Estimation Method for Evolutionary Biology
 Author: Lisha Mathew, Paul R. Staab and Dirk Metzler
@@ -14,29 +14,34 @@ Description: Jaatha is a composite likelihood method for inferring evolutionary
 URL: http://evol.bio.lmu.de/_statgen/software/jaatha
 Depends:
     R (>= 2.14.2),
-    methods,
-    Rcpp (>= 0.9.9)
+    Rcpp (>= 0.9.9),
+    methods
 Imports:
     foreach (>= 1.2.0-1),
-    phyclust (>= 0.1-14)
+    phyclust (>= 0.1-14),
+    parallel
 LinkingTo: Rcpp
 Suggests:
-    doMC (>= 1.1.1),
-    ape (>= 2.7)
+    ape (>= 2.7),
+    RUnit
 Collate:
     'aaa_SimProgram.R'
     'Block.R'
-    'calc_likelihood.R'
+    'confidence_intervals.R'
     'DemographicModel.R'
-    'glm_fitting.R'
+    'estimate_log_likelihood.R'
+    'find_best_par_in_block.R'
+    'fit_glm.R'
     'helper_functions.R'
     'initial_search.R'
     'Jaatha.R'
+    'normalize.R'
     'parallelization.R'
     'read_fasta.R'
     'refined_search.R'
+    'run_simulations.R'
     'sim_program_ms.R'
     'sim_program_seqgen.R'
-    'simulate_dm.R'
     'simulate_within_block.R'
     'summary_statistics.R'
+    'sim_likelihood.R'

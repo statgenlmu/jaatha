@@ -1,8 +1,8 @@
 \name{dm.simSumStats}
 \alias{dm.simSumStats}
-\title{Simulates data according to a demographic model and calculates summary statistics form it}
+\title{Simulates data according to a demographic model}
 \usage{
-  dm.simSumStats(dm, parameters)
+  dm.simSumStats(dm, parameters, sum.stats = c("all"))
 }
 \arguments{
   \item{dm}{The demographic model according to which the
@@ -11,6 +11,10 @@
   \item{parameters}{A vector of parameters which should be
   used for the simulations.  If a matrix is given, a
   simulation for each row of the matrix will be performed}
+
+  \item{sum.stats}{A vector with names of the summary
+  statistics to simulate, or "all" for simulating all
+  possible statistics.}
 }
 \value{
   A matrix where each row is the vector of summary
@@ -18,8 +22,7 @@
   "parameter" matrix
 }
 \description{
-  Simulates data according to a demographic model and
-  calculates summary statistics form it
+  Simulates data according to a demographic model
 }
 \examples{
 dm <- dm.createDemographicModel(c(25,25), 100)

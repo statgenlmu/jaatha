@@ -12,8 +12,11 @@ Biology. The method is described in
 
 Practical instructions for running Jaatha are provided in the 
 [The Jaatha HowTo][2]. Instructions how to use Jaatha with a non-standard 
-simulation method are given in the [Custom Simulation Method HowTo][3].
+simulation method are given in the [Custom Simulation Method HowTo][3]. Both
+tutorials are also included as vignettes in the CRAN package. 
 
+If you want to follow the development of Jaatha, you can do so on [GitHub][4]. 
+Also, Paul posts development updates under [#jaatha on Google Plus][5].
 
 
 Installation
@@ -55,8 +58,10 @@ Links
 -----
 
 [1]: http://onlinelibrary.wiley.com/doi/10.1002/ece3.722/abstract
-[2]: http://evol.bio.lmu.de/_statgen/software/jaatha/jaatha_howto.pdf
-[3]: http://evol.bio.lmu.de/_statgen/software/jaatha/custom_simulator_howto.pdf
+[2]: https://github.com/paulstaab/jaatha/raw/master/vignettes/jaatha_howto.pdf
+[3]: https://github.com/paulstaab/jaatha/raw/master/vignettes/custom_simulator_howto.pdf
+[4]: https://github.com/paulstaab/jaatha
+[5]: https://plus.google.com/s/%23jaatha
 
 * [Jaatha's Homepage](http://evol.bio.lmu.de/_statgen/software/jaatha)
 * [Source Code on GitHub](https://github.com/paulstaab/jaatha)

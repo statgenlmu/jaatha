@@ -3,8 +3,8 @@
 \title{Initialization of a Jaatha estimation for population genetics}
 \usage{
   Jaatha.initialize(demographic.model, jsfs, seed,
-    sim.package.size = 10, cores = 1, scaling.factor = 1,
-    use.shm = FALSE, folded = FALSE)
+    cores = 1, scaling.factor = 1, use.shm = FALSE,
+    folded = FALSE, smoothing = FALSE)
 }
 \arguments{
   \item{demographic.model}{The demographic model to use}
@@ -18,13 +18,6 @@
   \item{seed}{An integer used as seed for both Jaatha and
   the simulation software}
 
-  \item{sim.package.size}{When running Jaatha on multiple
-  cores, a singe core will always execute a whole "package"
-  of simulations the reduce the inter thread communication
-  overhead. This gives the number of simulations in such a
-  package. Choose a number such that the execution of the
-  simulations takes at least 15 seconds.}
-
   \item{cores}{The number of cores to use in parallel. If
   0, it tries to guess the number of available cores and
   use them all.}
@@ -37,7 +30,19 @@
   \item{use.shm}{Logical. Many modern linux distributions
   have a shared memory file system available under
   /dev/shm. Set this to TRUE to use it for temporary files.
-  Usually gives a huge performance boost.}
+  Usually gives a huge performance boost.  Warning: This
+  option will be removed in a future version of jaatha. The
+  cleaner way to achieve this is to move your complete
+  R-temp directory to the memory drive. This is explained
+  on http://www.paulstaab.de/2013/11/r-shm .}
+
+  \item{smoothing}{If set to true, Jaatha uses a different
+  way to summaries the JSFS. Instead of binning certain
+  areas, and fitting a glm per area, only one glm is fitted
+  for the complete JSFS, and the position of the different
+  entries is treated as a model parameter. This feature is
+  still experimental and not recommended for productive use
+  at the moment.}
 }
 \value{
   A S4-Object of type jaatha containing the settings
