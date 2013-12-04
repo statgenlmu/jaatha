@@ -27,7 +27,7 @@
 #' @return The jaatha object with starting positions
 #'
 #' @export
-Jaatha.initialSearch <- function(jaatha, sim=200, blocks.per.par=3, rerun=FALSE){
+Jaatha.initialSearch <- function(jaatha, sim=200, blocks.per.par=2, rerun=FALSE){
 
   if (rerun) {
     if( is.null(jaatha@calls[['initial.search']]) ) 
