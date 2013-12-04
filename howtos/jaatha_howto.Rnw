@@ -16,7 +16,7 @@
 \usepackage{hyperref}
 
 <<setup, include=FALSE, echo=FALSE>>=
-options(keep.source = TRUE, width = 60)
+options(keep.source = TRUE, width = 50)
 jinfo <- packageDescription("jaatha")
 opts_chunk$set(error = FALSE)
 @
@@ -54,6 +54,7 @@ using
 <<install, eval=FALSE>>=
 install.packages('jaatha')
 @ 
+\noindent
 or downloaded from
 \url{http://evol.bio.lmu.de/_statgen/software/jaatha}. Jaatha runs on R under Windows, 
 OS X (Mac) and Linux  with the following restrictions: On Windows the parallelization 
@@ -110,6 +111,7 @@ dm <- dm.createDemographicModel(sample.sizes=c(12,14),
                                 seq.length=1000)
 @
 
+\noindent
 The parameter \verb@sample.sizes@ here corresponds to the number of individuals we have
 sampled from the first population and second population respectively. The 
 second argument \verb@loci.num@ states that we are using data from $70$ loci
@@ -123,6 +125,7 @@ dm <- dm.addSymmetricMigration(dm, .01, 5, new.par.name='M')
 dm <- dm.addMutation(dm, 1, 20, new.par.name='theta')
 dm <- dm.addRecombination(dm, fixed=20)
 @
+\noindent
 The first parameter is the demographic model to which we want to add
 an assumption/feature. The two following numbers represent the range for the
 corresponding parameter. 
@@ -151,6 +154,7 @@ of the parameter space. The parameters are scaled as in the popular simulation p
 %dm
 %@
 
+\noindent
 Keep in mind that a `good' model -- which is one that approximates the real demographic
 history but is also as simple as possible -- is crucial for obtaining meaningful
 estimates in the end. Jaatha will always try to find the parameters that make the
@@ -239,12 +243,12 @@ the search, we need to set some options like our demographic model, the summary
 statistics of the real data, and a seed to ensure reproducibility:
 
 <<Initialize>>=
-jaatha <- Jaatha.initialize(dm, jsfs=jsfs, seed=12345)
+jaatha <- Jaatha.initialize(dm, jsfs=jsfs, seed=12345, cores=2)
 @
 
-
 \noindent
-For more options refer to \verb@?Jaatha.initialize@ or the Jaatha manual.
+For more options refer to \verb@?Jaatha.initialize@ or the Jaatha manual. If you
+are running on Windows, skip the \verb@cores = 2@ option.
 
 \subsection{The Initial Search}
 
@@ -275,11 +279,10 @@ To visualise the estimates for good stating positions sorted by score, type:
 <<PrintStartPoints>>=
 Jaatha.getStartingPoints(jaatha)
 @
-Here, there is a big reduction in the scores after the first seven blocks, and a smaller one 
-after the first two. This is suggesting that we either use the first two or the
-first seven 
-blocks as starting positions for the refined search, depending on how much time we want to
-spend. For now, we will just use the first two points.
+\noindent
+Here, there is a big reduction in the scores after the first three blocks. 
+This is suggesting that we either use the first three blocks as starting 
+positions for the refined search. For now, we will just use the first point.
 
 \subsection{The Refined Search}
 
@@ -289,7 +292,7 @@ Now we can conduct the more thorough refined search described above to improve t
 likelihood approximations. 
 
 <<runRefinedSearch, cache=TRUE>>=
-jaatha <- Jaatha.refinedSearch(jaatha, best.start.pos=2, sim=100)
+jaatha <- Jaatha.refinedSearch(jaatha, best.start.pos=1, sim=50)
 @
 
 \noindent
@@ -326,23 +329,17 @@ print(likelihoods[1:3, ])
 %\end{figure}
 
 \section{Parallelization}
+\noindent
 On Linux and OS X, Jaatha can distribute the simulations on multiple CPU cores.
 To use this feature, set the \verb@cores@ option during initialization. The
-value of the option specifies the number of cores you want to use. As default,
-Jaatha will execute 'packages' of 10 simulation on a core in a row to reduce the
-overhead created by inter-process communication. This is fine for demographic
-models that can be quickly simulated. However, if you have simulations that takes
-multiple seconds and/or many cores available, you may want smaller packages.
-This can be archived by setting \verb@sim.package.size = 1@.
-
-The use of the \verb@cores@ option does affect the seeding system. A run without
-\verb@cores@ will give different results as the identical run with the option
-set at a value greater than one, even when using the same seed. However, if you
-use \verb@cores@, the actual number of cores you use does not change the
-results.
+value of the option specifies the number of cores you want to use. Jaatha will
+distribute its simulation evenly this cores. As for version $2.2$ on, the number
+of cores no longer affects Jaatha's seeding system, e.g. you will get the same
+results for the same seed no matter how many cores you use.
 
 \section{Finite sites models}
-As described in \cite{mathew_composite_2012}, you can use finite sites mutation 
+\noindent
+As described in \cite{mathew_why_2013}, you can use finite sites mutation 
 models in Jaatha. However,
 this currently only works on Linux and OS X and requires that Seq-Gen 
 \citep{rambaut_seq-gen:_1997} is
@@ -359,6 +356,66 @@ To create a finite sites model, you must specify a mutation model using the
 \verb@dm.setMutationModel@ function and add an outgroup to your model using
 \verb@dm.addOutgroup@. Optionally, you can than add a mutation rate heterogeneity
 to your model using \verb@dm.addMutationRateHeterogenity@.
+
+\section{Confidence Intervals}
+\noindent
+From Version $2.2$ on, Jaatha also offers the function
+\verb@Jaatha.confidenceIntervals@ to calculate parametric bootstrap
+confidence intervals for the estimated parameters. As usual, bootstrapping
+requires to rerun the complete analysis multiple times, in the case of
+parametric bootstrapping on simulated data. This means that in order to get
+confidence intervals, you need to execute about $50$ to $100$ Jaatha runs, which can
+be quite time consuming. Therefore, we recommend doing this only on a Linux/Mac
+multicore system (the more cores the better), where the runs can be executed
+at least partially in parallel. Set the \verb@cores@ option to the number of
+cores you want to use (the individual Jaatha runs will always run on the single
+core). We usually use $32$ cores on powerful computation servers for this.  
+The confidence intervals are bias-correct and accelerated (BCa), as
+described in Chapter $14.3$ of \cite{efron_introduction_1994}. 
+
+\section{More on Demographic Models}
+\noindent
+The demographic model system can also deal with population size changes. There
+are two functions that add a change in the size of a population to the model, 
+\verb@dm.addSizeChange@ and \verb@dm.addGrowth@. 'SizeChanges' are instantaneous
+changes in the population size, while 'Growth' refers to an exponential increase
+or decrease in population size over time. Please keep in mind that models are always
+specified looking backwards in time. Hence a size change affects the time from
+the size changes time point on further backwards into the past. The
+parametrisation of a model including both growth and time changes can be quite
+challenging. As an example, here is the code for model S1.1 in
+\cite{mathew_why_2013}:
+
+<<advancedDM>>=
+nLoci <- 100
+rho <- 5
+ 
+dm <- dm.createDemographicModel(c(25,25), nLoci, 1000)
+dm <- dm.addMutation(dm, 5, 20, new.par.name="theta")
+dm <- dm.addSpeciationEvent(dm, 0.017, 20, new.time.point.name="tau")
+dm <- dm.addSymmetricMigration(dm, 0.005, 5, new.par.name="m")
+# Everything but a fixed recombination rate does not make sense
+dm <- dm.addRecombination(dm, fixed=rho)
+ 
+# "SizeChange"s are instanious sizes changes (ms' -n, -N, -en and -eN)
+dm <- dm.addSizeChange(dm, 0.05, 10, population=2, at.time="0", new.par.name="q")
+ 
+# Parameters s1 + s2 have to be created separately, because they are no direct
+# parameters of any command
+dm <- dm.addParameter(dm, par.name="s1", 0.05, 10)
+dm <- dm.addParameter(dm, par.name="s2", 0.05, 10)
+dm <- dm.addSizeChange(dm, par.new=FALSE, parameter="s1+s2", population=1, at.time="tau")
+ 
+# Growth is an exponential population expansion over time (e.g. ms' -g, -G, -eg and -eG)
+dm <- dm.addGrowth(dm, par.new=FALSE, parameter="log(1/s1)/tau", population=1)
+dm <- dm.addGrowth(dm, par.new=FALSE, parameter="log(q/s2)/tau", population=2)
+@
+
+\noindent
+Forwards in time, this model consists of an ancestral population of relative
+size $s1+s2$, which splits into two population at time $\tau$. These population
+have size $s1$ and $s2$, and grow to their present relative sizes $1$ and $q.$  
+
 
 \bibliographystyle{plainnat}
 %\inputencoding{utf8}
