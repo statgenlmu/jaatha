@@ -206,6 +206,10 @@ Jaatha.initialize <- function(demographic.model, jsfs,
 
   if (missing(seed)) seed <- numeric()
 
+  if (use.shm) warning("'use.shm' will be removed in a future version of Jaatha.
+                       Manually move your complete R-tmp to your memory disk
+                       instead. See http://www.paulstaab.de/2013/11/r-shm")
+
   sum.stats <- list()
   if (!smoothing) {
     sum.stats[['jsfs']] <- list(method="poisson.transformed",

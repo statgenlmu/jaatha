@@ -210,8 +210,8 @@ getTempDir <- function(use.shm = FALSE) {
   else tmp.dir <- paste(tempdir(), "/jaatha", sep="")
   
   .jaatha$temp.dir <- paste(tmp.dir, "-", Sys.getpid(), sep="")
-  if (file.exists(.jaatha$temp.dir)) 
-      warning("TMP-Dir ", .jaatha$temp.dir, " already exists")
+  #if (file.exists(.jaatha$temp.dir)) 
+  #    warning("TMP-Dir ", .jaatha$temp.dir, " already exists")
   dir.create(.jaatha$temp.dir)
   return(.jaatha$temp.dir)
 }
