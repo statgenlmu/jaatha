@@ -64,31 +64,31 @@ test.JaathaInitialize <- function() {
   checkTrue(jaatha@seeds[1] == 123)
 
   # Cores
-  jaatha <- Jaatha.initialize(dm.tt, sum.stats.tt, 123, 2)
-  jaatha <- Jaatha.initialize(dm.tt, sum.stats.tt, 123, cores=2)
+  jaatha <- Jaatha.initialize(dm.tt, sum.stats.tt, 123, 1)
+  jaatha <- Jaatha.initialize(dm.tt, sum.stats.tt, 123, cores=1)
   checkType(jaatha, "jaatha")
-  checkTrue(jaatha@cores == 2)
+  checkTrue(jaatha@cores == 1)
 
   # Scaling Factor
-  jaatha <- Jaatha.initialize(dm.tt, sum.stats.tt, 123, 2, scaling.factor=17)
-  jaatha <- Jaatha.initialize(dm.tt, sum.stats.tt, 123, 2, 17)
+  jaatha <- Jaatha.initialize(dm.tt, sum.stats.tt, 123, 1, scaling.factor=17)
+  jaatha <- Jaatha.initialize(dm.tt, sum.stats.tt, 123, 1, 17)
   checkType(jaatha, "jaatha")
   checkTrue(jaatha@opts[['scaling.factor']] == 17)
 
   # Use Shm
-  jaatha <- Jaatha.initialize(dm.tt, sum.stats.tt, 123, 2, 17, TRUE)
-  jaatha <- Jaatha.initialize(dm.tt, sum.stats.tt, 123, 2, 17, use.shm=TRUE)
+  jaatha <- Jaatha.initialize(dm.tt, sum.stats.tt, 123, 1, 17, TRUE)
+  jaatha <- Jaatha.initialize(dm.tt, sum.stats.tt, 123, 1, 17, use.shm=TRUE)
   checkType(jaatha, "jaatha")
   checkTrue(jaatha@use.shm)
 
   # Folded
-  jaatha <- Jaatha.initialize(dm.tt, sum.stats.tt, 123, 2, 17, TRUE, TRUE)
-  jaatha <- Jaatha.initialize(dm.tt, sum.stats.tt, 123, 2, 17, TRUE, folded=TRUE)
+  jaatha <- Jaatha.initialize(dm.tt, sum.stats.tt, 123, 1, 17, TRUE, TRUE)
+  jaatha <- Jaatha.initialize(dm.tt, sum.stats.tt, 123, 1, 17, TRUE, folded=TRUE)
   checkType(jaatha, "jaatha")
 
   # Smoothing  
-  jaatha <- Jaatha.initialize(dm.tt, sum.stats.tt, 123, 2, 17, TRUE, FALSE, TRUE)
-  jaatha <- Jaatha.initialize(dm.tt, sum.stats.tt, 123, 2, 17, TRUE, FALSE,
+  jaatha <- Jaatha.initialize(dm.tt, sum.stats.tt, 123, 1, 17, TRUE, FALSE, TRUE)
+  jaatha <- Jaatha.initialize(dm.tt, sum.stats.tt, 123, 1, 17, TRUE, FALSE,
                               smoothing=TRUE)
   checkType(jaatha, "jaatha")
   checkTrue(jaatha@sum.stats$jsfs$method == "poisson.smoothing")
