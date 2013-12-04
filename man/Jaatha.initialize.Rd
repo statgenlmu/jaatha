@@ -30,7 +30,19 @@
   \item{use.shm}{Logical. Many modern linux distributions
   have a shared memory file system available under
   /dev/shm. Set this to TRUE to use it for temporary files.
-  Usually gives a huge performance boost.}
+  Usually gives a huge performance boost.  Warning: This
+  option will be removed in a future version of jaatha. The
+  cleaner way to achieve this is to move your complete
+  R-temp directory to the memory drive. This is explained
+  on http://www.paulstaab.de/2013/11/r-shm .}
+
+  \item{smoothing}{If set to true, Jaatha uses a different
+  way to summaries the JSFS. Instead of binning certain
+  areas, and fitting a glm per area, only one glm is fitted
+  for the complete JSFS, and the position of the different
+  entries is treated as a model parameter. This feature is
+  still experimental and not recommended for productive use
+  at the moment.}
 }
 \value{
   A S4-Object of type jaatha containing the settings
