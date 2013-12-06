@@ -41,19 +41,22 @@ possible.sum.stats <- c("jsfs")
 # This function generates an string that contains an R command for generating
 # an ms call to the current model.
 generateMsmsOptionsCommand <- function(dm) {
-  nSample <- dm@sampleSizes
   cmd <- c('c(')
-  cmd <- c(cmd,'"-I"', ",", length(nSample), ',', 
-           paste(nSample, collapse=","), ',')
 
   for (i in 1:dim(dm@features)[1] ) {
     type <- as.character(dm@features[i,"type"])
     feat <- unlist(dm@features[i, ])
 
     if (type == "pos.selection") {
-      cmd <- c(cmd,'"-t"', ',', feat["parameter"], ',')
+      cmd <- c(cmd, '"-SI"', ',', feat['time.point'], ',', length(dm@sampleSizes), ',')
+      if (feat['pop.source'] == 1) cmd <- c(cmd, 0.00001, ',', 0, ',') 
+      else cmd <- c(cmd, 0, ',', 0.00001, ',') 
+      cmd <- c(cmd, '"-N 10000"', ',') 
     }
   }
+
+  cmd <- c(cmd, '" ")')
+  cmd
 }
 
 generateMsmsOptions <- function(dm, parameters) {
@@ -86,11 +89,14 @@ msmsSingleSimFunc <- function(dm, parameters) {
   if (length(parameters) != dm.getNPar(dm)) 
     stop("Wrong number of parameters!")
 
-  ms.options <- paste(sum(dm@sampleSizes), dm@nLoci, generateMsOptions(dm, parameters))
-  msms.options <- generateMsmsOptions(dm, parameters) 
+  ms.options <- paste(sum(dm@sampleSizes), dm@nLoci, 
+                      paste(generateMsOptions(dm, parameters), collapse=" "))
+  msms.options <- paste(generateMsmsOptions(dm, parameters), collapse= " ") 
+  print(ms.options)
+  print(msms.options)
   sim.time <- system.time(jsfs <- msms("/home/paul/bin/msms.jar", 
-                                          ms.options, msms.optios,
-                                          false, true))
+                                          ms.options, msms.options,
+                                          jsfs=TRUE))
   .log3("finished after", sum(sim.time[-3]), "seconds")
   return(list(jsfs=jsfs, pars=parameters))
 }

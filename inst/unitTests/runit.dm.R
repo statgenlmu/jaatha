@@ -58,6 +58,17 @@ test.parInRange <- function() {
   checkException( checkParInRange(dm.tt, NULL ))
 }
 
+test.addPositiveSelection <- function() {
+  dm <- dm.addPositiveSelection(dm.tt, 1, 2, population=1, at.time="2") 
+  checkTrue( "pos.selection" %in% dm@features$type )
+
+  dm <- dm.addPositiveSelection(dm.tt, fixed.strength=1, population=1, at.time="2") 
+  checkTrue( "pos.selection" %in% dm@features$type )
+
+  checkException( dm.addPositiveSelection(dm.tt, 1, 2, at.time="2") )
+  checkException( dm.addPositiveSelection(dm.tt, 1, 2, population=1) )
+}
+
 ## -- Fixed bugs ----------------------------------------
 test.showEmptyModel <- function() {
   dm <- dm.createDemographicModel(25:26, 100)

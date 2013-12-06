@@ -45,3 +45,4 @@ Collate:
     'simulate_within_block.R'
     'summary_statistics.R'
     'sim_likelihood.R'
+    'sim_program_msms.R'
