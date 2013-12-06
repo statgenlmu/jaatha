@@ -5,7 +5,6 @@
 # --------------------------------------------------------------
 
 estimateLogLikelihood <- function(param, glm.fitted, sum.stats) {
-  if(min(param)<0 || max(param)>1){ stop("Optimization outside par space") }
   log.likelihood <- 0
 
   log.likelihood <- sum(sapply(seq(along=sum.stats), function(i) {
