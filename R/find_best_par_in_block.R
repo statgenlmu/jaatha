@@ -1,6 +1,6 @@
 # --------------------------------------------------------------
 # Authors:  Paul R. Staab & Lisha Mathew
-# Date:     2013-11-14
+# Date:     2013-12-06
 # Licence:  GPLv3 or later
 # --------------------------------------------------------------
 
@@ -23,5 +23,6 @@ findBestParInBlock <- function(block, glm.fitted, sum.stats) {
                       lower=block@border[ ,1], upper=block@border[ ,2],
                       method="L-BFGS-B", control=list(fnscale=-1))
 
+  stopifnot(isInBlock(block, best.value$par))
   return(list(est=best.value$par, score=best.value$value))                   
 }
