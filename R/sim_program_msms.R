@@ -12,7 +12,7 @@ msms <- function(jar.path, ms.args, msms.args, out.file=NULL, jsfs=FALSE) {
   if (jsfs) msms.args <- paste(msms.args, "-oAFS jAFS")
   command = paste("java -jar", jar.path, as.character(msms.args), 
                   "-ms", as.character(ms.args), "-seed", seed)
-  print(command)
+  #print(command)
   if (!is.null(out.file)) {
     stopifnot(!file.exists(out.file))
     command <- paste(command, ">", out.file)
@@ -34,8 +34,25 @@ msms <- function(jar.path, ms.args, msms.args, out.file=NULL, jsfs=FALSE) {
   return(output)
 }
 
+checkForMsms <- function() {
+  if ( isJaathaVariable('msms.jar') ) return()
+
+  # Works on Linux only maybe
+  run.path <- strsplit(Sys.getenv("PATH"), ":")[[1]]
+  executables <- paste(run.path, "/msms.jar", sep="")
+  for (exe in executables) {
+    if (file.exists(exe)) {
+      .print("Using", exe, "as msms implementation\n")
+      setJaathaVariable('msms.jar', exe)     
+      return()
+    }
+  }
+
+  stop("No msms executable found.")
+}
+
 possible.features  <- c("mutation","migration","split",
-                        "recombination","size.change","growth", "pos.selection")
+                        "recombination","size.change","growth","pos.selection")
 possible.sum.stats <- c("jsfs")
 
 # This function generates an string that contains an R command for generating
@@ -52,6 +69,8 @@ generateMsmsOptionsCommand <- function(dm) {
       if (feat['pop.source'] == 1) cmd <- c(cmd, 0.00001, ',', 0, ',') 
       else cmd <- c(cmd, 0, ',', 0.00001, ',') 
       cmd <- c(cmd, '"-N 10000"', ',') 
+      cmd <- c(cmd, '"-SAA"', ',', paste0("2*", feat['parameter']), ',',  '"-SAa"', ',',
+               feat['parameter'], ',') 
     }
   }
 
@@ -92,8 +111,7 @@ msmsSingleSimFunc <- function(dm, parameters) {
   ms.options <- paste(sum(dm@sampleSizes), dm@nLoci, 
                       paste(generateMsOptions(dm, parameters), collapse=" "))
   msms.options <- paste(generateMsmsOptions(dm, parameters), collapse= " ") 
-  print(ms.options)
-  print(msms.options)
+
   sim.time <- system.time(jsfs <- msms("/home/paul/bin/msms.jar", 
                                           ms.options, msms.options,
                                           jsfs=TRUE))
@@ -101,13 +119,15 @@ msmsSingleSimFunc <- function(dm, parameters) {
   return(list(jsfs=jsfs, pars=parameters))
 }
 
-finalizeMs <- function(dm) {
+finalizeMsms <- function(dm) {
+  checkForMsms()
   dm@options[['ms.cmd']] <- generateMsOptionsCommand(dm)
+  dm@options[['msms.cmd']] <- generateMsmsOptionsCommand(dm)
   return(dm)
 }
 
-createSimProgram("ms", "",
+createSimProgram("msms", "",
                  possible.features,
                  possible.sum.stats,
                  singleSimFunc=msmsSingleSimFunc,
-                 finalizationFunc=finalizeMs)
+                 finalizationFunc=finalizeMsms)
