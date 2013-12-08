@@ -47,10 +47,6 @@ isInBlock <- function(block, point) {
   length(point) != nrow(block@border) && stop("Point and block dimensions
                                               mismatch")
   res <- all(block@border[,1]-1e-15<=point & point<=block@border[,2]+1e-15)
-  if (!res) {
-    cat("Point", point, "not in block with borders:\n")
-    print(block@border)
-  }
   return(res)
 }
 
