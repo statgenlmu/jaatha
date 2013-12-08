@@ -46,7 +46,12 @@ rm(showBlock)
 isInBlock <- function(block, point) {
   length(point) != nrow(block@border) && stop("Point and block dimensions
                                               mismatch")
-  return(all(block@border[,1]<=point & point<=block@border[,2]+1e-11))
+  res <- all(block@border[,1]<=point & point<=block@border[,2]+1e-11)
+  if (!res) {
+    cat("Point", point, "not in block with borders:\n")
+    print(block@border)
+  }
+  return(res)
 }
 
 getCorners <- function(block) {
