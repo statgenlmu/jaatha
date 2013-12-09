@@ -13,14 +13,16 @@
 #' @return A list with maximum likelihood parameter (est) and log-likelihood
 #' (score)
 findBestParInBlock <- function(block, glm.fitted, sum.stats) {
-  block.size <- block@border[,2] - block@border[,1]
-  block.middle <- block.size/2 + block@border[,1]
+  block.size <- block@border[,2,drop=FALSE] - block@border[,1,drop=FALSE]
+  block.middle <- as.vector(block.size/2 + block@border[,1,drop=FALSE])
+  names(block.middle) <- row.names(block@border)
 
   ##describes 'boarder'% of values that will be excluded
   ##on either side of the block in optimization
   best.value <- optim(block.middle, estimateLogLikelihood, 
                       glm.fitted=glm.fitted, sum.stats=sum.stats,  
-                      lower=block@border[ ,1], upper=block@border[ ,2],
+                      lower=block@border[ ,1,drop=FALSE], 
+                      upper=block@border[,2,drop=FALSE],
                       method="L-BFGS-B", control=list(fnscale=-1))
 
   stopifnot(isInBlock(block, best.value$par))
