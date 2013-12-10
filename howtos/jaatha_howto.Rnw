@@ -47,7 +47,7 @@ evolutionary history of (at the moment) two related species or populations.
 To do so, it uses SNP data from multiple individuals from both species and -- optionally but
 highly recommended -- one or more outgroup sequences.
 This HowTo describes the method and gives an example of using its implementation
-as an \verb@R@ package \verb@jaatha@.
+as \verb@R@ package \verb@jaatha@.
 
 The package itself can be obtained from CRAN
 using
@@ -66,7 +66,7 @@ Further information about the
 \verb@R@ functions used in this document can be obtained by calling 
 \verb@help()@ with the functions name as argument.
 
-Please cite the above paper when using Jaatha in a publication.
+We kindly ask you to cite the above paper when using Jaatha in a publication.
 
 
 \section{A demographic model}
@@ -229,7 +229,7 @@ sum.stats <- dm.simSumStats(dm, real.pars)
 jsfs <- sum.stats$jsfs
 
 # Print the upper left part of the JSFS
-jsfs[1:10, 1:10]
+jsfs[1:7, 1:7]
 @
 
 \section{Running Jaatha}
@@ -280,8 +280,8 @@ To visualise the estimates for good stating positions sorted by score, type:
 Jaatha.getStartingPoints(jaatha)
 @
 \noindent
-Here, there is a big reduction in the scores after the first three blocks. 
-This is suggesting that we either use the first three blocks as starting 
+Here, there is a big reduction in the likelihoods after the first three blocks. 
+This is suggesting that we use the first three blocks as starting 
 positions for the refined search. For now, we will just use the first point.
 
 \subsection{The Refined Search}
@@ -296,11 +296,14 @@ jaatha <- Jaatha.refinedSearch(jaatha, best.start.pos=1, sim=50)
 @
 
 \noindent
-Hence we perform two independent searches, starting in the \verb@best.start.pos@
-best starting positions we choose before 
-and according to the general options we choose during initialization, which are stored in the 
-\verb@jaatha@ object. In each step, we build a block with \verb@half.block.size@ in each direction
-(on a logarithmic scale) and perform simulations for \verb@sim@ random parameter combinations within
+Here we use just one starting position for the sake of simplicity (e.g.
+\verb@best.start.pos@ is set to one). In a real
+analysis, it is recommended to start independent search from multiple starting
+positions (use a value greater than one), to avoid getting stuck in local
+maxima. 
+
+During the search, we build a block with \verb@half.block.size@ in each direction
+(on a logarithmic scale) at each step, and perform simulations for \verb@sim@ random parameter combinations within
 this block (plus one for very corner). We use this information to estimate the composite maximum 
 likelihood parameters within this block and take this value as new starting position for the next
 step. 
@@ -361,7 +364,7 @@ to your model using \verb@dm.addMutationRateHeterogenity@.
 \noindent
 From Version $2.2$ on, Jaatha also offers the function
 \verb@Jaatha.confidenceIntervals@ to calculate parametric bootstrap
-confidence intervals for the estimated parameters. As usual, bootstrapping
+confidence intervals for the estimated parameters. Bootstrapping
 requires to rerun the complete analysis multiple times, in the case of
 parametric bootstrapping on simulated data. This means that in order to get
 confidence intervals, you need to execute about $50$ to $100$ Jaatha runs, which can
@@ -369,7 +372,7 @@ be quite time consuming. Therefore, we recommend doing this only on a Linux/Mac
 multicore system (the more cores the better), where the runs can be executed
 at least partially in parallel. Set the \verb@cores@ option to the number of
 cores you want to use (the individual Jaatha runs will always run on the single
-core). We usually use $32$ cores on powerful computation servers for this.  
+core). We usually use up to $32$ cores on powerful computation servers for this.  
 The confidence intervals are bias-correct and accelerated (BCa), as
 described in Chapter $14.3$ of \cite{efron_introduction_1994}. 
 

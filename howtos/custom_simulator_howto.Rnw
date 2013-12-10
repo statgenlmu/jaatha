@@ -60,12 +60,12 @@ scenario:
 \noindent
 In this document, we will explain how you can use Jaatha in such a situation and
 provide step-by-step instructions for a toy example. We recommend that you first read
-``The Jaatha HowTo'' or your current publication about Jaatha (\cite{mathew_why_2013}) to
+``The Jaatha HowTo'' or the current publication about Jaatha (\cite{mathew_why_2013}) to
 understand how the algorithm works. 
 
 The shown example code was produced with Jaatha version \Sexpr{jinfo$Version}.
-Please either update this manual or Jaatha if you are running a different
-version of Jaatha. Please note that the custom simulation interface changed
+Please either update this manual or Jaatha if you are using a different
+version. Please note that the custom simulation interface changed
 after version $2.1$ due to major internal restructurations. We are optimistic that
 it will remain stable in the future. 
 
