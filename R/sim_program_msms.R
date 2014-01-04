@@ -66,9 +66,15 @@ generateMsmsOptionsCommand <- function(dm) {
 
     if (type == "pos.selection") {
       cmd <- c(cmd, '"-SI"', ',', feat['time.point'], ',', length(dm@sampleSizes), ',')
-      if (feat['pop.source'] == 1) cmd <- c(cmd, 0.001, ',', 0, ',') 
-      else cmd <- c(cmd, 0, ',', 0.001, ',') 
-      cmd <- c(cmd, '"-N 10000"', ',') 
+      if (feat['pop.source'] == 1) { 
+        cmd <- c(cmd, 0.0005, ',', 0, ',') 
+        cmd <- c(cmd, '"-Sc"', ',', 0, ',', 1, ',', 0, ',', 0, ',', 0, ',') 
+      }
+      else {
+        cmd <- c(cmd, 0, ',', 0.0005, ',') 
+        cmd <- c(cmd, '"-Sc"', ',', 0, ',', 0, ',', 0, ',', 0, ',', 0, ',') 
+      }
+      cmd <- c(cmd, '"-N 100000"', ',') 
       cmd <- c(cmd, '"-SAA"', ',', paste0("2*", feat['parameter']), ',',  '"-SAa"', ',',
                feat['parameter'], ',') 
       cmd <- c(cmd, '"-Sp 0.5"', ',')
