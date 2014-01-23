@@ -77,7 +77,7 @@ generateMsmsOptionsCommand <- function(dm) {
       cmd <- c(cmd, '"-N 100000"', ',') 
       cmd <- c(cmd, '"-SAA"', ',', paste0("2*", feat['parameter']), ',',  '"-SAa"', ',',
                feat['parameter'], ',') 
-      cmd <- c(cmd, '"-Sp 0.5"', ',')
+        cmd <- c(cmd, '"-Sp 0.5"', ',', '-FSC', ',')
     }
   }
 
