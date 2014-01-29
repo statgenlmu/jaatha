@@ -23,16 +23,67 @@ msms <- function(jar.path, ms.args, msms.args, out.file=NULL, jsfs=FALSE) {
     return(out.file)
   }
 
+  sum.stats <- list()
+
   if (jsfs) {
     jsfs.begin <- (1:length(output))[output == "Summary jAFS"]+2
     jsfs.end <- length(output)-1 
     jsfs <- t(sapply(jsfs.begin:jsfs.end, function(x)
                      as.integer(unlist(strsplit(output[x], " ")))))
-    return(jsfs)
+    sum.stats[['jsfs']] <- jsfs
+  }
+
+  loci.begin <- (1:length(output))[output == "//"]+3
+  pop.sizes <- c(5,5)
+  fourPointViolations <- rep(0, 6)
+  for(start.line in loci.begin) {
+    snps.pop1 <- readSegSitesOutput(output[1:pop.sizes[1]+start.line-1])
+    snps.pop2 <- readSegSitesOutput(output[pop.sizes[1]:(sum(pop.sizes)-1)+start.line])
+
+    fourPointViolations <- fourPointViolations + 
+      c(countViolationsNextSnp(snps.pop1),
+        countViolationsNextSnp(snps.pop2),
+        countViolationsNextSnp(rbind(snps.pop1, snps.pop2)),
+        countViolationsAllSnps(snps.pop1),
+        countViolationsAllSnps(snps.pop2),
+        countViolationsAllSnps(rbind(snps.pop1, snps.pop2)))
   }
 
   return(output)
 }
+
+countViolationsAllSnps <- function(snp.matrix) {
+  count <- 0
+  for (i in 1:ncol(snp.matrix)) {
+    for (j in 1:ncol(snp.matrix)) {
+      if (i >= j) next()
+      count = count + violatesFourPointCondidtion(snp.matrix[,i], snp.matrix[,j])
+    }
+  } 
+  count
+}
+
+countViolationsNextSnp <- function(snp.matrix) {
+  sum(sapply(2:ncol(snp.matrix), 
+             function(i) violatesFourPointCondidtion(snp.matrix[,i-1],
+                                                     snp.matrix[,i])))
+}
+
+readSegSitesOutput <- function(seg.sites) {
+  matrix(as.numeric(unlist(strsplit(seg.sites, split= ''))), 
+         length(seg.sites), byrow=TRUE) 
+}
+
+violatesFourPointCondidtion <- function(site.one, site.two) {
+  status <- site.one * 2 + site.two
+  if (all(0:3 %in% status)) return(TRUE)
+  return(FALSE) 
+}
+
+
+
+
+
 
 checkForMsms <- function() {
   if ( isJaathaVariable('msms.jar') ) return()
