@@ -120,10 +120,6 @@ violatesFourPointCondidtion <- function(site.one, site.two) {
 }
 
 
-
-
-
-
 checkForMsms <- function() {
   if ( isJaathaVariable('msms.jar') ) return()
 
@@ -209,11 +205,12 @@ msmsSingleSimFunc <- function(dm, parameters) {
                       paste(generateMsOptions(dm, parameters), collapse=" "))
   msms.options <- paste(generateMsmsOptions(dm, parameters), collapse= " ") 
 
-  sim.time <- system.time(jsfs <- msms("/home/paul/bin/msms.jar", 
-                                          ms.options, msms.options,
-                                          jsfs=TRUE))
+  sim.time <- system.time(sum.stats <- msms(getJaathaVariable('msms.jar'), 
+                                       ms.options, msms.options, dm@sampleSizes, 'jsfs'))
+
   .log3("finished after", sum(sim.time[-3]), "seconds")
-  return(list(jsfs=jsfs, pars=parameters))
+  sum.stats[['pars']] <- parameters
+  return(sum.stats)
 }
 
 finalizeMsms <- function(dm) {

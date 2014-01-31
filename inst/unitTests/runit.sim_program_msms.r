@@ -108,3 +108,17 @@ test.msms <- function() {
 
   checkException( msms(jar.path, ms.args, msms.args, pop.sizes, 'blub') ) 
 }
+
+test.msms.singleSimFunc <- function() {
+  jar.path <- '~/bin/msms.jar'
+  if (!file.exists(jar.path)) {
+    warning('Can not test msms: jar not found')
+    return()
+  }
+
+  checkForMsms()
+  sum.stats <- msmsSingleSimFunc(dm.sel, c(1, 1.5, 1500, 5))
+  print(sum.stats)
+  checkTrue( is.list(sum.stats) )
+  checkTrue( is.matrix(sum.stats$jsfs) )
+}

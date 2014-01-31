@@ -37,6 +37,10 @@ dm.hky <- dm.setMutationModel(dm.sg, "HKY", c(0.2, 0.2, 0.3, 0.3), 2)
 dm.f81 <- dm.setMutationModel(dm.sg, "F84", c(0.3, 0.2, 0.3, 0.2), 2)
 dm.gtr <- dm.setMutationModel(dm.sg, "GTR", gtr.rates=c(0.2, 0.2, 0.1, 0.1, 0.1, 0.2))
 
+# Selection Model
+dm.sel <- dm.addPositiveSelection(dm.mig, 1000, 2000, population=2,
+                                  at.time='tau')
+dm.sel@nLoci <- 1
 
 # Custom Simulation Interface
 csi.sim.func <- function(x, jaatha) {
