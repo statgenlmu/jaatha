@@ -206,7 +206,8 @@ msmsSingleSimFunc <- function(dm, parameters) {
   msms.options <- paste(generateMsmsOptions(dm, parameters), collapse= " ") 
 
   sim.time <- system.time(sum.stats <- msms(getJaathaVariable('msms.jar'), 
-                                       ms.options, msms.options, dm@sampleSizes, 'jsfs'))
+                                       ms.options, msms.options, dm@sampleSizes, 
+                                       c('jsfs', 'four.point.condition')) )
 
   .log3("finished after", sum(sim.time[-3]), "seconds")
   sum.stats[['pars']] <- parameters

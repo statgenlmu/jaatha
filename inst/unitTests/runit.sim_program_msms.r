@@ -121,4 +121,5 @@ test.msms.singleSimFunc <- function() {
   print(sum.stats)
   checkTrue( is.list(sum.stats) )
   checkTrue( is.matrix(sum.stats$jsfs) )
+  checkTrue( !is.null(sum.stats$four.point.condition) )
 }
