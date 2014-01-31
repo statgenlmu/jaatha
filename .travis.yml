@@ -12,6 +12,7 @@ env:
    - R_CHECK_ARGS="--no-build-vignettes --no-manual --as-cran"
    - BOOTSTRAP_LATEX=""
    - WARNINGS_ARE_ERRORS=1
+   - PATH=$PATH:~/bin
 script: make travis-test
 before_install:
   - curl -OL http://raw.github.com/craigcitro/r-travis/master/scripts/travis-tool.sh
