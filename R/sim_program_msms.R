@@ -7,49 +7,93 @@
 # Licence:  GPLv3 or later
 # --------------------------------------------------------------
 
-msms <- function(jar.path, ms.args, msms.args, out.file=NULL, jsfs=FALSE) {
+msms <- function(jar.path, ms.args, msms.args, pop.sizes, sum.stats=c('raw'),
+                 out.file=NULL) {
+
+  # Check arguments
+  if (!all(sum.stats %in% c('raw', 'jsfs', 'seg.sites', 'four.point.condition')))
+    stop("Unknown summary statistic")
+
+  # Complement/Modify arguments
   seed <- generateSeeds(1)
-  if (jsfs) msms.args <- paste(msms.args, "-oAFS jAFS")
+  if ('jsfs' %in% sum.stats) msms.args <- paste(msms.args, "-oAFS jAFS")
+
+
+  # Create the command
   command = paste("java -jar", jar.path, as.character(msms.args), 
                   "-ms", as.character(ms.args), "-seed", seed)
-  #print(command)
   if (!is.null(out.file)) {
     stopifnot(!file.exists(out.file))
     command <- paste(command, ">", out.file)
   }
+
+  # Execute the command
   output <- system(command, intern=TRUE)
 
-  if (!is.null(out.file)) {
-    return(out.file)
+  # Parse output and return summary statistics
+  sample.sum.stats <- list()
+
+  if ('jsfs' %in% sum.stats) {
+    sample.sum.stats[['jsfs']] <- readJsfsFromOutput(output)
   }
 
-  sum.stats <- list()
-
-  if (jsfs) {
-    jsfs.begin <- (1:length(output))[output == "Summary jAFS"]+2
-    jsfs.end <- length(output)-1 
-    jsfs <- t(sapply(jsfs.begin:jsfs.end, function(x)
-                     as.integer(unlist(strsplit(output[x], " ")))))
-    sum.stats[['jsfs']] <- jsfs
+  if ('seg.sites' %in% sum.stats) {
+    sample.sum.stats[['seg.sites']] <- readSegSitesFromOutput(output, pop.sizes)
   }
 
-  loci.begin <- (1:length(output))[output == "//"]+3
-  pop.sizes <- c(5,5)
-  fourPointViolations <- rep(0, 6)
-  for(start.line in loci.begin) {
-    snps.pop1 <- readSegSitesOutput(output[1:pop.sizes[1]+start.line-1])
-    snps.pop2 <- readSegSitesOutput(output[pop.sizes[1]:(sum(pop.sizes)-1)+start.line])
-
-    fourPointViolations <- fourPointViolations + 
-      c(countViolationsNextSnp(snps.pop1),
-        countViolationsNextSnp(snps.pop2),
-        countViolationsNextSnp(rbind(snps.pop1, snps.pop2)),
-        countViolationsAllSnps(snps.pop1),
-        countViolationsAllSnps(snps.pop2),
-        countViolationsAllSnps(rbind(snps.pop1, snps.pop2)))
+  if ('four.point.condition' %in% sum.stats) {
+    if (!is.null(sample.sum.stats[['seg.sites']])) 
+      seg.sites <- sample.sum.stats[['seg.sites']] 
+    else seg.sites <- readSegSitesFromOutput(output, pop.sizes)
+    sample.sum.stats[['four.point.condition']] <- 
+      generateFourPointStat(seg.sites, pop.sizes)
   }
 
-  return(output)
+  if ('raw' %in% sum.stats) {
+    sample.sum.stats[['raw']] <- output
+  }
+
+  return(sample.sum.stats)
+}
+
+readJsfsFromOutput <- function(output) {
+  jsfs.begin <- which(output == "Summary jAFS")+2
+  if (output[jsfs.begin-1] != "jAFS 0 vrs 1") 
+    stop ("Error parsing msms output")
+
+  jsfs.end <- length(output)-1 
+  t(sapply(jsfs.begin:jsfs.end, 
+           function(x) as.integer(unlist(strsplit(output[x], " ")))))
+}
+
+readSegSitesFromOutput <- function(output, pop.sizes) {
+  loci.begin <- which(output == "//")
+
+  lapply(loci.begin, function(locus.begin) { 
+    positions <- as.numeric(strsplit(output[locus.begin+2], ' ')[[1]][-1])
+    seg.sites.char <- output[1:sum(pop.sizes)+locus.begin+2]
+    seg.sites <- matrix(as.integer(unlist(strsplit(seg.sites.char, split= ''))), 
+                        length(seg.sites.char), byrow=TRUE) 
+    colnames(seg.sites) <- positions
+    seg.sites
+  })
+}
+
+generateFourPointStat <- function(seg.sites, pop.sizes) {
+  four.point.cond <- rep(0,6)
+  pop.one <- c(rep(TRUE, pop.sizes[1]), rep(FALSE, pop.sizes[2]))
+  for(locus.snps in seg.sites) {
+
+    four.point.cond <- four.point.cond + 
+    c(countViolationsNextSnp(locus.snps[pop.one, ]),
+      countViolationsNextSnp(locus.snps[!pop.one, ]),
+      countViolationsNextSnp(locus.snps),
+      countViolationsAllSnps(locus.snps[pop.one, ]),
+      countViolationsAllSnps(locus.snps[!pop.one, ]),
+      countViolationsAllSnps(locus.snps))
+  }
+
+  four.point.cond
 }
 
 countViolationsAllSnps <- function(snp.matrix) {
@@ -67,11 +111,6 @@ countViolationsNextSnp <- function(snp.matrix) {
   sum(sapply(2:ncol(snp.matrix), 
              function(i) violatesFourPointCondidtion(snp.matrix[,i-1],
                                                      snp.matrix[,i])))
-}
-
-readSegSitesOutput <- function(seg.sites) {
-  matrix(as.numeric(unlist(strsplit(seg.sites, split= ''))), 
-         length(seg.sites), byrow=TRUE) 
 }
 
 violatesFourPointCondidtion <- function(site.one, site.two) {

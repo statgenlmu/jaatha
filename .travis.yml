@@ -21,5 +21,6 @@ install:
   - ./travis-tool.sh install_deps
   - ./travis-tool.sh r_install knitr
   - ./travis-tool.sh aptget_install seq-gen
+  - mkdir ~/bin; wget -c http://www.mabs.at/ewing/msms/msms3.2rc-b148.jar -o ~/bin/msms.jar 
 after_failure:
   - ./travis-tool.sh dump_logs
