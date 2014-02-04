@@ -1,3 +1,7 @@
+Version 2.2.1
+---------------
++ Modifications for Rcpp 0.11 (removed Makevars)
+
 Version 2.2
 ---------------
 + Added function for calculating BCa confidence intervals

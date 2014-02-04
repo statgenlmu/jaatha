@@ -31,7 +31,7 @@
 #' @importFrom methods new 
 #' @importFrom methods representation 
 #' @importFrom parallel mclapply
-#' @import Rcpp
+#' @importFrom Rcpp evalCpp
 #' @useDynLib jaatha
 NULL
 
