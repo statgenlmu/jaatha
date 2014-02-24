@@ -67,11 +67,12 @@ readJsfsFromOutput <- function(output) {
 }
 
 readSegSitesFromOutput <- function(output, pop.sizes) {
-  loci.begin <- which(output == "//")
+  seg.sites.begin <- which(grepl('^segsites: [0-9]+$', output))
 
-  lapply(loci.begin, function(locus.begin) { 
-    positions <- as.numeric(strsplit(output[locus.begin+2], ' ')[[1]][-1])
-    seg.sites.char <- output[1:sum(pop.sizes)+locus.begin+2]
+  lapply(seg.sites.begin, function(begin) { 
+    positions <- as.numeric(strsplit(output[begin+1], ' ')[[1]][-1])
+    stopifnot( length(positions) != 0 )
+    seg.sites.char <- output[1:sum(pop.sizes)+begin+1]
     seg.sites <- matrix(as.integer(unlist(strsplit(seg.sites.char, split= ''))), 
                         length(seg.sites.char), byrow=TRUE) 
     colnames(seg.sites) <- positions
