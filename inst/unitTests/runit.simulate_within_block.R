@@ -32,7 +32,7 @@ test.runSimulatinos <- function() {
     checkTrue( sum(sum.stats1[[i]]$poisson.vector) > 0 )
   }
 
-  if (require(multicore)) {
+  if (require(parallel)) {
     set.seed(15)
     sum.stats2 <- runSimulations(pars.test, 2, jaatha.csi)
     checkEquals( length(sum.stats2), 3 )
