@@ -1,15 +1,14 @@
 # --------------------------------------------------------------
-# sim_prog_ms.R
-# Adaptor to calling ms from a demographic model.
+# Translates an demographic model to an ms command and 
+# executes the simulation.
 # 
 # Authors:  Lisha Mathew & Paul R. Staab
-# Date:     2012-10-05
 # Licence:  GPLv3 or later
 # --------------------------------------------------------------
 
-possible.features  <- c("mutation","migration","split",
-                        "recombination","size.change","growth")
-possible.sum.stats <- c("jsfs")
+possible.features  <- c("mutation", "migration", "split",
+                        "recombination", "size.change", "growth")
+possible.sum.stats <- c("jsfs", "4pc", "tree", "seg.sites")
 
 #' Function to perform simulation using ms 
 #' 
@@ -128,27 +127,23 @@ msOut2Jsfs <- function(dm, ms.out) {
 }
 
 msSingleSimFunc <- function(dm, parameters) {
-  .log3("Called msSingleSimFunc()")
-  .log3("parameter:",parameters)
   checkType(dm, "dm")
   checkType(parameters, "num")
-  if (length(parameters) != dm.getNPar(dm)) 
-    stop("Wrong number of parameters!")
 
-  .log2("running ms")
-  .log3("executing: \'", printMsCommand(dm), "'")
+  if (length(parameters) != dm.getNPar(dm)) stop("Wrong number of parameters!")
+
   ms.options <- generateMsOptions(dm, parameters)
-  sim.time <- system.time(ms.out  <- callMs(ms.options, dm))
-  .log3("finished after", sum(sim.time[-3]), "seconds")
-  .log3("Simulation output in file", ms.out)
+  sim.time <- system.time(ms.out <- callMs(ms.options, dm))
 
-  .log2("calculating jsfs")
-  jsfs  <- msOut2Jsfs(dm, ms.out)
-  .log3("done. Removing tmp files...")
+  sum.stats <- list(pars=parameters)
+
+  if ("jsfs" %in% dm@sum.stats) {
+    sum.stats[['jsfs']] <- msOut2Jsfs(dm, ms.out)
+  }
+
   unlink(ms.out)
-  return(list(jsfs=jsfs, pars=parameters))
+  return(sum.stats)
 }
-
 
 finalizeMs <- function(dm) {
   dm@options[['ms.cmd']] <- generateMsOptionsCommand(dm)
@@ -160,4 +155,3 @@ createSimProgram("ms", "",
                  possible.sum.stats,
                  singleSimFunc=msSingleSimFunc,
                  finalizationFunc=finalizeMs)
-

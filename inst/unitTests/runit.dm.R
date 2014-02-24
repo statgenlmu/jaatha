@@ -19,6 +19,15 @@ test.addFeature <- function() {
   checkEquals(nrow(dm@features), 2)
 }
 
+test.addSummaryStatistics <- function() {
+  dm <- dm.createDemographicModel(11:12, 100)
+  checkEquals(dm@sum.stats, c('jsfs'))
+  dm <- addSummaryStatistic(dm, 'seg.sites')
+  checkEquals(dm@sum.stats, c('jsfs', 'seg.sites'))
+  checkException(addSummaryStatistic(dm, 'no.existing.sumstat'))
+  checkException(addSummaryStatistic(dm, 1:10))
+}
+
 test.makeThetaLast <- function() {
   dm <- dm.createDemographicModel(11:12, 100)
   dm <- dm.addMutation(dm,5,20)

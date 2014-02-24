@@ -12,6 +12,7 @@
 setClass("DemographicModel" ,
          representation(features="data.frame",
                         parameters="data.frame",
+                        sum.stats="character",
                         sampleSizes="numeric",
                         nLoci="numeric",
                         seqLength="numeric",
@@ -49,6 +50,7 @@ setClass("DemographicModel" ,
   .Object@seqLength       <- seqLength
   .Object@tsTvRatio       <- tsTvRatio
   .Object@nLoci           <- nLoci
+  .Object@sum.stats       <- c("jsfs")
   .Object@options         <- list()
 
   return(.Object)
@@ -264,6 +266,13 @@ addFeature <- function(dm, type, parameter=NA,
   return(dm)
 }
 
+addSummaryStatistic <- function(dm, sum.stat) {
+  checkType(dm, "dm")
+  checkType(sum.stat, "char")
+  dm@sum.stats <- c(dm@sum.stats, sum.stat)
+  dm <- .dm.selectSimProg(dm)
+  return(dm)
+}
 
 # Helper function that appends a feature to the "feature" dataframe
 # Does not check the feature for consistency
@@ -342,13 +351,14 @@ checkParInRange <- function(dm, param) {
 # Selects a program for simulation that is capable of all current features
 .dm.selectSimProg <- function(dm) {
   for (i in seq(along = .jaatha$simProgs)){
-    if (all(dm@features$type %in% .jaatha$simProgs[[i]]@possible.features)) {
+    if (all(dm@features$type %in% .jaatha$simProgs[[i]]@possible.features) & 
+        all(dm@sum.stats %in% .jaatha$simProgs[[i]]@possible.sum.stats)) {
       dm@currentSimProg <- .jaatha$simProgs[[i]]
-      .log2("Using",dm@currentSimProg@name,"for simulations")
+      .log2("Using", dm@currentSimProg@name, "for simulations")
       return(dm)
     }
   }
-  warning("No suitable simulation software found!")
+  stop("No suitable simulation software found!")
   return(dm)
 }
 
