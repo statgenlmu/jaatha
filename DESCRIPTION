@@ -24,24 +24,3 @@ LinkingTo: Rcpp
 Suggests:
     ape (>= 2.7),
     RUnit
-Collate:
-    'aaa_SimProgram.R'
-    'Block.R'
-    'confidence_intervals.R'
-    'DemographicModel.R'
-    'estimate_log_likelihood.R'
-    'find_best_par_in_block.R'
-    'fit_glm.R'
-    'helper_functions.R'
-    'initial_search.R'
-    'Jaatha.R'
-    'normalize.R'
-    'parallelization.R'
-    'read_fasta.R'
-    'refined_search.R'
-    'run_simulations.R'
-    'sim_program_ms.R'
-    'sim_program_seqgen.R'
-    'simulate_within_block.R'
-    'summary_statistics.R'
-    'sim_likelihood.R'

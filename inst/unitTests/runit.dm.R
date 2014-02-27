@@ -22,7 +22,7 @@ test.addFeature <- function() {
 test.addSummaryStatistics <- function() {
   dm <- dm.createDemographicModel(11:12, 100)
   checkEquals(dm@sum.stats, c('jsfs'))
-  dm <- addSummaryStatistic(dm, 'seg.sites')
+  dm <- dm.addSummaryStatistic(dm, 'seg.sites')
   checkEquals(dm@sum.stats, c('jsfs', 'seg.sites'))
   checkException(addSummaryStatistic(dm, 'no.existing.sumstat'))
   checkException(addSummaryStatistic(dm, 1:10))
