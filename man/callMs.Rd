@@ -2,7 +2,7 @@
 \alias{callMs}
 \title{Function to perform simulation using ms}
 \usage{
-  callMs(opts, dm)
+callMs(opts, dm)
 }
 \arguments{
   \item{opts}{The options to pass to ms. Must either be a
@@ -11,9 +11,9 @@
   \item{dm}{The demographic model we are using}
 }
 \value{
-  The file containing the output of ms
+The file containing the output of ms
 }
 \description{
-  Function to perform simulation using ms
+Function to perform simulation using ms
 }
 

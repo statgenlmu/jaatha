@@ -2,7 +2,7 @@
 \alias{fitPoiSmoothed}
 \title{Fits a GLM for a summary statistics of type "poisson.smoothed"}
 \usage{
-  fitPoiSmoothed(sim.data, sum.stat, weighting, jaatha)
+fitPoiSmoothed(sim.data, sum.stat, weighting, jaatha)
 }
 \arguments{
   \item{sim.data}{Results from simulations}
@@ -15,10 +15,10 @@
   \item{jaatha}{A Jaatha Object.}
 }
 \value{
-  A list with one fitted GLMs
+A list with one fitted GLMs
 }
 \description{
-  Fits a GLM for a summary statistics of type
-  "poisson.smoothed"
+Fits a GLM for a summary statistics of type
+"poisson.smoothed"
 }
 

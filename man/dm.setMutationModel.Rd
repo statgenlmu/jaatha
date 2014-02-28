@@ -2,8 +2,7 @@
 \alias{dm.setMutationModel}
 \title{Defines what mutation model is used for simulations}
 \usage{
-  dm.setMutationModel(dm, mutation.model, base.frequencies,
-    tstv.ratio, gtr.rates)
+dm.setMutationModel(dm, mutation.model, base.frequencies, tstv.ratio, gtr.rates)
 }
 \arguments{
   \item{dm}{The demographic model for which the mutation
@@ -27,20 +26,20 @@
   Order: A->C, A->G, A->T, C->G, C->T, G->T.}
 }
 \value{
-  The demographic model with the new mutation model.
+The demographic model with the new mutation model.
 }
 \description{
-  As default, we simulate mutation using the Infinite Sites
-  Model. Using the function, you can change it either to
-  the Hasegawa, Kishino and Yano (HKY), to the Felsenstein
-  and Churchill 96 (F84) or to the Generalised time
-  reversible (GTR) model. This requires that seq-gen is
-  installed on our system.
+As default, we simulate mutation using the Infinite Sites
+Model. Using the function, you can change it either to the
+Hasegawa, Kishino and Yano (HKY), to the Felsenstein and
+Churchill 96 (F84) or to the Generalised time reversible
+(GTR) model. This requires that seq-gen is installed on our
+system.
 }
 \details{
-  The HKY and F84 models use the the arguments
-  'base.frequencies' and 'tstv.ratio'. The GTR model uses
-  'gtr.rates'.
+The HKY and F84 models use the the arguments
+'base.frequencies' and 'tstv.ratio'. The GTR model uses
+'gtr.rates'.
 }
 \examples{
 dm <- dm.createThetaTauModel(10:11, 10, 100)

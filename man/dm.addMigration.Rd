@@ -2,9 +2,8 @@
 \alias{dm.addMigration}
 \title{Add migration/gene flow between two populations to a demographic model}
 \usage{
-  dm.addMigration(dm, lower.range, upper.range,
-    fixed.value, pop.from, pop.to, time.start = "0",
-    par.new = T, new.par.name = "M", parameter)
+dm.addMigration(dm, lower.range, upper.range, fixed.value, pop.from, pop.to,
+  time.start = "0", par.new = T, new.par.name = "M", parameter)
 }
 \arguments{
   \item{dm}{The demographic model to which recombination
@@ -45,33 +44,32 @@
   with this rate starts.}
 }
 \value{
-  The demographic model with migration
+The demographic model with migration
 }
 \description{
-  This function adds the assumption to the model that some
-  individuals 'migrate' from one sub-population to another,
-  i.e. they leave the one and become a member of the other.
-  This is usually used to model ongoing gene flow through
-  hybridisation after the populations separated.
+This function adds the assumption to the model that some
+individuals 'migrate' from one sub-population to another,
+i.e. they leave the one and become a member of the other.
+This is usually used to model ongoing gene flow through
+hybridisation after the populations separated.
 }
 \details{
-  You can enter a time ('time.start') at which the
-  migration is assumed to start (looking backwards in
-  time). From that time on, a fixed number of migrants move
-  from population 'pop.from' to population 'pop.to' each
-  generation. This number is given via this feature's
-  parameter, which equals 4*Ne*m, where Ne is the number of
-  diploid individuals in the ancestral population and m is
-  the fraction of 'pop.to' that is replaced with migrants
-  each generation. If 'pop.to' has also size Ne, than this
-  is just the expected number of individuals that migrate
-  each generation.
+You can enter a time ('time.start') at which the migration
+is assumed to start (looking backwards in time). From that
+time on, a fixed number of migrants move from population
+'pop.from' to population 'pop.to' each generation. This
+number is given via this feature's parameter, which equals
+4*Ne*m, where Ne is the number of diploid individuals in
+the ancestral population and m is the fraction of 'pop.to'
+that is replaced with migrants each generation. If 'pop.to'
+has also size Ne, than this is just the expected number of
+individuals that migrate each generation.
 
-  You can add different mutation rates at different times
-  to your model. Then each rate will be used for the period
-  from its time point to the next. Migration from and to an
-  population always ends with the speciation event in which
-  the population is created.
+You can add different mutation rates at different times to
+your model. Then each rate will be used for the period from
+its time point to the next. Migration from and to an
+population always ends with the speciation event in which
+the population is created.
 }
 \examples{
 # Constant asymmetric migration

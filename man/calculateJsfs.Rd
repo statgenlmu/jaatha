@@ -2,8 +2,7 @@
 \alias{calculateJsfs}
 \title{Calculates the JSFS for data imported with ape}
 \usage{
-  calculateJsfs(ape.data, pop1.rows, pop2.rows,
-    outgroup.rows = NA)
+calculateJsfs(ape.data, pop1.rows, pop2.rows, outgroup.rows = NA)
 }
 \arguments{
   \item{ape.data}{DNA sequence data of multiple individuals
@@ -29,13 +28,13 @@
   calculated.}
 }
 \value{
-  The calculated JSFS, as matrix.
+The calculated JSFS, as matrix.
 }
 \description{
-  The function 'read.dna' of package 'ape' allows you do
-  import DNA data from various formats into R. This
-  function calculates the JSFS of such imported data which
-  can then be used as input for a Jaatha search. Please
-  note that the data must be aligned.
+The function 'read.dna' of package 'ape' allows you do
+import DNA data from various formats into R. This function
+calculates the JSFS of such imported data which can then be
+used as input for a Jaatha search. Please note that the
+data must be aligned.
 }
 

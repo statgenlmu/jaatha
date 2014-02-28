@@ -2,8 +2,8 @@
 \alias{dm.createDemographicModel}
 \title{Create a basic demographic model}
 \usage{
-  dm.createDemographicModel(sample.sizes, loci.num,
-    seq.length = 1000, log.level, log.file)
+dm.createDemographicModel(sample.sizes, loci.num, seq.length = 1000,
+  log.level, log.file)
 }
 \arguments{
   \item{sample.sizes}{Number of individuals that are
@@ -24,12 +24,12 @@
   into the given file}
 }
 \value{
-  The demographic model
+The demographic model
 }
 \description{
-  This function creates a basic empty demographic model,
-  which is returned. Features like mutation, pop.source
-  splits and migration can be added afterwards.
+This function creates a basic empty demographic model,
+which is returned. Features like mutation, pop.source
+splits and migration can be added afterwards.
 }
 \examples{
 dm <- dm.createDemographicModel(sample.sizes=c(25,25), loci.num=100)

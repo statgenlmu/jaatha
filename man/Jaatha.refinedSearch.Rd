@@ -2,11 +2,10 @@
 \alias{Jaatha.refinedSearch}
 \title{Iterative search for the maximum composite likelihood parameters}
 \usage{
-  Jaatha.refinedSearch(jaatha, best.start.pos = 2,
-    sim = length(getParNames(jaatha)) * 25,
-    sim.final = min(sim, 100), epsilon = 2,
-    half.block.size = 0.025, weight = 0.9, max.steps = 200,
-    rerun = FALSE)
+Jaatha.refinedSearch(jaatha, best.start.pos = 2,
+  sim = length(getParNames(jaatha)) * 25, sim.final = min(sim, 100),
+  epsilon = 2, half.block.size = 0.025, weight = 0.9, max.steps = 200,
+  rerun = FALSE)
 }
 \arguments{
   \item{jaatha}{The Jaatha settings (create with
@@ -43,14 +42,14 @@
   refined search and set rerun to 'TRUE'.}
 }
 \value{
-  An Jaatha object. The found values are written to the
-  slot likelihood.table.
+An Jaatha object. The found values are written to the slot
+likelihood.table.
 }
 \description{
-  This function searches for the parameter combination with
-  the highest composite likelihood. Therefore it
-  iteratively searches the area (=block) around the last
-  found value for a new maximum using simulations and a
-  generalized linear model.
+This function searches for the parameter combination with
+the highest composite likelihood. Therefore it iteratively
+searches the area (=block) around the last found value for
+a new maximum using simulations and a generalized linear
+model.
 }
 

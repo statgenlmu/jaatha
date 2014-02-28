@@ -2,7 +2,7 @@
 \alias{dm.simSumStats}
 \title{Simulates data according to a demographic model}
 \usage{
-  dm.simSumStats(dm, parameters, sum.stats = c("all"))
+dm.simSumStats(dm, parameters, sum.stats = c("all"))
 }
 \arguments{
   \item{dm}{The demographic model according to which the
@@ -17,12 +17,12 @@
   possible statistics.}
 }
 \value{
-  A matrix where each row is the vector of summary
-  statistics for the parameters in the same row of the
-  "parameter" matrix
+A matrix where each row is the vector of summary statistics
+for the parameters in the same row of the "parameter"
+matrix
 }
 \description{
-  Simulates data according to a demographic model
+Simulates data according to a demographic model
 }
 \examples{
 dm <- dm.createDemographicModel(c(25,25), 100)

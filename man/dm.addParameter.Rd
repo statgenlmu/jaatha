@@ -2,8 +2,7 @@
 \alias{dm.addParameter}
 \title{Create a parameter that can be used for one or more features}
 \usage{
-  dm.addParameter(dm, par.name, lower.boundary,
-    upper.boundary, fixed.value)
+dm.addParameter(dm, par.name, lower.boundary, upper.boundary, fixed.value)
 }
 \arguments{
   \item{dm}{The demographic model to which the parameter
@@ -24,12 +23,12 @@
   than being estimated a fixed value will be used.}
 }
 \value{
-  The original model extended with the new parameter.
+The original model extended with the new parameter.
 }
 \description{
-  The function creates a new model parameter. It can either
-  have a fixed value or you can enter a range of possible
-  values if you want to estimate it.
+The function creates a new model parameter. It can either
+have a fixed value or you can enter a range of possible
+values if you want to estimate it.
 }
 \examples{
 dm <- dm.createThetaTauModel(c(15,23), 100)

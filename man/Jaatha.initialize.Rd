@@ -2,9 +2,9 @@
 \alias{Jaatha.initialize}
 \title{Initialization of a Jaatha estimation for population genetics}
 \usage{
-  Jaatha.initialize(demographic.model, jsfs, seed,
-    cores = 1, scaling.factor = 1, use.shm = FALSE,
-    folded = FALSE, smoothing = FALSE)
+Jaatha.initialize(demographic.model, jsfs, seed, cores = 1,
+  scaling.factor = 1, use.shm = FALSE, folded = FALSE,
+  smoothing = FALSE)
 }
 \arguments{
   \item{demographic.model}{The demographic model to use}
@@ -45,12 +45,12 @@
   at the moment.}
 }
 \value{
-  A S4-Object of type jaatha containing the settings
+A S4-Object of type jaatha containing the settings
 }
 \description{
-  This function sets the basic parameters for an analysis
-  with Jaatha and is the first step for each application of
-  it.
+This function sets the basic parameters for an analysis
+with Jaatha and is the first step for each application of
+it.
 }
 \examples{
 dm <- dm.createThetaTauModel(c(20,25), 100)

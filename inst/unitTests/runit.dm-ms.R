@@ -34,7 +34,16 @@ test.msSingleSimFunc <- function() {
     checkEquals(21, nrow(sum.stats$seg.sites[[i]]))
   }
 
+  dm@sum.stats <- 'file'
+  sum.stats <- msSingleSimFunc(dm, c(1, .5))
+  checkEquals(2, length(sum.stats))
+  checkTrue(!is.null(sum.stats$pars))
+  checkTrue(!is.null(sum.stats$file))
+  checkTrue(file.exists(sum.stats$file))
+  checkTrue((file.info(sum.stats$file)$size > 0))
+
   set.seed(123)
+  dm@sum.stats <- 'seg.sites'
   dm <- dm.addSummaryStatistic(dm, '4pc')
   sum.stats <- msSingleSimFunc(dm, c(1, 10))
   checkEquals(3, length(sum.stats))

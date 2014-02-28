@@ -32,10 +32,12 @@ jaatha.mig    <- Jaatha.initialize(dm.mig, jsfs=sum.stats.mig)
 
 
 # Finite Sites Models
-dm.sg <- dm.addOutgroup(dm.tt, "2*tau")
-dm.hky <- dm.setMutationModel(dm.sg, "HKY", c(0.2, 0.2, 0.3, 0.3), 2)
-dm.f81 <- dm.setMutationModel(dm.sg, "F84", c(0.3, 0.2, 0.3, 0.2), 2)
-dm.gtr <- dm.setMutationModel(dm.sg, "GTR", gtr.rates=c(0.2, 0.2, 0.1, 0.1, 0.1, 0.2))
+dm.sg <-  finalizeDM(dm.addOutgroup(dm.tt, "2*tau"))
+dm.hky <- finalizeDM(dm.setMutationModel(dm.sg, "HKY", c(0.2, 0.2, 0.3, 0.3), 2))
+dm.f81 <- finalizeDM(dm.setMutationModel(dm.sg, "F84", c(0.3, 0.2, 0.3, 0.2), 2))
+dm.gtr <- finalizeDM(dm.setMutationModel(dm.sg, "GTR", 
+                                         gtr.rates=c(0.2, 0.2, 0.1, 0.1, 0.1, 0.2)))
+
 
 
 # Custom Simulation Interface

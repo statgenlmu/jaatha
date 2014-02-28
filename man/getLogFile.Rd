@@ -2,9 +2,9 @@
 \alias{getLogFile}
 \title{Gets the current logging file}
 \usage{
-  getLogFile()
+getLogFile()
 }
 \description{
-  Gets the current logging file
+Gets the current logging file
 }
 

@@ -3,9 +3,9 @@
 \title{Adds an growth or decline of the population size of one
 population to a model.}
 \usage{
-  dm.addGrowth(dm, min.growth.rate, max.growth.rate,
-    fixed.growth.rate, par.new = T, new.par.name = "alpha",
-    parameter, population, at.time = "0")
+dm.addGrowth(dm, min.growth.rate, max.growth.rate, fixed.growth.rate,
+  par.new = T, new.par.name = "alpha", parameter, population,
+  at.time = "0")
 }
 \arguments{
   \item{dm}{The demographic model to which the size change
@@ -45,25 +45,24 @@ population to a model.}
   \item{at.time}{The time point at which the size changes.}
 }
 \value{
-  The demographic model with a size change.
+The demographic model with a size change.
 }
 \description{
-  This function changes the growth factor of a population
-  at given point in time ('at.time'). This factor than
-  applies to the time interval farther into the past from
-  this point.
+This function changes the growth factor of a population at
+given point in time ('at.time'). This factor than applies
+to the time interval farther into the past from this point.
 }
 \details{
-  The population size changes by factor exp(-alpha*t),
-  where alpha is the growth parameter and t is the time
-  since the growth has started. Hence, for positive alpha,
-  the population will 'decline backwards in time' or grow
-  forwards in time. Similar, will decline in forwards time
-  for a negative value of alpha.
+The population size changes by factor exp(-alpha*t), where
+alpha is the growth parameter and t is the time since the
+growth has started. Hence, for positive alpha, the
+population will 'decline backwards in time' or grow
+forwards in time. Similar, will decline in forwards time
+for a negative value of alpha.
 
-  If you want to add an instantaneous change of the
-  population size, then use the \link{dm.addSizeChange}
-  function.
+If you want to add an instantaneous change of the
+population size, then use the \link{dm.addSizeChange}
+function.
 }
 \examples{
 # A model with one smaller population

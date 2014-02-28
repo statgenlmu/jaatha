@@ -2,10 +2,9 @@
 \alias{addFeature}
 \title{Low level function for adding a new feature to a demographic Model}
 \usage{
-  addFeature(dm, type, parameter = NA, lower.range = NA,
-    upper.range = NA, fixed.value = NA, par.new = T,
-    pop.source = NA, pop.sink = NA, time.point = NA,
-    group = NA)
+addFeature(dm, type, parameter = NA, lower.range = NA, upper.range = NA,
+  fixed.value = NA, par.new = T, pop.source = NA, pop.sink = NA,
+  time.point = NA, group = NA)
 }
 \arguments{
   \item{dm}{The demographic model to which the feature will
@@ -45,10 +44,10 @@
   be created.}
 }
 \value{
-  The extended demographic model.
+The extended demographic model.
 }
 \description{
-  Use this function to add a feature to a dm if there is no
-  higher level "dm.add*"-function availible.
+Use this function to add a feature to a dm if there is no
+higher level "dm.add*"-function availible.
 }
 

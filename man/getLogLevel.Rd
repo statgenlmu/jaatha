@@ -2,9 +2,9 @@
 \alias{getLogLevel}
 \title{Gets the current logging level}
 \usage{
-  getLogLevel()
+getLogLevel()
 }
 \description{
-  Gets the current logging level
+Gets the current logging level
 }
 

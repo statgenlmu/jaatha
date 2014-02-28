@@ -1,6 +1,7 @@
 test.callSeqgen <- function(opts, ms.file){
   opts <- c("seq-gen", " -mHKY", " -l", dm.tt@seqLength, " -p", dm.tt@seqLength + 1, " -q")
   
+  dm.tt@sum.stats <- 'trees'
   ms.options <- jaatha:::generateMsOptions(dm.tt, c(1,10))
   ms.file <- jaatha:::callMs(ms.options, dm.tt)
 
@@ -42,7 +43,8 @@ test.GtrModel <- function() {
 
 test.RateHeterogenity <- function() {
   set.seed(12)
-  dm.rh <- dm.addMutationRateHeterogenity(dm.hky, 0.1, 5, categories.number=5)
+  dm.rh <- finalizeDM(dm.addMutationRateHeterogenity(dm.hky, 0.1, 5,
+                                                     categories.number=5))
 
   opts <- jaatha:::generateSeqgenOptions(dm.rh, c(1, 1, 10))
   opts <- strsplit(opts, " ")[[1]]

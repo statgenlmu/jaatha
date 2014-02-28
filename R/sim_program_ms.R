@@ -8,7 +8,7 @@
 
 possible.features  <- c("mutation", "migration", "split",
                         "recombination", "size.change", "growth")
-possible.sum.stats <- c("jsfs", "4pc", "tree", "seg.sites")
+possible.sum.stats <- c("jsfs", "4pc", "tree", "seg.sites", "file")
 
 #' Function to perform simulation using ms 
 #' 
@@ -46,28 +46,29 @@ generateMsOptionsCommand <- function(dm) {
       cmd <- c(cmd,'"-t"', ',', feat["parameter"], ',')
     }
 
-    if (type == "split") {
+    else if (type == "split") {
       cmd <- c(cmd, '"-ej"', ',', feat["time.point"], ',',
                feat["pop.sink"], ',', feat["pop.source"], ',')
     }
 
-    if (type == "migration")
+    else if (type == "migration")
       cmd <- c(cmd, '"-em"', ',', feat['time.point'], ',',
                feat['pop.sink'], ',', feat['pop.source']  , ',',
                feat['parameter'], ',')
 
-    if (type == "recombination") 
+    else if (type == "recombination") 
       cmd <- c(cmd, '"-r"', ',', feat['parameter'], ',', dm@seqLength, ',')
 
-    if (type == "size.change"){
+    else if (type == "size.change"){
       cmd <- c(cmd, '"-en"', ',', feat['time.point'], ',',
                feat["pop.source"], ',', feat['parameter'], ',')
     }
 
-    if (type == "growth"){
+    else if (type == "growth"){
       cmd <- c(cmd, '"-eg"', ',' , feat["time.point"], ',',
                feat["pop.source"], ',', feat["parameter"], ',')
     }
+    else stop("Unknown feature:", type)
   }
 
   if ('trees' %in% dm@sum.stats) cmd <- c(cmd, '"-T",')
@@ -142,6 +143,10 @@ msSingleSimFunc <- function(dm, parameters) {
     sum.stats[['jsfs']] <- msOut2Jsfs(dm, ms.out)
   }
 
+  if ("file" %in% dm@sum.stats) {
+    sum.stats[['file']] <- ms.out
+  }
+
   if (any(c('seg.sites', 'tree', '4pc') %in% dm@sum.stats)) {
     output <- scan(ms.out, character(), sep="\n", quiet=TRUE)
 
@@ -157,7 +162,7 @@ msSingleSimFunc <- function(dm, parameters) {
     }
   }
 
-  unlink(ms.out)
+  if (!'file' %in% dm@sum.stats) unlink(ms.out)
   return(sum.stats)
 }
 

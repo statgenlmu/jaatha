@@ -2,9 +2,8 @@
 \alias{dm.addSymmetricMigration}
 \title{Adds symmetric migration between all populations}
 \usage{
-  dm.addSymmetricMigration(dm, lower.range, upper.range,
-    fixed.value, par.new = T, new.par.name = "M",
-    parameter, time.start = "0")
+dm.addSymmetricMigration(dm, lower.range, upper.range, fixed.value,
+  par.new = T, new.par.name = "M", parameter, time.start = "0")
 }
 \arguments{
   \item{dm}{The demographic model to which migration events
@@ -39,13 +38,13 @@
   with this rate starts.}
 }
 \value{
-  The demographic model with migration
+The demographic model with migration
 }
 \description{
-  This adds migration between all subpopulation, all with
-  the same rate. Please look at the documentation for
-  \link{dm.addMigration} for detailed information about
-  migration.
+This adds migration between all subpopulation, all with the
+same rate. Please look at the documentation for
+\link{dm.addMigration} for detailed information about
+migration.
 }
 \examples{
 dm <- dm.createThetaTauModel(c(25,25), 100)

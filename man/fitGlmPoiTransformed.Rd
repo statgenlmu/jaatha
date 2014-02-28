@@ -3,8 +3,7 @@
 \title{Fits a GLM for a summary statistics of type "poisson.transformed" and
 "poisson.independent"}
 \usage{
-  fitGlmPoiTransformed(sim.data, sum.stat, transformation,
-    weighting, jaatha)
+fitGlmPoiTransformed(sim.data, sum.stat, transformation, weighting, jaatha)
 }
 \arguments{
   \item{sim.data}{Results from simulations}
@@ -20,10 +19,10 @@
   \item{jaatha}{A Jaatha Object.}
 }
 \value{
-  A list of fitted GLMs, one for each function
+A list of fitted GLMs, one for each function
 }
 \description{
-  Fits a GLM for a summary statistics of type
-  "poisson.transformed" and "poisson.independent"
+Fits a GLM for a summary statistics of type
+"poisson.transformed" and "poisson.independent"
 }
 
