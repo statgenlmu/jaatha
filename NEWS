@@ -1,6 +1,7 @@
 Version 2.2.1
 ---------------
 + Modifications for Rcpp 0.11 (removed Makevars)
++ Updates the Jaatha HowTo
 
 Version 2.2
 ---------------

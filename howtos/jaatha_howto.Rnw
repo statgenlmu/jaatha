@@ -186,7 +186,12 @@ description.
 
 \section{Importing Your Data}
 \noindent
-To run Jaatha, you need to calculate the JSFS of your data. To do so, you can
+To run Jaatha, you need to calculate the JSFS of your data set. We do not
+differentiate between loci and use the JSFS over all loci. You can either just
+concatenate all loci and the calculate the JSFS for the combined sequence, or
+calculate the JSFS for every loci and sum them up.  
+
+To calculate the JSFS, you can
 use the function \verb@calculateJsfs()@. This function accepts data imported
 with the \verb@read.dna()@ function from the package \emph{ape}. It assumes that you provide
 a joined, aligned data set with multiple samples from two populations and -- optional 
@@ -336,9 +341,16 @@ print(likelihoods[1:3, ])
 On Linux and OS X, Jaatha can distribute the simulations on multiple CPU cores.
 To use this feature, set the \verb@cores@ option during initialization. The
 value of the option specifies the number of cores you want to use. Jaatha will
-distribute its simulation evenly this cores. As for version $2.2$ on, the number
+distribute its simulation evenly this cores. Since version $2.2$ the number
 of cores no longer affects Jaatha's seeding system, e.g. you will get the same
 results for the same seed no matter how many cores you use.
+
+There is known problem with our parallelization approach on OS X. If you get errors like 
+\begin{verbatim}
+  The process has forked and you cannot use this CoreFoundation 
+  functionality safely. You must exec().
+\end{verbatim} 
+use the plain command line version of R instead of the GUI.
 
 \section{Finite sites models}
 \noindent
