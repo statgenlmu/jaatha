@@ -2,7 +2,7 @@
 \alias{runSimulations}
 \title{The function that actually executes the simulations from within Jaatha.}
 \usage{
-  runSimulations(pars, cores, jaatha)
+runSimulations(pars, cores, jaatha)
 }
 \arguments{
   \item{pars}{A matrix with parameter values for the
@@ -15,11 +15,11 @@
   \item{jaatha}{The current jaatha object}
 }
 \value{
-  A list, where each entry is a list of summary statistics
-  for a simulation.
+A list, where each entry is a list of summary statistics
+for a simulation.
 }
 \description{
-  The function that actually executes the simulations from
-  within Jaatha.
+The function that actually executes the simulations from
+within Jaatha.
 }
 

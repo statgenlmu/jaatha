@@ -2,8 +2,8 @@
 \alias{dm.addMutation}
 \title{Adds mutations to a demographic model}
 \usage{
-  dm.addMutation(dm, lower.range, upper.range, fixed.value,
-    par.new = T, new.par.name = "theta", parameter)
+dm.addMutation(dm, lower.range, upper.range, fixed.value, par.new = T,
+  new.par.name = "theta", parameter)
 }
 \arguments{
   \item{dm}{The demographic model to which mutations should
@@ -37,16 +37,16 @@
   sense).}
 }
 \value{
-  The demographic model with mutation.
+The demographic model with mutation.
 }
 \description{
-  This functions adds the assumption to the model that
-  neutral mutations occur in the genomes at a constant
-  rate. The rate is quantified through a parameter usually
-  named theta in population genetics. It equals 4*Ne*mu,
-  where Ne is the (effective) number of diploid individuals
-  in the ancestral population and mu is the neutral
-  mutation rate for an entire locus.
+This functions adds the assumption to the model that
+neutral mutations occur in the genomes at a constant rate.
+The rate is quantified through a parameter usually named
+theta in population genetics. It equals 4*Ne*mu, where Ne
+is the (effective) number of diploid individuals in the
+ancestral population and mu is the neutral mutation rate
+for an entire locus.
 }
 \examples{
 # Create a new parameter

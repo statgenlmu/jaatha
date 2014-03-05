@@ -3,9 +3,8 @@
 \title{Allows the mutation rate on different sites to vary according to
 a Gamma Distribution.}
 \usage{
-  dm.addMutationRateHeterogenity(dm, min.alpha, max.alpha,
-    fixed.alpha, par.new = T, new.par.name = "alpha",
-    parameter, categories.number)
+dm.addMutationRateHeterogenity(dm, min.alpha, max.alpha, fixed.alpha,
+  par.new = T, new.par.name = "alpha", parameter, categories.number)
 }
 \arguments{
   \item{dm}{The demographic model to which the rate
@@ -44,34 +43,33 @@ a Gamma Distribution.}
   much sense).}
 }
 \value{
-  The demographic model with a size change.
+The demographic model with a size change.
 }
 \description{
-  This function adds a Gamma distributed rate heterogeneity
-  as implemented in 'seq-gen' to the model.
+This function adds a Gamma distributed rate heterogeneity
+as implemented in 'seq-gen' to the model.
 }
 \details{
-  "The [...] model of rate heterogeneity assigns different
-  rates to different sites according to a gamma
-  distribution (Yang, 1993). The distribution is scaled
-  such that the mean rate for all the sites is 1 but the
-  user must supply a parameter which describes its shape. A
-  low value for this parameter (<1.0) simulates a large
-  degree of site-specific rate heterogeneity and as this
-  value increases the simulated data becomes more
-  rate-homogeneous. This can be performed as a continuous
-  model, i.e. every site has a different rate sampled from
-  the gamma distribution of the given shape, or as a
-  discrete model, i.e. each site falls into one of N rate
-  categories approximating the gamma distribution. For a
-  review of site-specific rate heterogeneity and its
-  implications for phylogenetic analyses, see Yang (1996)."
-  [From the seq-gen homepage
-  http://bioweb2.pasteur.fr/docs/seq-gen ]
+"The [...] model of rate heterogeneity assigns different
+rates to different sites according to a gamma distribution
+(Yang, 1993). The distribution is scaled such that the mean
+rate for all the sites is 1 but the user must supply a
+parameter which describes its shape. A low value for this
+parameter (<1.0) simulates a large degree of site-specific
+rate heterogeneity and as this value increases the
+simulated data becomes more rate-homogeneous. This can be
+performed as a continuous model, i.e. every site has a
+different rate sampled from the gamma distribution of the
+given shape, or as a discrete model, i.e. each site falls
+into one of N rate categories approximating the gamma
+distribution. For a review of site-specific rate
+heterogeneity and its implications for phylogenetic
+analyses, see Yang (1996)." [From the seq-gen homepage
+http://bioweb2.pasteur.fr/docs/seq-gen ]
 
-  The Parameter in this text will be referred to as
-  'alpha'. Simulation a model with rate heterogeneity
-  requires that 'seq-gen' is installed on your system.
+The Parameter in this text will be referred to as 'alpha'.
+Simulation a model with rate heterogeneity requires that
+'seq-gen' is installed on your system.
 }
 \examples{
 # A model with one smaller population

@@ -2,9 +2,8 @@
 \alias{dm.addSpeciationEvent}
 \title{Adds a speciation event to a demographic model}
 \usage{
-  dm.addSpeciationEvent(dm, min.time, max.time, fixed.time,
-    in.population = 1, new.time.point = T,
-    new.time.point.name = NA, time.point = NA)
+dm.addSpeciationEvent(dm, min.time, max.time, fixed.time, in.population = 1,
+  new.time.point = T, new.time.point.name = NA, time.point = NA)
 }
 \arguments{
   \item{dm}{The demographic model to which the split should
@@ -40,24 +39,22 @@
   will also work (also this does not make much sense).}
 }
 \value{
-  The demographic model with a split.
+The demographic model with a split.
 }
 \description{
-  You can use this function the create a new population
-  that splits of from an existing population at a given
-  time in the past. The time can be given as parameter or
-  as an expression based on previously generated time
-  points.
+You can use this function the create a new population that
+splits of from an existing population at a given time in
+the past. The time can be given as parameter or as an
+expression based on previously generated time points.
 }
 \details{
-  As always, time in measured in Number of 4Ne generations
-  in the past, where Ne is the (effective) size of the
-  ancestral population.
+As always, time in measured in Number of 4Ne generations in
+the past, where Ne is the (effective) size of the ancestral
+population.
 
-  The command will print the number of the new population,
-  which will be the number of previously existing
-  populations plus one. The ancestral population has number
-  "1".
+The command will print the number of the new population,
+which will be the number of previously existing populations
+plus one. The ancestral population has number "1".
 }
 \examples{
 dm <- dm.createDemographicModel(c(25,25), 100)

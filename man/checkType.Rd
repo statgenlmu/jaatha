@@ -2,7 +2,7 @@
 \alias{checkType}
 \title{Checks if a variable is of a given type and calls stop() on type mismatch}
 \usage{
-  checkType(variable, type, required = T, allow.na = T)
+checkType(variable, type, required = T, allow.na = T)
 }
 \arguments{
   \item{variable}{the variable to check}
@@ -21,10 +21,10 @@
   variable contains NA values. Only works for vectors.}
 }
 \value{
-  nothing
+nothing
 }
 \description{
-  See heading. Side-effect warning: Calls stop() on type
-  mismatch.
+See heading. Side-effect warning: Calls stop() on type
+mismatch.
 }
 

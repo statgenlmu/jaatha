@@ -3,7 +3,7 @@
 \title{Functions that uses the fitted GLMs to estimate the parameters that have the
 highest likelihood.}
 \usage{
-  findBestParInBlock(block, glm.fitted, sum.stats)
+findBestParInBlock(block, glm.fitted, sum.stats)
 }
 \arguments{
   \item{block}{The block we are in.}
@@ -13,11 +13,11 @@ highest likelihood.}
   \item{sum.stats}{The observed summary statistics}
 }
 \value{
-  A list with maximum likelihood parameter (est) and
-  log-likelihood (score)
+A list with maximum likelihood parameter (est) and
+log-likelihood (score)
 }
 \description{
-  Functions that uses the fitted GLMs to estimate the
-  parameters that have the highest likelihood.
+Functions that uses the fitted GLMs to estimate the
+parameters that have the highest likelihood.
 }
 

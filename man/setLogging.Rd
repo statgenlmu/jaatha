@@ -2,7 +2,7 @@
 \alias{setLogging}
 \title{Function to activate/change logging}
 \usage{
-  setLogging(log.level, log.file)
+setLogging(log.level, log.file)
 }
 \arguments{
   \item{log.level}{An integer indicating the level of the
@@ -14,9 +14,9 @@
   written into this file.}
 }
 \value{
-  nothing
+nothing
 }
 \description{
-  Function to activate/change logging
+Function to activate/change logging
 }
 

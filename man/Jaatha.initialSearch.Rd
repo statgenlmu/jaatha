@@ -2,8 +2,7 @@
 \alias{Jaatha.initialSearch}
 \title{Search the parameter space for good starting positions}
 \usage{
-  Jaatha.initialSearch(jaatha, sim = 200,
-    blocks.per.par = 2, rerun = FALSE)
+Jaatha.initialSearch(jaatha, sim = 200, blocks.per.par = 2, rerun = FALSE)
 }
 \arguments{
   \item{jaatha}{The Jaatha settings (create with
@@ -21,16 +20,16 @@
   initial search and set rerun to 'TRUE'.}
 }
 \value{
-  The jaatha object with starting positions
+The jaatha object with starting positions
 }
 \description{
-  This functions devides the parameter space in different
-  parts (blocks). In each block, simulations for different
-  parameter combinations are run to roughly predict the
-  combination with the highest score (which is equivalent
-  to the highest composite log likelihood). This points can
-  later be used as starting positions for the secound
-  estimation phase of Jaatha
-  (\code{\link{Jaatha.refinedSearch}})
+This functions devides the parameter space in different
+parts (blocks). In each block, simulations for different
+parameter combinations are run to roughly predict the
+combination with the highest score (which is equivalent to
+the highest composite log likelihood). This points can
+later be used as starting positions for the secound
+estimation phase of Jaatha
+(\code{\link{Jaatha.refinedSearch}})
 }
 

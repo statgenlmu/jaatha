@@ -2,8 +2,7 @@
 \alias{dm.createThetaTauModel}
 \title{Creates a standard "Theta/Tau" demopraphic model.}
 \usage{
-  dm.createThetaTauModel(sample.sizes, loci.num,
-    seq.length = 1000)
+dm.createThetaTauModel(sample.sizes, loci.num, seq.length = 1000)
 }
 \arguments{
   \item{sample.sizes}{A numeric vector with the sample
@@ -15,10 +14,10 @@
   assumed to be of this length}
 }
 \value{
-  A Theta/Tau Model
+A Theta/Tau Model
 }
 \description{
-  Creates a standard "Theta/Tau" demopraphic model.
+Creates a standard "Theta/Tau" demopraphic model.
 }
 \examples{
 dm <- dm.createThetaTauModel(c(20,25), 100)

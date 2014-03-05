@@ -2,7 +2,7 @@
 \alias{dm.addOutgroup}
 \title{Adds an outgroup to a demographic model}
 \usage{
-  dm.addOutgroup(dm, separation.time)
+dm.addOutgroup(dm, separation.time)
 }
 \arguments{
   \item{dm}{The demographic model to which we add the
@@ -14,12 +14,12 @@
   time points (e.g. '5*t_split_1').}
 }
 \value{
-  The extended demographic model
+The extended demographic model
 }
 \description{
-  This function adds an outgroup consisting of one
-  individual to a demographic model. The outgroup consists
-  of one individual. An outgroup is required for a finite
-  sites analysis.
+This function adds an outgroup consisting of one individual
+to a demographic model. The outgroup consists of one
+individual. An outgroup is required for a finite sites
+analysis.
 }
 

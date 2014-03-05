@@ -2,7 +2,7 @@
 \alias{Jaatha.getLikelihoods}
 \title{Gives the best estimates after a Jaatha search}
 \usage{
-  Jaatha.getLikelihoods(jaatha, max.entries = NULL)
+Jaatha.getLikelihoods(jaatha, max.entries = NULL)
 }
 \arguments{
   \item{jaatha}{The Jaatha options}
@@ -11,11 +11,11 @@
   entries will be returned.}
 }
 \value{
-  A matrix with log composite likelihoods and parameters of
-  The best estimates
+A matrix with log composite likelihoods and parameters of
+The best estimates
 }
 \description{
-  This method extracts the best estimates with log
-  composite likelihood vales from an Jaatha object.
+This method extracts the best estimates with log composite
+likelihood vales from an Jaatha object.
 }
 
