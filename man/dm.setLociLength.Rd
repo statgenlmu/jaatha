@@ -1,0 +1,21 @@
+\name{dm.setLociLength}
+\alias{dm.setLociLength}
+\title{Defines the sequence length of each loci in a group of loci}
+\usage{
+dm.setLociLength(dm, loci.length, group = 0)
+}
+\arguments{
+  \item{dm}{The Demographic Model}
+
+  \item{loci.length}{The length each loci in the given loci
+  group}
+
+  \item{group}{The group for which we set the loci number}
+}
+\value{
+The changed Demographic Model
+}
+\description{
+Defines the sequence length of each loci in a group of loci
+}
+

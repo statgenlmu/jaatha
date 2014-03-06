@@ -1276,8 +1276,18 @@ dm.simSumStats <- function(dm, parameters, sum.stats=c("all")) {
 }
 
 
+#-------------------------------------------------------------------
+# dm.getGroups
+#-------------------------------------------------------------------
+#' Returns the groups currently in the model
+#' 
+#' @param dm The demographic model
+#' @return The groups in the model.
+#' @export
 dm.getGroups <- function(dm) {
-  sort(unique(dm@features$group))
+  groups <- sort(unique(dm@features$group))
+  if (all(groups == 0)) return(1)
+  else return(groups[groups != 0])
 }
 
 scaleDemographicModel <- function(dm, scaling.factor) {
