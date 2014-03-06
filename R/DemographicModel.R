@@ -5,7 +5,6 @@
 # 
 # Authors:  Paul R. Staab & Lisha Mathew 
 # Email:    staab ( at ) bio.lmu.de
-# Date:     2013-09-04
 # Licence:  GPLv3 or later
 #--------------------------------------------------------------
 
@@ -15,8 +14,6 @@ setClass("DemographicModel" ,
          representation(features="data.frame",
                         parameters="data.frame",
                         sum.stats="character",
-                        sampleSizes="numeric",
-                        nLoci="numeric",
                         seqLength="numeric",
                         tsTvRatio="numeric",
                         finiteSites="logical",
@@ -47,11 +44,12 @@ setClass("DemographicModel" ,
                                    stringsAsFactors=F )
 
 
+  .Object <- dm.addSampleSize(.Object, sampleSizes)
+  .Object <- dm.setLociNumber(.Object, nLoci)
+
   .Object@finiteSites     <- finiteSites
-  .Object@sampleSizes     <- sampleSizes
   .Object@seqLength       <- seqLength
   .Object@tsTvRatio       <- tsTvRatio
-  .Object@nLoci           <- nLoci
   .Object@sum.stats       <- c("jsfs")
   .Object@options         <- list()
 
@@ -467,6 +465,42 @@ dm.createDemographicModel <- function(sample.sizes, loci.num, seq.length=1000,
 # Front end functions for adding features
 #---------------------------------------------------------------------------------
 
+#' Defines how many identical loci belong to a group of loci
+#'
+#' @param dm The Demographic Model
+#' @param loci.number The number of loci in the group
+#' @param group The group for which we set the loci number
+#' @return The changed Demographic Model
+#' @export
+dm.setLociNumber <- function(dm, loci.number, group=0) {
+  checkType(dm, 'dm')
+  checkType(loci.number, 'num')
+  checkType(group, 'num')
+
+  feat <- dm@features
+  if (sum(feat$type=='loci.number' & feat$group==group) > 0) {
+    feat$parameter[feat$type=='loci.number' & feat$group==group] <-
+      as.character(loci.number)
+    dm@features <- feat
+  } else {
+    dm <- addFeature(dm, 'loci.number', as.character(loci.number),
+                     par.new=FALSE, group=group)
+  }
+
+  dm
+}
+
+#' Gets how many loci belong to a group of loci
+#'
+#' @param dm The Demographic Model
+#' @param group The group for which we get the number of loci
+#' @return The number of loci in the group
+#' @export
+dm.getLociNumber <- function(dm, group=0) {
+  as.integer(dm@features$parameter[dm@features$type=='loci.number' & 
+                                   dm@features$group==group])
+}
+
 #--------------------------------------------------------------------
 # dm.addMutation()
 #--------------------------------------------------------------------
@@ -532,6 +566,48 @@ dm.addMutation <- function(dm, lower.range, upper.range, fixed.value,
 }
 
 
+
+#-------------------------------------------------------------------
+#  dm.addSampleSize
+#-------------------------------------------------------------------
+#' Sets how many individuals from each population are sampled at time 0.
+#' 
+#' @param dm  The demographic model to which recombination events should be added.
+#' @param sample.size A vector with sample sizes for each population. 
+#' @param group The group of loci with this sample size. 
+#' @return The demographic model with the sample
+#' @export
+#'
+dm.addSampleSize <- function(dm, sample.size, group=0) {
+  checkType(sample.size, "num")
+  for (smpl.nr in seq(along=sample.size)) {
+    dm <- addFeature(dm, "sample", as.character(sample.size[smpl.nr]), 
+                     pop.source=smpl.nr, par.new=FALSE, 
+                     group=group, time.point='0')
+  }
+  return(dm)
+}
+
+
+dm.getSampleSize <- function(dm, group.nr=NULL) {
+  if (is.null(group.nr)) {
+    feat.samples <- subset(dm@features, type=="sample")
+  } else {
+    feat.samples <- subset(dm@features, type=="sample" & group==group.nr)
+  }
+  stopifnot(nrow(feat.samples) > 0)
+
+  sample.size <- rep(0, max(na.omit(dm@features$pop.source)))
+  for (row.nr in 1:nrow(feat.samples)) {
+    stopifnot(sample.size[feat.samples$pop.source[row.nr]] == 0)
+    sample.size[feat.samples$pop.source[row.nr]] <-
+      as.integer(feat.samples$parameter[row.nr])
+  }
+
+  sample.size
+}
+
+
 #-------------------------------------------------------------------
 #  dm.addRecombination()
 #-------------------------------------------------------------------
@@ -584,6 +660,7 @@ dm.addRecombination <- function(dm, lower.range, upper.range, fixed.value,
                    fixed.value, par.new=par.new, time.point="0")
   return(dm)
 }
+
 
 
 #-------------------------------------------------------------------
@@ -1121,8 +1198,11 @@ dm.createThetaTauModel <- function(sample.sizes, loci.num, seq.length=1000) {
 #' @return  The extended demographic model
 #' @export
 dm.addOutgroup <- function(dm, separation.time) {
-  number.of.individuals <- 1
-  dm@sampleSizes <- c(dm@sampleSizes, number.of.individuals)
+  sample.size <- 1 
+  pop <- max(na.omit(dm@features$pop.source)) + 1
+  dm <- addFeature(dm, "sample", as.character(sample.size), 
+                     pop.source=pop, par.new=FALSE, 
+                     group=0, time.point='0')
   dm.addSpeciationEvent(dm, in.population=1, 
                         new.time.point=F, 
                         time.point=separation.time) 
@@ -1159,7 +1239,15 @@ dm.simSumStats <- function(dm, parameters, sum.stats=c("all")) {
 }
 
 
+dm.getGroups <- function(dm) {
+  sort(unique(dm@features$group))
+}
+
 scaleDemographicModel <- function(dm, scaling.factor) {
-  dm@nLoci <- round(dm@nLoci / scaling.factor)
+  for (group in dm.getGroups(dm)) {
+    dm <- dm.setLociNumber(dm, 
+                     round(dm.getLociNumber(dm, group) / scaling.factor),
+                     group)
+  }
   return(dm)
 }

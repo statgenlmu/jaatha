@@ -228,11 +228,12 @@ Jaatha.initialize <- function(demographic.model, jsfs,
 
     if (folded) sum.stats$jsfs$transformation <- summarizeFoldedJSFS
   } else {
+    sample.size <- dm.getSampleSize(demographic.model)
     warning("Smoothing is still very experimental")
     model <- paste0("( i + I(i^2) + j + I(j^2) + log(i) + log(",
-                    demographic.model@sampleSizes[1]+2,
+                    sample.size[1]+2,
                     "-i) + log(j) + log(",
-                    demographic.model@sampleSizes[2]+2,
+                    sample.size[2]+2,
                     "-j) )^2")
     sum.stats[['jsfs']] <- list(method="poisson.smoothing",
                                         model=model,

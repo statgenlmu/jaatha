@@ -10,13 +10,14 @@ test.addParameter <- function() {
 
 test.addFeature <- function() {
   dm <- dm.createDemographicModel(11:12, 100)
+  n.feat <- nrow(dm@features)
   dm <- addFeature(dm, type="split", parameter="tau", 
                    lower.range=1, upper.range=10)
-  checkEquals(nrow(dm@features), 1)
+  checkEquals(n.feat+1, nrow(dm@features))
   dm <- addFeature(dm, "mutation", "theta", fixed.value=5,
                    pop.source=1, pop.sink=2,
                    time.point="t2", group=3)
-  checkEquals(nrow(dm@features), 2)
+  checkEquals(n.feat+2, nrow(dm@features))
 }
 
 test.addSummaryStatistics <- function() {
@@ -65,6 +66,62 @@ test.parInRange <- function() {
   checkException( checkParInRange(dm.tt, 1) )
   checkException( checkParInRange(dm.tt, matrix(1, 2, 2) ))
   checkException( checkParInRange(dm.tt, NULL ))
+}
+
+test.addSampleSize <- function() {
+  dm <- dm.tt
+  checkEquals( 2, sum(dm@features$type == "sample") )
+  checkEquals( "11", subset(dm@features, type=="sample" & pop.source==1)$parameter)
+  checkEquals( "12", subset(dm@features, type=="sample" & pop.source==2)$parameter)
+  checkEquals( 2, nrow(subset(dm@features, type=="sample" & group==0)) )
+  checkEquals( 2, nrow(subset(dm@features, type=="sample" & time.point=='0')) )
+
+  dm <- dm.addSampleSize(dm, c(2,5), group=1)
+  checkEquals( 4, sum(dm@features$type == "sample") )
+  checkEquals( 2, nrow(subset(dm@features, type=="sample" & group==0)) )
+  checkEquals( 2, nrow(subset(dm@features, type=="sample" & group==1)) )
+}
+
+test.getSampleSize <- function() {
+  dm <- dm.tt
+  checkEquals(c(11L, 12L), dm.getSampleSize(dm))
+
+  dm <- dm.addSampleSize(dm, c(2,5), group=1)
+  checkEquals(c(11L, 12L), dm.getSampleSize(dm, 0))
+  checkEquals(c(2L, 5L), dm.getSampleSize(dm, 1))
+  checkException(dm.getSampleSize(dm))
+}
+
+test.setLociNumber <- function() {
+  dm <- dm.setLociNumber(dm.tt, 17)
+  checkEquals( 1, sum(dm@features$type == "loci.number") )
+  checkEquals( "17", dm@features$parameter[dm@features$type == "loci.number"] )
+
+  dm <- dm.setLociNumber(dm, 23, group=1)
+  checkEquals( 2, sum(dm@features$type == "loci.number") )
+  checkEquals( "23",
+              dm@features$parameter[dm@features$type=="loci.number"][2] )
+
+  dm <- dm.setLociNumber(dm, 32, group=2)
+  checkEquals( 3, sum(dm@features$type == "loci.number") )
+}
+
+test.getLociNumber <- function() {
+  dm.tt <- dm.setLociNumber(dm.tt, 17)
+  dm.tt <- dm.setLociNumber(dm.tt, 23, group=1)
+  dm.tt <- dm.setLociNumber(dm.tt, 32, group=2)
+  checkEquals(17L, dm.getLociNumber(dm.tt))
+  checkEquals(23L, dm.getLociNumber(dm.tt, 1))
+  checkEquals(32L, dm.getLociNumber(dm.tt, 2))
+}
+
+test.scaleDemographicModel <- function() {
+  dm <- dm.setLociNumber(dm.tt, 25, group=1)
+  dm <- dm.setLociNumber(dm, 27, group=2)
+  dm <- scaleDemographicModel(dm, 5) 
+  checkEquals(2L, dm.getLociNumber(dm))
+  checkEquals(5L, dm.getLociNumber(dm, 1))
+  checkEquals(5L, dm.getLociNumber(dm, 2))
 }
 
 ## -- Fixed bugs ----------------------------------------

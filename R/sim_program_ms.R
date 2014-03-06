@@ -6,7 +6,8 @@
 # Licence:  GPLv3 or later
 # --------------------------------------------------------------
 
-possible.features  <- c("mutation", "migration", "split",
+possible.features  <- c("sample", "loci.number",
+                        "mutation", "migration", "split",
                         "recombination", "size.change", "growth")
 possible.sum.stats <- c("jsfs", "4pc", "tree", "seg.sites", "file")
 
@@ -19,21 +20,17 @@ possible.sum.stats <- c("jsfs", "4pc", "tree", "seg.sites", "file")
 callMs <- function(opts, dm){
   if (missing(opts)) stop("No options given!")
   opts <- unlist(strsplit(opts, " "))
-  .log3("Called callMs")
-  .log3("Options:", opts)
 
   ms.file <- getTempFile("ms")
 
-  .log3("Calling ms...")
-  ms(sum(dm@sampleSizes), dm@nLoci, opts, ms.file)
-  .log3("ms finished. Finished callMs()")
+  ms(sum(dm.getSampleSize(dm)), dm.getLociNumber(dm), opts, ms.file)
   return(ms.file)
 }
 
 # This function generates an string that contains an R command for generating
 # an ms call to the current model.
 generateMsOptionsCommand <- function(dm) {
-  nSample <- dm@sampleSizes
+  nSample <- dm.getSampleSize(dm)
   cmd <- c('c(')
   cmd <- c(cmd,'"-I"', ",", length(nSample), ',', 
            paste(nSample, collapse=","), ',')
@@ -67,7 +64,9 @@ generateMsOptionsCommand <- function(dm) {
     else if (type == "growth"){
       cmd <- c(cmd, '"-eg"', ',' , feat["time.point"], ',',
                feat["pop.source"], ',', feat["parameter"], ',')
-    }
+      }
+
+    else if (type %in% c("sample", "loci.number")) {}
     else stop("Unknown feature:", type)
   }
 
@@ -119,10 +118,11 @@ printMsCommand <- function(dm) {
 
 msOut2Jsfs <- function(dm, ms.out) {
   .log3("Called .ms.getJSFS()")
-  jsfs <- matrix(.Call("msFile2jsfs", ms.out, dm@sampleSizes[1], 
-                       dm@sampleSizes[2]),
-                 dm@sampleSizes[1] + 1 ,
-                 dm@sampleSizes[2] + 1,
+  sample.size <- dm.getSampleSize(dm)
+  jsfs <- matrix(.Call("msFile2jsfs", ms.out,sample.size[1], 
+                       sample.size[2]),
+                 sample.size[1] + 1 ,
+                 sample.size[2] + 1,
                  byrow=T)
   .log3("Finished .ms.getJSFS()")
   return(jsfs)
@@ -151,12 +151,13 @@ msSingleSimFunc <- function(dm, parameters) {
     output <- scan(ms.out, character(), sep="\n", quiet=TRUE)
 
     if ("seg.sites" %in% dm@sum.stats) {
-      sum.stats[['seg.sites']] <- readSegSitesFromOutput(output, dm@sampleSizes)
+      sum.stats[['seg.sites']] <- readSegSitesFromOutput(output,
+                                                         dm.getSampleSize(dm))
     }
 
     if ("4pc" %in% dm@sum.stats) {
       if (!is.null(sum.stats$seg.sites)) seg.sites <- sum.stats$seg.sites
-      else seg.sites <- readSegSitesFromOutput(output, dm@sampleSizes)
+      else seg.sites <- readSegSitesFromOutput(output, dm.getSampleSize(dm))
 
       sum.stats[['4pc']] <- calcFpcSumStat(seg.sites, dm)
     }
