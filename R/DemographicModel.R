@@ -366,10 +366,9 @@ checkParInRange <- function(dm, param) {
   return(dm)
 }
 
-dm.finalizeDM <- function(dm) {
-  simProg <- dm@currentSimProg
-  .log2("Finalizing demographic model. Simprog:", simProg@name)
-  dm <- simProg@finalizationFunc(dm)
+finalizeDM <- function(dm) {
+  #simProg <- dm@currentSimProg
+  #dm <- simProg@finalizationFunc(dm)
   return(dm)
 }
 
