@@ -36,6 +36,7 @@ dm.grp <- dm.setLociLength(dm.grp, 100, 1)
 dm.grp <- dm.setLociNumber(dm.grp, 15, 1) 
 dm.grp <- dm.setLociLength(dm.grp, 200, 2) 
 dm.grp <- dm.addSampleSize(dm.grp, 5:6, 3)
+sum.stats.grp <- dm.simSumStats(dm.grp, c(1, 5))
 
 # Finite Sites Models
 dm.sg <-  finalizeDM(dm.addOutgroup(dm.tt, "2*tau"))

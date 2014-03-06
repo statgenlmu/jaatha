@@ -366,7 +366,7 @@ checkParInRange <- function(dm, param) {
   return(dm)
 }
 
-finalizeDM <- function(dm) {
+dm.finalizeDM <- function(dm) {
   simProg <- dm@currentSimProg
   .log2("Finalizing demographic model. Simprog:", simProg@name)
   dm <- simProg@finalizationFunc(dm)
@@ -637,11 +637,10 @@ dm.addSampleSize <- function(dm, sample.size, group=0) {
 
 
 dm.getSampleSize <- function(dm, group.nr=NULL) {
-  if (is.null(group.nr)) {
-    feat.samples <- subset(dm@features, type=="sample")
-  } else {
-    feat.samples <- subset(dm@features, type=="sample" & group==group.nr)
+  if (!is.null(group.nr)) {
+    dm <- generateGroupModel(dm, group.nr)
   }
+  feat.samples <- searchFeature(dm, type="sample")
   stopifnot(nrow(feat.samples) > 0)
 
   sample.size <- rep(0, max(na.omit(dm@features$pop.source)))
@@ -1293,10 +1292,10 @@ dm.simSumStats <- function(dm, parameters, sum.stats=c("all")) {
     for (i in seq(along = sum.stats.grp)) {
       if (names(sum.stats.grp)[i] == 'pars') next()
       name <- paste(names(sum.stats.grp)[i], loci.group, sep='.')
-      sum.stats[[name]] <- sum.stats.grp[i]
+      sum.stats[[name]] <- sum.stats.grp[[i]]
     }
   }
-
+  sum.stats
 }
 
 generateGroupModel <- function(dm, group) {

@@ -82,13 +82,13 @@ test.JaathaInitialize <- function() {
   checkTrue(jaatha@use.shm)
 
   # Folded
-  jaatha <- Jaatha.initialize(dm.tt, sum.stats.tt, 123, 1, 17, TRUE, TRUE)
-  jaatha <- Jaatha.initialize(dm.tt, sum.stats.tt, 123, 1, 17, TRUE, folded=TRUE)
+  jaatha <- Jaatha.initialize(dm.tt, sum.stats.tt, 123, 1, 17, FALSE, TRUE)
+  jaatha <- Jaatha.initialize(dm.tt, sum.stats.tt, 123, 1, 17, FALSE, folded=TRUE)
   checkType(jaatha, "jaatha")
 
   # Smoothing  
-  jaatha <- Jaatha.initialize(dm.tt, sum.stats.tt, 123, 1, 17, TRUE, FALSE, TRUE)
-  jaatha <- Jaatha.initialize(dm.tt, sum.stats.tt, 123, 1, 17, TRUE, FALSE,
+  jaatha <- Jaatha.initialize(dm.tt, sum.stats.tt, 123, 1, 17, FALSE, FALSE, TRUE)
+  jaatha <- Jaatha.initialize(dm.tt, sum.stats.tt, 123, 1, 17, FALSE, FALSE,
                               smoothing=TRUE)
   checkType(jaatha, "jaatha")
   checkTrue(jaatha@sum.stats$jsfs$method == "poisson.smoothing")
@@ -97,4 +97,7 @@ test.JaathaInitialize <- function() {
 
   checkException(Jaatha.initialize(dm.tt, sum.stats.tt, folded=TRUE,
                                    smoothing=TRUE))
+
+  # Groups
+  jaatha <- Jaatha.initialize(dm.grp, sum.stats.grp, 123, folded=FALSE, smoothing=FALSE)
 }

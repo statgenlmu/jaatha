@@ -92,13 +92,17 @@ test.addSampleSize <- function() {
 }
 
 test.getSampleSize <- function() {
-  dm <- dm.tt
-  checkEquals(c(11L, 12L), dm.getSampleSize(dm))
+  dm.test <- dm.tt
+  checkEquals(c(11L, 12L), dm.getSampleSize(dm.test))
 
-  dm <- dm.addSampleSize(dm, c(2,5), group=1)
-  checkEquals(c(11L, 12L), dm.getSampleSize(dm, 0))
-  checkEquals(c(2L, 5L), dm.getSampleSize(dm, 1))
-  checkException(dm.getSampleSize(dm))
+  dm.test <- dm.addSampleSize(dm.test, c(2,5), group=2)
+  checkEquals(c(11L, 12L), dm.getSampleSize(dm.test, 0))
+  checkEquals(c(11L, 12L), dm.getSampleSize(dm.test, 1))
+  checkEquals(c(2L, 5L), dm.getSampleSize(dm.test, 2))
+  checkException(dm.getSampleSize(dm.test), silent=TRUE)
+
+  dm.test <- dm.setLociLength(dm.test, 15, group=3)
+  checkEquals(c(11L, 12L), dm.getSampleSize(dm.test, 3))
 }
 
 test.setLociNumber <- function() {
@@ -120,7 +124,7 @@ test.scaleDemographicModel <- function() {
   dm <- dm.setLociNumber(dm.tt, 25, group=1)
   dm <- dm.setLociNumber(dm, 27, group=2)
   dm <- scaleDemographicModel(dm, 5) 
-  checkEquals(2L, dm.getLociNumber(dm))
+  checkEquals(2L, dm.getLociNumber(dm, 0))
   checkEquals(5L, dm.getLociNumber(dm, 1))
   checkEquals(5L, dm.getLociNumber(dm, 2))
 }
@@ -211,6 +215,12 @@ test.generateGroupModel <- function() {
   checkEquals(nrow(dm.tt@features), nrow(dm@features))
   checkEquals(0, sum(dm@features$group == 1))
   checkEquals(2, sum(dm@features$group == 2))
+}
+
+test.finalizeDM <- function() {
+  finalizeDM(dm.tt)
+  finalizeDM(dm.hky)
+  finalizeDM(dm.grp)
 }
 
 ## -- Fixed bugs ----------------------------------------
