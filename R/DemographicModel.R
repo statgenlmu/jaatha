@@ -374,6 +374,7 @@ finalizeDM <- function(dm) {
 }
 
 
+
 #------------------------------------------------------------------------------
 # Getters & Setters for Jaatha
 #------------------------------------------------------------------------------
@@ -521,11 +522,15 @@ dm.setLociLength <- function(dm, loci.length, group=0) {
 #' @param group The group for which we get the number of loci
 #' @return The number of loci in the group
 #' @export
-dm.getLociNumber <- function(dm, group=0) {
+dm.getLociNumber <- function(dm, group=NULL) {
+  if (is.null(group)) {
+    ln <- searchFeature(dm, type='loci.number')$parameter
+    if (length(ln) != 1) stop("Cannot identify loci.number") 
+    return(as.integer(ln))
+  }
   as.integer(dm@features$parameter[dm@features$type=='loci.number' & 
                                    dm@features$group==group])
 }
-
 
 #' Gets how long the loci in a group are
 #'
@@ -533,7 +538,12 @@ dm.getLociNumber <- function(dm, group=0) {
 #' @param group The group for which we get the length of loci
 #' @return The length of the loci in the group
 #' @export
-dm.getLociLength <- function(dm, group=0) {
+dm.getLociLength <- function(dm, group=NULL) {
+  if (is.null(group)) {
+    ll <- searchFeature(dm, type='loci.length')$parameter
+    if (length(ll) != 1) stop("Cannot identify loci.length") 
+    return(as.integer(ll))
+  }
   as.integer(dm@features$parameter[dm@features$type=='loci.length' & 
                                    dm@features$group==group])
 }
@@ -1272,9 +1282,80 @@ dm.simSumStats <- function(dm, parameters, sum.stats=c("all")) {
 
   checkParInRange(dm, parameters)
 
-  dm@currentSimProg@singleSimFunc(dm, parameters)
+  if (all(dm@features$group == 0)) {
+    return(dm@currentSimProg@singleSimFunc(dm, parameters))
+  } 
+
+  sum.stats <- list(pars=parameters)
+  for (loci.group in dm.getGroups(dm)) {
+    dm.grp <- generateGroupModel(dm, loci.group)
+    sum.stats.grp <- dm.grp@currentSimProg@singleSimFunc(dm.grp, parameters)
+    for (i in seq(along = sum.stats.grp)) {
+      if (names(sum.stats.grp)[i] == 'pars') next()
+      name <- paste(names(sum.stats.grp)[i], loci.group, sep='.')
+      sum.stats[[name]] <- sum.stats.grp[i]
+    }
+  }
+
 }
 
+generateGroupModel <- function(dm, group) {
+  if (all(dm@features$group == 0)) return(dm)
+  dm@features <- dm@features[dm@features$group %in% c(0, group), ]
+  overwritten <- dm@features$group == 0
+  for (i in which(overwritten)) {
+    if (nrow(searchFeature(dm, type=dm@features$type[i],
+                           pop.source=dm@features$pop.source[i],
+                           pop.sink=dm@features$pop.sink[i],
+                           time.point=dm@features$time.point[i])) == 1) 
+      overwritten[i] <- FALSE
+  }
+  dm@features <- dm@features[!overwritten, ]
+  dm
+}
+
+searchFeature <- function(dm, type=NULL, parameter=NULL, pop.source=NULL,
+                       pop.sink=NULL, time.point=NULL, group=NULL) {
+
+  mask <- rep(TRUE, nrow(dm@features))
+
+  if (!is.null(type)) mask <- mask & dm@features$type %in% type
+  if (!is.null(group)) mask <- mask & dm@features$group %in% group
+
+  if (!is.null(parameter)) {
+    if (is.na(parameter)) { 
+      mask <- mask & is.na(dm@features$parameter) 
+    } else {
+      mask <- mask & dm@features$parameter %in% parameter 
+    }
+  }
+
+  if (!is.null(pop.source)) {
+    if (is.na(pop.source)) { 
+      mask <- mask & is.na(dm@features$pop.source) 
+    } else {
+      mask <- mask & dm@features$pop.source %in% pop.source
+    }
+  }
+
+  if (!is.null(pop.sink)) {
+    if (is.na(pop.sink)) { 
+      mask <- mask & is.na(dm@features$pop.sink) 
+    } else {
+      mask <- mask & dm@features$pop.sink %in% pop.sink
+    }
+  }
+
+  if (!is.null(time.point)) {
+    if (is.na(time.point)) { 
+      mask <- mask & is.na(dm@features$time.point) 
+    } else {
+      mask <- mask & dm@features$time.point %in% time.point
+    }
+  }
+
+  return(dm@features[mask, ])
+}
 
 #-------------------------------------------------------------------
 # dm.getGroups
@@ -1291,7 +1372,7 @@ dm.getGroups <- function(dm) {
 }
 
 scaleDemographicModel <- function(dm, scaling.factor) {
-  for (group in dm.getGroups(dm)) {
+  for (group in unique(dm@features$group)) {
     dm <- dm.setLociNumber(dm, 
                      round(dm.getLociNumber(dm, group) / scaling.factor),
                      group)

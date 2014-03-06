@@ -53,6 +53,15 @@ test.simSumStats <- function() {
   checkTrue( is.list(sum.stats) )
   checkTrue( !is.null(sum.stats$jsfs) )
   checkTrue( sum(sum.stats$jsfs) > 0 )
+
+  sum.stats <- dm.simSumStats(dm.grp, c(1,5), "jsfs")
+  checkTrue( !is.null(sum.stats) )
+  checkTrue( !is.null(sum.stats$jsfs.1) )
+  checkTrue( sum(sum.stats$jsfs.1) > 0 )
+  checkTrue( !is.null(sum.stats$jsfs.2) )
+  checkTrue( sum(sum.stats$jsfs.2) > 0 )
+  checkTrue( !is.null(sum.stats$jsfs.3) )
+  checkTrue( sum(sum.stats$jsfs.3) > 0 )
 }
 
 test.parInRange <- function() {
@@ -106,14 +115,6 @@ test.setLociNumber <- function() {
   checkEquals( 3, sum(dm@features$type == "loci.number") )
 }
 
-test.getLociNumber <- function() {
-  dm.tt <- dm.setLociNumber(dm.tt, 17)
-  dm.tt <- dm.setLociNumber(dm.tt, 23, group=1)
-  dm.tt <- dm.setLociNumber(dm.tt, 32, group=2)
-  checkEquals(17L, dm.getLociNumber(dm.tt))
-  checkEquals(23L, dm.getLociNumber(dm.tt, 1))
-  checkEquals(32L, dm.getLociNumber(dm.tt, 2))
-}
 
 test.scaleDemographicModel <- function() {
   dm <- dm.setLociNumber(dm.tt, 25, group=1)
@@ -138,13 +139,36 @@ test.setLociLength <- function() {
   checkEquals( 3, sum(dm@features$type == "loci.length") )
 }
 
+test.getLociNumber <- function() {
+  dm.test <- dm.setLociNumber(dm.tt, 17)
+  dm.test <- dm.setLociNumber(dm.test, 23, group=1)
+  dm.test <- dm.setLociNumber(dm.test, 32, group=2)
+
+  checkEquals(17L, dm.getLociNumber(dm.test, 0))
+  checkEquals(23L, dm.getLociNumber(dm.test, 1))
+  checkEquals(32L, dm.getLociNumber(dm.test, 2))
+  checkException( dm.getLociNumber(dm.test) )
+
+  dm.test <- dm.setLociNumber(dm.tt, 17)
+  checkEquals(17L, dm.getLociNumber(dm.test))
+  dm.test@features$group[dm.test@features$type == 'loci.number'] <- 1
+  checkEquals(17L, dm.getLociNumber(dm.test))
+}
+
 test.getLociLength <- function() {
-  dm <- dm.setLociLength(dm.tt, 17)
-  dm <- dm.setLociLength(dm, 23, group=1)
-  dm <- dm.setLociLength(dm, 32, group=2)
-  checkEquals(17L, dm.getLociLength(dm))
-  checkEquals(23L, dm.getLociLength(dm, 1))
-  checkEquals(32L, dm.getLociLength(dm, 2))
+  dm.test <- dm.setLociLength(dm.tt, 17)
+  dm.test <- dm.setLociLength(dm.test, 23, group=1)
+  dm.test <- dm.setLociLength(dm.test, 32, group=2)
+
+  checkEquals(17L, dm.getLociLength(dm.test, 0))
+  checkEquals(23L, dm.getLociLength(dm.test, 1))
+  checkEquals(32L, dm.getLociLength(dm.test, 2))
+  checkException( dm.getLociLength(dm.test) )
+
+  dm.test <- dm.setLociLength(dm.tt, 17)
+  checkEquals(17L, dm.getLociLength(dm.test))
+  dm.test@features$group[dm.test@features$type == 'loci.length'] <- 1
+  checkEquals(17L, dm.getLociLength(dm.test))
 }
 
 test.getGroups <- function() {
@@ -155,6 +179,38 @@ test.getGroups <- function() {
   checkEquals(1:2, dm.getGroups(dm))
   dm <- dm.setLociNumber(dm, 32, group=4)
   checkEquals(c(1:2,4), dm.getGroups(dm))
+}
+
+test.searchFeature <- function() {
+  checkEquals(2, nrow(searchFeature(dm.tt, type='sample')))
+  checkEquals(3, nrow(searchFeature(dm.tt, type=c('split', 'sample'))))
+  checkEquals(2, nrow(searchFeature(dm.tt, type=c('split', 'sample'),
+                                    pop.sink=NA)))
+  checkEquals(1, nrow(searchFeature(dm.tt, time.point='tau', group=0)))
+  checkEquals(3, nrow(searchFeature(dm.tt, time.point=NA)))
+}
+
+test.generateGroupModel <- function() {
+  dm <- generateGroupModel(dm.tt, 1)
+  checkEquals(dm.tt@features, dm@features)
+
+  dm <- dm.setLociLength(dm.tt, 23, group=1)
+  dm <- generateGroupModel(dm, 1)
+  checkEquals(nrow(dm.tt@features), nrow(dm@features))
+  checkEquals(1, sum(dm@features$group == 1))
+  checkEquals('23', dm@features$parameter[dm@features$group == 1])
+
+  dm.3 <- dm.setLociLength(dm.tt, 23, group=1)
+  dm.3 <- dm.setLociLength(dm.3, 30, group=2)
+  dm.3 <- dm.setLociNumber(dm.3, 31, group=2)
+  dm <- generateGroupModel(dm.3, 1)
+  checkEquals(nrow(dm.tt@features), nrow(dm@features))
+  checkEquals(1, sum(dm@features$group == 1))
+  checkEquals('23', dm@features$parameter[dm@features$group == 1])
+  dm <- generateGroupModel(dm.3, 2)
+  checkEquals(nrow(dm.tt@features), nrow(dm@features))
+  checkEquals(0, sum(dm@features$group == 1))
+  checkEquals(2, sum(dm@features$group == 2))
 }
 
 ## -- Fixed bugs ----------------------------------------
