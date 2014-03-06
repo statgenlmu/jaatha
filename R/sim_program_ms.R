@@ -6,7 +6,7 @@
 # Licence:  GPLv3 or later
 # --------------------------------------------------------------
 
-possible.features  <- c("sample", "loci.number",
+possible.features  <- c("sample", "loci.number", "loci.length",
                         "mutation", "migration", "split",
                         "recombination", "size.change", "growth")
 possible.sum.stats <- c("jsfs", "4pc", "tree", "seg.sites", "file")
@@ -54,7 +54,7 @@ generateMsOptionsCommand <- function(dm) {
                feat['parameter'], ',')
 
     else if (type == "recombination") 
-      cmd <- c(cmd, '"-r"', ',', feat['parameter'], ',', dm@seqLength, ',')
+      cmd <- c(cmd, '"-r"', ',', feat['parameter'], ',', dm.getLociLength(dm), ',')
 
     else if (type == "size.change"){
       cmd <- c(cmd, '"-en"', ',', feat['time.point'], ',',
@@ -66,7 +66,7 @@ generateMsOptionsCommand <- function(dm) {
                feat["pop.source"], ',', feat["parameter"], ',')
       }
 
-    else if (type %in% c("sample", "loci.number")) {}
+    else if (type %in% c("sample", "loci.number", "loci.length")) {}
     else stop("Unknown feature:", type)
   }
 

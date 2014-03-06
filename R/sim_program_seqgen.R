@@ -168,9 +168,10 @@ generateSeqgenOptionsCmd <- function(dm) {
     stop("You must specify a finite sites mutation model for this demographic model")
   }
 
-  opts <- c(opts, '"-l"', ',', dm@seqLength, ',')
-  opts <- c(opts, '"-s"', ',', paste(getThetaName(dm), "/", dm@seqLength), ',')
-  opts <- c(opts, '"-p"', ',', dm@seqLength + 1, ',')
+  loci.length <- dm.getLociLength(dm)
+  opts <- c(opts, '"-l"', ',', loci.length, ',')
+  opts <- c(opts, '"-s"', ',', paste(getThetaName(dm), "/", loci.length), ',')
+  opts <- c(opts, '"-p"', ',', loci.length + 1, ',')
   opts <- c(opts, '"-z"', ',', 'seed', ',')
   opts <- c(opts, '"-q"', ')')
   return(opts)

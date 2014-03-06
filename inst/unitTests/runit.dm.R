@@ -124,6 +124,29 @@ test.scaleDemographicModel <- function() {
   checkEquals(5L, dm.getLociNumber(dm, 2))
 }
 
+test.setLociLength <- function() {
+  dm <- dm.setLociLength(dm.tt, 17)
+  checkEquals( 1, sum(dm@features$type == "loci.length") )
+  checkEquals( "17", dm@features$parameter[dm@features$type == "loci.length"] )
+
+  dm <- dm.setLociLength(dm, 23, group=1)
+  checkEquals( 2, sum(dm@features$type == "loci.length") )
+  checkEquals( "23",
+              dm@features$parameter[dm@features$type=="loci.length"][2] )
+
+  dm <- dm.setLociLength(dm, 32, group=2)
+  checkEquals( 3, sum(dm@features$type == "loci.length") )
+}
+
+test.getLociLength <- function() {
+  dm <- dm.setLociLength(dm.tt, 17)
+  dm <- dm.setLociLength(dm, 23, group=1)
+  dm <- dm.setLociLength(dm, 32, group=2)
+  checkEquals(17L, dm.getLociLength(dm))
+  checkEquals(23L, dm.getLociLength(dm, 1))
+  checkEquals(32L, dm.getLociLength(dm, 2))
+}
+
 ## -- Fixed bugs ----------------------------------------
 test.showEmptyModel <- function() {
   dm <- dm.createDemographicModel(25:26, 100)

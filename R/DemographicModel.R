@@ -14,7 +14,6 @@ setClass("DemographicModel" ,
          representation(features="data.frame",
                         parameters="data.frame",
                         sum.stats="character",
-                        seqLength="numeric",
                         tsTvRatio="numeric",
                         finiteSites="logical",
                         currentSimProg="SimProgram",
@@ -26,7 +25,7 @@ setClass("DemographicModel" ,
 # Initialization
 #-----------------------------------------------------------------------
 
-.init <- function(.Object, sampleSizes, nLoci, seqLength,
+.init <- function(.Object, sample.size, loci.number, loci.length,
                   finiteSites, tsTvRatio){
 
   .Object@features <- data.frame(type=character(),
@@ -44,11 +43,11 @@ setClass("DemographicModel" ,
                                    stringsAsFactors=F )
 
 
-  .Object <- dm.addSampleSize(.Object, sampleSizes)
-  .Object <- dm.setLociNumber(.Object, nLoci)
+  .Object <- dm.addSampleSize(.Object, sample.size)
+  .Object <- dm.setLociNumber(.Object, loci.number)
+  .Object <- dm.setLociLength(.Object, loci.length)
 
   .Object@finiteSites     <- finiteSites
-  .Object@seqLength       <- seqLength
   .Object@tsTvRatio       <- tsTvRatio
   .Object@sum.stats       <- c("jsfs")
   .Object@options         <- list()
@@ -230,14 +229,14 @@ dm.addParameter <- function(dm, par.name, lower.boundary, upper.boundary, fixed.
 addFeature <- function(dm, type, parameter=NA,
                        lower.range=NA, upper.range=NA, fixed.value=NA, par.new=T,
                        pop.source=NA, pop.sink=NA,
-                       time.point=NA, group=NA) {
+                       time.point=NA, group=0) {
   
   if (missing(par.new))     par.new <- T
   if (missing(parameter))   parameter <- NA
   if (missing(pop.source))  pop.source <- NA
   if (missing(pop.sink))    pop.sink <- NA
   if (missing(time.point))  time.point <- NA
-  if (missing(group))       group <- NA
+  if (missing(group))       group <- 0
 
   # Check inputs
   checkType(dm,          c("dm",   "s"), T, F)
@@ -490,6 +489,32 @@ dm.setLociNumber <- function(dm, loci.number, group=0) {
   dm
 }
 
+
+#' Defines the sequence length of each loci in a group of loci
+#'
+#' @param dm The Demographic Model
+#' @param loci.length The length each loci in the given loci group
+#' @param group The group for which we set the loci number
+#' @return The changed Demographic Model
+#' @export
+dm.setLociLength <- function(dm, loci.length, group=0) {
+  checkType(dm, 'dm')
+  checkType(loci.length, 'num')
+  checkType(group, 'num')
+
+  feat <- dm@features
+  if (sum(feat$type=='loci.length' & feat$group==group) > 0) {
+    feat$parameter[feat$type=='loci.length' & feat$group==group] <-
+      as.character(loci.length)
+    dm@features <- feat
+  } else {
+    dm <- addFeature(dm, 'loci.length', as.character(loci.length),
+                     par.new=FALSE, group=group)
+  }
+
+  dm
+}
+
 #' Gets how many loci belong to a group of loci
 #'
 #' @param dm The Demographic Model
@@ -498,6 +523,18 @@ dm.setLociNumber <- function(dm, loci.number, group=0) {
 #' @export
 dm.getLociNumber <- function(dm, group=0) {
   as.integer(dm@features$parameter[dm@features$type=='loci.number' & 
+                                   dm@features$group==group])
+}
+
+
+#' Gets how long the loci in a group are
+#'
+#' @param dm The Demographic Model
+#' @param group The group for which we get the length of loci
+#' @return The length of the loci in the group
+#' @export
+dm.getLociLength <- function(dm, group=0) {
+  as.integer(dm@features$parameter[dm@features$type=='loci.length' & 
                                    dm@features$group==group])
 }
 
