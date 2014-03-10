@@ -367,8 +367,16 @@ checkParInRange <- function(dm, param) {
 }
 
 finalizeDM <- function(dm) {
-  #simProg <- dm@currentSimProg
-  #dm <- simProg@finalizationFunc(dm)
+  if (all(dm@features$group == 0)) {
+    return(dm@currentSimProg@finalizationFunc(dm))
+  }
+
+  dm@options$grp.models <- list()
+  for (group in dm.getGroups(dm)) {
+    grp.model <- generateGroupModel(dm, group)
+    dm@options$grp.models[[as.character(group)]] <- 
+      grp.model@currentSimProg@finalizationFunc(grp.model)
+  }
   return(dm)
 }
 
@@ -1299,6 +1307,9 @@ dm.simSumStats <- function(dm, parameters, sum.stats=c("all")) {
 
 generateGroupModel <- function(dm, group) {
   if (all(dm@features$group == 0)) return(dm)
+  if (!is.null(dm@options$grp.models[[as.character(group)]])) { 
+    return(dm@options$grp.models[[as.character(group)]]) 
+  }
   dm@features <- dm@features[dm@features$group %in% c(0, group), ]
   overwritten <- dm@features$group == 0
   for (i in which(overwritten)) {

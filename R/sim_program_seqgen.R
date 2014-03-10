@@ -240,6 +240,7 @@ finalizeSeqgen <- function(dm) {
   checkForSeqgen()
   dm@options[['ms.model']] <- finalizeMs(generateMsModel(dm))
   dm@options[['seqgen.cmd']] <- generateSeqgenOptionsCmd(dm)
+  stopifnot(!is.null(dm@options[['ms.model']]))
   return(dm)
 }
 
