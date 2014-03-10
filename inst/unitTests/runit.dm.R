@@ -179,7 +179,7 @@ test.getGroups <- function() {
   checkEquals(1, dm.getGroups(dm.tt))
   dm <- dm.setLociLength(dm.tt, 23, group=1)
   checkEquals(1, dm.getGroups(dm))
-  dm <- dm.setLociLength(dm, 32, group=2)
+  dm <- dm.setLociLength(dm.tt, 32, group=2)
   checkEquals(1:2, dm.getGroups(dm))
   dm <- dm.setLociNumber(dm, 32, group=4)
   checkEquals(c(1:2,4), dm.getGroups(dm))

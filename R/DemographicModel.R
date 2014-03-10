@@ -1375,9 +1375,10 @@ searchFeature <- function(dm, type=NULL, parameter=NULL, pop.source=NULL,
 #' @return The groups in the model.
 #' @export
 dm.getGroups <- function(dm) {
-  groups <- sort(unique(dm@features$group))
-  if (all(groups == 0)) return(1)
-  else return(groups[groups != 0])
+  if (all(dm@features$group == 0)) return(1)
+
+  groups <- sort(unique(c(1, dm@features$group)))
+  return(groups[groups != 0])
 }
 
 scaleDemographicModel <- function(dm, scaling.factor) {
