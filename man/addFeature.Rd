@@ -4,7 +4,7 @@
 \usage{
 addFeature(dm, type, parameter = NA, lower.range = NA, upper.range = NA,
   fixed.value = NA, par.new = T, pop.source = NA, pop.sink = NA,
-  time.point = NA, group = NA)
+  time.point = NA, group = 0)
 }
 \arguments{
   \item{dm}{The demographic model to which the feature will

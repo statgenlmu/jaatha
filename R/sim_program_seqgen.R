@@ -168,9 +168,10 @@ generateSeqgenOptionsCmd <- function(dm) {
     stop("You must specify a finite sites mutation model for this demographic model")
   }
 
-  opts <- c(opts, '"-l"', ',', dm@seqLength, ',')
-  opts <- c(opts, '"-s"', ',', paste(getThetaName(dm), "/", dm@seqLength), ',')
-  opts <- c(opts, '"-p"', ',', dm@seqLength + 1, ',')
+  loci.length <- dm.getLociLength(dm)
+  opts <- c(opts, '"-l"', ',', loci.length, ',')
+  opts <- c(opts, '"-s"', ',', paste(getThetaName(dm), "/", loci.length), ',')
+  opts <- c(opts, '"-p"', ',', loci.length + 1, ',')
   opts <- c(opts, '"-z"', ',', 'seed', ',')
   opts <- c(opts, '"-q"', ')')
   return(opts)
@@ -195,10 +196,11 @@ seqgenOut2Jsfs <- function(dm, seqgen.file) {
   if( ! file.exists(seqgen.file) ) stop("seq-gen simulation failed!")
   if (file.info(seqgen.file)$size == 0) stop("seq-gen output is empty!")
 
-  jsfs <- matrix(.Call("seqgen2jsfs", seqgen.file, dm@sampleSizes[1], 
-                       dm@sampleSizes[2], dm@nLoci),
-                 dm@sampleSizes[1] + 1 ,
-                 dm@sampleSizes[2] + 1,
+  sample.size <- dm.getSampleSize(dm)
+  jsfs <- matrix(.Call("seqgen2jsfs", seqgen.file, sample.size[1], 
+                       sample.size[2], dm.getLociNumber(dm)),
+                 sample.size[1] + 1 ,
+                 sample.size[2] + 1,
                  byrow=T)
 
   return(jsfs)
@@ -238,6 +240,7 @@ finalizeSeqgen <- function(dm) {
   checkForSeqgen()
   dm@options[['ms.model']] <- finalizeMs(generateMsModel(dm))
   dm@options[['seqgen.cmd']] <- generateSeqgenOptionsCmd(dm)
+  stopifnot(!is.null(dm@options[['ms.model']]))
   return(dm)
 }
 

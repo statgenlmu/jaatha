@@ -50,7 +50,7 @@ test.msSingleSimFunc <- function() {
   checkTrue(!is.null(sum.stats$pars))
   checkTrue(!is.null(sum.stats$seg.sites))
   checkTrue(is.matrix(sum.stats[['4pc']]))
-  checkEquals(dm@nLoci, sum(sum.stats[['4pc']]))
+  checkEquals(dm.getLociNumber(dm), sum(sum.stats[['4pc']]))
 
   dm <- dm.addSummaryStatistic(dm, '4pc')
   sum.stats <- msSingleSimFunc(dm, c(1, 0.1))
@@ -58,7 +58,7 @@ test.msSingleSimFunc <- function() {
   checkTrue(!is.null(sum.stats$pars))
   checkTrue(!is.null(sum.stats$seg.sites))
   checkTrue(is.matrix(sum.stats[['4pc']]))
-  checkEquals(dm@nLoci, sum(sum.stats[['4pc']]))
+  checkEquals(dm.getLociNumber(dm), sum(sum.stats[['4pc']]))
 }
 
 test.calcFpcSumStat <- function() {

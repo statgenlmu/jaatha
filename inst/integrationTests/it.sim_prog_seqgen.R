@@ -1,5 +1,5 @@
 test.callSeqgen <- function(opts, ms.file){
-  opts <- c("seq-gen", " -mHKY", " -l", dm.tt@seqLength, " -p", dm.tt@seqLength + 1, " -q")
+  opts <- c("seq-gen", " -mHKY", " -l", dm.getLociLength(dm.tt), " -p", dm.getLociLength(dm.tt) + 1, " -q")
   
   dm.tt@sum.stats <- 'trees'
   ms.options <- jaatha:::generateMsOptions(dm.tt, c(1,10))

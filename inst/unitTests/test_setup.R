@@ -30,6 +30,13 @@ dm.mig        <- dm.addSymmetricMigration(dm.tt, 1, 5)
 sum.stats.mig <- dm.simSumStats(dm.mig, c(1, 1, 5))
 jaatha.mig    <- Jaatha.initialize(dm.mig, jsfs=sum.stats.mig) 
 
+# Groups
+dm.grp <- dm.tt
+dm.grp <- dm.setLociLength(dm.grp, 100, 1) 
+dm.grp <- dm.setLociNumber(dm.grp, 15, 1) 
+dm.grp <- dm.setLociLength(dm.grp, 200, 2) 
+dm.grp <- dm.addSampleSize(dm.grp, 5:6, 3)
+sum.stats.grp <- dm.simSumStats(dm.grp, c(1, 5))
 
 # Finite Sites Models
 dm.sg <-  finalizeDM(dm.addOutgroup(dm.tt, "2*tau"))
@@ -37,7 +44,6 @@ dm.hky <- finalizeDM(dm.setMutationModel(dm.sg, "HKY", c(0.2, 0.2, 0.3, 0.3), 2)
 dm.f81 <- finalizeDM(dm.setMutationModel(dm.sg, "F84", c(0.3, 0.2, 0.3, 0.2), 2))
 dm.gtr <- finalizeDM(dm.setMutationModel(dm.sg, "GTR", 
                                          gtr.rates=c(0.2, 0.2, 0.1, 0.1, 0.1, 0.2)))
-
 
 
 # Custom Simulation Interface
