@@ -41,7 +41,7 @@ checkForSeqgen <- function() {
 
 generateMsModel <- function(dm) {
   ms <- getSimProgram('ms')
-  dm@features <- subset(dm@features, type %in% ms@possible.features)
+  dm@features <- dm@features[dm@features$type %in% ms@possible.features, ]
   dm@sum.stats <- dm@sum.stats[dm@sum.stats %in% ms@possible.sum.stats]
 
   if (!"trees" %in% dm@sum.stats) dm@sum.stats <- append(dm@sum.stats, "trees") 

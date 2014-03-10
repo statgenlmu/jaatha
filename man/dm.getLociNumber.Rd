@@ -2,7 +2,7 @@
 \alias{dm.getLociNumber}
 \title{Gets how many loci belong to a group of loci}
 \usage{
-dm.getLociNumber(dm, group = 0)
+dm.getLociNumber(dm, group = NULL)
 }
 \arguments{
   \item{dm}{The Demographic Model}

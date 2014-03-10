@@ -2,7 +2,7 @@
 \alias{dm.getLociLength}
 \title{Gets how long the loci in a group are}
 \usage{
-dm.getLociLength(dm, group = 0)
+dm.getLociLength(dm, group = NULL)
 }
 \arguments{
   \item{dm}{The Demographic Model}
