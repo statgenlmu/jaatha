@@ -3,13 +3,16 @@
 \title{Converts simulation results into a data frame that is usable for fitting a
 glm.}
 \usage{
-convertSimResultsToDataFrame(sim.data, sum.stat)
+convertSimResultsToDataFrame(sim.data, sum.stat, mask = NULL)
 }
 \arguments{
   \item{sim.data}{Results from simulations}
 
   \item{sum.stat}{Name of the summary statistics which
   should get converted}
+
+  \item{mask}{Boolean vector of positions to exclude in the
+  data.frame}
 }
 \value{
 The summary statistics as data.frame

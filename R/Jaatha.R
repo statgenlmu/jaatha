@@ -121,6 +121,11 @@ init <- function(.Object, sim.func, par.ranges,
     else if (sum.stats[[i]]$method == "poisson.smoothing") {
       checkType(sum.stats[[i]]$model, c("char", "s"))      
       stopifnot(length(dim(sum.stats[[i]]$value)) == 2)
+      if (!is.null(sum.stats[[i]]$border.transformation)) {
+        stopifnot(!is.null(sum.stats[[i]]$border.mask))
+        sum.stats[[i]]$border.transformed <- 
+          sum.stats[[i]]$border.transformation(sum.stats[[i]]$value)
+      }
     }
     else {
       stop("Unknown summary statistic type: ", sum.stats[[i]]$method)

@@ -82,11 +82,28 @@ smooth.sum.stats <- list("mat"=list(method="poisson.smoothing",
                                     model="(i^2)*(j^2)+log(i)*log(j)",
                                     value=smooth.obs$mat))
 
+border.mask <- smooth.obs$mat
+border.mask[, ] <- 0
+border.mask[c(1, nrow(smooth.obs$mat)), ] <- 1
+border.mask[ ,c(1, ncol(smooth.obs$mat))] <- 1
+border.mask <- as.logical(border.mask)
+
+border.transformation <- function(x) {
+  c(x[1, 1:12], x[2:9, 1], x[10, 1:12], x[2:9, 12])
+}
+
+smooth.border.sum.stats <- list("mat"=list(method="poisson.smoothing",
+                                    model="(i^2)*(j^2)+log(i)*log(j)",
+                                    value=smooth.obs$mat,
+                                    border.transformation=border.transformation,
+                                    border.mask=border.mask))
+rm(border.transformation, border.mask)
+
 smooth.par.ranges <- matrix(c(2, 1, 7, 7), 2, 2)
 rownames(smooth.par.ranges) <- c('x', 'y')
 
 smooth.jaatha <- new("Jaatha", smooth.simfunc, smooth.par.ranges, smooth.sum.stats, 123)
+smooth.border.jaatha <- new("Jaatha", smooth.simfunc, smooth.par.ranges, 
+                            smooth.border.sum.stats, 123)
 smooth.sim.data <- simulateWithinBlock(10, block.test, smooth.jaatha)
-
-
 save(list=ls(), file="test_setup.Rda")

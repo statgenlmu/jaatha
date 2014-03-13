@@ -62,14 +62,25 @@ fitGlmPoiTransformed <- function(sim.data, sum.stat, transformation, weighting, 
 #' @param sum.stat Name of the summary statistics
 #' @param weighting Potentially weights for the simulations.
 #' @param jaatha A Jaatha Object.
-#' @return A list with one fitted GLMs
+#' @return A list with one fitted GLM
 fitPoiSmoothed <- function(sim.data, sum.stat, weighting, jaatha) {
   model <- paste0("sum.stat ~ ",
                   "(", jaatha@sum.stats[[sum.stat]]$model, ")",  
                   "*(", paste(getParNames(jaatha), collapse="+"), ")") 
 
-  sim.data.df <- convertSimResultsToDataFrame(sim.data, sum.stat)
-  list(glm(model, data=sim.data.df, family=poisson("log")))
+  sim.data.df <- convertSimResultsToDataFrame(sim.data, sum.stat,
+                                              jaatha@sum.stats[[sum.stat]]$border.mask)
+
+  smooth.glm  <- glm(model, data=sim.data.df, family=poisson("log"))
+  if (!is.null(jaatha@sum.stats[[sum.stat]]$border.transformation)) {
+    glms <- list(smooth=smooth.glm,
+                 border=fitGlmPoiTransformed(sim.data, sum.stat,
+                         jaatha@sum.stats[[sum.stat]]$border.transformation,
+                         weighting, jaatha))  
+  } else { 
+    glms <- list(smooth=smooth.glm)
+  }
+  glms
 }
 
 
@@ -80,8 +91,9 @@ fitPoiSmoothed <- function(sim.data, sum.stat, weighting, jaatha) {
 #' 
 #' @param sim.data Results from simulations
 #' @param sum.stat Name of the summary statistics which should get converted
+#' @param mask Boolean vector of positions to exclude in the data.frame
 #' @return The summary statistics as data.frame 
-convertSimResultsToDataFrame <- function(sim.data, sum.stat) {
+convertSimResultsToDataFrame <- function(sim.data, sum.stat, mask=NULL) {
   do.call(rbind, lapply(sim.data, function(sim.result) {
     i <- as.vector(row(sim.result[[sum.stat]]))
     j <- as.vector(col(sim.result[[sum.stat]]))
@@ -89,6 +101,8 @@ convertSimResultsToDataFrame <- function(sim.data, sum.stat) {
     pars <- matrix(sim.result$pars.normal, length(i),
                    length(sim.result$pars.normal), byrow=TRUE)
     colnames(pars) <- names(sim.result$pars.normal)
-    data.frame(pars, i, j, sum.stat=value)
+    da.fr <- data.frame(pars, i, j, sum.stat=value)
+    if (!is.null(mask)) da.fr <- da.fr[!mask,]
+    da.fr
   }))
 }
