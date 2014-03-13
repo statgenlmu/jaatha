@@ -70,8 +70,8 @@ test.calcFpcSumStat <- function() {
   checkTrue(is.matrix(mat))
   checkEquals(4, sum(mat))
   checkEquals(2, mat['3', '3'])
-  checkEquals(1, mat['0', '3'])
-  checkEquals(1, mat['0', '0'])
+  checkEquals(1, mat['NA', '3'])
+  checkEquals(1, mat['NA', 'NA'])
 }
 
 test.violatesFpc <- function() {

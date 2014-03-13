@@ -194,19 +194,18 @@ calcFpcSumStat <- function(seg.sites, dm) {
   breaks.near <- dm@options[['4pc.breaks.near']]
   breaks.far  <- dm@options[['4pc.breaks.far']]
 
-  fpc <- matrix(0, length(breaks.near)-1,
-                length(breaks.far)-1,
-                dimnames=list(c(3:length(breaks.near)-2,0),
-                              c(3:length(breaks.far)-2,0))) 
+  fpc <- matrix(0, length(breaks.near), length(breaks.far),
+                dimnames=list(c(2:length(breaks.near)-1,'NA'),
+                              c(2:length(breaks.far)-1,'NA'))) 
 
   for (seg.site in seg.sites) {
     violation.percent <- calcPercentFpcViolations(seg.site)
-    if (is.nan(violation.percent['near'])) class.near <- '0'
+    if (is.nan(violation.percent['near'])) class.near <- 'NA'
     else {
       class.near <- cut(violation.percent['near'], breaks.near, labels=FALSE,
                         include.lowest=TRUE)
     }
-    if (is.nan(violation.percent['far'])) class.far <- '0'
+    if (is.nan(violation.percent['far'])) class.far <- 'NA'
     else {
       class.far <- cut(violation.percent['far'], breaks.far, labels=FALSE,
                        include.lowest=TRUE)
@@ -230,6 +229,14 @@ violatesFpc <- function(sites, snp.matrix, near=.1) {
   status <- snp.matrix[ ,sites[1]] * 2 + snp.matrix[ ,sites[2]] 
   if (all(0:3 %in% status)) return(c(near=is.near, violates=TRUE))
   return(c(near=is.near, violates=FALSE))
+}
+
+calcFpcBreaks <- function(dm, seg.sites, number=5) {
+  props <- seq(0, 1, length.out = number + 2)[-c(1, number+2)]
+  fpc.percent <- t(sapply(seg.sites, calcPercentFpcViolations))
+  dm@options[['4pc.breaks.near']] <- unique(c(0, quantile(fpc.percent[ ,'near'], props), 1))
+  dm@options[['4pc.breaks.far']] <- unique(c(0, quantile(fpc.percent[ ,'far'], props), 1))
+  dm
 }
 
 createSimProgram("ms", "",
