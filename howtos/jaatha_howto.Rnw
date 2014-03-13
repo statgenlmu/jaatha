@@ -146,6 +146,10 @@ of the parameter space. The parameters are scaled as in the popular simulation p
 	rate per locus.
 \item Finally, the \emph{recombination} parameter $\rho$ is $4N_1$ times
 	the probability of recombination between the ends of the locus per generation.
+    Jaatha uses the JSFS as summary statistics, which is not sensitive for
+    recombination events. Hence, estimation of the recombination rate will fail.
+    You should set this to a fixed value reflecting known estimates in
+    your model organism.
 \end{itemize}
 
 \noindent
@@ -207,6 +211,10 @@ library(ape)
 # The path to the data
 sample.file <- system.file('example_fasta_files/sample.fasta', 
                            package='jaatha')
+# We use system.file() here to get the path of an example file included in the jaatha
+# package. You can just give the path to the file as string:
+
+# sample.file <- 'path/to/your/file.fasta'
 
 # Reading the data
 sample.data <- read.dna(sample.file, format='fasta', 
