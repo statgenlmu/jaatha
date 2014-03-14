@@ -121,6 +121,11 @@ init <- function(.Object, sim.func, par.ranges,
     else if (sum.stats[[i]]$method == "poisson.smoothing") {
       checkType(sum.stats[[i]]$model, c("char", "s"))      
       stopifnot(length(dim(sum.stats[[i]]$value)) == 2)
+      if (!is.null(sum.stats[[i]]$border.transformation)) {
+        stopifnot(!is.null(sum.stats[[i]]$border.mask))
+        sum.stats[[i]]$border.transformed <- 
+          sum.stats[[i]]$border.transformation(sum.stats[[i]]$value)
+      }
     }
     else {
       stop("Unknown summary statistic type: ", sum.stats[[i]]$method)
@@ -263,22 +268,39 @@ Jaatha.initialize <- function(demographic.model, jsfs,
                       "-i) + log(j) + log(",
                       sample.size[2]+2,
                       "-j) )^2")
+
+      border.mask <- jsfs.value
+      border.mask[, ] <- 0
+      #border.mask[c(1, nrow(jsfs.cur)), ] <- 1
+      #border.mask[ ,c(1, ncol(jsfs.cur))] <- 1
+      border.mask[1,1] <- 1
+      border.mask[nrow(jsfs.value), ncol(jsfs.value)] <- 1
+      border.mask <- as.logical(border.mask)
+
       sum.stats[[jsfs.name]] <- list(method="poisson.smoothing",
-                                     model=model,
-                                     value=jsfs.value)
+                                        model=model,
+                                        value=jsfs.value,
+                                        #border.transformation=summarizeJsfsBorder,
+                                        border.mask=border.mask)
     }
 
     if (!is.null(seg.sites)) { 
-      sum.stats[[fpc.name]] <- list(method="poisson.transformed",
+      border.mask <- fpc.value
+      border.mask[, ] <- 0
+      border.mask[nrow(border.mask), ] <- 1
+      border.mask[ ,ncol(border.mask)] <- 1
+      sum.stats[[fpc.name]] <- list(method="poisson.smoothing",
                                     transformation=as.vector,
-                                    model="(i+I(i^2)+j+I(j^2)+log(i)+log(j))^2",
-                                    value=fpc.value)
+                                    model="(i+I(i^2)+j+I(j^2))^2",
+                                    value=fpc.value,
+                                    border.mask=border.mask)
     }
   }
 
   jaatha <- new("Jaatha", 
-                sim.func=function(sim.pars, jaatha)
-                  dm.simSumStats(jaatha@opts[['dm']], sim.pars, names(jaatha@sum.stats)), 
+                sim.func=function(sim.pars, jaatha) {
+                  dm.simSumStats(jaatha@opts[['dm']], sim.pars, names(jaatha@sum.stats))
+                },
                 par.ranges=as.matrix(dm.getParRanges(dm)),  
                 sum.stats=sum.stats,
                 seed=seed,

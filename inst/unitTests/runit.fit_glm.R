@@ -1,9 +1,3 @@
-# --------------------------------------------------------------
-# Author:   Paul R. Staab
-# Date:     2013-11-14
-# Licence:  GPLv3 or later
-# --------------------------------------------------------------
-
 test.fitGlm <- function() {
   # poisson.independent
   glms.fitted.csi <- fitGlm(sim.data.csi, jaatha.csi) 
@@ -42,12 +36,28 @@ test.convertSimResultsToDataFrame <- function() {
               length(as.vector(smooth.sim.data[[1]]$mat))*length(smooth.sim.data))
   checkTrue( !is.null(colnames(smooth.df)) )
   checkTrue( all(colnames(smooth.df) == c("x", "y", "i", "j", "sum.stat")) )
+
+  smooth.df <- convertSimResultsToDataFrame(smooth.sim.data,
+                                            "mat",
+                                            smooth.border.sum.stats$mat$border.mask)
+  checkTrue( is.data.frame(smooth.df) )
+  checkEquals( ncol(smooth.df), 5 )
+  checkTrue( !any(smooth.df$i %in% c(1, 10)) )
+  checkTrue( !any(smooth.df$j %in% c(1, 12)) )
 }
 
 test.fitGlm.Smoothing <- function() {
-  jaatha <- Jaatha.initialize(dm.tt, sum.stats.tt, 30, smoothing=TRUE)
-  glm.fitted <- fitGlm(sim.data.tt, jaatha)
-  checkTrue( is.list(glm.fitted$jsfs) )
-  checkEquals( length(glm.fitted$jsfs), 1 )
-  checkTrue( "glm" %in% is(glm.fitted$jsfs[[1]]))
+  glm.fitted <- fitGlm(smooth.sim.data, smooth.jaatha)
+  checkTrue( is.list(glm.fitted$mat) )
+  checkEquals( length(glm.fitted$mat), 1 )
+  checkTrue( "glm" %in% is(glm.fitted$mat[[1]]))
+}
+
+test.fitGlm.Smoothing.border <- function() {
+  glm.fitted <- fitGlm(smooth.sim.data, smooth.border.jaatha)
+  checkTrue( is.list(glm.fitted$mat) )
+  checkEquals( length(glm.fitted$mat), 2 )
+  checkTrue( "glm" %in% is(glm.fitted$mat[['smooth']]))
+  checkTrue( is.list(glm.fitted$mat$border) )
+  checkEquals( length(glm.fitted$mat$border), 40 )
 }
