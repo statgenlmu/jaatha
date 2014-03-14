@@ -75,8 +75,8 @@ fitPoiSmoothed <- function(sim.data, sum.stat, weighting, jaatha) {
   if (!is.null(jaatha@sum.stats[[sum.stat]]$border.transformation)) {
     glms <- list(smooth=smooth.glm,
                  border=fitGlmPoiTransformed(sim.data, sum.stat,
-                         jaatha@sum.stats[[sum.stat]]$border.transformation,
-                         weighting, jaatha))  
+                        jaatha@sum.stats[[sum.stat]]$border.transformation,
+                        weighting, jaatha))  
   } else { 
     glms <- list(smooth=smooth.glm)
   }
@@ -87,7 +87,7 @@ fitPoiSmoothed <- function(sim.data, sum.stat, weighting, jaatha) {
 #' Converts simulation results into a data frame that is usable for fitting a
 #' glm.
 #'
-#' Currently only works with nx2 matix summary statistics and vectorizes thoose.
+#' Currently only works with nx2 matix summary statistics.
 #' 
 #' @param sim.data Results from simulations
 #' @param sum.stat Name of the summary statistics which should get converted
@@ -101,8 +101,10 @@ convertSimResultsToDataFrame <- function(sim.data, sum.stat, mask=NULL) {
     pars <- matrix(sim.result$pars.normal, length(i),
                    length(sim.result$pars.normal), byrow=TRUE)
     colnames(pars) <- names(sim.result$pars.normal)
+    row.mask <- (i == 1 & j == 1) | (i == nrow(sim.result[[sum.stat]])+1 &
+                                     j == ncol(sim.result[[sum.stat]])+1)
     da.fr <- data.frame(pars, i, j, sum.stat=value)
-    if (!is.null(mask)) da.fr <- da.fr[!mask,]
-    da.fr
+    if (!is.null(mask)) row.mask <- row.mask | mask 
+    da.fr[!row.mask, ]
   }))
 }
