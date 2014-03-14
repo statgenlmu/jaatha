@@ -18,7 +18,6 @@ convertSimResultsToDataFrame(sim.data, sum.stat, mask = NULL)
 The summary statistics as data.frame
 }
 \description{
-Currently only works with nx2 matix summary statistics and
-vectorizes thoose.
+Currently only works with nx2 matix summary statistics.
 }
 
