@@ -79,7 +79,7 @@ smooth.simfunc <- function(x, jaatha) {
 
 smooth.obs <- smooth.simfunc(c(3, 4))
 smooth.sum.stats <- list("mat"=list(method="poisson.smoothing",
-                                    model="(i^2)*(j^2)+log(i)*log(j)",
+                                    model="(X1^2)*(X2^2)+log(X1)*log(X2)",
                                     value=smooth.obs$mat))
 
 smooth.par.ranges <- matrix(c(2, 1, 7, 7), 2, 2)
@@ -87,6 +87,5 @@ rownames(smooth.par.ranges) <- c('x', 'y')
 
 smooth.jaatha <- new("Jaatha", smooth.simfunc, smooth.par.ranges, smooth.sum.stats, 123)
 smooth.sim.data <- simulateWithinBlock(10, block.test, smooth.jaatha)
-
 
 save(list=ls(), file="test_setup.Rda")

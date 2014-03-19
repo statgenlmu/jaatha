@@ -83,12 +83,12 @@ fitPoiSmoothed <- function(sim.data, sum.stat, weighting, jaatha) {
 #' @return The summary statistics as data.frame 
 convertSimResultsToDataFrame <- function(sim.data, sum.stat) {
   do.call(rbind, lapply(sim.data, function(sim.result) {
-    i <- as.vector(row(sim.result[[sum.stat]]))
-    j <- as.vector(col(sim.result[[sum.stat]]))
-    value <- as.vector(sim.result[[sum.stat]])
-    pars <- matrix(sim.result$pars.normal, length(i),
+    sum.stat <- adply(sim.result[[sum.stat]], 1:length(dim(sim.result[[sum.stat]])))
+    sum.stat <- sapply(sum.stat, as.numeric)
+    colnames(sum.stat)[length(colnames(sum.stat))] <- 'sum.stat'  
+    pars <- matrix(sim.result$pars.normal, nrow(sum.stat),
                    length(sim.result$pars.normal), byrow=TRUE)
     colnames(pars) <- names(sim.result$pars.normal)
-    data.frame(pars, i, j, sum.stat=value)
+    data.frame(pars, sum.stat)
   }))
 }
