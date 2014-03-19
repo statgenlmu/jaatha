@@ -285,15 +285,15 @@ Jaatha.initialize <- function(demographic.model, jsfs,
     }
 
     if (!is.null(seg.sites)) { 
-      border.mask <- fpc.value
-      border.mask[, ] <- 0
-      border.mask[nrow(border.mask), ] <- 1
-      border.mask[ ,ncol(border.mask)] <- 1
-      sum.stats[[fpc.name]] <- list(method="poisson.smoothing",
+      # border.mask <- fpc.value
+      # border.mask[, , ] <- 0
+      # border.mask[nrow(border.mask), , ] <- 1
+      # border.mask[ ,ncol(border.mask), ] <- 1
+      sum.stats[[fpc.name]] <- list(method="poisson.transformed",
                                     transformation=as.vector,
-                                    model="(i+I(i^2)+j+I(j^2))^2",
-                                    value=fpc.value,
-                                    border.mask=border.mask)
+                                    #model="(i+I(i^2)+j+I(j^2))^2",
+                                    #border.mask=border.mask,
+                                    value=fpc.value)
     }
   }
 

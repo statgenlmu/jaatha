@@ -193,35 +193,36 @@ readSegSitesFromOutput <- function(output, pop.sizes) {
 calcFpcSumStat <- function(seg.sites, dm) {
   breaks.near <- dm@options[['4pc.breaks.near']]
   breaks.far  <- dm@options[['4pc.breaks.far']]
+  breaks.theta <- dm@options[['4pc.breaks.theta']]
 
-  fpc <- matrix(0, length(breaks.near), length(breaks.far),
-                dimnames=list(c(2:length(breaks.near)-1,'NA'),
-                              c(2:length(breaks.far)-1,'NA'))) 
+  fpc <- array(0, 
+               list(length(breaks.near), length(breaks.far), breaks.theta),
+               list(c(2:length(breaks.near)-1,'NA'),
+                    c(2:length(breaks.far)-1,'NA'),
+                    1:breaks.theta)) 
 
-  for (seg.site in seg.sites) {
-    violation.percent <- calcPercentFpcViolations(seg.site)
-    if (is.nan(violation.percent['near'])) class.near <- 'NA'
-    else {
-      class.near <- cut(violation.percent['near'], breaks.near, labels=FALSE,
-                        include.lowest=TRUE)
-    }
-    if (is.nan(violation.percent['far'])) class.far <- 'NA'
-    else {
-      class.far <- cut(violation.percent['far'], breaks.far, labels=FALSE,
-                       include.lowest=TRUE)
-    }
+  loci.class <- sapply(seg.sites, calcPercentFpcViolations)
+  loci.class['near',] <- cut(loci.class['near',], breaks.near, include.lowest=TRUE, labels=FALSE)
+  loci.class['far',] <- cut(loci.class['far',], breaks.far, include.lowest=TRUE, labels=FALSE)
+  loci.class['theta',] <- cut(loci.class['theta',], breaks.theta, include.lowest=TRUE, labels=FALSE)
 
-    fpc[class.near, class.far] <- fpc[class.near, class.far] + 1
+  for (j in 1:ncol(loci.class)) {
+    class.near <- ifelse(is.na(loci.class['near', j]), 'NA', loci.class['near', j])
+    class.far <- ifelse(is.na(loci.class['far', j]), 'NA', loci.class['far', j])
+    class.theta <- ifelse(is.na(loci.class['theta', j]), 'NA', loci.class['theta', j])
+    fpc[class.near, class.far, class.theta] <- fpc[class.near, class.far, class.theta] + 1
   }
+
   return(fpc)
 }
 
 calcPercentFpcViolations <- function(snp.matrix) {
   snp.matrix <- snp.matrix[, colSums(snp.matrix)>1, drop=FALSE]
-  if (ncol(snp.matrix) <= 1) return(c(near=NaN, far=NaN))
+  if (ncol(snp.matrix) <= 1) return(c(near=NaN, far=NaN, theta=0))
   snp.state <- apply(combn(1:ncol(snp.matrix), 2), 2, violatesFpc, snp.matrix)
   return(c(near=sum(snp.state[2, snp.state[1, ]])/sum(snp.state[1, ]),
-           far=sum(snp.state[2, !snp.state[1, ]])/sum(!snp.state[1, ]) ))
+           far=sum(snp.state[2, !snp.state[1, ]])/sum(!snp.state[1, ]),
+           theta=ncol(snp.matrix)/sum(1/1:(nrow(snp.matrix)-1)) ))
 }
 
 violatesFpc <- function(sites, snp.matrix, near=.1) {
@@ -234,8 +235,9 @@ violatesFpc <- function(sites, snp.matrix, near=.1) {
 calcFpcBreaks <- function(dm, seg.sites, number=5) {
   props <- seq(0, 1, length.out = number + 2)[-c(1, number+2)]
   fpc.percent <- t(sapply(seg.sites, calcPercentFpcViolations))
-  dm@options[['4pc.breaks.near']] <- unique(c(0, quantile(fpc.percent[ ,'near'], props), 1))
-  dm@options[['4pc.breaks.far']] <- unique(c(0, quantile(fpc.percent[ ,'far'], props), 1))
+  dm@options[['4pc.breaks.near']] <- unique(c(0, quantile(fpc.percent[ ,'near'], props, na.rm=TRUE), 1))
+  dm@options[['4pc.breaks.far']] <- unique(c(0, quantile(fpc.percent[ ,'far'], props, na.rm=TRUE), 1))
+  dm@options[['4pc.breaks.theta']] <- number
   dm
 }
 
