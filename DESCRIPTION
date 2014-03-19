@@ -1,5 +1,5 @@
 Package: jaatha
-Version: 2.2.2
+Version: 2.2.3
 Date: 2014-03-10
 License: GPL (>= 3)
 Title: A Fast Parameter Estimation Method for Evolutionary Biology
@@ -19,7 +19,7 @@ Imports:
     foreach (>= 1.2.0-1),
     phyclust (>= 0.1-14),
     Rcpp (>= 0.11.0),
-    plyr (>= 1.8.1),
+    plyr (>= 1.8),
     parallel
 Suggests:
     ape (>= 2.7),
