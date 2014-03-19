@@ -32,6 +32,7 @@
 #' @importFrom methods representation 
 #' @importFrom parallel mclapply
 #' @importFrom Rcpp evalCpp
+#' @importFrom plyr adply
 #' @useDynLib jaatha
 NULL
 
@@ -263,11 +264,11 @@ Jaatha.initialize <- function(demographic.model, jsfs,
     } else {
       sample.size <- dm.getSampleSize(dm, group)
       warning("Smoothing is still very experimental")
-      model <- paste0("( i + I(i^2) + j + I(j^2) + log(i) + log(",
+      model <- paste0("( X1 + I(X1^2) + X2 + I(X2^2) + log(X1) + log(",
                       sample.size[1]+2,
-                      "-i) + log(j) + log(",
+                      "-X1) + log(X2) + log(",
                       sample.size[2]+2,
-                      "-j) )^2")
+                      "-X2) )^2")
 
       border.mask <- jsfs.value
       border.mask[, ] <- 0

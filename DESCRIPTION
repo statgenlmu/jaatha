@@ -13,12 +13,13 @@ Description: Jaatha is a composite likelihood method for inferring evolutionary
     separation of both species.
 URL: http://evol.bio.lmu.de/_statgen/software/jaatha
 Depends:
-    R (>= 2.14.2),
+    R (>= 3.0),
     methods
 Imports:
     foreach (>= 1.2.0-1),
     phyclust (>= 0.1-14),
     Rcpp (>= 0.11.0),
+    plyr (>= 1.8.1),
     parallel
 Suggests:
     ape (>= 2.7),

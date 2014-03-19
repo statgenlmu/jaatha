@@ -35,15 +35,21 @@ test.convertSimResultsToDataFrame <- function() {
   checkEquals( nrow(smooth.df),
               length(as.vector(smooth.sim.data[[1]]$mat))*length(smooth.sim.data))
   checkTrue( !is.null(colnames(smooth.df)) )
-  checkTrue( all(colnames(smooth.df) == c("x", "y", "i", "j", "sum.stat")) )
+  checkTrue( all(colnames(smooth.df) == c("x", "y", "X1", "X2", "sum.stat")) )
 
   smooth.df <- convertSimResultsToDataFrame(smooth.sim.data,
                                             "mat",
                                             smooth.border.sum.stats$mat$border.mask)
   checkTrue( is.data.frame(smooth.df) )
   checkEquals( ncol(smooth.df), 5 )
-  checkTrue( !any(smooth.df$i %in% c(1, 10)) )
-  checkTrue( !any(smooth.df$j %in% c(1, 12)) )
+  checkTrue( !any(smooth.df$X1 %in% c(1, 10)) )
+  checkTrue( !any(smooth.df$X2 %in% c(1, 12)) )
+
+  test.sim.data <- list(list(pars.normal=c(u=1, v=2, w=3), ar=array(1, c(2,3,4))))
+  smooth.df <- convertSimResultsToDataFrame(test.sim.data, "ar")
+  checkTrue( is.data.frame(smooth.df) )
+  checkEquals(c(24,7), dim(smooth.df) )
+  checkTrue( all(colnames(smooth.df) == c("u", "v", "w", "X1", "X2", "X3", "sum.stat")) )
 }
 
 test.fitGlm.Smoothing <- function() {

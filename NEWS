@@ -1,6 +1,8 @@
 Version 2.2.2
 ---------------
 + New Feature: Support for multiple groups of loci
++ New Feature: Possibility to smooth arrays of arbitrary dimension
++ Update: The Jaatha HowTo
 
 Version 2.2.1
 ---------------
