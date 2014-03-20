@@ -121,7 +121,6 @@ init <- function(.Object, sim.func, par.ranges,
     }
     else if (sum.stats[[i]]$method == "poisson.smoothing") {
       checkType(sum.stats[[i]]$model, c("char", "s"))      
-      stopifnot(length(dim(sum.stats[[i]]$value)) == 2)
       if (!is.null(sum.stats[[i]]$border.transformation)) {
         stopifnot(!is.null(sum.stats[[i]]$border.mask))
         sum.stats[[i]]$border.transformed <- 
@@ -277,23 +276,27 @@ Jaatha.initialize <- function(demographic.model, jsfs,
       border.mask[1,1] <- 1
       border.mask[nrow(jsfs.value), ncol(jsfs.value)] <- 1
       border.mask <- as.logical(border.mask)
+      border.func <- function(x) { 
+        border <- apply(x, 1:2, sum)
+        c(border[dim(x)[1],], border[1:(dim(x)[1]-1), dim(x)[2]])
+      }
 
       sum.stats[[jsfs.name]] <- list(method="poisson.smoothing",
-                                        model=model,
-                                        value=jsfs.value,
-                                        #border.transformation=summarizeJsfsBorder,
-                                        border.mask=border.mask)
+                                     model=model,
+                                     value=jsfs.value,
+                                     border.transformation=border.func,
+                                     border.mask=border.mask)
     }
 
     if (!is.null(seg.sites)) { 
-      # border.mask <- fpc.value
-      # border.mask[, , ] <- 0
-      # border.mask[nrow(border.mask), , ] <- 1
-      # border.mask[ ,ncol(border.mask), ] <- 1
-      sum.stats[[fpc.name]] <- list(method="poisson.transformed",
-                                    transformation=as.vector,
-                                    #model="(i+I(i^2)+j+I(j^2))^2",
-                                    #border.mask=border.mask,
+      border.mask <- fpc.value
+      border.mask[, , ] <- 0
+      border.mask[nrow(border.mask), , ] <- 1
+      border.mask[ ,ncol(border.mask), ] <- 1
+      sum.stats[[fpc.name]] <- list(method="poisson.smoothing",
+                                    border.transformation=as.vector,
+                                    model="(X1+I(X1^2)+X2+I(X2^2)+X3+I(X3^2))^2",
+                                    border.mask=border.mask,
                                     value=fpc.value)
     }
   }

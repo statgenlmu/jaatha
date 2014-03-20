@@ -57,6 +57,7 @@ dm.fpc <- dm.addSymmetricMigration(dm.fpc, fixed=.75)
 seg.sites <- dm.simSumStats(dm.addSummaryStatistic(dm.fpc, 'seg.sites'), c(1, 2, 3))$seg.sites
 dm.fpc <- dm.addSummaryStatistic(dm.fpc, '4pc')
 dm.fpc <- calcFpcBreaks(dm.fpc, seg.sites)
+sum.stats.fpc <- dm.simSumStats(dm.fpc, c(1, 2, 3))
 
 
 # Custom Simulation Interface
@@ -105,12 +106,11 @@ border.transformation <- function(x) {
   c(x[1, 1:12], x[2:9, 1], x[10, 1:12], x[2:9, 12])
 }
 
-smooth.border.sum.stats <- list("mat"=list(method="poisson.transformation",
-                                    #model="(i^2)*(j^2)+log(i)*log(j)",
-                                    #value=smooth.obs$mat,
-                                    #border.transformation=border.transformation,
-                                    #border.mask=border.mask))
-                                    transformation=as.vector)
+smooth.border.sum.stats <- list("mat"=list(method="poisson.smoothing",
+                                    model="I(X1^2)*I(X2^2)+log(X1)*log(X2)",
+                                    value=smooth.obs$mat,
+                                    border.transformation=border.transformation,
+                                    border.mask=border.mask))
 rm(border.transformation, border.mask)
 
 smooth.par.ranges <- matrix(c(2, 1, 7, 7), 2, 2)

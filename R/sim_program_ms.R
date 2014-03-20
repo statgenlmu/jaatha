@@ -204,7 +204,12 @@ calcFpcSumStat <- function(seg.sites, dm) {
   loci.class <- sapply(seg.sites, calcPercentFpcViolations)
   loci.class['near',] <- cut(loci.class['near',], breaks.near, include.lowest=TRUE, labels=FALSE)
   loci.class['far',] <- cut(loci.class['far',], breaks.far, include.lowest=TRUE, labels=FALSE)
-  loci.class['theta',] <- cut(loci.class['theta',], breaks.theta, include.lowest=TRUE, labels=FALSE)
+  if ( all(loci.class['theta',] == 0) ) {
+    loci.class['theta',] <- 1
+  } else {
+    loci.class['theta',] <- cut(loci.class['theta',], breaks.theta, 
+                                include.lowest=TRUE, labels=FALSE)
+  }
 
   for (j in 1:ncol(loci.class)) {
     class.near <- ifelse(is.na(loci.class['near', j]), 'NA', loci.class['near', j])

@@ -127,7 +127,8 @@ test.JaathaInitialize <- function() {
 
   # four-point-condition sum.stat
   jaatha.fpc <- Jaatha.initialize(dm.fpc, sum.stats.fpc, 123, folded=FALSE, 
-                                  smoothing=FALSE, seg.sites=sum.stats.fpc$seg.sites)
+                                  smoothing=FALSE, seg.sites=seg.sites)
+  checkEquals(2, length(jaatha.fpc@sum.stats))
   checkTrue( is.list(jaatha.fpc@sum.stats[['jsfs']]) )
   checkTrue( is.list(jaatha.fpc@sum.stats[['4pc']]) )
 
