@@ -1,3 +1,10 @@
+Version 2.2.3
+---------------
++ Algorithm change: Removed epsilon. We now stop the refined search after the
+  likelihood did not improve for consecutive steps.
++ Algorithm change: Removed weight parameter to down-weight old simulations,
+  because it had no measurable effect on the estimates.
+
 Version 2.2.2
 ---------------
 + New Feature: Support for multiple groups of loci
