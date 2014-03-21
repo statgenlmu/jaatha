@@ -122,6 +122,11 @@ init <- function(.Object, sim.func, par.ranges,
     else if (sum.stats[[i]]$method == "poisson.smoothing") {
       checkType(sum.stats[[i]]$model, c("char", "s"))      
       stopifnot(length(dim(sum.stats[[i]]$value)) == 2)
+      if (!is.null(sum.stats[[i]]$border.transformation)) {
+        stopifnot(!is.null(sum.stats[[i]]$border.mask))
+        sum.stats[[i]]$border.transformed <- 
+          sum.stats[[i]]$border.transformation(sum.stats[[i]]$value)
+      }
     }
     else {
       stop("Unknown summary statistic type: ", sum.stats[[i]]$method)
@@ -252,9 +257,19 @@ Jaatha.initialize <- function(demographic.model, jsfs,
                       "-X1) + log(X2) + log(",
                       sample.size[2]+2,
                       "-X2) )^2")
+      border.mask <- jsfs.cur
+      border.mask[, ] <- 0
+      border.mask[c(1, nrow(jsfs.cur)), ] <- 1
+      border.mask[ ,c(1, ncol(jsfs.cur))] <- 1
+      #border.mask[1,1] <- 1
+      #border.mask[nrow(jsfs.cur), ncol(jsfs.cur)] <- 1
+      border.mask <- as.logical(border.mask)
+
       sum.stats[[name]] <- list(method="poisson.smoothing",
-                                          model=model,
-                                          value=jsfs.cur)
+                                        model=model,
+                                        value=jsfs.cur,
+                                        border.transformation=summarizeJsfsBorder,
+                                        border.mask=border.mask)
     }
   }
 

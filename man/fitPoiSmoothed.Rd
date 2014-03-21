@@ -15,7 +15,7 @@ fitPoiSmoothed(sim.data, sum.stat, weighting, jaatha)
   \item{jaatha}{A Jaatha Object.}
 }
 \value{
-A list with one fitted GLMs
+A list with one fitted GLM
 }
 \description{
 Fits a GLM for a summary statistics of type

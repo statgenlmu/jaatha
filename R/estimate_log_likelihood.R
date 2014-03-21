@@ -4,6 +4,14 @@
 # Licence:  GPLv3 or later
 # --------------------------------------------------------------
 
+#' Estimates the likelihood for a parameter combination
+#'
+#' @param param The parameter combination. Must be a named vector where the
+#'              names are the name of the parameters.
+#' @param glm.fitted A list of the fitted GLMs, as produced by fitGLM().
+#' @param sum.stats The summary statistic description, as in jaatha's sum.stats
+#' slot.
+#' @return The estimated log-likelihood
 estimateLogLikelihood <- function(param, glm.fitted, sum.stats) {
   log.likelihood <- 0
 
@@ -21,10 +29,22 @@ estimateLogLikelihood <- function(param, glm.fitted, sum.stats) {
     else if(sum.stats[[name]]$method == "poisson.smoothing") {
       fake.sim.data <- list(pars.normal=param)
       fake.sim.data[[name]] <- sum.stats[[name]]$value
-      new.data <- convertSimResultsToDataFrame(list(fake.sim.data), name)
-      loglambda <- predict(glm.fitted[[name]][[1]], newdata=new.data)
+      new.data <- convertSimResultsToDataFrame(list(fake.sim.data), name, 
+                                               sum.stats[[name]]$border.mask)
+      suppressWarnings(loglambda <- predict(glm.fitted[[name]][['smooth']], newdata=new.data))
+
       sum.stat.value <- new.data$sum.stat
-      return(sum(sum.stat.value * loglambda - exp(loglambda) - calcLogFactorial(sum.stat.value)))
+      log.li <- sum(sum.stat.value * loglambda - exp(loglambda) - calcLogFactorial(sum.stat.value))
+      if (!is.null(glm.fitted[[name]][['border']])) {
+        loglambda <- sapply(glm.fitted[[name]]$border, 
+                            predict, newdata=data.frame(t(as.matrix(param))))
+        loglambda[!sapply(glm.fitted[[name]]$border, function(x) x$converged)] <- 0.5 
+
+        sum.stat.value <- sum.stats[[name]]$border.transformed
+        log.li <- log.li + sum(sum.stat.value * loglambda - 
+                               exp(loglambda) - calcLogFactorial(sum.stat.value))
+      }
+      return(log.li)
     }
     else stop("SumStat method not supported")
   }))

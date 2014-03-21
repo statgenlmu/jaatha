@@ -62,26 +62,38 @@ fitGlmPoiTransformed <- function(sim.data, sum.stat, transformation, weighting, 
 #' @param sum.stat Name of the summary statistics
 #' @param weighting Potentially weights for the simulations.
 #' @param jaatha A Jaatha Object.
-#' @return A list with one fitted GLMs
+#' @return A list with one fitted GLM
 fitPoiSmoothed <- function(sim.data, sum.stat, weighting, jaatha) {
   model <- paste0("sum.stat ~ ",
                   "(", jaatha@sum.stats[[sum.stat]]$model, ")",  
                   "*(", paste(getParNames(jaatha), collapse="+"), ")") 
 
-  sim.data.df <- convertSimResultsToDataFrame(sim.data, sum.stat)
-  list(glm(model, data=sim.data.df, family=poisson("log")))
+  sim.data.df <- convertSimResultsToDataFrame(sim.data, sum.stat,
+                                              jaatha@sum.stats[[sum.stat]]$border.mask)
+
+  smooth.glm  <- glm(model, data=sim.data.df, family=poisson("log"))
+  if (!is.null(jaatha@sum.stats[[sum.stat]]$border.transformation)) {
+    glms <- list(smooth=smooth.glm,
+                 border=fitGlmPoiTransformed(sim.data, sum.stat,
+                        jaatha@sum.stats[[sum.stat]]$border.transformation,
+                        weighting, jaatha))  
+  } else { 
+    glms <- list(smooth=smooth.glm)
+  }
+  glms
 }
 
 
 #' Converts simulation results into a data frame that is usable for fitting a
 #' glm.
 #'
-#' Currently only works with nx2 matix summary statistics and vectorizes thoose.
+#' Currently only works with nx2 matix summary statistics.
 #' 
 #' @param sim.data Results from simulations
 #' @param sum.stat Name of the summary statistics which should get converted
+#' @param mask Boolean vector of positions to exclude in the data.frame
 #' @return The summary statistics as data.frame 
-convertSimResultsToDataFrame <- function(sim.data, sum.stat) {
+convertSimResultsToDataFrame <- function(sim.data, sum.stat, mask=NULL) {
   do.call(rbind, lapply(sim.data, function(sim.result) {
     sum.stat <- adply(sim.result[[sum.stat]], 1:length(dim(sim.result[[sum.stat]])))
     sum.stat <- sapply(sum.stat, as.numeric)
@@ -89,6 +101,8 @@ convertSimResultsToDataFrame <- function(sim.data, sum.stat) {
     pars <- matrix(sim.result$pars.normal, nrow(sum.stat),
                    length(sim.result$pars.normal), byrow=TRUE)
     colnames(pars) <- names(sim.result$pars.normal)
-    data.frame(pars, sum.stat)
+    da.fr <- data.frame(pars, sum.stat)
+    if (!is.null(mask)) da.fr <- da.fr[!mask, ]
+    da.fr
   }))
 }
