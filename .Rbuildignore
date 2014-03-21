@@ -1,8 +1,10 @@
 ^DESCRIPTION.template$
 ^README.md$
+^NEWS.md$
 ^Makefile$
 ^howtos$
 ^unit_tests$
 ^misc$
 .tar.gz$
 ^.travis.yml
+^DEV_VERSIONS$

@@ -1,20 +1,18 @@
-Version 2.2.3
+Version 2.3
 ---------------
-+ Algorithm change: Removed epsilon. We now stop the refined search after the
-  likelihood did not improve for 10 consecutive steps.
-+ Algorithm change: Removed weight parameter to down-weight old simulations,
-  because it had no measurable effect on the estimates.
+Algorithm changes: 
+  - Removed epsilon. We now stop the refined search after the
+    likelihood did not improve for 10 consecutive steps.
+  - Removed weight parameter to down-weight old simulations,
+    because it had no measurable effect on the estimates.
 
-Version 2.2.2
----------------
-+ New Feature: Support for multiple groups of loci
-+ New Feature: Possibility to smooth arrays of arbitrary dimension
-+ Update: The Jaatha HowTo
+New Features: 
+  - Support for multiple groups of loci
+  - Possibility to smooth arrays of arbitrary dimension
 
-Version 2.2.1
----------------
-+ Modifications for Rcpp 0.11 (removed Makevars)
-+ Updates the Jaatha HowTo
+Improvements: 
+  - Clarifies 'The Jaatha HowTo'
+
 
 Version 2.2
 ---------------
