@@ -101,6 +101,8 @@ convertSimResultsToDataFrame <- function(sim.data, sum.stat, mask=NULL) {
     pars <- matrix(sim.result$pars.normal, nrow(sum.stat),
                    length(sim.result$pars.normal), byrow=TRUE)
     colnames(pars) <- names(sim.result$pars.normal)
-    data.frame(pars, sum.stat)
+    da.fr <- data.frame(pars, sum.stat)
+    if (!is.null(mask)) da.fr <- da.fr[!mask, ]
+    da.fr
   }))
 }

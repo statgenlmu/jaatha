@@ -1,3 +1,9 @@
+Version 2.3.1
+---------------
+New Features:
+  - Add an optional 'border' to smoothing type summary statistics with is fitted
+    via traditional transformations.
+
 Version 2.3
 ---------------
 Algorithm changes: 

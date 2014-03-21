@@ -30,6 +30,7 @@ Collate:
     'sim_program.R'
     'DemographicModel.R'
     'Jaatha.R'
+    'RcppExports.R'
     'confidence_intervals.R'
     'estimate_log_likelihood.R'
     'find_best_par_in_block.R'
