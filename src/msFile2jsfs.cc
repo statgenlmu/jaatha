@@ -16,6 +16,7 @@
 #include <vector>
 #include <stdexcept>
 
+
 using namespace std;
 static bool debug = false;
 

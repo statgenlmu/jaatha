@@ -35,6 +35,7 @@ check: $(PACKAGE)
 package: $(PACKAGE) 
 
 install: 
+	Rscript -e "library(Rcpp); compileAttributes()"
 	R CMD INSTALL .
 
 $(PACKAGE): $(R_SOURCES) $(CPP_SOURCES) $(TESTS) $(VIGNETTES) README DESCRIPTION man inst/unitTests/test_setup.Rda
