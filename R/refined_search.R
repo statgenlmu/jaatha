@@ -64,7 +64,6 @@ Jaatha.refinedSearch <- function(jaatha, best.start.pos=2,
   }
 
   # Check parameters
-  .log2("Called function Jaatha.refinedSearch()")
 
   checkType(jaatha, c("jaatha", "single"))
   checkType(best.start.pos, c("num", "single"))
@@ -83,7 +82,6 @@ Jaatha.refinedSearch <- function(jaatha, best.start.pos=2,
 
   # Setup environment for the refined search
   set.seed(jaatha@seeds[3])
-  .log2("Seeting seed to", jaatha@seeds[3])
   setParallelization(jaatha@cores)
   tmp.dir <- getTempDir(jaatha@use.shm)
 
@@ -110,7 +108,6 @@ refinedSearchSingleBlock <- function(jaatha, start.point, sim, sim.final,
                                      half.block.size, 
                                      max.steps=max.steps, block.nr){
   ## initialize values 
-  .log3("Initializing")
   step.current <- 0
 
   ##since the likelihood estimate for the starting point is
@@ -138,7 +135,7 @@ refinedSearchSingleBlock <- function(jaatha, start.point, sim, sim.final,
     sim.saved <- getReusableSimulations(search.block, jaatha, sim.saved,
                                         sim.data, step.current)
 
-    .print("Using", length(sim.saved), "Simulations")
+    # Fit the GLM
     glm.fitted <- fitGlm(sim.data, jaatha)
 
     # Update likelihood of last steps estimate, based on new simulated data.
@@ -153,7 +150,7 @@ refinedSearchSingleBlock <- function(jaatha, start.point, sim, sim.final,
       optimum.step <- step.current - 1
     }
 
-    # keep the best 10 parameter combinations with their score
+    # Keep the best 10 parameter combinations with their score
     topTen <- .saveBestTen(topTen, step.current-1, search.block)
 
     # Output current best position
@@ -183,14 +180,12 @@ refinedSearchSingleBlock <- function(jaatha, start.point, sim, sim.final,
   topTen <- topTen[topTen[,1] != 0, ]
 
   likelihoods <- c()
-  .log3("Starting final sim.")
   .print("Calculating log-composite-likelihoods for best estimates:")
   for (t in 1:nrow(topTen)){
     topPar <- topTen[t,-1]
     .print("* Parameter combination",t,"of", nrow(topTen))
     likelihoods[t] <- simLikelihood(jaatha, sim.final, topPar)
   }
-  .log3("Finished final sim.")
 
   likelihood.table <- cbind(log.cl=likelihoods, block=block.nr,topTen[topTen[,1]!=0,-1])
   jaatha@likelihood.table <- rbind(jaatha@likelihood.table,likelihood.table)

@@ -39,6 +39,7 @@ howtos/cache
 src/symbols.rds
 inst/unitTests/test_setup.Rda
 inst/integrationTests/results
+DEV_VERSIONS
 
 # Latex
 *.aux
