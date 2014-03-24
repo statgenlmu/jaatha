@@ -5,18 +5,36 @@
 
 using namespace Rcpp;
 
-// parseMsOutput
-List parseMsOutput(const std::string file_name, const NumericVector sample_size, const bool jsfs = true, const bool fpc = false);
-RcppExport SEXP jaatha_parseMsOutput(SEXP file_nameSEXP, SEXP sample_sizeSEXP, SEXP jsfsSEXP, SEXP fpcSEXP) {
+// parseOutput
+List parseOutput(const std::string file_name, const NumericVector sample_size, const int loci_number, const int program = 0, const bool generate_jsfs = true, const bool generate_seg_sites = false, const bool generate_fpc = false);
+RcppExport SEXP jaatha_parseOutput(SEXP file_nameSEXP, SEXP sample_sizeSEXP, SEXP loci_numberSEXP, SEXP programSEXP, SEXP generate_jsfsSEXP, SEXP generate_seg_sitesSEXP, SEXP generate_fpcSEXP) {
 BEGIN_RCPP
     SEXP __sexp_result;
     {
         Rcpp::RNGScope __rngScope;
         Rcpp::traits::input_parameter< const std::string >::type file_name(file_nameSEXP );
         Rcpp::traits::input_parameter< const NumericVector >::type sample_size(sample_sizeSEXP );
-        Rcpp::traits::input_parameter< const bool >::type jsfs(jsfsSEXP );
-        Rcpp::traits::input_parameter< const bool >::type fpc(fpcSEXP );
-        List __result = parseMsOutput(file_name, sample_size, jsfs, fpc);
+        Rcpp::traits::input_parameter< const int >::type loci_number(loci_numberSEXP );
+        Rcpp::traits::input_parameter< const int >::type program(programSEXP );
+        Rcpp::traits::input_parameter< const bool >::type generate_jsfs(generate_jsfsSEXP );
+        Rcpp::traits::input_parameter< const bool >::type generate_seg_sites(generate_seg_sitesSEXP );
+        Rcpp::traits::input_parameter< const bool >::type generate_fpc(generate_fpcSEXP );
+        List __result = parseOutput(file_name, sample_size, loci_number, program, generate_jsfs, generate_seg_sites, generate_fpc);
+        PROTECT(__sexp_result = Rcpp::wrap(__result));
+    }
+    UNPROTECT(1);
+    return __sexp_result;
+END_RCPP
+}
+// parseMsPositions
+std::vector<double> parseMsPositions(const std::string line);
+RcppExport SEXP jaatha_parseMsPositions(SEXP lineSEXP) {
+BEGIN_RCPP
+    SEXP __sexp_result;
+    {
+        Rcpp::RNGScope __rngScope;
+        Rcpp::traits::input_parameter< const std::string >::type line(lineSEXP );
+        std::vector<double> __result = parseMsPositions(line);
         PROTECT(__sexp_result = Rcpp::wrap(__result));
     }
     UNPROTECT(1);
