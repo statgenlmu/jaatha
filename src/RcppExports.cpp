@@ -27,14 +27,14 @@ BEGIN_RCPP
 END_RCPP
 }
 // parseMsPositions
-std::vector<double> parseMsPositions(const std::string line);
+CharacterVector parseMsPositions(const std::string line);
 RcppExport SEXP jaatha_parseMsPositions(SEXP lineSEXP) {
 BEGIN_RCPP
     SEXP __sexp_result;
     {
         Rcpp::RNGScope __rngScope;
         Rcpp::traits::input_parameter< const std::string >::type line(lineSEXP );
-        std::vector<double> __result = parseMsPositions(line);
+        CharacterVector __result = parseMsPositions(line);
         PROTECT(__sexp_result = Rcpp::wrap(__result));
     }
     UNPROTECT(1);

@@ -25,9 +25,9 @@ test.parseOutput <- function() {
 test.parseMsPositions <- function() {
   positions <- rep(0, 10)
   positions <- parseMsPositions('positions: 0.0010 0.0474 0.3171')
-  checkEquals( 0.0010, positions[1] )
-  checkEquals( 0.0474, positions[2] )
-  checkEquals( 0.3171, positions[3] )
+  checkEquals( '0.0010', positions[1] )
+  checkEquals( '0.0474', positions[2] )
+  checkEquals( '0.3171', positions[3] )
   checkEquals( 3, length(positions) )
   checkEquals( 5, length(parseMsPositions('positions: 0.1 0.2 0.3 0.4 0.5')) )
   checkEquals( 1, length(parseMsPositions('positions: 0.1')) )

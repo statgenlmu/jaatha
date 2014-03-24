@@ -116,18 +116,6 @@ printMsCommand <- function(dm) {
   return(cmd)
 }
 
-msOut2Jsfs <- function(dm, ms.out) {
-  .log3("Called .ms.getJSFS()")
-  sample.size <- dm.getSampleSize(dm)
-  jsfs <- matrix(.Call("msFile2jsfs", ms.out,sample.size[1], 
-                       sample.size[2]),
-                 sample.size[1] + 1 ,
-                 sample.size[2] + 1,
-                 byrow=T)
-  .log3("Finished .ms.getJSFS()")
-  return(jsfs)
-}
-
 msSingleSimFunc <- function(dm, parameters) {
   checkType(dm, "dm")
   checkType(parameters, "num")
@@ -137,23 +125,17 @@ msSingleSimFunc <- function(dm, parameters) {
   ms.options <- generateMsOptions(dm, parameters)
   sim.time <- system.time(ms.out <- callMs(ms.options, dm))
 
-  sum.stats <- list(pars=parameters)
-
-  if ("jsfs" %in% dm@sum.stats) {
-    sum.stats[['jsfs']] <- msOut2Jsfs(dm, ms.out)
-  }
+  sum.stats <- parseOutput(ms.out, dm.getSampleSize(dm), dm.getLociNumber(dm), 0, 
+                           generate_jsfs = 'jsfs' %in% dm@sum.stats, 
+                           generate_seg_sites = 'seg_sites' %in% dm@sum.stats)
+  sum.stats[['pars']] = parameters
 
   if ("file" %in% dm@sum.stats) {
     sum.stats[['file']] <- ms.out
   }
 
-  if (any(c('seg.sites', 'tree', '4pc') %in% dm@sum.stats)) {
+  if (any(c('tree', '4pc') %in% dm@sum.stats)) {
     output <- scan(ms.out, character(), sep="\n", quiet=TRUE)
-
-    if ("seg.sites" %in% dm@sum.stats) {
-      sum.stats[['seg.sites']] <- readSegSitesFromOutput(output,
-                                                         dm.getSampleSize(dm))
-    }
 
     if ("4pc" %in% dm@sum.stats) {
       if (!is.null(sum.stats$seg.sites)) seg.sites <- sum.stats$seg.sites
@@ -170,24 +152,6 @@ msSingleSimFunc <- function(dm, parameters) {
 finalizeMs <- function(dm) {
   dm@options[['ms.cmd']] <- generateMsOptionsCommand(dm)
   return(dm)
-}
-
-readSegSitesFromOutput <- function(output, pop.sizes) {
-  seg.sites.begin <- which(grepl('^segsites: [0-9]+$', output))
-
-  lapply(seg.sites.begin, function(begin) {
-    positions <- strsplit(output[begin+1], ' ')[[1]][-1]
-    positions <- positions[positions != ""]
-    if (length(positions) == 0) {
-      return(matrix(0, sum(pop.sizes), 0))
-    }
-    stopifnot( all(!is.na(positions)) )
-    seg.sites.char <- output[1:sum(pop.sizes)+begin+1]
-    seg.sites <- matrix(as.integer(unlist(strsplit(seg.sites.char, split= ''))),
-                        length(seg.sites.char), byrow=TRUE)
-    colnames(seg.sites) <- positions
-    seg.sites
-  })
 }
 
 calcFpcSumStat <- function(seg.sites, dm) {
