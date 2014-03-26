@@ -27,7 +27,7 @@
 #' @return The jaatha object with starting positions
 #'
 #' @export
-Jaatha.initialSearch <- function(jaatha, sim=200, blocks.per.par=2, rerun=FALSE){
+Jaatha.initialSearch <- function(jaatha, sim=200, blocks.per.par=3, rerun=FALSE){
 
   if (rerun) {
     if( is.null(jaatha@calls[['initial.search']]) ) 
@@ -84,11 +84,21 @@ Jaatha.initialSearch <- function(jaatha, sim=200, blocks.per.par=2, rerun=FALSE)
 createInitialBlocks <- function(par.ranges, blocks.per.par) {
   basic.block <- par.ranges # Just to get dimensions & names
   basic.block[,1] <- 0
-  basic.block[,2] <- 1/blocks.per.par
-
-  getIthBlock <- function(i) {
-    b <- (.index2blocks(value=i-1, newBase=blocks.per.par, expo=nrow(par.ranges))) / blocks.per.par  
-    return(new("Block", border=(basic.block + b)))
+  basic.block[,2] <- 1
+  
+  if (blocks.per.par == 1) {
+    return(list(new("Block", border=basic.block)))
   }
-  return(lapply(1:blocks.per.par^nrow(par.ranges), getIthBlock)) 
+
+  blocks <- vector("list", nrow(par.ranges)*blocks.per.par)
+  for (i in 1:nrow(par.ranges)) {
+    for (j in 1:blocks.per.par) {
+      new.block <- basic.block
+      new.block[i,2] <- 1/blocks.per.par
+      new.block[i, ] <- new.block[i, ] + (j-1)/blocks.per.par
+      blocks[(j-1)*nrow(par.ranges)+i] <- new("Block", border=new.block)
+    }
+  }
+
+  blocks
 }
