@@ -5,6 +5,22 @@
 
 using namespace Rcpp;
 
+// addToFpc
+NumericMatrix addToFpc(const NumericMatrix seg_sites, NumericMatrix fpc);
+RcppExport SEXP jaatha_addToFpc(SEXP seg_sitesSEXP, SEXP fpcSEXP) {
+BEGIN_RCPP
+    SEXP __sexp_result;
+    {
+        Rcpp::RNGScope __rngScope;
+        Rcpp::traits::input_parameter< const NumericMatrix >::type seg_sites(seg_sitesSEXP );
+        Rcpp::traits::input_parameter< NumericMatrix >::type fpc(fpcSEXP );
+        NumericMatrix __result = addToFpc(seg_sites, fpc);
+        PROTECT(__sexp_result = Rcpp::wrap(__result));
+    }
+    UNPROTECT(1);
+    return __sexp_result;
+END_RCPP
+}
 // parseOutput
 List parseOutput(const std::string file_name, const NumericVector sample_size, const int loci_number, const int program = 0, const bool generate_jsfs = true, const bool generate_seg_sites = false, const bool generate_fpc = false);
 RcppExport SEXP jaatha_parseOutput(SEXP file_nameSEXP, SEXP sample_sizeSEXP, SEXP loci_numberSEXP, SEXP programSEXP, SEXP generate_jsfsSEXP, SEXP generate_seg_sitesSEXP, SEXP generate_fpcSEXP) {
@@ -41,33 +57,17 @@ BEGIN_RCPP
     return __sexp_result;
 END_RCPP
 }
-// addToJsfs
-void addToJsfs(const NumericMatrix seg_sites, const NumericVector sample_size, const int sample_total, NumericMatrix jsfs);
-RcppExport SEXP jaatha_addToJsfs(SEXP seg_sitesSEXP, SEXP sample_sizeSEXP, SEXP sample_totalSEXP, SEXP jsfsSEXP) {
-BEGIN_RCPP
-    {
-        Rcpp::RNGScope __rngScope;
-        Rcpp::traits::input_parameter< const NumericMatrix >::type seg_sites(seg_sitesSEXP );
-        Rcpp::traits::input_parameter< const NumericVector >::type sample_size(sample_sizeSEXP );
-        Rcpp::traits::input_parameter< const int >::type sample_total(sample_totalSEXP );
-        Rcpp::traits::input_parameter< NumericMatrix >::type jsfs(jsfsSEXP );
-        addToJsfs(seg_sites, sample_size, sample_total, jsfs);
-    }
-    return R_NilValue;
-END_RCPP
-}
-// addToJsfs2
-NumericMatrix addToJsfs2(const NumericMatrix seg_sites, const NumericVector sample_size, const int sample_total, NumericMatrix jsfs);
-RcppExport SEXP jaatha_addToJsfs2(SEXP seg_sitesSEXP, SEXP sample_sizeSEXP, SEXP sample_totalSEXP, SEXP jsfsSEXP) {
+// addSegSitesToJsfs
+NumericMatrix addSegSitesToJsfs(const NumericMatrix seg_sites, const NumericVector sample_size, NumericMatrix jsfs);
+RcppExport SEXP jaatha_addSegSitesToJsfs(SEXP seg_sitesSEXP, SEXP sample_sizeSEXP, SEXP jsfsSEXP) {
 BEGIN_RCPP
     SEXP __sexp_result;
     {
         Rcpp::RNGScope __rngScope;
         Rcpp::traits::input_parameter< const NumericMatrix >::type seg_sites(seg_sitesSEXP );
         Rcpp::traits::input_parameter< const NumericVector >::type sample_size(sample_sizeSEXP );
-        Rcpp::traits::input_parameter< const int >::type sample_total(sample_totalSEXP );
         Rcpp::traits::input_parameter< NumericMatrix >::type jsfs(jsfsSEXP );
-        NumericMatrix __result = addToJsfs2(seg_sites, sample_size, sample_total, jsfs);
+        NumericMatrix __result = addSegSitesToJsfs(seg_sites, sample_size, jsfs);
         PROTECT(__sexp_result = Rcpp::wrap(__result));
     }
     UNPROTECT(1);

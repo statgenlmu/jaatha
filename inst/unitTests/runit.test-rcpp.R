@@ -20,6 +20,12 @@ test.parseOutput <- function() {
                            generate_jsfs = TRUE, generate_seg_sites = FALSE)
   checkEquals( 1, length(sum.stats) )
   checkTrue( is.matrix(sum.stats$jsfs) )
+
+  sum.stats <- parseOutput(ms.file, dm.getSampleSize(dm.tt), dm.getLociNumber(dm.tt), 
+                           generate_jsfs = FALSE, generate_seg_sites = FALSE, 
+                           generate_fpc =TRUE)
+  checkEquals( 1, length(sum.stats) )
+  checkTrue( is.matrix(sum.stats$jsfs) )
 }
 
 test.parseMsPositions <- function() {
@@ -35,4 +41,16 @@ test.parseMsPositions <- function() {
   checkException(parseMsPositions('0.1 0.2 0.3'), s = TRUE)
   checkException(parseMsPositions(' '), s = TRUE)
   checkException(parseMsPositions('segsites: 0'), s = TRUE)
+}
+
+test.addSegSitesToJsfs <- function() {
+  seg.sites <- matrix(c(1,0,0,0, 1,1,0,1, 1,0,0,1), 4, 3)  
+  jsfs <- matrix(0, 3, 3)
+  jsfs.new <- addSegSitesToJsfs(seg.sites, c(2,2), jsfs)
+  checkTrue( is.matrix(jsfs.new) )
+  checkEquals( c(3,3), dim(jsfs.new) )
+  checkEquals( 3, sum(jsfs) )
+  checkEquals( 1, jsfs[2,1] )
+  checkEquals( 1, jsfs[3,2] )
+  checkEquals( 1, jsfs[2,2] )
 }

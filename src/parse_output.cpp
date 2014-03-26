@@ -4,11 +4,16 @@
 using namespace Rcpp;
 
 CharacterVector parseMsPositions(const std::string line);
+
 NumericMatrix parseMsSegSites(std::ifstream &output, 
                               const CharacterVector positions, 
-                              const size_t &individuals);
-void addToJsfs(const NumericMatrix seg_sites, const NumericVector sample_size,
-               const int &sample_total, NumericMatrix jsfs);
+                              const int &individuals);
+
+void addToJsfs(const NumericMatrix &seg_sites,
+               const NumericVector &sample_size,
+               NumericMatrix &jsfs);
+
+NumericMatrix addToFpc(const NumericMatrix seg_sites, NumericMatrix fpc);
 
 std::string line;
 
@@ -34,6 +39,7 @@ List parseOutput(const std::string file_name,
 
   List seg_sites_list(loci_number); 
   NumericMatrix jsfs(sample_size[0]+1, sample_size[1]+1);
+  NumericMatrix fpc(sample_size[0]+1, sample_size[1]+1);
 
   // Output
   while( output.good() ) {
@@ -50,7 +56,8 @@ List parseOutput(const std::string file_name,
       if (generate_seg_sites || generate_fpc) positions = parseMsPositions(line);
       seg_sites = parseMsSegSites(output, positions, individuals);
       if (generate_seg_sites) seg_sites_list[locus] = seg_sites;
-      if (generate_jsfs) addToJsfs(seg_sites, sample_size, individuals, jsfs);
+      if (generate_jsfs) addToJsfs(seg_sites, sample_size, jsfs);
+      if (generate_fpc) fpc = addToFpc(seg_sites, fpc);
     }
   }
 
@@ -74,16 +81,16 @@ List parseOutput(const std::string file_name,
 
 NumericMatrix parseMsSegSites(std::ifstream &output, 
                               const CharacterVector positions, 
-                              const size_t &individuals) {
+                              const int &individuals) {
 
   NumericMatrix seg_sites(individuals, positions.size());
   List dimnames = List(2);
   dimnames[1] = positions;
   seg_sites.attr("dimnames") = dimnames;
   
-  for (size_t i = 0; i < individuals; ++i) {
+  for (int i = 0; i < individuals; ++i) {
     std::getline(output, line);
-    for (size_t j = 0; j < positions.size(); ++j) {
+    for (int j = 0; j < positions.size(); ++j) {
       seg_sites(i,j) = (line[j] == '1');
     }
   }
@@ -112,19 +119,3 @@ CharacterVector parseMsPositions(const std::string line) {
   return(wrap(data));
 }
 
-void addToJsfs(const NumericMatrix seg_sites, const NumericVector sample_size,
-               const int &sample_total, 
-               NumericMatrix jsfs) {
-  int idx1;
-  int idx2;
-  
-  for (int j = 0; j < seg_sites.ncol(); ++j) {
-    idx1 = 0;
-    idx2 = 0;
-
-    for (int i = 0; i < sample_size[1]; ++i) idx1 += seg_sites(i,j); 
-    for (int i = sample_size[1]; i < sample_total; ++i) idx2 += seg_sites(i,j); 
-
-    ++jsfs(idx1, idx2);
-  }
-}
