@@ -9,3 +9,11 @@ parseMsPositions <- function(line) {
     .Call('jaatha_parseMsPositions', PACKAGE = 'jaatha', line)
 }
 
+addToJsfs <- function(seg_sites, sample_size, sample_total, jsfs) {
+    invisible(.Call('jaatha_addToJsfs', PACKAGE = 'jaatha', seg_sites, sample_size, sample_total, jsfs))
+}
+
+addToJsfs2 <- function(seg_sites, sample_size, sample_total, jsfs) {
+    .Call('jaatha_addToJsfs2', PACKAGE = 'jaatha', seg_sites, sample_size, sample_total, jsfs)
+}
+
