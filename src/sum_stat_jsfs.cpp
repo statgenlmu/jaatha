@@ -26,7 +26,8 @@ NumericMatrix addSegSitesToJsfs(const NumericMatrix seg_sites,
                                 const NumericVector sample_size,
                                 NumericMatrix jsfs) {
 
-  addToJsfs(seg_sites, sample_size, jsfs);
+  NumericMatrix jsfs_copy = clone(jsfs);
+  addToJsfs(seg_sites, sample_size, jsfs_copy);
 
-  return jsfs;
+  return jsfs_copy;
 }

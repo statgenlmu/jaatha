@@ -23,17 +23,17 @@ test.parseOutput <- function() {
 
   sum.stats <- parseOutput(ms.file, dm.getSampleSize(dm.tt), dm.getLociNumber(dm.tt), 
                            generate_jsfs = FALSE, generate_seg_sites = FALSE, 
-                           generate_fpc =TRUE)
+                           generate_fpc = TRUE)
   checkEquals( 1, length(sum.stats) )
-  checkTrue( is.matrix(sum.stats$jsfs) )
+  checkTrue( is.matrix(sum.stats$fpc) )
 }
 
 test.parseMsPositions <- function() {
   positions <- rep(0, 10)
   positions <- parseMsPositions('positions: 0.0010 0.0474 0.3171')
-  checkEquals( '0.0010', positions[1] )
-  checkEquals( '0.0474', positions[2] )
-  checkEquals( '0.3171', positions[3] )
+  checkEquals( 0.0010, positions[1] )
+  checkEquals( 0.0474, positions[2] )
+  checkEquals( 0.3171, positions[3] )
   checkEquals( 3, length(positions) )
   checkEquals( 5, length(parseMsPositions('positions: 0.1 0.2 0.3 0.4 0.5')) )
   checkEquals( 1, length(parseMsPositions('positions: 0.1')) )
@@ -53,4 +53,11 @@ test.addSegSitesToJsfs <- function() {
   checkEquals( 1, jsfs[2,1] )
   checkEquals( 1, jsfs[3,2] )
   checkEquals( 1, jsfs[2,2] )
+}
+
+test.addSegSitesToJsfs <- function() {
+  seg.sites <- matrix(c(1,1,0,0,0, 1,0,1,0,1, 1,1,1,1,0, 0,1,1,0,1, 0,0,0,0,1), 5) 
+  positions <- c(0.1, 0.12, 0.5, 0.51, 0.61)
+  fpc <- matrix(0, 5, 5)
+  fpc.new <- addSegSitesToFpc(seg.sites, positions, fpc)
 }

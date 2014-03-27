@@ -5,22 +5,6 @@
 
 using namespace Rcpp;
 
-// addToFpc
-NumericMatrix addToFpc(const NumericMatrix seg_sites, NumericMatrix fpc);
-RcppExport SEXP jaatha_addToFpc(SEXP seg_sitesSEXP, SEXP fpcSEXP) {
-BEGIN_RCPP
-    SEXP __sexp_result;
-    {
-        Rcpp::RNGScope __rngScope;
-        Rcpp::traits::input_parameter< const NumericMatrix >::type seg_sites(seg_sitesSEXP );
-        Rcpp::traits::input_parameter< NumericMatrix >::type fpc(fpcSEXP );
-        NumericMatrix __result = addToFpc(seg_sites, fpc);
-        PROTECT(__sexp_result = Rcpp::wrap(__result));
-    }
-    UNPROTECT(1);
-    return __sexp_result;
-END_RCPP
-}
 // parseOutput
 List parseOutput(const std::string file_name, const NumericVector sample_size, const int loci_number, const int program = 0, const bool generate_jsfs = true, const bool generate_seg_sites = false, const bool generate_fpc = false);
 RcppExport SEXP jaatha_parseOutput(SEXP file_nameSEXP, SEXP sample_sizeSEXP, SEXP loci_numberSEXP, SEXP programSEXP, SEXP generate_jsfsSEXP, SEXP generate_seg_sitesSEXP, SEXP generate_fpcSEXP) {
@@ -43,14 +27,31 @@ BEGIN_RCPP
 END_RCPP
 }
 // parseMsPositions
-CharacterVector parseMsPositions(const std::string line);
+NumericVector parseMsPositions(const std::string line);
 RcppExport SEXP jaatha_parseMsPositions(SEXP lineSEXP) {
 BEGIN_RCPP
     SEXP __sexp_result;
     {
         Rcpp::RNGScope __rngScope;
         Rcpp::traits::input_parameter< const std::string >::type line(lineSEXP );
-        CharacterVector __result = parseMsPositions(line);
+        NumericVector __result = parseMsPositions(line);
+        PROTECT(__sexp_result = Rcpp::wrap(__result));
+    }
+    UNPROTECT(1);
+    return __sexp_result;
+END_RCPP
+}
+// addSegSitesToFpc
+NumericMatrix addSegSitesToFpc(const NumericMatrix seg_sites, const NumericVector positions, NumericMatrix fpc);
+RcppExport SEXP jaatha_addSegSitesToFpc(SEXP seg_sitesSEXP, SEXP positionsSEXP, SEXP fpcSEXP) {
+BEGIN_RCPP
+    SEXP __sexp_result;
+    {
+        Rcpp::RNGScope __rngScope;
+        Rcpp::traits::input_parameter< const NumericMatrix >::type seg_sites(seg_sitesSEXP );
+        Rcpp::traits::input_parameter< const NumericVector >::type positions(positionsSEXP );
+        Rcpp::traits::input_parameter< NumericMatrix >::type fpc(fpcSEXP );
+        NumericMatrix __result = addSegSitesToFpc(seg_sites, positions, fpc);
         PROTECT(__sexp_result = Rcpp::wrap(__result));
     }
     UNPROTECT(1);

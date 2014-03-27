@@ -3,17 +3,19 @@
 
 using namespace Rcpp;
 
-CharacterVector parseMsPositions(const std::string line);
+NumericVector parseMsPositions(const std::string line);
 
 NumericMatrix parseMsSegSites(std::ifstream &output, 
-                              const CharacterVector positions, 
+                              const NumericVector positions, 
                               const int &individuals);
 
 void addToJsfs(const NumericMatrix &seg_sites,
                const NumericVector &sample_size,
                NumericMatrix &jsfs);
 
-NumericMatrix addToFpc(const NumericMatrix seg_sites, NumericMatrix fpc);
+void addToFpc(const NumericMatrix &seg_sites, 
+              const NumericVector &positions, 
+              NumericMatrix &fpc);
 
 std::string line;
 
@@ -34,7 +36,7 @@ List parseOutput(const std::string file_name,
   }
 
   NumericMatrix seg_sites(0, 0);
-  CharacterVector positions(0);
+  NumericVector positions(0);
   int locus = -1;
 
   List seg_sites_list(loci_number); 
@@ -57,7 +59,7 @@ List parseOutput(const std::string file_name,
       seg_sites = parseMsSegSites(output, positions, individuals);
       if (generate_seg_sites) seg_sites_list[locus] = seg_sites;
       if (generate_jsfs) addToJsfs(seg_sites, sample_size, jsfs);
-      if (generate_fpc) fpc = addToFpc(seg_sites, fpc);
+      if (generate_fpc) addToFpc(seg_sites, positions, fpc);
     }
   }
 
@@ -68,19 +70,37 @@ List parseOutput(const std::string file_name,
   if (generate_seg_sites & (!generate_jsfs) & (!generate_fpc)) {
     sum_stats = List::create( _["seg.sites"] = seg_sites_list ) ;
   }
+  else if ((!generate_seg_sites) & generate_jsfs & (!generate_fpc)) {
+    sum_stats = List::create( _["jsfs"] = jsfs ) ;
+  }
+  else if ((!generate_seg_sites) & (!generate_jsfs) & (generate_fpc)) {
+    sum_stats = List::create( _["fpc"] = fpc ) ;
+  }
+
   else if (generate_seg_sites & generate_jsfs & (!generate_fpc)) {
     sum_stats = List::create( _["seg.sites"] = seg_sites_list,
                               _["jsfs"] = jsfs ) ;
   }
-  else if ((!generate_seg_sites) & generate_jsfs & (!generate_fpc)) {
-    sum_stats = List::create( _["jsfs"] = jsfs ) ;
+  else if (generate_seg_sites & (!generate_jsfs) & (generate_fpc)) {
+    sum_stats = List::create( _["seg.sites"] = seg_sites_list, 
+                              _["fpc"] = fpc ) ;
+  }
+  else if ((!generate_seg_sites) & generate_jsfs & (generate_fpc)) {
+    sum_stats = List::create( _["jsfs"] = jsfs, 
+                              _["fpc"] = fpc );
+  }
+
+  else if (generate_seg_sites & generate_jsfs & (generate_fpc)) {
+    sum_stats = List::create( _["seg.sites"] = seg_sites_list,
+                              _["jsfs"] = jsfs, 
+                              _["fpc"] = fpc );
   }
 
   return sum_stats;
 }
 
 NumericMatrix parseMsSegSites(std::ifstream &output, 
-                              const CharacterVector positions, 
+                              const NumericVector positions, 
                               const int &individuals) {
 
   NumericMatrix seg_sites(individuals, positions.size());
@@ -99,21 +119,21 @@ NumericMatrix parseMsSegSites(std::ifstream &output,
 }
 
 // [[Rcpp::export]]
-CharacterVector parseMsPositions(const std::string line) {
+NumericVector parseMsPositions(const std::string line) {
   if (line.substr(0, 11) != "positions: ") {
     Rprintf("%s\n", line.c_str());
     throw exception("Failed to read positions from ms' output");
   } 
 
   std::stringstream stream(line);
-  std::vector<std::string> data;
+  std::vector<double> data;
 
   // Remove the 'positions: ' at the line's beginning
   stream.ignore(11);
 
   // Convert the positions into doubles
-  std::copy(std::istream_iterator<std::string>(stream),
-            std::istream_iterator<std::string>(),
+  std::copy(std::istream_iterator<double>(stream),
+            std::istream_iterator<double>(),
             std::back_inserter(data));
 
   return(wrap(data));
