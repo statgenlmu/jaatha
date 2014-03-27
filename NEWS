@@ -3,6 +3,8 @@ Version 2.3.1
 New Features:
   - Add an optional 'border' to smoothing type summary statistics with is fitted
     via traditional transformations.
+  - For the JSFS, the border is now excluded from smoothing and summarized in an
+    sums similar to the traditional approach.
 
 Version 2.3
 ---------------
