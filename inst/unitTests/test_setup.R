@@ -55,7 +55,7 @@ dm.fpc <- dm.addRecombination(dm.fpc, 1, 5)
 dm.fpc <- dm.addMutation(dm.fpc, 1, 10)
 dm.fpc <- dm.addSymmetricMigration(dm.fpc, fixed=.75)
 seg.sites <- dm.simSumStats(dm.addSummaryStatistic(dm.fpc, 'seg.sites'), c(1, 2, 3))$seg.sites
-dm.fpc <- dm.addSummaryStatistic(dm.fpc, '4pc')
+dm.fpc <- dm.addSummaryStatistic(dm.fpc, 'fpc')
 dm.fpc <- calcFpcBreaks(dm.fpc, seg.sites)
 sum.stats.fpc <- dm.simSumStats(dm.fpc, c(1, 2, 3))
 

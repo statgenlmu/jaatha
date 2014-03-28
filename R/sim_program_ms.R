@@ -9,7 +9,7 @@
 possible.features  <- c("sample", "loci.number", "loci.length",
                         "mutation", "migration", "split",
                         "recombination", "size.change", "growth")
-possible.sum.stats <- c("jsfs", "4pc", "tree", "seg.sites", "file")
+possible.sum.stats <- c("jsfs", "fpc", "tree", "seg.sites", "file")
 
 #' Function to perform simulation using ms 
 #' 
@@ -125,24 +125,18 @@ msSingleSimFunc <- function(dm, parameters) {
   ms.options <- generateMsOptions(dm, parameters)
   sim.time <- system.time(ms.out <- callMs(ms.options, dm))
 
-  sum.stats <- parseOutput(ms.out, dm.getSampleSize(dm), dm.getLociNumber(dm), 0, 
-                           generate_jsfs = 'jsfs' %in% dm@sum.stats, 
-                           generate_seg_sites = 'seg_sites' %in% dm@sum.stats)
-  sum.stats[['pars']] = parameters
+  breaks.near <- dm@options[['fpc.breaks.near']]
+  breaks.far <- dm@options[['fpc.breaks.near']]
+  if (is.null(breaks.near))  breaks.near <- c(.25, .5, .75)
+  if (is.null(breaks.far))  breaks.far <- c(.25, .5, .75)
 
+  sum.stats <- parseOutput(ms.out, dm.getSampleSize(dm), dm.getLociNumber(dm), 0, 
+                           'jsfs' %in% dm@sum.stats, 'seg.sites' %in% dm@sum.stats,
+                           'fpc' %in% dm@sum.stats, breaks.near, breaks.far)
+
+  sum.stats[['pars']] <- parameters
   if ("file" %in% dm@sum.stats) {
     sum.stats[['file']] <- ms.out
-  }
-
-  if (any(c('tree', '4pc') %in% dm@sum.stats)) {
-    output <- scan(ms.out, character(), sep="\n", quiet=TRUE)
-
-    if ("4pc" %in% dm@sum.stats) {
-      if (!is.null(sum.stats$seg.sites)) seg.sites <- sum.stats$seg.sites
-      else seg.sites <- readSegSitesFromOutput(output, dm.getSampleSize(dm))
-
-      sum.stats[['4pc']] <- calcFpcSumStat(seg.sites, dm)
-    }
   }
 
   if (!'file' %in% dm@sum.stats) unlink(ms.out)
@@ -154,61 +148,23 @@ finalizeMs <- function(dm) {
   return(dm)
 }
 
-calcFpcSumStat <- function(seg.sites, dm) {
-  breaks.near <- dm@options[['4pc.breaks.near']]
-  breaks.far  <- dm@options[['4pc.breaks.far']]
-  breaks.theta <- dm@options[['4pc.breaks.theta']]
 
-  fpc <- array(0, 
-               list(length(breaks.near), length(breaks.far), breaks.theta),
-               list(c(2:length(breaks.near)-1,'NA'),
-                    c(2:length(breaks.far)-1,'NA'),
-                    1:breaks.theta)) 
-
-  loci.class <- sapply(seg.sites, calcPercentFpcViolations)
-  loci.class['near',] <- cut(loci.class['near',], breaks.near, include.lowest=TRUE, labels=FALSE)
-  loci.class['far',] <- cut(loci.class['far',], breaks.far, include.lowest=TRUE, labels=FALSE)
-  if ( all(loci.class['theta',] == 0) ) {
-    loci.class['theta',] <- 1
-  } else {
-    loci.class['theta',] <- cut(loci.class['theta',], breaks.theta, 
-                                include.lowest=TRUE, labels=FALSE)
-  }
-
-  for (j in 1:ncol(loci.class)) {
-    class.near <- ifelse(is.na(loci.class['near', j]), 'NA', loci.class['near', j])
-    class.far <- ifelse(is.na(loci.class['far', j]), 'NA', loci.class['far', j])
-    class.theta <- ifelse(is.na(loci.class['theta', j]), 'NA', loci.class['theta', j])
-    fpc[class.near, class.far, class.theta] <- fpc[class.near, class.far, class.theta] + 1
-  }
-
-  return(fpc)
-}
-
-calcPercentFpcViolations <- function(snp.matrix) {
-  snp.matrix <- snp.matrix[, colSums(snp.matrix)>1, drop=FALSE]
-  if (ncol(snp.matrix) <= 1) return(c(near=NaN, far=NaN, theta=0))
-  snp.state <- apply(combn(1:ncol(snp.matrix), 2), 2, violatesFpc, snp.matrix)
-  return(c(near=sum(snp.state[2, snp.state[1, ]])/sum(snp.state[1, ]),
-           far=sum(snp.state[2, !snp.state[1, ]])/sum(!snp.state[1, ]),
-           theta=ncol(snp.matrix)/sum(1/1:(nrow(snp.matrix)-1)) ))
-}
-
-violatesFpc <- function(sites, snp.matrix, near=.1) {
-  is.near <- diff(as.numeric(colnames(snp.matrix)[sites])) < near
-  status <- snp.matrix[ ,sites[1]] * 2 + snp.matrix[ ,sites[2]] 
-  if (all(0:3 %in% status)) return(c(near=is.near, violates=TRUE))
-  return(c(near=is.near, violates=FALSE))
-}
-
-calcFpcBreaks <- function(dm, seg.sites, number=5) {
-  props <- seq(0, 1, length.out = number + 2)[-c(1, number+2)]
-  fpc.percent <- t(sapply(seg.sites, calcPercentFpcViolations))
-  dm@options[['4pc.breaks.near']] <- unique(c(0, quantile(fpc.percent[ ,'near'], props, na.rm=TRUE), 1))
-  dm@options[['4pc.breaks.far']] <- unique(c(0, quantile(fpc.percent[ ,'far'], props, na.rm=TRUE), 1))
-  dm@options[['4pc.breaks.theta']] <- number
-  dm
-}
+# calcPercentFpcViolations <- function(snp.matrix) {
+#   snp.matrix <- snp.matrix[, colSums(snp.matrix)>1, drop=FALSE]
+#   if (ncol(snp.matrix) <= 1) return(c(near=NaN, far=NaN, theta=0))
+#   snp.state <- apply(combn(1:ncol(snp.matrix), 2), 2, violatesFpc, snp.matrix)
+#   return(c(near=sum(snp.state[2, snp.state[1, ]])/sum(snp.state[1, ]),
+#            far=sum(snp.state[2, !snp.state[1, ]])/sum(!snp.state[1, ]),
+#            theta=ncol(snp.matrix)/sum(1/1:(nrow(snp.matrix)-1)) ))
+# }
+# 
+# violatesFpc <- function(sites, snp.matrix, near=.1) {
+#   is.near <- diff(as.numeric(colnames(snp.matrix)[sites])) < near
+#   status <- snp.matrix[ ,sites[1]] * 2 + snp.matrix[ ,sites[2]] 
+#   if (all(0:3 %in% status)) return(c(near=is.near, violates=TRUE))
+#   return(c(near=is.near, violates=FALSE))
+# }
+# 
 
 createSimProgram("ms", "",
                  possible.features,

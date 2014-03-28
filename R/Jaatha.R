@@ -223,7 +223,7 @@ Jaatha.initialize <- function(demographic.model, jsfs,
                        instead. See http://www.paulstaab.de/2013/11/r-shm")
 
   dm <- dm.addSummaryStatistic(demographic.model, 'jsfs')
-  if (!is.null(seg.sites)) dm <- dm.addSummaryStatistic(dm, '4pc')
+  if (!is.null(seg.sites)) dm <- dm.addSummaryStatistic(dm, 'fpc')
 
   sum.stats <- list()
   groups <- dm.getGroups(dm)
@@ -239,7 +239,7 @@ Jaatha.initialize <- function(demographic.model, jsfs,
       }
 
       if (!is.null(seg.sites)) { 
-        fpc.name <- '4pc'
+        fpc.name <- 'fpc'
         stopifnot(is.list(seg.sites))
         stopifnot(is.array(seg.sites[[1]]))
         dm <- calcFpcBreaks(dm, seg.sites)
@@ -285,12 +285,22 @@ Jaatha.initialize <- function(demographic.model, jsfs,
 
     if (!is.null(seg.sites)) { 
       border.mask <- fpc.value
-      border.mask[, , ] <- 0
-      border.mask[nrow(border.mask), , ] <- 1
-      border.mask[ ,ncol(border.mask), ] <- 1
-      border.func <- function(x) { 
-        border <- apply(x, 1:2, sum)
-        c(border[dim(x)[1],], border[1:(dim(x)[1]-1), dim(x)[2]])
+      if (length(dim(border.mask)) == 2) {
+        border.mask[ , ] <- 0
+        border.mask[nrow(border.mask), ] <- 1
+        border.mask[ ,ncol(border.mask)] <- 1
+        border.func <- function(x) { 
+          c(border[dim(x)[1],], border[1:(dim(x)[1]-1), dim(x)[2]])
+        }
+      } else {
+        border.mask[ , , ] <- 0
+        border.mask[nrow(border.mask), , ] <- 1
+        border.mask[ ,ncol(border.mask), ] <- 1
+
+        border.func <- function(x) { 
+          border <- apply(x, 1:2, sum)
+          c(border[dim(x)[1],], border[1:(dim(x)[1]-1), dim(x)[2]])
+        }
       }
       sum.stats[[fpc.name]] <- list(method="poisson.smoothing",
                                     border.transformation=as.vector,

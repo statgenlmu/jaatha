@@ -6,8 +6,8 @@
 using namespace Rcpp;
 
 // parseOutput
-List parseOutput(const std::string file_name, const NumericVector sample_size, const int loci_number, const int program = 0, const bool generate_jsfs = true, const bool generate_seg_sites = false, const bool generate_fpc = false);
-RcppExport SEXP jaatha_parseOutput(SEXP file_nameSEXP, SEXP sample_sizeSEXP, SEXP loci_numberSEXP, SEXP programSEXP, SEXP generate_jsfsSEXP, SEXP generate_seg_sitesSEXP, SEXP generate_fpcSEXP) {
+List parseOutput(const std::string file_name, const NumericVector sample_size, const int loci_number, const int program = 0, const bool generate_jsfs = true, const bool generate_seg_sites = false, const bool generate_fpc = false, const NumericVector fpc_breaks_near = NumericVector(0), const NumericVector fpc_breaks_far = NumericVector(0));
+RcppExport SEXP jaatha_parseOutput(SEXP file_nameSEXP, SEXP sample_sizeSEXP, SEXP loci_numberSEXP, SEXP programSEXP, SEXP generate_jsfsSEXP, SEXP generate_seg_sitesSEXP, SEXP generate_fpcSEXP, SEXP fpc_breaks_nearSEXP, SEXP fpc_breaks_farSEXP) {
 BEGIN_RCPP
     SEXP __sexp_result;
     {
@@ -19,7 +19,9 @@ BEGIN_RCPP
         Rcpp::traits::input_parameter< const bool >::type generate_jsfs(generate_jsfsSEXP );
         Rcpp::traits::input_parameter< const bool >::type generate_seg_sites(generate_seg_sitesSEXP );
         Rcpp::traits::input_parameter< const bool >::type generate_fpc(generate_fpcSEXP );
-        List __result = parseOutput(file_name, sample_size, loci_number, program, generate_jsfs, generate_seg_sites, generate_fpc);
+        Rcpp::traits::input_parameter< const NumericVector >::type fpc_breaks_near(fpc_breaks_nearSEXP );
+        Rcpp::traits::input_parameter< const NumericVector >::type fpc_breaks_far(fpc_breaks_farSEXP );
+        List __result = parseOutput(file_name, sample_size, loci_number, program, generate_jsfs, generate_seg_sites, generate_fpc, fpc_breaks_near, fpc_breaks_far);
         PROTECT(__sexp_result = Rcpp::wrap(__result));
     }
     UNPROTECT(1);
@@ -42,16 +44,34 @@ BEGIN_RCPP
 END_RCPP
 }
 // addSegSitesToFpc
-NumericMatrix addSegSitesToFpc(const NumericMatrix seg_sites, const NumericVector positions, NumericMatrix fpc);
-RcppExport SEXP jaatha_addSegSitesToFpc(SEXP seg_sitesSEXP, SEXP positionsSEXP, SEXP fpcSEXP) {
+NumericMatrix addSegSitesToFpc(const NumericMatrix seg_sites, const NumericVector positions, const NumericVector breaks_near, const NumericVector breaks_far, NumericMatrix fpc);
+RcppExport SEXP jaatha_addSegSitesToFpc(SEXP seg_sitesSEXP, SEXP positionsSEXP, SEXP breaks_nearSEXP, SEXP breaks_farSEXP, SEXP fpcSEXP) {
 BEGIN_RCPP
     SEXP __sexp_result;
     {
         Rcpp::RNGScope __rngScope;
         Rcpp::traits::input_parameter< const NumericMatrix >::type seg_sites(seg_sitesSEXP );
         Rcpp::traits::input_parameter< const NumericVector >::type positions(positionsSEXP );
+        Rcpp::traits::input_parameter< const NumericVector >::type breaks_near(breaks_nearSEXP );
+        Rcpp::traits::input_parameter< const NumericVector >::type breaks_far(breaks_farSEXP );
         Rcpp::traits::input_parameter< NumericMatrix >::type fpc(fpcSEXP );
-        NumericMatrix __result = addSegSitesToFpc(seg_sites, positions, fpc);
+        NumericMatrix __result = addSegSitesToFpc(seg_sites, positions, breaks_near, breaks_far, fpc);
+        PROTECT(__sexp_result = Rcpp::wrap(__result));
+    }
+    UNPROTECT(1);
+    return __sexp_result;
+END_RCPP
+}
+// calcPercentFpcViolation
+NumericVector calcPercentFpcViolation(const NumericMatrix seg_sites, const NumericVector positions);
+RcppExport SEXP jaatha_calcPercentFpcViolation(SEXP seg_sitesSEXP, SEXP positionsSEXP) {
+BEGIN_RCPP
+    SEXP __sexp_result;
+    {
+        Rcpp::RNGScope __rngScope;
+        Rcpp::traits::input_parameter< const NumericMatrix >::type seg_sites(seg_sitesSEXP );
+        Rcpp::traits::input_parameter< const NumericVector >::type positions(positionsSEXP );
+        NumericVector __result = calcPercentFpcViolation(seg_sites, positions);
         PROTECT(__sexp_result = Rcpp::wrap(__result));
     }
     UNPROTECT(1);

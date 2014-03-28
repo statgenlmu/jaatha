@@ -10,7 +10,7 @@ test.callMS <- function() {
 
 test.msSingleSimFunc <- function() {
   set.seed(789)
-  sum.stats <- msSingleSimFunc(dm, c(1,10))
+  sum.stats <- msSingleSimFunc(dm.tt, c(1,10))
   checkTrue(is.list(sum.stats))
   checkEquals(2, length(sum.stats))
 
@@ -19,7 +19,7 @@ test.msSingleSimFunc <- function() {
 
   checkTrue(!is.null(sum.stats$jsfs))
   checkTrue(is.array(sum.stats$jsfs))
-  checkEquals(c(11,12), dim(sum.stats$jsfs))
+  checkEquals(c(12,13), dim(sum.stats$jsfs))
   checkTrue(sum(sum.stats$jsfs) > 0)
 
   set.seed(456)
@@ -37,21 +37,21 @@ test.msSingleSimFunc <- function() {
   }
 
   set.seed(123)
-  dm@sum.stats <- '4pc'
+  dm@sum.stats <- 'fpc'
   dm <- calcFpcBreaks(dm, sum.stats$seg.sites) 
   sum.stats <- msSingleSimFunc(dm, c(1, 10))
   checkEquals(2, length(sum.stats))
   checkTrue(!is.null(sum.stats$pars))
-  checkTrue(is.array(sum.stats[['4pc']]))
-  checkEquals(dm.getLociNumber(dm), sum(sum.stats[['4pc']]))
+  checkTrue(is.array(sum.stats[['fpc']]))
+  checkEquals(dm.getLociNumber(dm), sum(sum.stats[['fpc']]))
 
   dm <- dm.addSummaryStatistic(dm, 'seg.sites')
   sum.stats <- msSingleSimFunc(dm, c(1, 0.1))
   checkEquals(3, length(sum.stats))
   checkTrue(!is.null(sum.stats$pars))
   checkTrue(!is.null(sum.stats$seg.sites))
-  checkTrue(is.array(sum.stats[['4pc']]))
-  checkEquals(dm.getLociNumber(dm), sum(sum.stats[['4pc']]))
+  checkTrue(is.array(sum.stats[['fpc']]))
+  checkEquals(dm.getLociNumber(dm), sum(sum.stats[['fpc']]))
 
   dm@sum.stats <- 'file'
   sum.stats <- msSingleSimFunc(dm, c(1, .5))
@@ -61,51 +61,6 @@ test.msSingleSimFunc <- function() {
   checkTrue(file.exists(sum.stats$file))
   checkTrue((file.info(sum.stats$file)$size > 0))
 }
-
-# test.calcFpcSumStat <- function() {
-#   snp.matrix2 <- snp.matrix
-#   colnames(snp.matrix2) <- 1:5/5
-# 
-#   dm <- dm.addSummaryStatistic(dm, '4pc')
-#   mat <- calcFpcSumStat(list(snp.matrix, snp.matrix, snp.matrix2, matrix(0, 5, 0)), dm)
-#   checkTrue(is.matrix(mat))
-#   checkEquals(4, sum(mat))
-#   checkEquals(2, mat['3', '3'])
-#   checkEquals(1, mat['NA', '3'])
-#   checkEquals(1, mat['NA', 'NA'])
-# }
-
-test.violatesFpc <- function() {
-  checkEquals( c(near=TRUE, violates=TRUE), violatesFpc(c(1,2), snp.matrix) )
-  checkEquals( c(near=FALSE, violates=FALSE), violatesFpc(c(1,3), snp.matrix) )
-  checkEquals( c(near=FALSE, violates=TRUE), violatesFpc(c(1,4), snp.matrix) )
-  checkEquals( c(near=FALSE, violates=FALSE), violatesFpc(c(2,3), snp.matrix) )
-  checkEquals( c(near=FALSE, violates=TRUE), violatesFpc(c(2,4), snp.matrix) )
-  checkEquals( c(near=TRUE, violates=FALSE), violatesFpc(c(3,4), snp.matrix) )
-  
-  checkEquals( c(near=FALSE, violates=FALSE), violatesFpc(c(1,5), snp.matrix) )
-  checkEquals( c(near=FALSE, violates=FALSE), violatesFpc(c(2,5), snp.matrix) )
-  checkEquals( c(near=FALSE, violates=FALSE), violatesFpc(c(3,5), snp.matrix) )
-  checkEquals( c(near=TRUE, violates=FALSE), violatesFpc(c(4,5), snp.matrix) )
-}
-
-# test.calcPercentFpcViolations <- function() {
-#   checkEquals(c(near=0.5, far=0.5), calcPercentFpcViolations(snp.matrix))
-#   colnames(snp.matrix)[4:5] <- c('0.7', '0.75') 
-#   checkEquals(c(near=1, far=0.4), calcPercentFpcViolations(snp.matrix))
-# 
-# # No near snps
-#   colnames(snp.matrix) <- 1:5/5
-#   checkEquals(c(near=NaN, far=0.5), calcPercentFpcViolations(snp.matrix))
-# 
-# # Only singletons
-#   snp.matrix[1, ] <- 1
-#   snp.matrix[-1, ] <- 0
-#   checkEquals(c(near=NaN, far=NaN), calcPercentFpcViolations(snp.matrix))
-# 
-# # No SNPs at all
-#   checkEquals(c(near=NaN, far=NaN), calcPercentFpcViolations(matrix(0, 5, 0)))
-# } 
 
 test.simProg <- function(){
   checkTrue(!is.null(.jaatha$simProgs[["ms"]]))

@@ -97,8 +97,9 @@ test.JaathaInitialize <- function() {
 
   checkException(Jaatha.initialize(dm.tt, sum.stats.tt, folded=TRUE,
                                    smoothing=TRUE))
+}
 
-  # Groups
+test.Jaatha.initialization.groups <- function() {
   jaatha.grp <- Jaatha.initialize(dm.grp, sum.stats.grp, 123, folded=FALSE, smoothing=FALSE)
   checkTrue( is.list(jaatha.grp@sum.stats[['jsfs.1']]) )
   checkTrue( jaatha.grp@sum.stats[['jsfs.1']]$method == "poisson.transformed" )
@@ -124,14 +125,16 @@ test.JaathaInitialize <- function() {
   checkTrue( is.list(jaatha.grp@sum.stats[['jsfs.3']]) )
   checkTrue( jaatha.grp@sum.stats[['jsfs.3']]$method == "poisson.smoothing" )
   checkTrue( sum(jaatha.grp@sum.stats[['jsfs.3']]$value) > 0 )
+}
 
+test.Jaatha.initialization.fpc <- function() {
   # four-point-condition sum.stat
   jaatha.fpc <- Jaatha.initialize(dm.fpc, sum.stats.fpc, 123, folded=FALSE, 
                                   smoothing=FALSE, seg.sites=seg.sites)
   checkEquals(2, length(jaatha.fpc@sum.stats))
   checkTrue( is.list(jaatha.fpc@sum.stats[['jsfs']]) )
-  checkTrue( is.list(jaatha.fpc@sum.stats[['4pc']]) )
+  checkTrue( is.list(jaatha.fpc@sum.stats[['fpc']]) )
 
-  checkTrue( jaatha.fpc@sum.stats[['4pc']]$method == "poisson.smoothing" )
-  checkTrue( sum(jaatha.fpc@sum.stats[['4pc']]$value) > 0 )
+  checkTrue( jaatha.fpc@sum.stats[['fpc']]$method == "poisson.smoothing" )
+  checkTrue( sum(jaatha.fpc@sum.stats[['fpc']]$value) > 0 )
 }

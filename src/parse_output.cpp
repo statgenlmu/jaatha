@@ -15,6 +15,8 @@ void addToJsfs(const NumericMatrix &seg_sites,
 
 void addToFpc(const NumericMatrix &seg_sites, 
               const NumericVector &positions, 
+              const NumericVector &breaks_near,
+              const NumericVector &breaks_far,
               NumericMatrix &fpc);
 
 std::string line;
@@ -26,8 +28,13 @@ List parseOutput(const std::string file_name,
                  const int program = 0,
                  const bool generate_jsfs = true,
                  const bool generate_seg_sites = false,
-                 const bool generate_fpc = false) {
+                 const bool generate_fpc = false,
+                 const NumericVector fpc_breaks_near = NumericVector(0),
+                 const NumericVector fpc_breaks_far = NumericVector(0)) {
+  
+  if ((!generate_seg_sites) && (!generate_jsfs) && (!generate_fpc)) return List::create();
 
+  //Rprintf("File: %s \n", file_name.c_str());
   std::ifstream output(file_name.c_str(), std::ifstream::in);
   size_t individuals = sample_size[0] + sample_size[1];
 
@@ -39,64 +46,72 @@ List parseOutput(const std::string file_name,
   NumericVector positions(0);
   int locus = -1;
 
+  if (generate_fpc) {
+    if (fpc_breaks_far.size() == 0 || fpc_breaks_near.size() == 0) 
+      throw exception("No breaks for fpc sum stats given");
+  }
+
   List seg_sites_list(loci_number); 
   NumericMatrix jsfs(sample_size[0]+1, sample_size[1]+1);
-  NumericMatrix fpc(sample_size[0]+1, sample_size[1]+1);
+  NumericMatrix fpc(fpc_breaks_near.size()+2, fpc_breaks_far.size()+2);
 
   // Output
   while( output.good() ) {
     std::getline(output, line);
-    if (line == "//") locus +=1;
+    if (line == "//") locus += 1;
 
     if (line.substr(0, 11) == "segsites: 0") {
       seg_sites = NumericMatrix(0, 0);
       if (generate_seg_sites) seg_sites_list[locus] = seg_sites;
+      if (generate_fpc) addToFpc(seg_sites, positions, 
+                                 fpc_breaks_near, fpc_breaks_far, fpc);
     } 
 
-    if (line.substr(0, 9) == "segsites:") {
+    else if (line.substr(0, 9) == "segsites:") {
+      //Rprintf("Locus %i\n", locus);
       std::getline(output, line);
-      if (generate_seg_sites || generate_fpc) positions = parseMsPositions(line);
+      positions = parseMsPositions(line);
       seg_sites = parseMsSegSites(output, positions, individuals);
+      if (seg_sites.ncol() == 0) throw exception("Failed to parse seg.sites");
       if (generate_seg_sites) seg_sites_list[locus] = seg_sites;
       if (generate_jsfs) addToJsfs(seg_sites, sample_size, jsfs);
-      if (generate_fpc) addToFpc(seg_sites, positions, fpc);
+      if (generate_fpc) addToFpc(seg_sites, positions, 
+                                 fpc_breaks_near, fpc_breaks_far, fpc);
     }
   }
 
   output.close();
 
   // Return the summary statistics as list without growing it
-  List sum_stats;
   if (generate_seg_sites & (!generate_jsfs) & (!generate_fpc)) {
-    sum_stats = List::create( _["seg.sites"] = seg_sites_list ) ;
+    return List::create( _["seg.sites"] = seg_sites_list );
   }
   else if ((!generate_seg_sites) & generate_jsfs & (!generate_fpc)) {
-    sum_stats = List::create( _["jsfs"] = jsfs ) ;
+    return List::create( _["jsfs"] = jsfs );
   }
   else if ((!generate_seg_sites) & (!generate_jsfs) & (generate_fpc)) {
-    sum_stats = List::create( _["fpc"] = fpc ) ;
+    return List::create( _["fpc"] = fpc );
   }
 
   else if (generate_seg_sites & generate_jsfs & (!generate_fpc)) {
-    sum_stats = List::create( _["seg.sites"] = seg_sites_list,
-                              _["jsfs"] = jsfs ) ;
+    return List::create( _["seg.sites"] = seg_sites_list,
+                         _["jsfs"] = jsfs );
   }
   else if (generate_seg_sites & (!generate_jsfs) & (generate_fpc)) {
-    sum_stats = List::create( _["seg.sites"] = seg_sites_list, 
-                              _["fpc"] = fpc ) ;
+    return List::create( _["seg.sites"] = seg_sites_list, 
+                         _["fpc"] = fpc );
   }
   else if ((!generate_seg_sites) & generate_jsfs & (generate_fpc)) {
-    sum_stats = List::create( _["jsfs"] = jsfs, 
-                              _["fpc"] = fpc );
+    return List::create( _["jsfs"] = jsfs, 
+                         _["fpc"] = fpc );
   }
 
-  else if (generate_seg_sites & generate_jsfs & (generate_fpc)) {
-    sum_stats = List::create( _["seg.sites"] = seg_sites_list,
-                              _["jsfs"] = jsfs, 
-                              _["fpc"] = fpc );
+  else {
+    return List::create( _["seg.sites"] = seg_sites_list,
+                         _["jsfs"] = jsfs, 
+                         _["fpc"] = fpc );
   }
 
-  return sum_stats;
 }
 
 NumericMatrix parseMsSegSites(std::ifstream &output, 
