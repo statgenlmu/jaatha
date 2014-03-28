@@ -269,12 +269,10 @@ Jaatha.initialize <- function(demographic.model, jsfs,
                       sample.size[2]+2,
                       "-X2) )^2")
 
-      border.mask <- jsfs.value
+      border.mask <- jsfs.cur
       border.mask[, ] <- 0
-      #border.mask[c(1, nrow(jsfs.cur)), ] <- 1
-      #border.mask[ ,c(1, ncol(jsfs.cur))] <- 1
-      border.mask[1,1] <- 1
-      border.mask[nrow(jsfs.value), ncol(jsfs.value)] <- 1
+      border.mask[c(1, nrow(jsfs.cur)), ] <- 1
+      border.mask[ ,c(1, ncol(jsfs.cur))] <- 1
       border.mask <- as.logical(border.mask)
 
       sum.stats[[jsfs.name]] <- list(method="poisson.smoothing",
