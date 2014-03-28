@@ -25,6 +25,9 @@ fitGlm <- function(sim.data, jaatha, weighting=NULL){
       glm.fitted[[name]] <- fitGlmPoiTransformed(sim.data, name, 
                                       jaatha@sum.stats[[i]]$transformation, 
                                       weighting, jaatha)
+
+      stopifnot(length(glm.fitted[[name]]) == 
+                length(jaatha@sum.stats[[name]]$value.transformed))
     }
     else if (jaatha@sum.stats[[i]]$method == "poisson.smoothing") {
       glm.fitted[[name]] <- fitPoiSmoothed(sim.data, name, weighting, jaatha)

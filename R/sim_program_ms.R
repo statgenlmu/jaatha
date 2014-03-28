@@ -125,14 +125,21 @@ msSingleSimFunc <- function(dm, parameters) {
   ms.options <- generateMsOptions(dm, parameters)
   sim.time <- system.time(ms.out <- callMs(ms.options, dm))
 
-  breaks.near <- dm@options[['fpc.breaks.near']]
-  breaks.far <- dm@options[['fpc.breaks.near']]
-  if (is.null(breaks.near))  breaks.near <- c(.25, .5, .75)
-  if (is.null(breaks.far))  breaks.far <- c(.25, .5, .75)
+  # Parse the output & generate additional summary statistics
+  if ('fpc' %in% dm@sum.stats) {
+    breaks.near <- dm@options[['fpc.breaks.near']]
+    breaks.far <- dm@options[['fpc.breaks.near']]
+    stopifnot(!is.null(breaks.near))
+    stopifnot(!is.null(breaks.far))
 
-  sum.stats <- parseOutput(ms.out, dm.getSampleSize(dm), dm.getLociNumber(dm), 0, 
-                           'jsfs' %in% dm@sum.stats, 'seg.sites' %in% dm@sum.stats,
-                           'fpc' %in% dm@sum.stats, breaks.near, breaks.far)
+    sum.stats <- parseOutput(ms.out, dm.getSampleSize(dm), dm.getLociNumber(dm), 0, 
+                             'jsfs' %in% dm@sum.stats, 'seg.sites' %in% dm@sum.stats,
+                             TRUE, breaks.near, breaks.far)
+  } else {
+    sum.stats <- parseOutput(ms.out, dm.getSampleSize(dm), dm.getLociNumber(dm), 0, 
+                             'jsfs' %in% dm@sum.stats, 'seg.sites' %in% dm@sum.stats,
+                             FALSE)
+  }
 
   sum.stats[['pars']] <- parameters
   if ("file" %in% dm@sum.stats) {

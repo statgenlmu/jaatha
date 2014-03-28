@@ -271,8 +271,8 @@ dm.addSummaryStatistic <- function(dm, sum.stat) {
 
   dm@sum.stats <- c(dm@sum.stats, sum.stat)
   if (sum.stat == '4pc') {
-    dm@options[['4pc.breaks.near']] <- 0:5/5
-    dm@options[['4pc.breaks.far']] <- 0:5/5
+    dm@options[['fpc.breaks.near']] <- 1:3/4
+    dm@options[['fpc.breaks.far']] <- 1:3/4
   }
   dm <- .dm.selectSimProg(dm)
   return(dm)

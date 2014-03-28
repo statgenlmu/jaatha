@@ -135,6 +135,8 @@ test.Jaatha.initialization.fpc <- function() {
   checkTrue( is.list(jaatha.fpc@sum.stats[['jsfs']]) )
   checkTrue( is.list(jaatha.fpc@sum.stats[['fpc']]) )
 
-  checkTrue( jaatha.fpc@sum.stats[['fpc']]$method == "poisson.smoothing" )
+  #checkTrue( jaatha.fpc@sum.stats[['fpc']]$method == "poisson.smoothing" )
   checkTrue( sum(jaatha.fpc@sum.stats[['fpc']]$value) > 0 )
+  checkTrue( !is.null(jaatha.fpc@opts$dm@options[['fpc.breaks.near']]) )
+  checkTrue( !is.null(jaatha.fpc@opts$dm@options[['fpc.breaks.far']]) )
 }
