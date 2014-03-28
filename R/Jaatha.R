@@ -292,21 +292,25 @@ Jaatha.initialize <- function(demographic.model, jsfs,
         border.func <- function(x) { 
           c(border[dim(x)[1],], border[1:(dim(x)[1]-1), dim(x)[2]])
         }
+        fpc.model="(X1+I(X1^2)+X2+I(X2^2))^2"
       } else {
         border.mask[ , , ] <- 0
         border.mask[nrow(border.mask), , ] <- 1
         border.mask[ ,ncol(border.mask), ] <- 1
-
         border.func <- function(x) { 
           border <- apply(x, 1:2, sum)
           c(border[dim(x)[1],], border[1:(dim(x)[1]-1), dim(x)[2]])
         }
+        fpc.model="(X1+I(X1^2)+X2+I(X2^2)+X3+I(X3^2))^2"
       }
-      sum.stats[[fpc.name]] <- list(method="poisson.smoothing",
-                                    border.transformation=as.vector,
-                                    model="(X1+I(X1^2)+X2+I(X2^2)+X3+I(X3^2))^2",
-                                    border.mask=border.mask,
-                                    border.transformation=border.func,
+      # sum.stats[[fpc.name]] <- list(method="poisson.smoothing",
+      #                               border.transformation=as.vector,
+      #                               border.mask=border.mask,
+      #                               border.transformation=border.func,
+      #                               model=fpc.model,
+      #                               value=fpc.value)
+      sum.stats[[fpc.name]] <- list(method='poisson.transformed',
+                                    transformation=as.vector,
                                     value=fpc.value)
     }
   }

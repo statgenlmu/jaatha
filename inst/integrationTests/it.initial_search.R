@@ -36,3 +36,10 @@ test.initialSearch.smoothing <- function() {
   pStartPoints <- Jaatha.getStartingPoints(jaatha)
   checkEquals(4, nrow(pStartPoints))
 }
+
+test.initialSearch.fpc <- function() {
+  jaatha.fpc <- Jaatha.initialize(dm.fpc, sum.stats.fpc, 1234, seg.sites=seg.sites, cores=2)
+  jaatha <- Jaatha.initialSearch(jaatha, sim=40, blocks.per.par=2)
+  pStartPoints <- Jaatha.getStartingPoints(jaatha)
+  checkEquals(6, nrow(pStartPoints))
+}
