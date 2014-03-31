@@ -1,17 +1,17 @@
 Version 2.3.2
 ==================
 ##Algorithm changes:
-- The initial search now divides the parameter space by all axis in turn,
+- `Jaatha.initialSearch()` now divides the parameter space by all axis in turn,
   which makes the number of block linear instead of exponential in the
   parameter number.  
 
 ##Improvements:
-- Replaced plyr with dplyr as the latter is significantly faster.
+- Replaced dependency `plyr` with `dplyr` as the latter is significantly faster.
 
 Version 2.3.1
 ==================
 ##New Features:
-  - Add an optional 'border' to smoothing type summary statistics with is fitted
+  - Add an optional border to smoothing type summary statistics with is fitted
     via traditional transformations.
   - For the JSFS, the border is now excluded from smoothing and summarized in an
     sums similar to the traditional approach.
@@ -19,9 +19,9 @@ Version 2.3.1
 Version 2.3
 ==================
 ##Algorithm changes: 
-  - Removed epsilon. We now stop the refined search after the
+  - Removed `epsilon`. We now stop the refined search after the
     likelihood did not improve for 10 consecutive steps.
-  - Removed weight parameter to down-weight old simulations,
+  - Removed `weight` parameter to down-weight old simulations,
     because it had no measurable effect on the estimates.
 
 ##New Features: 
@@ -34,7 +34,7 @@ Version 2.3
 Version 2.2
 ==================
 + Added function for calculating BCa confidence intervals
-+ Added "rerun" option to initial & refined search 
++ Added `rerun` option to initial & refined search 
 + Switched form doMC to multicore for parallelization
 + Support for multiple independent summary statistics, even though this is not 
   yet used in the default front end.
