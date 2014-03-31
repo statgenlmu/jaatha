@@ -42,5 +42,5 @@ test.initialSearch.fpc <- function() {
                               seg.sites=sum.stats.fpc$seg.sites)
   jaatha <- Jaatha.initialSearch(jaatha, sim=20, blocks.per.par=2)
   pStartPoints <- Jaatha.getStartingPoints(jaatha)
-  checkEquals(8, nrow(pStartPoints))
+  checkEquals(6, nrow(pStartPoints))
 }
