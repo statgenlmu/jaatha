@@ -9,17 +9,19 @@
 
 #' Search the parameter space for good starting positions
 #'
-#' This functions devides the parameter space in different parts (blocks).
+#' This functions divides the parameter space in different parts (blocks).
 #' In each block, simulations for different parameter combinations are run
 #' to roughly predict the combination with the highest score (which is 
 #' equivalent to the highest composite log likelihood).
-#' This points can later be used as starting positions for the secound
+#' This points can later be used as starting positions for the second
 #' estimation phase of Jaatha (\code{\link{Jaatha.refinedSearch}})
 #'
 #' @param jaatha The Jaatha settings (create with \code{\link{Jaatha.initialize}})
-#' @param sim Numeric. The number of simulations that are performed in each bin
-#' @param blocks.per.par Numeric. The number of block per parameter. 
-#'          Will result in Par^blocks.per.par blocks
+#' @param sim An integer stating the number of simulations that are performed for each
+#'        block.
+#' @param blocks.per.par Integer. For each parameter axis in turn, we divide the
+#'        parameter space into \code{blocks.per.par} equally sized blocks by
+#'        restricting them to only a fraction of this axis.
 #' @param rerun You can repeat a previously done initial search in Jaatha.
 #'        Do do so, just call the initial search function with the jaatha 
 #'        object result of the first initial search and set rerun to 'TRUE'.
@@ -27,7 +29,7 @@
 #' @return The jaatha object with starting positions
 #'
 #' @export
-Jaatha.initialSearch <- function(jaatha, sim=200, blocks.per.par=2, rerun=FALSE){
+Jaatha.initialSearch <- function(jaatha, sim=200, blocks.per.par=3, rerun=FALSE){
 
   if (rerun) {
     if( is.null(jaatha@calls[['initial.search']]) ) 
@@ -39,30 +41,20 @@ Jaatha.initialSearch <- function(jaatha, sim=200, blocks.per.par=2, rerun=FALSE)
                                              blocks.per.par=blocks.per.par) 
   }
 
-  .log2("Called Jaatha.initialSearch()")
-  .log2("sim:", sim, "| blocks.per.par:", blocks.per.par)
   set.seed(jaatha@seeds[2])
-  .log2("Seeting seed to", jaatha@seeds[2])
   tmp.dir <- getTempDir(jaatha@use.shm)
 
   setParallelization(jaatha@cores)
 
-  .print("*** Searching starting positions ***")
-  .print("Creating initial blocks ... ")
-
   firstBlocks <- createInitialBlocks(jaatha@par.ranges, blocks.per.par)
 
-  .log2("Calculating block sizes")
   for (i in seq(along=firstBlocks)){
-    .print("*** Block", i, ":", printBorder(firstBlocks[[i]], jaatha))
+    .print("*** Block", i, "of", length(firstBlocks), ":", printBorder(firstBlocks[[i]], jaatha))
 
-    .log3("Simulating in block", i)
     sim.data <- simulateWithinBlock(sim, firstBlocks[[i]], jaatha)       
 
-    .log3("Fitting GLM in block", i)        
     glms.fitted <- fitGlm(sim.data, jaatha)
 
-    .log3("Searching optimal values in block",i)
     optimal <- findBestParInBlock(firstBlocks[[i]], glms.fitted, jaatha@sum.stats) 
     
     firstBlocks[[i]]@score <- optimal$score
@@ -84,11 +76,21 @@ Jaatha.initialSearch <- function(jaatha, sim=200, blocks.per.par=2, rerun=FALSE)
 createInitialBlocks <- function(par.ranges, blocks.per.par) {
   basic.block <- par.ranges # Just to get dimensions & names
   basic.block[,1] <- 0
-  basic.block[,2] <- 1/blocks.per.par
-
-  getIthBlock <- function(i) {
-    b <- (.index2blocks(value=i-1, newBase=blocks.per.par, expo=nrow(par.ranges))) / blocks.per.par  
-    return(new("Block", border=(basic.block + b)))
+  basic.block[,2] <- 1
+  
+  if (blocks.per.par == 1) {
+    return(list(new("Block", border=basic.block)))
   }
-  return(lapply(1:blocks.per.par^nrow(par.ranges), getIthBlock)) 
+
+  blocks <- vector("list", nrow(par.ranges)*blocks.per.par)
+  for (i in 1:nrow(par.ranges)) {
+    for (j in 1:blocks.per.par) {
+      new.block <- basic.block
+      new.block[i,2] <- 1/blocks.per.par
+      new.block[i, ] <- new.block[i, ] + (j-1)/blocks.per.par
+      blocks[(j-1)*nrow(par.ranges)+i] <- new("Block", border=new.block)
+    }
+  }
+
+  blocks
 }
