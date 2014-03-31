@@ -119,4 +119,4 @@ smooth.border.jaatha <- new("Jaatha", smooth.simfunc, smooth.par.ranges,
                             smooth.border.sum.stats, 123)
 smooth.sim.data <- simulateWithinBlock(10, block.test, smooth.jaatha)
 
-save(list=ls(), file="test_setup.Rda")
+save(list=ls(), file="test-setup.Rda")
