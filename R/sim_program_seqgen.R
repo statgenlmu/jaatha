@@ -15,9 +15,8 @@ seqgen.features    <- c('mutation.model', 'tstv.ratio',
                         'gtr.rate.4','gtr.rate.5','gtr.rate.6',
                         'gamma.categories', 'gamma.rate')
 
-possible.sum.stats <- unique(c("jsfs", "file"), getSimProgram('ms')@possible.sum.stats)
+possible.sum.stats <- c("jsfs", "file") # 'seg.sites', 'fpc')
 mutation.models    <- c('HKY', 'F84', 'GTR')
-
 possible.features  <- c(getSimProgram('ms')@possible.features, seqgen.features)
 
 checkForSeqgen <- function() {
@@ -42,11 +41,7 @@ checkForSeqgen <- function() {
 generateMsModel <- function(dm) {
   ms <- getSimProgram('ms')
   dm@features <- dm@features[dm@features$type %in% ms@possible.features, ]
-  dm@sum.stats <- dm@sum.stats[dm@sum.stats %in% ms@possible.sum.stats]
-
-  if (!"trees" %in% dm@sum.stats) dm@sum.stats <- append(dm@sum.stats, "trees") 
-  if (!"file" %in% dm@sum.stats) dm@sum.stats <- append(dm@sum.stats, "file") 
-  if ("jsfs" %in% dm@sum.stats) dm@sum.stats <- dm@sum.stats[dm@sum.stats != 'jsfs']
+  dm@sum.stats <- c("file", "trees")
   return(dm)
 }
 
@@ -213,8 +208,12 @@ seqgenSingleSimFunc <- function(dm, parameters) {
   if (length(parameters) != dm.getNPar(dm)) 
     stop("Wrong number of parameters!")
 
-  sum.stats <- msSingleSimFunc(dm@options[['ms.model']], parameters)
+  # Use ms to simulate the ARG
+  ms.model <- dm@options[['ms.model']]
+  if (is.null(ms.model)) ms.model <- generateMsModel(dm)
+  sum.stats <- msSingleSimFunc(ms.model, parameters)
 
+  # Call seq-gen to distribute mutations
   seqgen.options <- generateSeqgenOptions(dm, parameters)
   seqgen.file <- callSeqgen(seqgen.options, sum.stats[['file']])
 

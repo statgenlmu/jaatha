@@ -1,6 +1,6 @@
 test.parseOutput <- function() {
   set.seed(25)
-  dm.tt@sum.stats <- 'file'
+  dm.tt@sum.stats <- c('file', 'seg.sites')
   ss <- dm.getSampleSize(dm.tt)
   ln <- dm.getLociNumber(dm.tt)
   breaks <- c(.25, .5, .75)

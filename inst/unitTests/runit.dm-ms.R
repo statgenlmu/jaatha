@@ -36,6 +36,15 @@ test.msSingleSimFunc <- function() {
     checkEquals(21, nrow(sum.stats$seg.sites[[i]]))
   }
 
+  dm@sum.stats <- c('file', 'seg.sites')
+  sum.stats <- msSingleSimFunc(dm, c(1, .5))
+  checkEquals(3, length(sum.stats))
+  checkTrue(!is.null(sum.stats$pars))
+  checkTrue(!is.null(sum.stats$seg.sites))
+  checkTrue(!is.null(sum.stats$file))
+  checkTrue(file.exists(sum.stats$file))
+  checkTrue((file.info(sum.stats$file)$size > 0))
+
   set.seed(123)
   dm@sum.stats <- 'fpc'
   dm <- calcFpcBreaks(dm, sum.stats$seg.sites) 
@@ -52,14 +61,6 @@ test.msSingleSimFunc <- function() {
   checkTrue(!is.null(sum.stats$seg.sites))
   checkTrue(is.array(sum.stats[['fpc']]))
   checkEquals(dm.getLociNumber(dm), sum(sum.stats[['fpc']]))
-
-  dm@sum.stats <- 'file'
-  sum.stats <- msSingleSimFunc(dm, c(1, .5))
-  checkEquals(2, length(sum.stats))
-  checkTrue(!is.null(sum.stats$pars))
-  checkTrue(!is.null(sum.stats$file))
-  checkTrue(file.exists(sum.stats$file))
-  checkTrue((file.info(sum.stats$file)$size > 0))
 }
 
 test.simProg <- function(){
