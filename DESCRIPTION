@@ -19,7 +19,7 @@ Imports:
     foreach (>= 1.2.0-1),
     phyclust (>= 0.1-14),
     Rcpp (>= 0.11.0),
-    plyr (>= 1.8),
+    dplyr (>= 0.1.3.0.99),
     parallel
 Suggests:
     ape (>= 2.7),

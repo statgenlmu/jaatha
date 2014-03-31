@@ -1,3 +1,13 @@
+Version 2.3.2
+---------------
+Algorithm changes: 
+  - The initial search now divides the parameter space by all axis in turn,
+    which makes the number of block linear instead of exponential in the
+    parameter number.  
+
+Improvements:
+  - Replaced plyr with dplyr as the latter is significantly faster.
+
 Version 2.3.1
 ---------------
 New Features:
