@@ -22,11 +22,11 @@ howtos: install
 test: install
 	cd tests; export RCMDCHECK=FALSE; Rscript doRUnit.R
 
-integration-test: inst/unitTests/test_setup.Rda install 
+integration-test: inst/unitTests/test-setup.Rda install 
 	cd tests; export RCMDCHECK=FALSE; export INTEGRATION_TESTS=TRUE; Rscript doRUnit.R
 
 test-setup: install
-	cd inst/unitTests; Rscript test_setup.R
+	cd inst/unitTests; Rscript test-setup.R
 
 check: $(PACKAGE)
 	# Runs an R CMD check
@@ -47,7 +47,7 @@ README: README.md
 NEWS: NEWS.md
 	cp NEWS.md NEWS
 
-inst/unitTests/test_setup.Rda: inst/unitTests/test_setup.R
+inst/unitTests/test-setup.Rda: inst/unitTests/test-setup.R
 	make test-setup
 
 man: $(R_SOURCES) DESCRIPTION

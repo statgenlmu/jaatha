@@ -31,7 +31,7 @@ library(package=pkg, character.only=TRUE)
 if (is.element(pkg, loadedNamespaces()))
   attach(loadNamespace(pkg), name=paste("namespace", pkg, sep=":"), pos=3)
 
-test.setup <- paste(path.unit.tests, "test_setup.Rda", sep="/")
+test.setup <- paste(path.unit.tests, "test-setup.Rda", sep="/")
 if (!file.exists(test.setup)) stop("Failed to load ", test.setup) 
 load(test.setup)
 rm(test.setup)
