@@ -1,8 +1,8 @@
-  # Most unit tests for seq-gen are moved to integration tests, as seq-gen is not
-  # available on CRAN. 
+# Most unit tests for seq-gen are moved to integration tests, as seq-gen is not
+# available on CRAN. 
 
-  test.generateSeqgenOptions <- function() {
-    jaatha:::setJaathaVariable('seqgen.exe', 'seq-gen') 
+test.generateSeqgenOptions <- function() {
+  jaatha:::setJaathaVariable('seqgen.exe', 'seq-gen') 
   dm.hky@options$seqgen.cmd <- NULL
   opts <- jaatha:::generateSeqgenOptions(dm.hky, c(1,10))
   opts <- strsplit(opts, " ")[[1]]
