@@ -1,0 +1,20 @@
+\name{dm.setLociNumber}
+\alias{dm.setLociNumber}
+\title{Defines how many identical loci belong to a group of loci}
+\usage{
+dm.setLociNumber(dm, loci.number, group = 0)
+}
+\arguments{
+  \item{dm}{The Demographic Model}
+
+  \item{loci.number}{The number of loci in the group}
+
+  \item{group}{The group for which we set the loci number}
+}
+\value{
+The changed Demographic Model
+}
+\description{
+Defines how many identical loci belong to a group of loci
+}
+

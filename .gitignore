@@ -31,13 +31,23 @@
 Rseed.txt
 
 # Jaatha #
-*.tex
 jaatha_*.tar.gz
 jaatha_*.zip
-tmp
-package/man/*
-package.Rcheck
-package/NAMESPACE
-package/DESCRIPTION
-package/vignettes/cache/saved_objects
+jaatha.Rcheck
 unit_tests/results
+howtos/cache
+src/symbols.rds
+inst/unitTests/test_setup.Rda
+inst/integrationTests/results
+DEV_VERSIONS
+NEWS
+README
+
+# Latex
+*.aux
+*.bbl
+*.blg
+*.log
+*.out
+*.tex
+*.pdf

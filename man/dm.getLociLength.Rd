@@ -1,0 +1,19 @@
+\name{dm.getLociLength}
+\alias{dm.getLociLength}
+\title{Gets how long the loci in a group are}
+\usage{
+dm.getLociLength(dm, group = NULL)
+}
+\arguments{
+  \item{dm}{The Demographic Model}
+
+  \item{group}{The group for which we get the length of
+  loci}
+}
+\value{
+The length of the loci in the group
+}
+\description{
+Gets how long the loci in a group are
+}
+

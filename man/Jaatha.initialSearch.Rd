@@ -1,0 +1,37 @@
+\name{Jaatha.initialSearch}
+\alias{Jaatha.initialSearch}
+\title{Search the parameter space for good starting positions}
+\usage{
+Jaatha.initialSearch(jaatha, sim = 200, blocks.per.par = 3, rerun = FALSE)
+}
+\arguments{
+  \item{jaatha}{The Jaatha settings (create with
+  \code{\link{Jaatha.initialize}})}
+
+  \item{sim}{An integer stating the number of simulations
+  that are performed for each block.}
+
+  \item{blocks.per.par}{Integer. For each parameter axis in
+  turn, we divide the parameter space into
+  \code{blocks.per.par} equally sized blocks by restricting
+  them to only a fraction of this axis.}
+
+  \item{rerun}{You can repeat a previously done initial
+  search in Jaatha.  Do do so, just call the initial search
+  function with the jaatha object result of the first
+  initial search and set rerun to 'TRUE'.}
+}
+\value{
+The jaatha object with starting positions
+}
+\description{
+This functions divides the parameter space in different
+parts (blocks). In each block, simulations for different
+parameter combinations are run to roughly predict the
+combination with the highest score (which is equivalent to
+the highest composite log likelihood). This points can
+later be used as starting positions for the second
+estimation phase of Jaatha
+(\code{\link{Jaatha.refinedSearch}})
+}
+

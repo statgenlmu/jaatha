@@ -1,60 +1,62 @@
-output = tmp
-docPath = package/vignettes
-rnwfile = jaatha
+.PHONY: howtos install test test-setup integration-test travis-test check clean
 
-default: package
+VERSION=$(shell grep Version DESCRIPTION | awk '{print $$2}')
+PACKAGE=jaatha_$(VERSION).tar.gz
+R_CHECK_ARGS?="--as-cran"
+R_BUILD_ARGS?=
 
-howto:
-	# Builds and opens Jaatha's vignette 
-	- mkdir $(output); cp -r $(docPath)/* $(output)/
-	cd $(output); R CMD Sweave $(rnwfile).Rnw;
-	cd $(output); pdflatex $(rnwfile).tex;
-	cd $(output); bibtex $(rnwfile);
-	cd $(output); pdflatex $(rnwfile).tex;
-	cd $(output); pdflatex $(rnwfile).tex;
-	cd $(output); evince $(rnwfile).pdf &
+R_SOURCES=$(wildcard R/*.R) 
+CPP_SOURCES=$(wildcard src/*.cc)
+VIGNETTES=$(wildcard vignettes/*.pdf)
+TESTS=$(wildcard inst/unitTests/*.R) $(wildcard tests/*.R)
 
-howto-cache:
-	- cd $(docPath); R CMD Sweave jaatha.Rnw
-	cd $(docPath)/cache; R CMD Sweave initialSearch.Rnw
-	#- cd $(docPath); R CMD Sweave jaatha.Rnw
-	cd $(docPath)/cache; R CMD Sweave refineSearch.Rnw
-	rm $(docPath)/jaatha.tex
+default: $(PACKAGE)
 
-doc: clean-doc
-	# Builds the roxygen2 documentation of Jaatha
-	Rscript -e 'library(roxygen2); roxygenise("package")'
+release: clean test-setup howtos $(PACKAGE) check  
+travis-test: $(PACKAGE) test-setup integration-test check
 
-test: doc
-	# Runs the unit tests
-	R CMD INSTALL package
-	cd unit_tests; ./doRUnit.R
+howtos: install 
+	cd howtos; make
+	cp howtos/*.pdf vignettes/
 
-quick-test:
-	# Runs the unit tests without time-consuming whole algorithms tests
-	R CMD INSTALL package
-	cd unit_tests; ./doRUnit.R quick
+test: install
+	cd tests; export RCMDCHECK=FALSE; Rscript doRUnit.R
 
-check: doc clean-package
+integration-test: inst/unitTests/test_setup.Rda install 
+	cd tests; export RCMDCHECK=FALSE; export INTEGRATION_TESTS=TRUE; Rscript doRUnit.R
+
+test-setup: install
+	cd inst/unitTests; Rscript test_setup.R
+
+check: $(PACKAGE)
 	# Runs an R CMD check
-	R CMD check package
-	make clean-package
+	R CMD check $(R_CHECK_ARGS) $(PACKAGE)
 
-package: test howto-cache check
-	# Build the R package out of the sources
-	R CMD build package
+package: $(PACKAGE) 
+
+install: 
+	R CMD INSTALL .
+
+$(PACKAGE): $(R_SOURCES) $(CPP_SOURCES) $(TESTS) $(VIGNETTES) README NEWS DESCRIPTION man inst/unitTests/test_setup.Rda
+	R CMD build $(R_BUILD_ARGS) .
+
+README: README.md
+	grep -v "\`\`\`" README.md | grep -v "Build Status" > README
+
+NEWS: NEWS.md
+	cp NEWS.md NEWS
+
+inst/unitTests/test_setup.Rda: inst/unitTests/test_setup.R
+	make test-setup
+
+man: $(R_SOURCES) DESCRIPTION
+	- rm -r man 2> /dev/null
+	Rscript -e 'library(roxygen2); roxygenise(".")'
 
 clean:
-	# Deletes temoral output
-	-rm -rv $(output) jaatha.Rcheck
-	-rm -rv unitTests/results
-
-clean-package:
-	# Deletes temorary files, which tends to accumulate in the package
-	- cd package/src/; rm *.so *.o *.rds ms/*.o 2> /dev/null
-
-clean-doc:
-	# Deletes the automatically gernerated man files
-	- rm package/man/*.Rd 2> /dev/null
-	- rm package/DESCRIPTION 2> /dev/null 
-	cp DESCRIPTION.template package/DESCRIPTION
+	- rm README NEWS
+	- rm -rv jaatha.Rcheck
+	- cd src/; rm *.so *.o *.rds ms/*.o 2> /dev/null
+	- rm -r man 2> /dev/null
+	- cd howtos; make clean
+	- rm -rv inst/unitTests/test_setup.Rda
