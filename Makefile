@@ -37,11 +37,14 @@ package: $(PACKAGE)
 install: 
 	R CMD INSTALL .
 
-$(PACKAGE): $(R_SOURCES) $(CPP_SOURCES) $(TESTS) $(VIGNETTES) README DESCRIPTION man inst/unitTests/test_setup.Rda
+$(PACKAGE): $(R_SOURCES) $(CPP_SOURCES) $(TESTS) $(VIGNETTES) README NEWS DESCRIPTION man inst/unitTests/test_setup.Rda
 	R CMD build $(R_BUILD_ARGS) .
 
 README: README.md
 	grep -v "\`\`\`" README.md | grep -v "Build Status" > README
+
+NEWS: NEWS.md
+	cp NEWS.md NEWS
 
 inst/unitTests/test_setup.Rda: inst/unitTests/test_setup.R
 	make test-setup
@@ -51,6 +54,7 @@ man: $(R_SOURCES) DESCRIPTION
 	Rscript -e 'library(roxygen2); roxygenise(".")'
 
 clean:
+	- rm README NEWS
 	- rm -rv jaatha.Rcheck
 	- cd src/; rm *.so *.o *.rds ms/*.o 2> /dev/null
 	- rm -r man 2> /dev/null
