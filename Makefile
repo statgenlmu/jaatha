@@ -12,7 +12,7 @@ TESTS=$(wildcard inst/unitTests/*.R) $(wildcard tests/*.R)
 
 default: $(PACKAGE)
 
-release: clean test-setup howtos $(PACKAGE) check  
+release: clean howtos $(PACKAGE) check  
 travis-test: $(PACKAGE) test-setup integration-test check
 
 howtos: install 
@@ -38,7 +38,7 @@ install:
 	Rscript -e "library(Rcpp); compileAttributes()"
 	R CMD INSTALL .
 
-$(PACKAGE): $(R_SOURCES) $(CPP_SOURCES) $(TESTS) $(VIGNETTES) README NEWS DESCRIPTION man inst/unitTests/test_setup.Rda
+$(PACKAGE): $(R_SOURCES) $(CPP_SOURCES) $(TESTS) $(VIGNETTES) README NEWS man test-setup
 	R CMD build $(R_BUILD_ARGS) .
 
 README: README.md
