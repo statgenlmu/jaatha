@@ -128,7 +128,7 @@ msSingleSimFunc <- function(dm, parameters) {
   # Parse the output & generate additional summary statistics
   if ('fpc' %in% dm@sum.stats) {
     breaks.near <- dm@options[['fpc.breaks.near']]
-    breaks.far <- dm@options[['fpc.breaks.near']]
+    breaks.far <- dm@options[['fpc.breaks.far']]
     stopifnot(!is.null(breaks.near))
     stopifnot(!is.null(breaks.far))
 
