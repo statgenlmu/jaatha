@@ -34,10 +34,11 @@ test.msSingleSimFunc <- function() {
     checkEquals(21, nrow(sum.stats$seg.sites[[i]]))
   }
 
-  dm@sum.stats <- 'file'
+  dm@sum.stats <- c('file', 'seg.sites')
   sum.stats <- msSingleSimFunc(dm, c(1, .5))
-  checkEquals(2, length(sum.stats))
+  checkEquals(3, length(sum.stats))
   checkTrue(!is.null(sum.stats$pars))
+  checkTrue(!is.null(sum.stats$seg.sites))
   checkTrue(!is.null(sum.stats$file))
   checkTrue(file.exists(sum.stats$file))
   checkTrue((file.info(sum.stats$file)$size > 0))
