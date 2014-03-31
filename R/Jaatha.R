@@ -32,7 +32,7 @@
 #' @importFrom methods representation 
 #' @importFrom parallel mclapply
 #' @importFrom Rcpp evalCpp
-#' @importFrom plyr adply
+#' @importFrom dplyr as.tbl_cube
 #' @useDynLib jaatha
 NULL
 
