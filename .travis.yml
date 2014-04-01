@@ -21,7 +21,7 @@ before_install:
 install:
   - ./travis-tool.sh install_github paulstaab/dplyr
   - ./travis-tool.sh install_deps
-  - ./travis-tool.sh r_install knitr
+  - ./travis-tool.sh r_install knitr roxygen2
   - ./travis-tool.sh aptget_install seq-gen
 after_failure:
   - ./travis-tool.sh dump_logs
