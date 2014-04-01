@@ -27,7 +27,7 @@ git checkout releases
 git add $release
 
 # And push everything to GitHub
-echo "Pushing to GibHub..."
+echo "Pushing to GitHub..."
 git commit -m "Add release $tag"
 git push -q origin releases 2>&1 > /dev/null || exit 1
 echo "Done"
