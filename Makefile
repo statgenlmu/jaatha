@@ -55,8 +55,8 @@ man: $(R_SOURCES) DESCRIPTION
 
 clean:
 	- rm README NEWS
-	- rm -rv jaatha.Rcheck
+	- rm -r jaatha.Rcheck 2> /dev/null
 	- cd src/; rm *.so *.o *.rds ms/*.o 2> /dev/null
 	- rm -r man 2> /dev/null
 	- cd howtos; make clean
-	- rm -rv inst/unitTests/test_setup.Rda
+	- rm -r inst/unitTests/test-setup.Rda 2> /dev/null
