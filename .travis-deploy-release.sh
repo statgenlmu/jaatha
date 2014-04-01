@@ -12,7 +12,7 @@ sudo apt-get install --no-install-recommends \
 # If it is, build the .tar.gz
 echo "Building release $tag..."
 make release || exit 1
-release=`ls jaatha-*.tar.gz` || exit 1
+release=`ls jaatha_*.tar.gz` || exit 1
 
 # Configure git and make the repo use https-auth
 echo "Setting up git..."
