@@ -2,6 +2,10 @@
 
 # Determine if the current commit is tagged
 tag=`git describe --exact-match HEAD 2> /dev/null` || exit 0
+if [ "$GH_TOKEN" == "" ]; then 
+  echo "Failed to read encrypted GitHub token"
+  exit 1
+fi
 
 # Install Latex to build the documentation
 sudo apt-get install --no-install-recommends \
@@ -24,7 +28,7 @@ git fetch origin releases
 git checkout releases
 
 # Add the release 
-git add $release
+git add -f $release
 
 # And push everything to GitHub
 echo "Pushing to GitHub..."
