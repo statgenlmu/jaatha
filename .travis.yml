@@ -7,7 +7,7 @@
 language: c
 env:
   global:
-   - secure: PNca+nOQXvtjAzGpPJ7DeXXyrq0yRbE5nn3rOA3QIc3a9xcWSJcDriEuhObj8oPBXPCrk88huXImv76KR2NjK5vg0/7tK0r8k1BD20Xt5JXfYwHDLjq0xcrBfbQISsfbksPVdKxDqFJtAolMOYxArHHN6ZPCkqLzca8GUGGhHF0=
+   secure: PNca+nOQXvtjAzGpPJ7DeXXyrq0yRbE5nn3rOA3QIc3a9xcWSJcDriEuhObj8oPBXPCrk88huXImv76KR2NjK5vg0/7tK0r8k1BD20Xt5JXfYwHDLjq0xcrBfbQISsfbksPVdKxDqFJtAolMOYxArHHN6ZPCkqLzca8GUGGhHF0=
    - CRAN: http://cran.rstudio.com
    - R_BUILD_ARGS="--no-build-vignettes --no-manual"
    - R_CHECK_ARGS="--no-build-vignettes --no-manual --as-cran"
