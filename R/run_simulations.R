@@ -16,7 +16,7 @@
 runSimulations <- function(pars, cores, jaatha) {
   checkType(pars, c('mat', 'num'))
   stopifnot(ncol(pars) == getParNumber(jaatha))
-  stopifnot(all( 0 <= pars & pars <= 1 ))
+  stopifnot(all( 0-1e-5 <= pars & pars <= 1 + 1e-5 ))
   colnames(pars) <- getParNames(jaatha)
   seeds <- generateSeeds(length(pars)+1)
 
