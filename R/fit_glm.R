@@ -53,7 +53,8 @@ fitGlmPoiTransformed <- function(sim.data, sum.stat, transformation, weighting, 
 
   formulas <- paste0(stats.names, "~", paste(getParNames(jaatha) ,collapse= "+"))
   lapply(formulas, glm, data=data.frame(stats.sim), family=poisson,
-         control = list(maxit = 200))
+         control = list(maxit = 200), model = FALSE,
+         x = FALSE, y = FALSE)
 }
 
 #' Fits a GLM for a summary statistics of type "poisson.smoothed"
@@ -71,7 +72,8 @@ fitPoiSmoothed <- function(sim.data, sum.stat, weighting, jaatha) {
   sim.data.df <- convertSimResultsToDataFrame(sim.data, sum.stat,
                                               jaatha@sum.stats[[sum.stat]]$border.mask)
 
-  smooth.glm  <- glm(model, data=sim.data.df, family=poisson("log"))
+  smooth.glm  <- glm(model, data=sim.data.df, family=poisson("log"), 
+                     model = FALSE, x = FALSE, y = FALSE)
   if (!is.null(jaatha@sum.stats[[sum.stat]]$border.transformation)) {
     glms <- list(smooth=smooth.glm,
                  border=fitGlmPoiTransformed(sim.data, sum.stat,
