@@ -17,7 +17,6 @@ travis-test: $(PACKAGE) test-setup integration-test check
 
 howtos: install 
 	cd howtos; make
-	cp howtos/*.pdf vignettes/
 
 test: install
 	cd tests; export RCMDCHECK=FALSE; Rscript doRUnit.R

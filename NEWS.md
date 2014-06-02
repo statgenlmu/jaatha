@@ -1,35 +1,35 @@
-Version 2.3.2
+Version 2.4
 ==================
-##Algorithm changes:
+## Algorithm changes:
 - `Jaatha.initialSearch()` now divides the parameter space by all axis in turn,
   which makes the number of block linear instead of exponential in the
   parameter number.  
 
-##Improvements:
-- Replaced dependency `plyr` with `dplyr` as the latter is significantly faster.
+## New Features:
+- Add an optional border to smoothing type summary statistics with is fitted
+  via traditional transformations.
 
-Version 2.3.1
-==================
-##New Features:
-  - Add an optional border to smoothing type summary statistics with is fitted
-    via traditional transformations.
-  - For the JSFS, the border is now excluded from smoothing and summarized in an
-    sums similar to the traditional approach.
+## Improvements:
+- `dplyr` instead of `dplyr` for converting JSFS into data frames as the latter 
+  is significantly faster.
+- Striped unused components from the `glm` objects.
+
 
 Version 2.3
 ==================
-##Algorithm changes: 
+## Algorithm changes: 
   - Removed `epsilon`. We now stop the refined search after the
     likelihood did not improve for 10 consecutive steps.
   - Removed `weight` parameter to down-weight old simulations,
     because it had no measurable effect on the estimates.
 
-##New Features: 
+## New Features: 
   - Support for multiple groups of loci
   - Possibility to smooth arrays of arbitrary dimension
 
-##Improvements: 
+## Improvements: 
   - Clarifies 'The Jaatha HowTo'
+
 
 Version 2.2
 ==================
@@ -50,6 +50,7 @@ multiple times in different threads
 + Fixed warning messages in cpp files
 + Updated Makevars
 
+
 Version 2.1
 ==================
 + Removed the "externalTheta" option to simplify further development
@@ -66,6 +67,7 @@ be provided on Jaatha's homepage instead
 + Bugfix: Changed the example fasta file for compatibility with next ape version
 + Bugfix: Fixed encoding issue with bibtex for the packages vignette
 + Bugfix: Removed debug functions in C++ files that prevented installation on R-2.14
+
 
 Version 2.0.0
 ==================
