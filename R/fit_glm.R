@@ -53,7 +53,8 @@ fitGlmPoiTransformed <- function(sim.data, sum.stat, transformation, weighting, 
 
   formulas <- paste0(stats.names, "~", paste(getParNames(jaatha) ,collapse= "+"))
   lapply(formulas, glm, data=data.frame(stats.sim), family=poisson,
-         control = list(maxit = 200))
+         control = list(maxit = 200), model = FALSE,
+         x = FALSE, y = FALSE)
 }
 
 #' Fits a GLM for a summary statistics of type "poisson.smoothed"
@@ -62,33 +63,51 @@ fitGlmPoiTransformed <- function(sim.data, sum.stat, transformation, weighting, 
 #' @param sum.stat Name of the summary statistics
 #' @param weighting Potentially weights for the simulations.
 #' @param jaatha A Jaatha Object.
-#' @return A list with one fitted GLMs
+#' @return A list with one fitted GLM
 fitPoiSmoothed <- function(sim.data, sum.stat, weighting, jaatha) {
   model <- paste0("sum.stat ~ ",
                   "(", jaatha@sum.stats[[sum.stat]]$model, ")",  
                   "*(", paste(getParNames(jaatha), collapse="+"), ")") 
 
-  sim.data.df <- convertSimResultsToDataFrame(sim.data, sum.stat)
-  list(glm(model, data=sim.data.df, family=poisson("log")))
+  sim.data.df <- convertSimResultsToDataFrame(sim.data, sum.stat,
+                                              jaatha@sum.stats[[sum.stat]]$border.mask)
+
+  smooth.glm  <- glm(model, data=sim.data.df, family=poisson("log"), 
+                     model = FALSE, x = FALSE, y = FALSE)
+  if (!is.null(jaatha@sum.stats[[sum.stat]]$border.transformation)) {
+    glms <- list(smooth=smooth.glm,
+                 border=fitGlmPoiTransformed(sim.data, sum.stat,
+                        jaatha@sum.stats[[sum.stat]]$border.transformation,
+                        weighting, jaatha))  
+  } else { 
+    glms <- list(smooth=smooth.glm)
+  }
+  glms
 }
 
 
 #' Converts simulation results into a data frame that is usable for fitting a
 #' glm.
 #'
-#' Currently only works with nx2 matix summary statistics and vectorizes thoose.
+#' Currently only works with nx2 matix summary statistics.
 #' 
 #' @param sim.data Results from simulations
 #' @param sum.stat Name of the summary statistics which should get converted
+#' @param mask Boolean vector of positions to exclude in the data.frame
 #' @return The summary statistics as data.frame 
-convertSimResultsToDataFrame <- function(sim.data, sum.stat) {
+convertSimResultsToDataFrame <- function(sim.data, sum.stat, mask=NULL) {
   do.call(rbind, lapply(sim.data, function(sim.result) {
-    sum.stat <- adply(sim.result[[sum.stat]], 1:length(dim(sim.result[[sum.stat]])))
-    sum.stat <- sapply(sum.stat, as.numeric)
-    colnames(sum.stat)[length(colnames(sum.stat))] <- 'sum.stat'  
-    pars <- matrix(sim.result$pars.normal, nrow(sum.stat),
+    dim.names <- lapply(dim(sim.result[[sum.stat]]), function(x) 1:x)
+    names(dim.names) <- paste0('X', 1:length(dim(sim.result[[sum.stat]])))
+    dimnames(sim.result[[sum.stat]]) <- dim.names
+
+    sum.stat.df <- as.data.frame(as.tbl_cube(sim.result[[sum.stat]]))
+    colnames(sum.stat.df)[length(colnames(sum.stat.df))] <- 'sum.stat'  
+    pars <- matrix(sim.result$pars.normal, nrow(sum.stat.df),
                    length(sim.result$pars.normal), byrow=TRUE)
     colnames(pars) <- names(sim.result$pars.normal)
-    data.frame(pars, sum.stat)
+    sum.stat.df <- data.frame(pars, sum.stat.df)
+    if (!is.null(mask)) sum.stat.df <- sum.stat.df[!mask, ]
+    sum.stat.df
   }))
 }

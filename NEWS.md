@@ -1,23 +1,40 @@
+Version 2.3.2
+==================
+##Algorithm changes:
+- `Jaatha.initialSearch()` now divides the parameter space by all axis in turn,
+  which makes the number of block linear instead of exponential in the
+  parameter number.  
+
+##Improvements:
+- Replaced dependency `plyr` with `dplyr` as the latter is significantly faster.
+
+Version 2.3.1
+==================
+##New Features:
+  - Add an optional border to smoothing type summary statistics with is fitted
+    via traditional transformations.
+  - For the JSFS, the border is now excluded from smoothing and summarized in an
+    sums similar to the traditional approach.
+
 Version 2.3
----------------
-Algorithm changes: 
-  - Removed epsilon. We now stop the refined search after the
+==================
+##Algorithm changes: 
+  - Removed `epsilon`. We now stop the refined search after the
     likelihood did not improve for 10 consecutive steps.
-  - Removed weight parameter to down-weight old simulations,
+  - Removed `weight` parameter to down-weight old simulations,
     because it had no measurable effect on the estimates.
 
-New Features: 
+##New Features: 
   - Support for multiple groups of loci
   - Possibility to smooth arrays of arbitrary dimension
 
-Improvements: 
+##Improvements: 
   - Clarifies 'The Jaatha HowTo'
 
-
 Version 2.2
----------------
+==================
 + Added function for calculating BCa confidence intervals
-+ Added "rerun" option to initial & refined search 
++ Added `rerun` option to initial & refined search 
 + Switched form doMC to multicore for parallelization
 + Support for multiple independent summary statistics, even though this is not 
   yet used in the default front end.
@@ -27,23 +44,14 @@ Version 2.2
   Now only simulations that actually are inside the current block are reused. 
 + Removed the "score". We are always using the log-likelihood now.
 + Added support for a new "poisson.smoothing" type of summary statistics. 
-
-Version 2.1.3
--------------
 + Fixed problem with naming of temporary directories if Jaatha was executed
 multiple times in different threads
-
-Version 2.1.2
--------------
 + Fixed problem with Rcpp in size_t on 64 bit windows
-
-Version 2.1.1
----------------
 + Fixed warning messages in cpp files
 + Updated Makevars
 
 Version 2.1
--------------
+==================
 + Removed the "externalTheta" option to simplify further development
 + Reworte and cleaned up many of the internal functions
 + Further seperated Jaatha and Demographic Model to simplify use of Jaatha
@@ -53,54 +61,31 @@ in other areas
 + Removed vignettes from the package due to their long build time; The pdfs will
 be provided on Jaatha's homepage instead 
 + Added citation information to the package  
-
-Version 2.0.3
--------------
 + Added link to github repo to package description
 + Removed unused optimization strategies
-
-Version 2.0.2
--------------
 + Bugfix: Changed the example fasta file for compatibility with next ape version
 + Bugfix: Fixed encoding issue with bibtex for the packages vignette
-
-Version 2.0.1
--------------
 + Bugfix: Removed debug functions in C++ files that prevented installation on R-2.14
 
 Version 2.0.0
--------------
-+ Testing
+==================
 + Updated Documentation and Vignette
 + New Feature: Added caching of ms and seqgen commands
 + Changed Feature: Made use of /dev/shm optional
 + Bugfix: Multiple tmp-dirs used during multicore refined search
 + Bugfix: Multiple searches for seqgen binary if running on multiple cores
-
-Version 1.9.12
--------------
-
 + Fixed a bug with one parameter models
 + Added support for seqgen
 + GLM fitting algorithm can now take more steps to converge
 + Updated the vignette
 + Ported seqgenFile2Jsfs.cc to Rcpp
-
-Version 1.9.11
--------------
 + Added parallelization using doMC.
 + Some improvements to the UI.
 + Updated copyright information.
 + Added import from ape.
 + Updated the vignette.
-
-Version 1.9.10
--------------
 + Use /dev/shm for temp files if available
 + Added "folded" option to use a folded JSFS
 + Added documentation for fasta2jsfs()
 + Made fasta2jsfs calculate the folded JSFS if no outgroup is given.
-
-Version 1.9.9
--------------
 + Reworked the demographic model class to be more flexible and consistent.

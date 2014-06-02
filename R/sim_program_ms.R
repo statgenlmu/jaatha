@@ -9,7 +9,7 @@
 possible.features  <- c("sample", "loci.number", "loci.length",
                         "mutation", "migration", "split",
                         "recombination", "size.change", "growth")
-possible.sum.stats <- c("jsfs", "4pc", "tree", "seg.sites", "file")
+possible.sum.stats <- c("jsfs", "4pc", "trees", "seg.sites", "file")
 
 #' Function to perform simulation using ms 
 #' 
@@ -39,8 +39,10 @@ generateMsOptionsCommand <- function(dm) {
     type <- as.character(dm@features[i,"type"])
     feat <- unlist(dm@features[i, ])
 
-    if (type == "mutation") {
-      cmd <- c(cmd,'"-t"', ',', feat["parameter"], ',')
+    if ( type == "mutation" ) {
+      if (any(c('seg.sites', 'jsfs', '4pc') %in% dm@sum.stats)) { 
+        cmd <- c(cmd,'"-t"', ',', feat["parameter"], ',')
+      }
     }
 
     else if (type == "split") {
@@ -147,7 +149,7 @@ msSingleSimFunc <- function(dm, parameters) {
     sum.stats[['file']] <- ms.out
   }
 
-  if (any(c('seg.sites', 'tree', '4pc') %in% dm@sum.stats)) {
+  if (any(c('seg.sites', '4pc') %in% dm@sum.stats)) {
     output <- scan(ms.out, character(), sep="\n", quiet=TRUE)
 
     if ("seg.sites" %in% dm@sum.stats) {

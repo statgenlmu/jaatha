@@ -47,6 +47,23 @@ summarizeJSFS <- function(jsfs){
     sum(jsfs[(n-2):(n-1),m]) )
 }
 
+summarizeJsfsBorder <- function(jsfs) {
+  if (is.list(jsfs)) jsfs <- jsfs$jsfs 
+  n <- nrow(jsfs)
+  m <- ncol(jsfs)
+  c(sum(jsfs[1,2:3]),
+    sum(jsfs[1,4:(m-3)]),
+    sum(jsfs[1,(m-2):m]),
+    sum(jsfs[2:3,1]),
+    sum(jsfs[4:(n-3),1]),
+    sum(jsfs[(n-2):(n),1]),
+    sum(jsfs[n,2:3]),
+    sum(jsfs[n,4:(m-3)]),
+    sum(jsfs[n,(m-2):(m-1)]),
+    sum(jsfs[2:3,m]),
+    sum(jsfs[4:(n-3),m]),
+    sum(jsfs[(n-2):(n-1),m]) )
+}
 
 
 summarizeFoldedJSFS <- function(jsfs) {

@@ -39,12 +39,10 @@ dm.grp <- dm.addSampleSize(dm.grp, 5:6, 3)
 sum.stats.grp <- dm.simSumStats(dm.grp, c(1, 5))
 
 # Finite Sites Models
-dm.sg <-  finalizeDM(dm.addOutgroup(dm.tt, "2*tau"))
-dm.hky <- finalizeDM(dm.setMutationModel(dm.sg, "HKY", c(0.2, 0.2, 0.3, 0.3), 2))
-dm.f81 <- finalizeDM(dm.setMutationModel(dm.sg, "F84", c(0.3, 0.2, 0.3, 0.2), 2))
-dm.gtr <- finalizeDM(dm.setMutationModel(dm.sg, "GTR", 
-                                         gtr.rates=c(0.2, 0.2, 0.1, 0.1, 0.1, 0.2)))
-
+dm.sg <-  dm.addOutgroup(dm.tt, "2*tau")
+dm.hky <- dm.setMutationModel(dm.sg, "HKY", c(0.2, 0.2, 0.3, 0.3), 2)
+dm.f81 <- dm.setMutationModel(dm.sg, "F84", c(0.3, 0.2, 0.3, 0.2), 2)
+dm.gtr <- dm.setMutationModel(dm.sg, "GTR", gtr.rates=c(0.2, 0.2, 0.1, 0.1, 0.1, 0.2))
 
 # Custom Simulation Interface
 csi.sim.func <- function(x, jaatha) {
@@ -82,10 +80,29 @@ smooth.sum.stats <- list("mat"=list(method="poisson.smoothing",
                                     model="(X1^2)*(X2^2)+log(X1)*log(X2)",
                                     value=smooth.obs$mat))
 
+border.mask <- smooth.obs$mat
+border.mask[, ] <- 0
+border.mask[c(1, nrow(smooth.obs$mat)), ] <- 1
+border.mask[ ,c(1, ncol(smooth.obs$mat))] <- 1
+border.mask <- as.logical(border.mask)
+
+border.transformation <- function(x) {
+  c(x[1, 1:12], x[2:9, 1], x[10, 1:12], x[2:9, 12])
+}
+
+smooth.border.sum.stats <- list("mat"=list(method="poisson.smoothing",
+                                    model="(X1^2)*(X2^2)+log(X1)*log(X2)",
+                                    value=smooth.obs$mat,
+                                    border.transformation=border.transformation,
+                                    border.mask=border.mask))
+rm(border.transformation, border.mask)
+
 smooth.par.ranges <- matrix(c(2, 1, 7, 7), 2, 2)
 rownames(smooth.par.ranges) <- c('x', 'y')
 
 smooth.jaatha <- new("Jaatha", smooth.simfunc, smooth.par.ranges, smooth.sum.stats, 123)
+smooth.border.jaatha <- new("Jaatha", smooth.simfunc, smooth.par.ranges, 
+                            smooth.border.sum.stats, 123)
 smooth.sim.data <- simulateWithinBlock(10, block.test, smooth.jaatha)
 
 save(list=ls(), file="test_setup.Rda")

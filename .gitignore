@@ -40,6 +40,8 @@ src/symbols.rds
 inst/unitTests/test_setup.Rda
 inst/integrationTests/results
 DEV_VERSIONS
+NEWS
+README
 
 # Latex
 *.aux
