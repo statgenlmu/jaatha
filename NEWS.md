@@ -10,8 +10,8 @@ Version 2.4
   via traditional transformations.
 
 ## Improvements:
-- `dplyr` instead of `dplyr` for converting JSFS into data frames as the latter 
-  is significantly faster.
+- Using `dplyr` instead of `plyr` for converting JSFS into data frames because
+  it is significantly faster.
 - Striped unused components from the `glm` objects.
 
 
