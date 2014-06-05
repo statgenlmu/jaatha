@@ -3,6 +3,7 @@
 
 test.generateSeqgenOptions <- function() {
   jaatha:::setJaathaVariable('seqgen.exe', 'seq-gen') 
+  dm.hky@options$seqgen.cmd <- NULL
   opts <- jaatha:::generateSeqgenOptions(dm.hky, c(1,10))
   opts <- strsplit(opts, " ")[[1]]
   checkTrue(opts[1] == "seq-gen")  

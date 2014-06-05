@@ -138,8 +138,7 @@ checkForMsms <- function() {
   stop("No msms executable found.")
 }
 
-possible.features  <- c("mutation","migration","split",
-                        "recombination","size.change","growth","pos.selection")
+possible.features  <- c(getSimProgram('ms')@possible.features,"pos.selection")
 possible.sum.stats <- c("jsfs")
 
 # This function generates an string that contains an R command for generating

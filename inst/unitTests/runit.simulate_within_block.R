@@ -31,18 +31,4 @@ test.runSimulatinos <- function() {
     checkTrue( !is.null(sum.stats1[[i]]$poisson.vector) )
     checkTrue( sum(sum.stats1[[i]]$poisson.vector) > 0 )
   }
-
-  if (require(multicore)) {
-    set.seed(15)
-    sum.stats2 <- runSimulations(pars.test, 2, jaatha.csi)
-    checkEquals( length(sum.stats2), 3 )
-    for (i in 1:3) {
-      checkTrue( all(denormalize(pars.test[i, ], jaatha.csi) == sum.stats1[[i]]$pars) )
-      checkTrue( all(pars.test[i, ] == sum.stats1[[i]]$pars.normal) )
-      checkTrue( !is.null(sum.stats2[[i]]$poisson.vector) )
-      checkTrue( sum(sum.stats2[[i]]$poisson.vector) > 0 )
-      checkEquals( sum.stats1[[i]]$poisson.vector,
-                   sum.stats2[[i]]$poisson.vector )
-    }
-  }
 }

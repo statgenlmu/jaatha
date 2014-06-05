@@ -58,8 +58,8 @@ Links
 -----
 
 [1]: http://onlinelibrary.wiley.com/doi/10.1002/ece3.722/abstract
-[2]: https://github.com/paulstaab/jaatha/raw/master/vignettes/jaatha_howto.pdf
-[3]: https://github.com/paulstaab/jaatha/raw/master/vignettes/custom_simulator_howto.pdf
+[2]: https://github.com/paulstaab/jaatha/raw/master/howtos/jaatha_howto.pdf
+[3]: https://github.com/paulstaab/jaatha/raw/master/howtos/custom_simulator_howto.pdf
 [4]: https://github.com/paulstaab/jaatha
 [5]: https://plus.google.com/s/%23jaatha
 

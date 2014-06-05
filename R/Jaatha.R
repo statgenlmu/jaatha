@@ -31,7 +31,8 @@
 #' @importFrom methods new 
 #' @importFrom methods representation 
 #' @importFrom parallel mclapply
-#' @import Rcpp
+#' @importFrom Rcpp evalCpp
+#' @importFrom dplyr as.tbl_cube
 #' @useDynLib jaatha
 NULL
 
@@ -121,6 +122,11 @@ init <- function(.Object, sim.func, par.ranges,
     else if (sum.stats[[i]]$method == "poisson.smoothing") {
       checkType(sum.stats[[i]]$model, c("char", "s"))      
       stopifnot(length(dim(sum.stats[[i]]$value)) == 2)
+      if (!is.null(sum.stats[[i]]$border.transformation)) {
+        stopifnot(!is.null(sum.stats[[i]]$border.mask))
+        sum.stats[[i]]$border.transformed <- 
+          sum.stats[[i]]$border.transformation(sum.stats[[i]]$value)
+      }
     }
     else {
       stop("Unknown summary statistic type: ", sum.stats[[i]]$method)
@@ -204,10 +210,7 @@ Jaatha.initialize <- function(demographic.model, jsfs,
                               use.shm=FALSE, folded=FALSE, 
                               smoothing=FALSE) {
 
-  if (is.list(jsfs)) jsfs <- jsfs$jsfs
-
   checkType(demographic.model, c("dm", "s"))
-  checkType(jsfs, c("num", "ar"))
   checkType(folded, c("bool", "single"))
   checkType(smoothing, c("bool", "single"))
   checkType(scaling.factor, c("num","single"))
@@ -221,22 +224,52 @@ Jaatha.initialize <- function(demographic.model, jsfs,
                        instead. See http://www.paulstaab.de/2013/11/r-shm")
 
   sum.stats <- list()
-  if (!smoothing) {
-    sum.stats[['jsfs']] <- list(method="poisson.transformed",
-                                transformation=summarizeJSFS,
-                                value=jsfs)
+  groups <- dm.getGroups(demographic.model)
 
-    if (folded) sum.stats$jsfs$transformation <- summarizeFoldedJSFS
-  } else {
-    warning("Smoothing is still very experimental")
-    model <- paste0("( i + I(i^2) + j + I(j^2) + log(i) + log(",
-                    demographic.model@sampleSizes[1]+2,
-                    "-i) + log(j) + log(",
-                    demographic.model@sampleSizes[2]+2,
-                    "-j) )^2")
-    sum.stats[['jsfs']] <- list(method="poisson.smoothing",
+  for (group in groups) {
+    if (group == 1 & all(demographic.model@features$group == 0)) {
+      name <- 'jsfs'
+      group <- 0
+      if (is.list(jsfs)) { 
+        jsfs.cur <- jsfs$jsfs
+      } else {
+        jsfs.cur <- jsfs
+      }
+    } else {
+      name <- paste('jsfs', group, sep='.')
+      stopifnot(is.list(jsfs))
+      stopifnot(is.matrix(jsfs[[name]]))
+      jsfs.cur <- jsfs[[name]]
+    }
+    stopifnot(is.matrix(jsfs.cur))
+
+    if (!smoothing) {
+      sum.stats[[name]] <- list(method="poisson.transformed",
+                                  transformation=summarizeJSFS,
+                                  value=jsfs.cur)
+
+      if (folded) sum.stats$jsfs$transformation <- summarizeFoldedJSFS
+    } else {
+      sample.size <- dm.getSampleSize(demographic.model, group)
+      warning("Smoothing is still very experimental")
+      model <- paste0("( X1 + I(X1^2) + X2 + I(X2^2) + log(X1) + log(",
+                      sample.size[1]+2,
+                      "-X1) + log(X2) + log(",
+                      sample.size[2]+2,
+                      "-X2) )^2")
+
+      border.mask <- jsfs.cur
+      border.mask[, ] <- 0
+      border.mask[c(1, nrow(jsfs.cur)), ] <- 1
+      border.mask[ ,c(1, ncol(jsfs.cur))] <- 1
+      border.mask <- as.logical(border.mask)
+
+      sum.stats[[name]] <- list(method="poisson.smoothing",
                                         model=model,
-                                        value=jsfs)
+                                        value=jsfs.cur,
+                                        border.transformation=summarizeJsfsBorder,
+                                        border.mask=border.mask)
+    }
   }
 
   jaatha <- new("Jaatha", 

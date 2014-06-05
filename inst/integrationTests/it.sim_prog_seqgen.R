@@ -1,6 +1,7 @@
 test.callSeqgen <- function(opts, ms.file){
-  opts <- c("seq-gen", " -mHKY", " -l", dm.tt@seqLength, " -p", dm.tt@seqLength + 1, " -q")
+  opts <- c("seq-gen", " -mHKY", " -l", dm.getLociLength(dm.tt), " -p", dm.getLociLength(dm.tt) + 1, " -q")
   
+  dm.tt@sum.stats <- 'trees'
   ms.options <- jaatha:::generateMsOptions(dm.tt, c(1,10))
   ms.file <- jaatha:::callMs(ms.options, dm.tt)
 
@@ -42,7 +43,8 @@ test.GtrModel <- function() {
 
 test.RateHeterogenity <- function() {
   set.seed(12)
-  dm.rh <- dm.addMutationRateHeterogenity(dm.hky, 0.1, 5, categories.number=5)
+  dm.rh <- finalizeDM(dm.addMutationRateHeterogenity(dm.hky, 0.1, 5,
+                                                     categories.number=5))
 
   opts <- jaatha:::generateSeqgenOptions(dm.rh, c(1, 1, 10))
   opts <- strsplit(opts, " ")[[1]]
@@ -51,4 +53,27 @@ test.RateHeterogenity <- function() {
 
   jsfs <- jaatha:::seqgenSingleSimFunc(dm.rh, c(1, 1, 10));
   checkTrue(sum(jsfs$jsfs) > 0)
+}
+
+test.finalizeSeqgen <- function() {
+  dm.hky <- finalizeSeqgen(dm.hky)
+  dm.f81 <- finalizeSeqgen(dm.f81)
+  dm.gtr <- finalizeSeqgen(dm.gtr)
+
+  checkTrue(!is.null(dm.hky@options[['seqgen.cmd']]))
+  checkTrue(!is.null(dm.hky@options[['ms.model']]))
+  checkTrue(!is.null(dm.f81@options[['seqgen.cmd']]))
+  checkTrue(!is.null(dm.f81@options[['ms.model']]))
+  checkTrue(!is.null(dm.gtr@options[['seqgen.cmd']]))
+  checkTrue(!is.null(dm.gtr@options[['ms.model']]))
+}
+
+test.generateMsModel <- function() {
+  for (dm in c(dm.hky, dm.f81, dm.gtr)) { 
+    dm.ms <- finalizeMs(generateMsModel(dm))
+    sum.stats <- msSingleSimFunc(dm.ms, c(1,5))
+    checkTrue( !is.null(sum.stats$file) )
+    checkTrue( file.exists(sum.stats$file) )
+    unlink(sum.stats$file)
+  }
 }

@@ -1,27 +1,25 @@
-# Sample .travis.yml for R projects.
-#
-# See README.md for instructions, or for more configuration options,
-# see the wiki:
-#   https://github.com/craigcitro/r-travis/wiki
-
 language: c
 env:
- global:
-   - CRAN: http://cran.rstudio.com
-   - R_BUILD_ARGS="--no-build-vignettes --no-manual"
-   - R_CHECK_ARGS="--no-build-vignettes --no-manual --as-cran"
-   - BOOTSTRAP_LATEX=""
-   - WARNINGS_ARE_ERRORS=1
-   - PATH=$PATH:~/bin
+  global:
+  - CRAN: http://cran.rstudio.com
+  - R_BUILD_ARGS="--no-build-vignettes --no-manual"
+  - R_CHECK_ARGS="--no-build-vignettes --no-manual --as-cran"
+  - BOOTSTRAP_LATEX=""
+  - WARNINGS_ARE_ERRORS=1
+  - secure: VwdirllAIAEKc5bpXcFV+BUFOab/le3GtBDSFQL8GgFL/Ayhfv8rWMgekd1YypOsNPPMYdw6wmfk6SbjfLI+M4j+5815xSHXSb6iSO8hx3RgYc+K3uS1NrmBpfpvdIs6vyuVJBE7pw45ytTuuKM8yeeVQtDKB2mpZwWItwp/UA4=
 script: make travis-test
 before_install:
-  - curl -OL http://raw.github.com/craigcitro/r-travis/master/scripts/travis-tool.sh
-  - chmod 755 ./travis-tool.sh
-  - ./travis-tool.sh bootstrap
+- curl -OL http://raw.github.com/craigcitro/r-travis/master/scripts/travis-tool.sh
+- chmod 755 ./travis-tool.sh
+- ./travis-tool.sh bootstrap
 install:
-  - ./travis-tool.sh install_deps
-  - ./travis-tool.sh r_install knitr
-  - ./travis-tool.sh aptget_install seq-gen
-  - mkdir ~/bin; wget -c http://www.mabs.at/ewing/msms/msms3.2rc-b148.jar -O ~/bin/msms.jar 
+- ./travis-tool.sh install_deps
+- ./travis-tool.sh r_install knitr roxygen2 dplyr
+- ./travis-tool.sh aptget_install seq-gen
 after_failure:
-  - ./travis-tool.sh dump_logs
+- ./travis-tool.sh dump_logs
+after_success:
+- ./.travis-deploy-release.sh
+branches:
+  except:
+  - releases

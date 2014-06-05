@@ -5,16 +5,15 @@
 # 
 # Authors:  Paul R. Staab & Lisha Mathew 
 # Email:    staab ( at ) bio.lmu.de
-# Date:     2013-09-04
 # Licence:  GPLv3 or later
 #--------------------------------------------------------------
+
+#' @include sim_program.R
 
 setClass("DemographicModel" ,
          representation(features="data.frame",
                         parameters="data.frame",
-                        sampleSizes="numeric",
-                        nLoci="numeric",
-                        seqLength="numeric",
+                        sum.stats="character",
                         tsTvRatio="numeric",
                         finiteSites="logical",
                         currentSimProg="SimProgram",
@@ -26,7 +25,7 @@ setClass("DemographicModel" ,
 # Initialization
 #-----------------------------------------------------------------------
 
-.init <- function(.Object, sampleSizes, nLoci, seqLength,
+.init <- function(.Object, sample.size, loci.number, loci.length,
                   finiteSites, tsTvRatio){
 
   .Object@features <- data.frame(type=character(),
@@ -44,11 +43,13 @@ setClass("DemographicModel" ,
                                    stringsAsFactors=F )
 
 
+  .Object <- dm.addSampleSize(.Object, sample.size)
+  .Object <- dm.setLociNumber(.Object, loci.number)
+  .Object <- dm.setLociLength(.Object, loci.length)
+
   .Object@finiteSites     <- finiteSites
-  .Object@sampleSizes     <- sampleSizes
-  .Object@seqLength       <- seqLength
   .Object@tsTvRatio       <- tsTvRatio
-  .Object@nLoci           <- nLoci
+  .Object@sum.stats       <- c("jsfs")
   .Object@options         <- list()
 
   return(.Object)
@@ -228,14 +229,14 @@ dm.addParameter <- function(dm, par.name, lower.boundary, upper.boundary, fixed.
 addFeature <- function(dm, type, parameter=NA,
                        lower.range=NA, upper.range=NA, fixed.value=NA, par.new=T,
                        pop.source=NA, pop.sink=NA,
-                       time.point=NA, group=NA) {
+                       time.point=NA, group=0) {
   
   if (missing(par.new))     par.new <- T
   if (missing(parameter))   parameter <- NA
   if (missing(pop.source))  pop.source <- NA
   if (missing(pop.sink))    pop.sink <- NA
   if (missing(time.point))  time.point <- NA
-  if (missing(group))       group <- NA
+  if (missing(group))       group <- 0
 
   # Check inputs
   checkType(dm,          c("dm",   "s"), T, F)
@@ -264,6 +265,18 @@ addFeature <- function(dm, type, parameter=NA,
   return(dm)
 }
 
+dm.addSummaryStatistic <- function(dm, sum.stat) {
+  checkType(dm, "dm")
+  checkType(sum.stat, "char")
+
+  dm@sum.stats <- c(dm@sum.stats, sum.stat)
+  if (sum.stat == '4pc') {
+    dm@options[['4pc.breaks.near']] <- 0:5/5
+    dm@options[['4pc.breaks.far']] <- 0:5/5
+  }
+  dm <- .dm.selectSimProg(dm)
+  return(dm)
+}
 
 # Helper function that appends a feature to the "feature" dataframe
 # Does not check the feature for consistency
@@ -342,22 +355,31 @@ checkParInRange <- function(dm, param) {
 # Selects a program for simulation that is capable of all current features
 .dm.selectSimProg <- function(dm) {
   for (i in seq(along = .jaatha$simProgs)){
-    if (all(dm@features$type %in% .jaatha$simProgs[[i]]@possible.features)) {
+    if (all(dm@features$type %in% .jaatha$simProgs[[i]]@possible.features) & 
+        all(dm@sum.stats %in% .jaatha$simProgs[[i]]@possible.sum.stats)) {
       dm@currentSimProg <- .jaatha$simProgs[[i]]
-      .log2("Using",dm@currentSimProg@name,"for simulations")
+      .log2("Using", dm@currentSimProg@name, "for simulations")
       return(dm)
     }
   }
-  warning("No suitable simulation software found!")
+  stop("No suitable simulation software found!")
   return(dm)
 }
 
 finalizeDM <- function(dm) {
-  simProg <- dm@currentSimProg
-  .log2("Finalizing demographic model. Simprog:", simProg@name)
-  dm <- simProg@finalizationFunc(dm)
+  if (all(dm@features$group == 0)) {
+    return(dm@currentSimProg@finalizationFunc(dm))
+  }
+
+  dm@options$grp.models <- list()
+  for (group in dm.getGroups(dm)) {
+    grp.model <- generateGroupModel(dm, group)
+    dm@options$grp.models[[as.character(group)]] <- 
+      grp.model@currentSimProg@finalizationFunc(grp.model)
+  }
   return(dm)
 }
+
 
 
 #------------------------------------------------------------------------------
@@ -445,10 +467,92 @@ dm.createDemographicModel <- function(sample.sizes, loci.num, seq.length=1000,
 }
 
 
-
 #---------------------------------------------------------------------------------
 # Front end functions for adding features
 #---------------------------------------------------------------------------------
+
+#' Defines how many identical loci belong to a group of loci
+#'
+#' @param dm The Demographic Model
+#' @param loci.number The number of loci in the group
+#' @param group The group for which we set the loci number
+#' @return The changed Demographic Model
+#' @export
+dm.setLociNumber <- function(dm, loci.number, group=0) {
+  checkType(dm, 'dm')
+  checkType(loci.number, 'num')
+  checkType(group, 'num')
+
+  feat <- dm@features
+  if (sum(feat$type=='loci.number' & feat$group==group) > 0) {
+    feat$parameter[feat$type=='loci.number' & feat$group==group] <-
+      as.character(loci.number)
+    dm@features <- feat
+  } else {
+    dm <- addFeature(dm, 'loci.number', as.character(loci.number),
+                     par.new=FALSE, group=group)
+  }
+
+  dm
+}
+
+
+#' Defines the sequence length of each loci in a group of loci
+#'
+#' @param dm The Demographic Model
+#' @param loci.length The length each loci in the given loci group
+#' @param group The group for which we set the loci number
+#' @return The changed Demographic Model
+#' @export
+dm.setLociLength <- function(dm, loci.length, group=0) {
+  checkType(dm, 'dm')
+  checkType(loci.length, 'num')
+  checkType(group, 'num')
+
+  feat <- dm@features
+  if (sum(feat$type=='loci.length' & feat$group==group) > 0) {
+    feat$parameter[feat$type=='loci.length' & feat$group==group] <-
+      as.character(loci.length)
+    dm@features <- feat
+  } else {
+    dm <- addFeature(dm, 'loci.length', as.character(loci.length),
+                     par.new=FALSE, group=group)
+  }
+
+  dm
+}
+
+#' Gets how many loci belong to a group of loci
+#'
+#' @param dm The Demographic Model
+#' @param group The group for which we get the number of loci
+#' @return The number of loci in the group
+#' @export
+dm.getLociNumber <- function(dm, group=NULL) {
+  if (is.null(group)) {
+    ln <- searchFeature(dm, type='loci.number')$parameter
+    if (length(ln) != 1) stop("Cannot identify loci.number") 
+    return(as.integer(ln))
+  }
+  as.integer(dm@features$parameter[dm@features$type=='loci.number' & 
+                                   dm@features$group==group])
+}
+
+#' Gets how long the loci in a group are
+#'
+#' @param dm The Demographic Model
+#' @param group The group for which we get the length of loci
+#' @return The length of the loci in the group
+#' @export
+dm.getLociLength <- function(dm, group=NULL) {
+  if (is.null(group)) {
+    ll <- searchFeature(dm, type='loci.length')$parameter
+    if (length(ll) != 1) stop("Cannot identify loci.length") 
+    return(as.integer(ll))
+  }
+  as.integer(dm@features$parameter[dm@features$type=='loci.length' & 
+                                   dm@features$group==group])
+}
 
 #--------------------------------------------------------------------
 # dm.addMutation()
@@ -515,6 +619,47 @@ dm.addMutation <- function(dm, lower.range, upper.range, fixed.value,
 }
 
 
+
+#-------------------------------------------------------------------
+#  dm.addSampleSize
+#-------------------------------------------------------------------
+#' Sets how many individuals from each population are sampled at time 0.
+#' 
+#' @param dm  The demographic model to which recombination events should be added.
+#' @param sample.size A vector with sample sizes for each population. 
+#' @param group The group of loci with this sample size. 
+#' @return The demographic model with the sample
+#' @export
+#'
+dm.addSampleSize <- function(dm, sample.size, group=0) {
+  checkType(sample.size, "num")
+  for (smpl.nr in seq(along=sample.size)) {
+    dm <- addFeature(dm, "sample", as.character(sample.size[smpl.nr]), 
+                     pop.source=smpl.nr, par.new=FALSE, 
+                     group=group, time.point='0')
+  }
+  return(dm)
+}
+
+
+dm.getSampleSize <- function(dm, group.nr=NULL) {
+  if (!is.null(group.nr)) {
+    dm <- generateGroupModel(dm, group.nr)
+  }
+  feat.samples <- searchFeature(dm, type="sample")
+  stopifnot(nrow(feat.samples) > 0)
+
+  sample.size <- rep(0, max(na.omit(dm@features$pop.source)))
+  for (row.nr in 1:nrow(feat.samples)) {
+    stopifnot(sample.size[feat.samples$pop.source[row.nr]] == 0)
+    sample.size[feat.samples$pop.source[row.nr]] <-
+      as.integer(feat.samples$parameter[row.nr])
+  }
+
+  sample.size
+}
+
+
 #-------------------------------------------------------------------
 #  dm.addRecombination()
 #-------------------------------------------------------------------
@@ -567,6 +712,7 @@ dm.addRecombination <- function(dm, lower.range, upper.range, fixed.value,
                    fixed.value, par.new=par.new, time.point="0")
   return(dm)
 }
+
 
 
 #-------------------------------------------------------------------
@@ -1104,8 +1250,11 @@ dm.createThetaTauModel <- function(sample.sizes, loci.num, seq.length=1000) {
 #' @return  The extended demographic model
 #' @export
 dm.addOutgroup <- function(dm, separation.time) {
-  number.of.individuals <- 1
-  dm@sampleSizes <- c(dm@sampleSizes, number.of.individuals)
+  sample.size <- 1 
+  pop <- max(na.omit(dm@features$pop.source)) + 1
+  dm <- addFeature(dm, "sample", as.character(sample.size), 
+                     pop.source=pop, par.new=FALSE, 
+                     group=0, time.point='0')
   dm.addSpeciationEvent(dm, in.population=1, 
                         new.time.point=F, 
                         time.point=separation.time) 
@@ -1200,11 +1349,104 @@ dm.simSumStats <- function(dm, parameters, sum.stats=c("all")) {
 
   checkParInRange(dm, parameters)
 
-  dm@currentSimProg@singleSimFunc(dm, parameters)
+  if (all(dm@features$group == 0)) {
+    return(dm@currentSimProg@singleSimFunc(dm, parameters))
+  } 
+
+  sum.stats <- list(pars=parameters)
+  for (loci.group in dm.getGroups(dm)) {
+    dm.grp <- generateGroupModel(dm, loci.group)
+    sum.stats.grp <- dm.grp@currentSimProg@singleSimFunc(dm.grp, parameters)
+    for (i in seq(along = sum.stats.grp)) {
+      if (names(sum.stats.grp)[i] == 'pars') next()
+      name <- paste(names(sum.stats.grp)[i], loci.group, sep='.')
+      sum.stats[[name]] <- sum.stats.grp[[i]]
+    }
+  }
+  sum.stats
 }
 
+generateGroupModel <- function(dm, group) {
+  if (all(dm@features$group == 0)) return(dm)
+  if (!is.null(dm@options$grp.models[[as.character(group)]])) { 
+    return(dm@options$grp.models[[as.character(group)]]) 
+  }
+  dm@features <- dm@features[dm@features$group %in% c(0, group), ]
+  overwritten <- dm@features$group == 0
+  for (i in which(overwritten)) {
+    if (nrow(searchFeature(dm, type=dm@features$type[i],
+                           pop.source=dm@features$pop.source[i],
+                           pop.sink=dm@features$pop.sink[i],
+                           time.point=dm@features$time.point[i])) == 1) 
+      overwritten[i] <- FALSE
+  }
+  dm@features <- dm@features[!overwritten, ]
+  dm
+}
+
+searchFeature <- function(dm, type=NULL, parameter=NULL, pop.source=NULL,
+                       pop.sink=NULL, time.point=NULL, group=NULL) {
+
+  mask <- rep(TRUE, nrow(dm@features))
+
+  if (!is.null(type)) mask <- mask & dm@features$type %in% type
+  if (!is.null(group)) mask <- mask & dm@features$group %in% group
+
+  if (!is.null(parameter)) {
+    if (is.na(parameter)) { 
+      mask <- mask & is.na(dm@features$parameter) 
+    } else {
+      mask <- mask & dm@features$parameter %in% parameter 
+    }
+  }
+
+  if (!is.null(pop.source)) {
+    if (is.na(pop.source)) { 
+      mask <- mask & is.na(dm@features$pop.source) 
+    } else {
+      mask <- mask & dm@features$pop.source %in% pop.source
+    }
+  }
+
+  if (!is.null(pop.sink)) {
+    if (is.na(pop.sink)) { 
+      mask <- mask & is.na(dm@features$pop.sink) 
+    } else {
+      mask <- mask & dm@features$pop.sink %in% pop.sink
+    }
+  }
+
+  if (!is.null(time.point)) {
+    if (is.na(time.point)) { 
+      mask <- mask & is.na(dm@features$time.point) 
+    } else {
+      mask <- mask & dm@features$time.point %in% time.point
+    }
+  }
+
+  return(dm@features[mask, ])
+}
+
+#-------------------------------------------------------------------
+# dm.getGroups
+#-------------------------------------------------------------------
+#' Returns the groups currently in the model
+#' 
+#' @param dm The demographic model
+#' @return The groups in the model.
+#' @export
+dm.getGroups <- function(dm) {
+  if (all(dm@features$group == 0)) return(1)
+
+  groups <- sort(unique(c(1, dm@features$group)))
+  return(groups[groups != 0])
+}
 
 scaleDemographicModel <- function(dm, scaling.factor) {
-  dm@nLoci <- round(dm@nLoci / scaling.factor)
+  for (group in unique(dm@features$group)) {
+    dm <- dm.setLociNumber(dm, 
+                     round(dm.getLociNumber(dm, group) / scaling.factor),
+                     group)
+  }
   return(dm)
 }

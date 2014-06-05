@@ -28,7 +28,6 @@
 # R #
 .RData
 .Rhistory
-Rseed.txt
 
 # Jaatha #
 jaatha_*.tar.gz
@@ -39,6 +38,9 @@ howtos/cache
 src/symbols.rds
 inst/unitTests/test_setup.Rda
 inst/integrationTests/results
+DEV_VERSIONS
+NEWS
+README
 
 # Latex
 *.aux
