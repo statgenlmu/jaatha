@@ -6,7 +6,7 @@
 ^unit_tests$
 ^misc$
 .tar.gz$
-^.travis.yml
+^.travis*
 ^DEV_VERSIONS$
 ^.*\.Rproj$
 ^\.Rproj\.user$

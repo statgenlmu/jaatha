@@ -28,7 +28,6 @@
 # R #
 .RData
 .Rhistory
-Rseed.txt
 
 # Jaatha #
 jaatha_*.tar.gz
