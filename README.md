@@ -39,10 +39,6 @@ You can download and build the development version from GitHub following the
 commands: 
 
 ```R
-# Install Jaatha's dependencies from CRAN
-install.packages(c('Rcpp', 'ape', 'doMC', 'RUnit'))
-
-# Download & install Jaatha
 library('devtools')
 install_github("jaatha", "paulstaab", ref="develop")
 ```

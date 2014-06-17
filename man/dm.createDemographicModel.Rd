@@ -7,7 +7,7 @@ dm.createDemographicModel(sample.sizes, loci.num, seq.length = 1000,
   log.level, log.file)
 }
 \arguments{
-\item{sample.sizes}{Number of individuals that are sampled. If your model
+\item{sample.sizes}{Number of haploid individuals/chromosomes that are sampled. If your model
 consists of multiple populations, this needs to be a vector
 containing the sample sizes from each population.}
 
