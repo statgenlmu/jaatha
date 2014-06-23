@@ -7,7 +7,11 @@ NumericVector parseMsPositions(const std::string line);
 
 NumericMatrix parseMsSegSites(std::ifstream &output, 
                               const NumericVector positions, 
-                              const int &individuals);
+                              const int individuals);
+                              
+NumericMatrix parseSeqgenSegSites(std::ifstream &output,
+                                  const size_t loci_length,
+                                  const size_t individuals);
 
 void addToJsfs(const NumericMatrix &seg_sites,
                const NumericVector &sample_size,
@@ -55,29 +59,59 @@ List parseOutput(const std::string file_name,
   NumericMatrix jsfs(sample_size[0]+1, sample_size[1]+1);
   NumericMatrix fpc(fpc_breaks_near.size()+2, fpc_breaks_far.size()+2);
 
-  // Output
-  while( output.good() ) {
-    std::getline(output, line);
-    if (line == "//") locus += 1;
-
-    if (line.substr(0, 11) == "segsites: 0") {
-      seg_sites = NumericMatrix(0, 0);
-      if (generate_seg_sites) seg_sites_list[locus] = seg_sites;
-      if (generate_fpc) addToFpc(seg_sites, positions, 
-                                 fpc_breaks_near, fpc_breaks_far, fpc);
-    } 
-
-    else if (line.substr(0, 9) == "segsites:") {
-      //Rprintf("Locus %i\n", locus);
+  // ms
+  if (program == 0) { 
+    while( output.good() ) {
       std::getline(output, line);
-      positions = parseMsPositions(line);
-      seg_sites = parseMsSegSites(output, positions, individuals);
-      if (seg_sites.ncol() == 0) throw exception("Failed to parse seg.sites");
-      if (generate_seg_sites) seg_sites_list[locus] = seg_sites;
-      if (generate_jsfs) addToJsfs(seg_sites, sample_size, jsfs);
-      if (generate_fpc) addToFpc(seg_sites, positions, 
-                                 fpc_breaks_near, fpc_breaks_far, fpc);
+      if (line == "//") ++locus;
+
+      if (line.substr(0, 11) == "segsites: 0") {
+        seg_sites = NumericMatrix(0, 0);
+        if (generate_seg_sites) seg_sites_list[locus] = seg_sites;
+        if (generate_fpc) addToFpc(seg_sites, positions, 
+                                   fpc_breaks_near, fpc_breaks_far, fpc);
+      } 
+
+      else if (line.substr(0, 9) == "segsites:") {
+        //Rprintf("Locus %i\n", locus);
+        std::getline(output, line);
+        positions = parseMsPositions(line);
+        seg_sites = parseMsSegSites(output, positions, individuals);
+        if (seg_sites.ncol() == 0) Rf_error("Failed to parse seg.sites");
+        if (generate_seg_sites) seg_sites_list[locus] = seg_sites;
+        if (generate_jsfs) addToJsfs(seg_sites, sample_size, jsfs);
+        if (generate_fpc) addToFpc(seg_sites, positions, 
+                                   fpc_breaks_near, fpc_breaks_far, fpc);
+      }
     }
+  }
+
+  // seq-gen
+  else if (program == 1) {
+    // We already know the information in the first line
+    
+    size_t total_sample_size, locus_length;
+
+    while ( output.good() ) {
+      std::getline(output, line);
+      if (line == "") continue;
+      if (line.substr(0, 1) == " ") {
+        ++locus;
+        std::stringstream(line) >> total_sample_size >> locus_length;
+
+        Rprintf("Locus %i: %i %i\n", locus, total_sample_size, locus_length);
+        seg_sites = parseSeqgenSegSites(output, locus_length, total_sample_size);
+        if (seg_sites.ncol() == 0) Rf_error("Failed to parse seg.sites");
+        if (generate_seg_sites) seg_sites_list[locus] = seg_sites;
+        if (generate_jsfs) addToJsfs(seg_sites, sample_size, jsfs);
+        if (generate_fpc) addToFpc(seg_sites, positions, 
+                                   fpc_breaks_near, fpc_breaks_far, fpc);
+      } else {
+        throw std::invalid_argument(std::string("Unexpected line in seq-gen output: ") + line.c_str());
+      }
+    }
+    
+    if (locus != loci_number-1) throw std::logic_error("Failed to parse seq-gen output: Number of loci mismatch.");
   }
 
   output.close();
@@ -116,7 +150,7 @@ List parseOutput(const std::string file_name,
 
 NumericMatrix parseMsSegSites(std::ifstream &output, 
                               const NumericVector positions, 
-                              const int &individuals) {
+                              const int individuals) {
 
   NumericMatrix seg_sites(individuals, positions.size());
   List dimnames = List(2);
@@ -132,6 +166,67 @@ NumericMatrix parseMsSegSites(std::ifstream &output,
 
   return seg_sites;
 }
+
+
+NumericMatrix parseSeqgenSegSites(std::ifstream &output,
+                                  const size_t locus_length,
+                                  const size_t individuals) {
+
+  
+  std::string tmp;
+  size_t seq_nr;
+  
+  // First read the complete locus and save it in `sequence`.
+  std::vector<std::vector<char> > sequence(individuals);
+  for (size_t i=0; i<individuals; ++i) {
+    // Read sequence number
+    output >> tmp;
+    // ms from phyclust adds an "s" to the seqName. Remove it if there.
+    if (tmp.compare(1, 1, "s")) tmp.erase(0,1);
+    seq_nr = atoi(tmp.c_str());
+    Rprintf("Ind %i: ", seq_nr);
+    
+    // Read sequence
+    output >> tmp;
+    Rprintf(tmp.c_str());
+    Rprintf("\n");
+    const char* cstr=tmp.c_str();
+    sequence[seq_nr-1].assign(cstr, cstr+locus_length);
+  }
+  
+  // Determine which positions are SNPs
+  std::vector<size_t> positions;
+  size_t derived_count;
+  
+  for (size_t j=0; j<locus_length; ++j) {
+    derived_count = 0;
+    for (size_t i=0; i<individuals-1; ++i) {
+      derived_count += (sequence[i][j] != sequence[individuals-1][j]);
+    }
+    if (derived_count > 0 && derived_count < (individuals - 1)) {
+      Rprintf("SNP %i\n", j);
+      positions.push_back(j+1);
+    }
+  }
+  Rprintf("SNPs: %i\n", positions.size());
+  
+  NumericMatrix seg_sites(individuals, positions.size());
+  for (size_t i=0; i<individuals-1; ++i) {
+    derived_count = 0;
+    for (std::vector<size_t>::iterator it = positions.begin(); it != positions.end(); ++it) {
+      seg_sites(i, derived_count) = (sequence[i][*it-1] != sequence[individuals-1][*it-1]);
+      ++derived_count;
+    }
+  }
+  
+  List dimnames = List(2);
+  dimnames[1] = wrap(positions);
+  seg_sites.attr("dimnames") = dimnames;
+  
+  Rprintf("\n\n");
+  return seg_sites;
+}
+
 
 // [[Rcpp::export]]
 NumericVector parseMsPositions(const std::string line) {
