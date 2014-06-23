@@ -38,8 +38,7 @@ The demographic model with recombination
 \description{
 This function add the assumption to the model that recombination
 events may occur within each locus. The corresponding parameter
-- usually name rho - equals 4*Ne*r, where Ne is the number of
-diploid individuals in the ancestral population and r is the
+- usually name rho - equals 4*N0*r, where r is the
 probability that a recombination event within the locus will
 occur in one generation. Even when using an infinite sites
 mutation model, this assumes an finite locus length which is given

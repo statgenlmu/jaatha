@@ -46,11 +46,11 @@ can be given as parameter or as an expression based on previously
 generated time points.
 }
 \details{
-As always, time in measured in Number of 4Ne generations in the past,
-where Ne is the (effective) size of the ancestral population.
+Time in measured in Number of 4N0 generations in the past,
+where N0 is the size of population 1 at time 0.
 
 The command will print the number of the new population, which will
-be the number of previously existing populations plus one. The ancestral
+be the number of previously existing populations plus one. The first
 population has number "1".
 }
 \examples{

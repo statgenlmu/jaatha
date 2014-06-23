@@ -53,8 +53,7 @@ You can enter a time ('time.start') at which the migration is
 assumed to start (looking backwards in time). From that time on, a
 fixed number of migrants move from population 'pop.from' to
 population 'pop.to' each generation. This number is given via this
-feature's parameter, which equals 4*Ne*m,  where Ne is the number of
-diploid individuals in the ancestral population and m is the
+feature's parameter, which equals 4*N0*m,  where m is the
 fraction of 'pop.to' that is replaced with migrants each generation.
 If 'pop.to' has also size Ne, than this is just the
 expected number of individuals that migrate each generation.

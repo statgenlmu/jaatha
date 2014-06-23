@@ -1,3 +1,9 @@
+Version 2.4-1
+==================
+## Bug fixes
+- Fixed wrong description of N0 as size of the ancestral population in the documentation (#4)
+
+
 Version 2.4
 ==================
 ## Algorithm changes:

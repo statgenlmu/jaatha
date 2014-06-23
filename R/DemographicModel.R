@@ -562,9 +562,9 @@ dm.getLociLength <- function(dm, group=NULL) {
 #' 
 #' This functions adds the assumption to the model that neutral mutations
 #' occur in the genomes at a constant rate. The rate is quantified through
-#' a parameter usually named theta in population genetics. It equals 4*Ne*mu,
-#' where Ne is the (effective) number of diploid individuals in the ancestral
-#' population and mu is the neutral mutation rate for an entire locus.
+#' a parameter usually named theta in population genetics. It equals 4*N0*mu,
+#' where N0 is the effective diploid population size of population one at the
+#' time of sampling and mu is the neutral mutation rate for an entire locus.
 #'
 #' @param dm  The demographic model to which mutations should be added
 #' @param par.new  If 'TRUE' a new parameter will be created using the
@@ -668,8 +668,7 @@ dm.getSampleSize <- function(dm, group.nr=NULL) {
 #'
 #' This function add the assumption to the model that recombination
 #' events may occur within each locus. The corresponding parameter
-#' - usually name rho - equals 4*Ne*r, where Ne is the number of
-#' diploid individuals in the ancestral population and r is the 
+#' - usually name rho - equals 4*N0*r, where r is the 
 #' probability that a recombination event within the locus will
 #' occur in one generation. Even when using an infinite sites
 #' mutation model, this assumes an finite locus length which is given
@@ -730,8 +729,7 @@ dm.addRecombination <- function(dm, lower.range, upper.range, fixed.value,
 #' assumed to start (looking backwards in time). From that time on, a 
 #' fixed number of migrants move from population 'pop.from' to
 #' population 'pop.to' each generation. This number is given via this 
-#' feature's parameter, which equals 4*Ne*m,  where Ne is the number of
-#' diploid individuals in the ancestral population and m is the 
+#' feature's parameter, which equals 4*N0*m,  where m is the 
 #' fraction of 'pop.to' that is replaced with migrants each generation. 
 #' If 'pop.to' has also size Ne, than this is just the
 #' expected number of individuals that migrate each generation.
@@ -858,11 +856,11 @@ dm.addSymmetricMigration <- function(dm, lower.range, upper.range, fixed.value,
 #' can be given as parameter or as an expression based on previously
 #' generated time points.
 #'
-#' As always, time in measured in Number of 4Ne generations in the past,
-#' where Ne is the (effective) size of the ancestral population.
+#' Time in measured in Number of 4N0 generations in the past,
+#' where N0 is the size of population 1 at time 0.
 #'
 #' The command will print the number of the new population, which will
-#' be the number of previously existing populations plus one. The ancestral
+#' be the number of previously existing populations plus one. The first
 #' population has number "1".
 #'
 #' @param dm  The demographic model to which the split should be added.
@@ -940,7 +938,7 @@ dm.addSpeciationEvent <- function(dm, min.time, max.time, fixed.time,
 #' population. The change is performed at a given time point
 #' ('at.time') and applies to the time interval farther into 
 #' the past from this point. The population size is set to a
-#' factor of the size of the ancestral population Ne.
+#' fraction of N0, the present day size of population one.
 #'
 #' If you want to add a slow, continuous change over some time,
 #' then use the \link{dm.addGrowth} function.
@@ -1244,7 +1242,7 @@ dm.createThetaTauModel <- function(sample.sizes, loci.num, seq.length=1000) {
 #' An outgroup is required for a finite sites analysis.
 #'
 #' @param dm The demographic model to which we add the outgroup
-#' @param separation.time The time point at which the outgroup splited 
+#' @param separation.time The time point at which the outgroup splits 
 #'           from the ancestral population. This can be an absolute value
 #'           (e.g. 10) or relative to another time points (e.g. '5*t_split_1').
 #' 
