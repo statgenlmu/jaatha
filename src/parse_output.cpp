@@ -11,7 +11,8 @@ NumericMatrix parseMsSegSites(std::ifstream &output,
                               
 NumericMatrix parseSeqgenSegSites(std::ifstream &output,
                                   const size_t loci_length,
-                                  const size_t individuals);
+                                  const size_t individuals,
+                                  NumericVector &positions);
 
 void addToJsfs(const NumericMatrix &seg_sites,
                const NumericVector &sample_size,
@@ -99,8 +100,8 @@ List parseOutput(const std::string file_name,
         ++locus;
         std::stringstream(line) >> total_sample_size >> locus_length;
 
-        Rprintf("Locus %i: %i %i\n", locus, total_sample_size, locus_length);
-        seg_sites = parseSeqgenSegSites(output, locus_length, total_sample_size);
+        //Rprintf("Locus %i: %i %i\n", locus, total_sample_size, locus_length);
+        seg_sites = parseSeqgenSegSites(output, locus_length, total_sample_size, positions);
         if (seg_sites.ncol() == 0) Rf_error("Failed to parse seg.sites");
         if (generate_seg_sites) seg_sites_list[locus] = seg_sites;
         if (generate_jsfs) addToJsfs(seg_sites, sample_size, jsfs);
@@ -170,9 +171,9 @@ NumericMatrix parseMsSegSites(std::ifstream &output,
 
 NumericMatrix parseSeqgenSegSites(std::ifstream &output,
                                   const size_t locus_length,
-                                  const size_t individuals) {
+                                  const size_t individuals,
+                                  NumericVector &position) {
 
-  
   std::string tmp;
   size_t seq_nr;
   
@@ -184,18 +185,18 @@ NumericMatrix parseSeqgenSegSites(std::ifstream &output,
     // ms from phyclust adds an "s" to the seqName. Remove it if there.
     if (tmp.compare(1, 1, "s")) tmp.erase(0,1);
     seq_nr = atoi(tmp.c_str());
-    Rprintf("Ind %i: ", seq_nr);
+    //Rprintf("Ind %i: ", seq_nr);
     
     // Read sequence
     output >> tmp;
-    Rprintf(tmp.c_str());
-    Rprintf("\n");
+    //Rprintf(tmp.c_str());
+    //Rprintf("\n");
     const char* cstr=tmp.c_str();
     sequence[seq_nr-1].assign(cstr, cstr+locus_length);
   }
   
   // Determine which positions are SNPs
-  std::vector<size_t> positions;
+  std::vector<double> positions;
   size_t derived_count;
   
   for (size_t j=0; j<locus_length; ++j) {
@@ -204,26 +205,33 @@ NumericMatrix parseSeqgenSegSites(std::ifstream &output,
       derived_count += (sequence[i][j] != sequence[individuals-1][j]);
     }
     if (derived_count > 0 && derived_count < (individuals - 1)) {
-      Rprintf("SNP %i\n", j);
-      positions.push_back(j+1);
+      //Rprintf("SNP %i\n", j);
+      positions.push_back(j);
     }
   }
-  Rprintf("SNPs: %i\n", positions.size());
+  //Rprintf("SNPs: %i\n", positions.size());
   
   NumericMatrix seg_sites(individuals, positions.size());
   for (size_t i=0; i<individuals-1; ++i) {
     derived_count = 0;
-    for (std::vector<size_t>::iterator it = positions.begin(); it != positions.end(); ++it) {
-      seg_sites(i, derived_count) = (sequence[i][*it-1] != sequence[individuals-1][*it-1]);
+    for (std::vector<double>::iterator it = positions.begin(); it != positions.end(); ++it) {
+      seg_sites(i, derived_count) = (sequence[i][*it] != sequence[individuals-1][*it]);
       ++derived_count;
     }
   }
   
+  for (std::vector<double>::iterator it = positions.begin(); it != positions.end(); ++it) {
+    *it /= (locus_length - 1);
+  }
+  
   List dimnames = List(2);
-  dimnames[1] = wrap(positions);
+  position = wrap(positions);
+  dimnames[1] = position;
+  
+  
   seg_sites.attr("dimnames") = dimnames;
   
-  Rprintf("\n\n");
+  //Rprintf("\n\n");
   return seg_sites;
 }
 

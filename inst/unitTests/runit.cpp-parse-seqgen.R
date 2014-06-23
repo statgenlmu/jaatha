@@ -15,5 +15,12 @@ test.parseOutputSeqgen <- function() {
   sum.stats = parseOutput(sg.file, dm.getSampleSize(dm.hky), dm.getLociNumber(dm.hky), 1, generate_seg_sites = TRUE)
   checkTrue( is.matrix(sum.stats$jsfs) )
   checkTrue( is.list(sum.stats$seg.sites) )
-  checkEquals( c('1', '2', '4', '5'), colnames(sum.stats$seg.sites[[1]])[1:4] )
+  checkEquals( dm.getLociNumber(dm.hky), length(sum.stats$seg.sites) )
+  checkEquals( (c(1, 2, 4, 5)-1)/14, as.numeric(colnames(sum.stats$seg.sites[[1]])[1:4]) )
+  checkEquals( (c(2, 6, 7)-1)/14, as.numeric(colnames(sum.stats$seg.sites[[2]])[1:3]) )
+  
+  sum.stats = parseOutput(sg.file, dm.getSampleSize(dm.hky), dm.getLociNumber(dm.hky), 1, generate_fpc = TRUE,
+                          fpc_breaks_near = 1:3/4, fpc_breaks_far = 1:3/4)
+  checkTrue( is.matrix(sum.stats$fpc) )
+  checkEquals( 5, sum(sum.stats$fpc))
 }
