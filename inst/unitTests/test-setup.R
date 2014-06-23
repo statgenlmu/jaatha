@@ -65,6 +65,10 @@ dm.fpc <- dm.addSummaryStatistic(dm.fpc, 'fpc')
 dm.fpc <- calcFpcBreaks(dm.fpc, seg.sites)
 sum.stats.fpc <- dm.simSumStats(dm.addSummaryStatistic(dm.fpc, 'seg.sites'), c(1, 2, 3))
 
+# fpc + seq-gen
+seg.sites <- dm.simSumStats(dm.addSummaryStatistic(dm.hky, 'seg.sites'), c(1, 5))$seg.sites
+dm.sgfpc <- dm.addSummaryStatistic(dm.hky, 'fpc')
+dm.sgfpc <- calcFpcBreaks(dm.sgfpc, seg.sites, 3)
 
 # Custom Simulation Interface
 csi.sim.func <- function(x, jaatha) {

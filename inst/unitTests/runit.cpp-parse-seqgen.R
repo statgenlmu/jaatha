@@ -23,4 +23,6 @@ test.parseOutputSeqgen <- function() {
                           fpc_breaks_near = 1:3/4, fpc_breaks_far = 1:3/4)
   checkTrue( is.matrix(sum.stats$fpc) )
   checkEquals( 5, sum(sum.stats$fpc))
+  
+  unlink(sg.file)
 }

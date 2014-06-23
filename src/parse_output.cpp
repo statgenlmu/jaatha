@@ -102,7 +102,7 @@ List parseOutput(const std::string file_name,
 
         //Rprintf("Locus %i: %i %i\n", locus, total_sample_size, locus_length);
         seg_sites = parseSeqgenSegSites(output, locus_length, total_sample_size, positions);
-        if (seg_sites.ncol() == 0) Rf_error("Failed to parse seg.sites");
+        //if (seg_sites.ncol() == 0) Rf_error("Failed to parse seg.sites");
         if (generate_seg_sites) seg_sites_list[locus] = seg_sites;
         if (generate_jsfs) addToJsfs(seg_sites, sample_size, jsfs);
         if (generate_fpc) addToFpc(seg_sites, positions, 

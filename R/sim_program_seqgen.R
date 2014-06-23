@@ -15,7 +15,7 @@ seqgen.features    <- c('mutation.model', 'tstv.ratio',
                         'gtr.rate.4','gtr.rate.5','gtr.rate.6',
                         'gamma.categories', 'gamma.rate')
 
-possible.sum.stats <- c("jsfs", "file") # 'seg.sites', 'fpc')
+possible.sum.stats <- c("jsfs", "file", 'seg.sites', 'fpc')
 mutation.models    <- c('HKY', 'F84', 'GTR')
 possible.features  <- c(getSimProgram('ms')@possible.features, seqgen.features)
 
@@ -187,20 +187,6 @@ printSeqgenCommand <- function(dm) {
   return(cmd)
 }
 
-seqgenOut2Jsfs <- function(dm, seqgen.file) {
-  if( ! file.exists(seqgen.file) ) stop("seq-gen simulation failed!")
-  if (file.info(seqgen.file)$size == 0) stop("seq-gen output is empty!")
-
-  sample.size <- dm.getSampleSize(dm)
-  jsfs <- matrix(.Call("seqgen2jsfs", seqgen.file, sample.size[1], 
-                       sample.size[2], dm.getLociNumber(dm)),
-                 sample.size[1] + 1 ,
-                 sample.size[2] + 1,
-                 byrow=T)
-
-  return(jsfs)
-}
-
 seqgenSingleSimFunc <- function(dm, parameters) {
   checkType(dm, "dm")
   checkType(parameters, "num")
@@ -218,11 +204,24 @@ seqgenSingleSimFunc <- function(dm, parameters) {
   seqgen.file <- callSeqgen(seqgen.options, sum.stats[['file']])
 
   sum.stats[['pars']] <- parameters
-
-  if ('jsfs' %in% dm@sum.stats) {
-    sum.stats[['jsfs']] <- seqgenOut2Jsfs(dm, seqgen.file)
+  
+  # Parse the output & generate additional summary statistics
+  if ('fpc' %in% dm@sum.stats) {
+    breaks.near <- dm@options[['fpc.breaks.near']]
+    breaks.far <- dm@options[['fpc.breaks.far']]
+    stopifnot(!is.null(breaks.near))
+    stopifnot(!is.null(breaks.far))
+    
+    sum.stats <- parseOutput(seqgen.file, dm.getSampleSize(dm), dm.getLociNumber(dm), 1, 
+                             'jsfs' %in% dm@sum.stats, 'seg.sites' %in% dm@sum.stats,
+                             TRUE, breaks.near, breaks.far)
+  } else {
+    sum.stats <- parseOutput(seqgen.file, dm.getSampleSize(dm), dm.getLociNumber(dm), 1, 
+                             'jsfs' %in% dm@sum.stats, 'seg.sites' %in% dm@sum.stats,
+                             FALSE)
   }
   
+  sum.stats[['pars']] <- parameters
   if ('file' %in% dm@sum.stats) {
     sum.stats[['file']] <- c(ms=sum.stats[['file']],
                              seqgen=seqgen.file)
