@@ -68,7 +68,7 @@ generateMsOptionsCommand <- function(dm) {
                feat["pop.source"], ',', feat["parameter"], ',')
       }
 
-    else if (type %in% c("sample", "loci.number", "loci.length")) {}
+    else if (type %in% c("sample", "loci.number", "loci.length", "pos.selection")) {}
     else stop("Unknown feature:", type)
   }
 
@@ -127,30 +127,36 @@ msSingleSimFunc <- function(dm, parameters) {
   ms.options <- generateMsOptions(dm, parameters)
   sim.time <- system.time(ms.out <- callMs(ms.options, dm))
 
+  sum.stats <- parseMsOutput(ms.out, parameters, dm)
+
+  return(sum.stats)
+}
+
+parseMsOutput <- function(out.file, parameters, dm) {
   # Parse the output & generate additional summary statistics
   if ('fpc' %in% dm@sum.stats) {
     breaks.near <- dm@options[['fpc.breaks.near']]
     breaks.far <- dm@options[['fpc.breaks.far']]
     stopifnot(!is.null(breaks.near))
     stopifnot(!is.null(breaks.far))
-
-    sum.stats <- parseOutput(ms.out, dm.getSampleSize(dm), dm.getLociNumber(dm), 0, 
+    
+    sum.stats <- parseOutput(out.file, dm.getSampleSize(dm), dm.getLociNumber(dm), 0, 
                              'jsfs' %in% dm@sum.stats, 'seg.sites' %in% dm@sum.stats,
                              TRUE, breaks.near, breaks.far)
   } else {
-    sum.stats <- parseOutput(ms.out, dm.getSampleSize(dm), dm.getLociNumber(dm), 0, 
+    sum.stats <- parseOutput(out.file, dm.getSampleSize(dm), dm.getLociNumber(dm), 0, 
                              'jsfs' %in% dm@sum.stats, 'seg.sites' %in% dm@sum.stats,
                              FALSE)
   }
-
+  
   sum.stats[['pars']] <- parameters
   if ("file" %in% dm@sum.stats) {
-    sum.stats[['file']] <- ms.out
+    sum.stats[['file']] <- out.file
   } else {
-    unlink(ms.out)
+    unlink(out.file)
   }
-
-  return(sum.stats)
+  
+  sum.stats
 }
 
 finalizeMs <- function(dm) {

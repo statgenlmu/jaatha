@@ -73,7 +73,8 @@ dm.sgfpc <- calcFpcBreaks(dm.sgfpc, seg.sites, 3)
 # Selection Model
 dm.sel <- dm.addPositiveSelection(dm.mig, 1000, 2000, population=2,
                                   at.time='tau/2')
-dm.sel <- dm.setLociNumber(dm.sel, 1)
+dm.sel <- dm.setLociNumber(dm.sel, 3)
+dm.sel <- calcFpcBreaks(dm.sel, seg.sites)
 
 # Custom Simulation Interface
 csi.sim.func <- function(x, jaatha) {

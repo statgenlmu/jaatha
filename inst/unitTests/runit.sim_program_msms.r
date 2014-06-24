@@ -52,9 +52,9 @@ example.msms.output <-
     '')
 
 test.readJsfsFromOutput <- function() {
-  jsfs <- readJsfsFromOutput(example.msms.output)
-  checkEquals(jsfs, matrix(c(0,13,2,1,15,6,8,0,2,0,2,0), 4, 3))
-  checkException(readJsfsFromOutput(example.msms.output[-(38:42)]))
+  #jsfs <- readJsfsFromOutput(example.msms.output)
+  #checkEquals(jsfs, matrix(c(0,13,2,1,15,6,8,0,2,0,2,0), 4, 3))
+  #checkException(readJsfsFromOutput(example.msms.output[-(38:42)]))
 }
 
 test.generateMsmsOptionsCommand <- function() {
@@ -66,69 +66,56 @@ test.generateMsmsOptionsCommand <- function() {
   checkTrue( "-SAa" %in% eval(parse(text=opts)) )
 }
 
-test.readSegSitesFromOutput <- function() {
-  seg.sites <- readSegSitesFromOutput(example.msms.output, c(3,2))
-  checkTrue(is.list(seg.sites))
-  checkEquals(length(seg.sites), 2)
-  checkTrue(all(seg.sites[[1]][1,1:5] == c(0, 0, 0, 1, 1)))
-  checkTrue(all(seg.sites[[2]][1,1:5] == c(1, 0, 0, 1, 0)))
-  checkTrue(all(colnames(seg.sites[[2]])[1:2] == c(0.02793, 0.05862)))
-}
-
-test.generateFourPointStat <- function() {
-  seg.sites <- readSegSitesFromOutput(example.msms.output, c(3,2))
-  fps <- generateFourPointStat(seg.sites, c(3,2))
-  checkTrue(is.vector(fps))
-  checkTrue(is.numeric(fps))
-  checkTrue(length(fps) == 6)
-  checkTrue(all(fps[c(1,2,4,5)] == 0))
-  checkEquals(fps[3], 3)
-}
-
-test.msms <- function() {
-  jar.path <- '~/bin/msms.jar'
-  if (!file.exists(jar.path)) {
+test.callMsms <- function() {
+  if (!checkForMsms(FALSE)) {
     warning('Can not test msms: jar not found')
     return()
   }
+  
+  jar.path = getJaathaVariable('msms.jar')
 
   ms.args <- '5 1 -r 10 100 -t 5 -I 2 3 2 1'
   msms.args <- ''
-  pop.sizes <- c(3,2)
   
   set.seed(17)
-  sum.stats <- msms(jar.path, ms.args, msms.args, pop.sizes) 
-  checkTrue( is.list(sum.stats) )
-  checkTrue( length(sum.stats) == 1 )
-  checkTrue( !is.null(sum.stats$raw) )
-
-  possible.sum.stats <- c('raw', 'jsfs', 'seg.sites', 'four.point.condition')
-  sum.stats <- msms(jar.path, ms.args, msms.args, pop.sizes, possible.sum.stats) 
-  checkTrue( is.list(sum.stats) )
-  checkEquals( length(sum.stats), length(possible.sum.stats) )
-
-  checkTrue( is.vector(sum.stats$raw) )
-  checkTrue( is.matrix(sum.stats$jsfs) )
-  checkEquals( dim(sum.stats$jsfs), 4:3 )
-  checkTrue( sum(sum.stats$jsfs) > 0 )
-
-  checkTrue( is.list(sum.stats$seg.sites) )
-  checkTrue( is.vector(sum.stats$four.point.condition) )
-
-  checkException( msms(jar.path, ms.args, msms.args, pop.sizes, 'blub') ) 
+  out.file <- callMsms(jar.path, ms.args, msms.args)
+  set.seed(17)
+  out.file.2 <- callMsms(jar.path, ms.args, msms.args)
+  set.seed(20)
+  out.file.3 <- callMsms(jar.path, ms.args, msms.args)
+  
+  checkEquals(file.info(out.file)$size, file.info(out.file.2)$size)
+  checkTrue(file.info(out.file)$size != file.info(out.file.3)$size)
+  unlink(c(out.file, out.file.2, out.file.3))
 }
 
 test.msms.singleSimFunc <- function() {
-  jar.path <- '~/bin/msms.jar'
-  if (!file.exists(jar.path)) {
+  if (!checkForMsms(FALSE)) {
     warning('Can not test msms: jar not found')
     return()
   }
-
-  checkForMsms()
+  
   sum.stats <- msmsSingleSimFunc(dm.sel, c(1, 1.5, 1500, 5))
-  print(sum.stats)
   checkTrue( is.list(sum.stats) )
+  checkTrue( !is.null(sum.stats$pars) )
   checkTrue( is.matrix(sum.stats$jsfs) )
-  checkTrue( !is.null(sum.stats$four.point.condition) )
+  checkEquals( 2, length(sum.stats) )
+  
+  dm.sel@sum.stats <- c('seg.sites', 'file')
+  sum.stats <- msmsSingleSimFunc(dm.sel, c(1, 1.5, 1500, 5))
+  checkTrue( is.list(sum.stats) )
+  checkTrue( !is.null(sum.stats$pars) )
+  checkTrue( is.list(sum.stats$seg.sites) )
+  checkEquals( 3, length(sum.stats$seg.sites) )
+  checkTrue( file.exists(sum.stats$file) )
+  checkEquals( 3, length(sum.stats) )
+  unlink(sum.stats$file)
+  
+  dm.sel@sum.stats <- c('fpc')
+  sum.stats <- msmsSingleSimFunc(dm.sel, c(1, 1.5, 1500, 5))
+  checkTrue( is.list(sum.stats) )
+  checkTrue( !is.null(sum.stats$pars) )
+  checkTrue( is.matrix(sum.stats$fpc) )
+  checkEquals( 3, sum(sum.stats$fpc) )
+  checkEquals( 2, length(sum.stats) )
 }
