@@ -5,7 +5,7 @@
 \usage{
 Jaatha.initialize(demographic.model, jsfs, seed, cores = 1,
   scaling.factor = 1, use.shm = FALSE, folded = FALSE,
-  smoothing = FALSE)
+  smoothing = FALSE, seg.sites = NULL)
 }
 \arguments{
 \item{demographic.model}{The demographic model to use}

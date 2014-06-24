@@ -12,7 +12,7 @@ TESTS=$(wildcard inst/unitTests/*.R) $(wildcard tests/*.R)
 
 default: $(PACKAGE)
 
-release: clean test-setup howtos $(PACKAGE) check  
+release: clean howtos $(PACKAGE) check  
 travis-test: $(PACKAGE) test-setup integration-test check
 
 howtos: install 
@@ -21,11 +21,11 @@ howtos: install
 test: install
 	cd tests; export RCMDCHECK=FALSE; Rscript doRUnit.R
 
-integration-test: inst/unitTests/test_setup.Rda install 
+integration-test: inst/unitTests/test-setup.Rda install 
 	cd tests; export RCMDCHECK=FALSE; export INTEGRATION_TESTS=TRUE; Rscript doRUnit.R
 
 test-setup: install
-	cd inst/unitTests; Rscript test_setup.R
+	cd inst/unitTests; Rscript test-setup.R
 
 check: $(PACKAGE)
 	# Runs an R CMD check
@@ -34,9 +34,10 @@ check: $(PACKAGE)
 package: $(PACKAGE) 
 
 install: 
+	Rscript -e "library(Rcpp); compileAttributes()"
 	R CMD INSTALL .
 
-$(PACKAGE): $(R_SOURCES) $(CPP_SOURCES) $(TESTS) $(VIGNETTES) README NEWS DESCRIPTION man inst/unitTests/test_setup.Rda
+$(PACKAGE): $(R_SOURCES) $(CPP_SOURCES) $(TESTS) $(VIGNETTES) README NEWS man test-setup
 	R CMD build $(R_BUILD_ARGS) .
 
 README: README.md
@@ -45,7 +46,7 @@ README: README.md
 NEWS: NEWS.md
 	cp NEWS.md NEWS
 
-inst/unitTests/test_setup.Rda: inst/unitTests/test_setup.R
+inst/unitTests/test-setup.Rda: inst/unitTests/test-setup.R
 	make test-setup
 
 man: $(R_SOURCES) DESCRIPTION

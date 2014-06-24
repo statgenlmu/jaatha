@@ -77,3 +77,9 @@ test.generateMsModel <- function() {
     unlink(sum.stats$file)
   }
 }
+
+test.simualteFpcWithSeqgen <- function() {
+  sum.stats <- dm.simSumStats(dm.sgfpc, c(1,5))
+  checkTrue( !is.null(sum.stats$fpc) )
+  checkEquals( c(5,5), dim(sum.stats$fpc) )
+}

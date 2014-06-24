@@ -8,3 +8,5 @@
 .tar.gz$
 ^.travis*
 ^DEV_VERSIONS$
+^.*\.Rproj$
+^\.Rproj\.user$

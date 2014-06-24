@@ -121,7 +121,6 @@ init <- function(.Object, sim.func, par.ranges,
     }
     else if (sum.stats[[i]]$method == "poisson.smoothing") {
       checkType(sum.stats[[i]]$model, c("char", "s"))      
-      stopifnot(length(dim(sum.stats[[i]]$value)) == 2)
       if (!is.null(sum.stats[[i]]$border.transformation)) {
         stopifnot(!is.null(sum.stats[[i]]$border.mask))
         sum.stats[[i]]$border.transformed <- 
@@ -208,7 +207,7 @@ rm(init)
 Jaatha.initialize <- function(demographic.model, jsfs,
                               seed, cores=1, scaling.factor=1,
                               use.shm=FALSE, folded=FALSE, 
-                              smoothing=FALSE) {
+                              smoothing=FALSE, seg.sites=NULL) {
 
   checkType(demographic.model, c("dm", "s"))
   checkType(folded, c("bool", "single"))
@@ -223,34 +222,46 @@ Jaatha.initialize <- function(demographic.model, jsfs,
                        Manually move your complete R-tmp to your memory disk
                        instead. See http://www.paulstaab.de/2013/11/r-shm")
 
+  dm <- dm.addSummaryStatistic(demographic.model, 'jsfs')
+  if (!is.null(seg.sites)) dm <- dm.addSummaryStatistic(dm, 'fpc')
+
   sum.stats <- list()
-  groups <- dm.getGroups(demographic.model)
+  groups <- dm.getGroups(dm)
 
   for (group in groups) {
-    if (group == 1 & all(demographic.model@features$group == 0)) {
-      name <- 'jsfs'
+    if (group == 1 & all(dm@features$group == 0)) {
+      jsfs.name <- 'jsfs'
       group <- 0
       if (is.list(jsfs)) { 
-        jsfs.cur <- jsfs$jsfs
+        jsfs.value <- jsfs$jsfs
       } else {
-        jsfs.cur <- jsfs
+        jsfs.value <- jsfs
       }
+
+      if (!is.null(seg.sites)) { 
+        fpc.name <- 'fpc'
+        stopifnot(is.list(seg.sites))
+        stopifnot(is.array(seg.sites[[1]]))
+        dm <- calcFpcBreaks(dm, seg.sites)
+        fpc.value <- calcFpcSumStat(seg.sites, dm)
+      }
+
     } else {
-      name <- paste('jsfs', group, sep='.')
+      jsfs.name <- paste('jsfs', group, sep='.')
       stopifnot(is.list(jsfs))
-      stopifnot(is.matrix(jsfs[[name]]))
-      jsfs.cur <- jsfs[[name]]
+      stopifnot(is.matrix(jsfs[[jsfs.name]]))
+      jsfs.value <- jsfs[[jsfs.name]]
     }
-    stopifnot(is.matrix(jsfs.cur))
+    stopifnot(is.matrix(jsfs.value))
 
     if (!smoothing) {
-      sum.stats[[name]] <- list(method="poisson.transformed",
-                                  transformation=summarizeJSFS,
-                                  value=jsfs.cur)
+      sum.stats[[jsfs.name]] <- list(method="poisson.transformed",
+                                     transformation=summarizeJSFS,
+                                     value=jsfs.value)
 
       if (folded) sum.stats$jsfs$transformation <- summarizeFoldedJSFS
     } else {
-      sample.size <- dm.getSampleSize(demographic.model, group)
+      sample.size <- dm.getSampleSize(dm, group)
       warning("Smoothing is still very experimental")
       model <- paste0("( X1 + I(X1^2) + X2 + I(X2^2) + log(X1) + log(",
                       sample.size[1]+2,
@@ -258,35 +269,66 @@ Jaatha.initialize <- function(demographic.model, jsfs,
                       sample.size[2]+2,
                       "-X2) )^2")
 
-      border.mask <- jsfs.cur
+      border.mask <- jsfs.value
       border.mask[, ] <- 0
-      border.mask[c(1, nrow(jsfs.cur)), ] <- 1
-      border.mask[ ,c(1, ncol(jsfs.cur))] <- 1
+      border.mask[c(1, nrow(jsfs.value)), ] <- 1
+      border.mask[ ,c(1, ncol(jsfs.value))] <- 1
       border.mask <- as.logical(border.mask)
 
-      sum.stats[[name]] <- list(method="poisson.smoothing",
-                                        model=model,
-                                        value=jsfs.cur,
-                                        border.transformation=summarizeJsfsBorder,
-                                        border.mask=border.mask)
+      sum.stats[[jsfs.name]] <- list(method="poisson.smoothing",
+                                     model=model,
+                                     value=jsfs.value,
+                                     border.mask=border.mask)
+    }
+
+    if (!is.null(seg.sites)) { 
+      border.mask <- fpc.value
+      if (length(dim(border.mask)) == 2) {
+        border.mask[ , ] <- 0
+        border.mask[nrow(border.mask), ] <- 1
+        border.mask[ ,ncol(border.mask)] <- 1
+        border.func <- function(x) { 
+          c(border[dim(x)[1],], border[1:(dim(x)[1]-1), dim(x)[2]])
+        }
+        fpc.model="(X1+I(X1^2)+X2+I(X2^2))^2"
+      } else {
+        border.mask[ , , ] <- 0
+        border.mask[nrow(border.mask), , ] <- 1
+        border.mask[ ,ncol(border.mask), ] <- 1
+        border.func <- function(x) { 
+          border <- apply(x, 1:2, sum)
+          c(border[dim(x)[1],], border[1:(dim(x)[1]-1), dim(x)[2]])
+        }
+        fpc.model="(X1+I(X1^2)+X2+I(X2^2)+X3+I(X3^2))^2"
+      }
+      # sum.stats[[fpc.name]] <- list(method="poisson.smoothing",
+      #                               border.transformation=as.vector,
+      #                               border.mask=border.mask,
+      #                               border.transformation=border.func,
+      #                               model=fpc.model,
+      #                               value=fpc.value)
+      sum.stats[[fpc.name]] <- list(method='poisson.transformed',
+                                    transformation=as.vector,
+                                    value=fpc.value)
     }
   }
 
   jaatha <- new("Jaatha", 
-                sim.func=function(sim.pars, jaatha)
-                  dm.simSumStats(jaatha@opts[['dm']], sim.pars, names(jaatha@sum.stats)), 
-                par.ranges=as.matrix(dm.getParRanges(demographic.model)),  
+                sim.func=function(sim.pars, jaatha) {
+                  dm.simSumStats(jaatha@opts[['dm']], sim.pars, names(jaatha@sum.stats))
+                },
+                par.ranges=as.matrix(dm.getParRanges(dm)),  
                 sum.stats=sum.stats,
                 seed=seed,
                 cores=cores,
                 use.shm=use.shm)
 
   if (scaling.factor != 1) {
-    demographic.model <- scaleDemographicModel(demographic.model, scaling.factor)
+    dm <- scaleDemographicModel(dm, scaling.factor)
     jaatha@opts[['scaling.factor']] <- scaling.factor
   }
 
-  jaatha@opts[['dm']] <- finalizeDM(demographic.model)
+  jaatha@opts[['dm']] <- finalizeDM(dm)
   jaatha@opts[['jsfs.folded']] <- folded
 
   return(jaatha)
