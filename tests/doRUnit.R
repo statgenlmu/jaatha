@@ -36,7 +36,10 @@ if (!file.exists(test.setup)) stop("Failed to load ", test.setup)
 load(test.setup)
 rm(test.setup)
 
-
+## ---  Set Options ---
+runit.options <- getOption("RUnit")
+runit.options$silent <- TRUE
+options(list(RUnit=runit.options))
 
 ## ---  Define tests ---
 test.suites <- list()
