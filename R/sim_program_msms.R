@@ -151,7 +151,7 @@ generateMsmsOptionsCommand <- function(dm) {
     feat <- unlist(dm@features[i, ])
 
     if (type == "pos.selection") {
-      cmd <- c(cmd, '"-SI"', ',', feat['time.point'], ',', length(dm@sampleSizes), ',')
+      cmd <- c(cmd, '"-SI"', ',', feat['time.point'], ',', length(dm.getSampleSize(dm)), ',')
       if (feat['pop.source'] == 1) { 
         cmd <- c(cmd, 0.0005, ',', 0, ',') 
         cmd <- c(cmd, '"-Sc"', ',', 0, ',', 1, ',', 0, ',', 0, ',', 0, ',') 
