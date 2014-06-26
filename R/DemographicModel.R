@@ -61,7 +61,7 @@ rm(.init)
 #-----------------------------------------------------------------------
 # Print
 #-----------------------------------------------------------------------
-.show <- function(object){
+.showModel <- function(object) {
   .print("Used simulation program:", object@currentSimProg)
   .print()
   
@@ -89,6 +89,22 @@ rm(.init)
   # Print simulation command
   .print("Simulation command:")
   getSimProgram(object@currentSimProg)$print_cmd_func(object)
+}
+
+.show <- function(object) {
+  object <- finalizeDM(object)
+  
+  if (is.null(object@options$grp.models)) {
+    .showModel(object)
+  } else {
+    for (group in names(object@options$grp.models)) {
+      .print('----------------------------------')
+      .print("Group", group)
+      .print('----------------------------------')
+      .showModel(object@options$grp.models[[group]])
+      .print()
+    }
+  }
 } 
 setMethod("show", "DemographicModel", .show)
 rm(.show)
