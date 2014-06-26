@@ -115,7 +115,8 @@ printMsCommand <- function(dm) {
   cmd <- gsub('\"', "", cmd)
   cmd <- gsub('"', " ", cmd)
 
-  return(cmd)
+  cmd <- paste("ms", sum(dm.getSampleSize(dm)), dm.getLociNumber(dm), cmd)
+  .print(cmd)
 }
 
 msOut2Jsfs <- function(dm, ms.out) {
@@ -234,8 +235,5 @@ violatesFpc <- function(sites, snp.matrix, near=.1) {
   return(c(near=is.near, violates=FALSE))
 }
 
-createSimProgram("ms", "",
-                 possible.features,
-                 possible.sum.stats,
-                 singleSimFunc=msSingleSimFunc,
-                 finalizationFunc=finalizeMs)
+createSimProgram("ms", possible.features, possible.sum.stats, 
+                 msSingleSimFunc, finalizeMs, printMsCommand)

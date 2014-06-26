@@ -222,9 +222,3 @@ test.finalizeDM <- function() {
   finalizeDM(dm.hky)
   finalizeDM(dm.grp)
 }
-
-## -- Fixed bugs ----------------------------------------
-test.showEmptyModel <- function() {
-  dm <- dm.createDemographicModel(25:26, 100)
-  invisible(print(dm))
-}

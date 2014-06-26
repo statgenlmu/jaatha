@@ -17,7 +17,7 @@ seqgen.features    <- c('mutation.model', 'tstv.ratio',
 
 possible.sum.stats <- c("jsfs", "file") # 'seg.sites', 'fpc')
 mutation.models    <- c('HKY', 'F84', 'GTR')
-possible.features  <- c(getSimProgram('ms')@possible.features, seqgen.features)
+possible.features  <- c(getSimProgram('ms')$possible_features, seqgen.features)
 
 checkForSeqgen <- function() {
   if ( isJaathaVariable('seqgen.exe') ) return()
@@ -40,7 +40,7 @@ checkForSeqgen <- function() {
 
 generateMsModel <- function(dm) {
   ms <- getSimProgram('ms')
-  dm@features <- dm@features[dm@features$type %in% ms@possible.features, ]
+  dm@features <- dm@features[dm@features$type %in% ms$possible_features, ]
   dm@sum.stats <- c("file", "trees")
   return(dm)
 }
@@ -173,6 +173,8 @@ generateSeqgenOptionsCmd <- function(dm) {
 }
 
 printSeqgenCommand <- function(dm) {
+  dm <- finalizeDM(dm)
+  printMsCommand(dm@options[['ms.model']])
   cmd <- generateSeqgenOptionsCmd(dm)
 
   cmd <- cmd[cmd != ","]
@@ -184,7 +186,7 @@ printSeqgenCommand <- function(dm) {
   cmd <- gsub('\"', "", cmd)
   cmd <- gsub('"', " ", cmd)
 
-  return(cmd)
+  .print(cmd)
 }
 
 seqgenOut2Jsfs <- function(dm, seqgen.file) {
@@ -243,8 +245,5 @@ finalizeSeqgen <- function(dm) {
   return(dm)
 }
 
-createSimProgram("seq-gen", "",
-                 possible.features,
-                 possible.sum.stats,
-                 singleSimFunc=seqgenSingleSimFunc,
-                 finalizationFunc=finalizeSeqgen)
+createSimProgram("seq-gen", possible.features, possible.sum.stats,
+                 seqgenSingleSimFunc, finalizeSeqgen, printSeqgenCommand)
