@@ -16,7 +16,7 @@ setClass("DemographicModel" ,
                         sum.stats="character",
                         tsTvRatio="numeric",
                         finiteSites="logical",
-                        currentSimProg="SimProgram",
+                        currentSimProg="character",
                         options="list")
          )
 
@@ -61,80 +61,37 @@ rm(.init)
 #-----------------------------------------------------------------------
 # Print
 #-----------------------------------------------------------------------
-
 .show <- function(object){
-  dm <- object
-
-  features <- dm@features[!is.na(dm@features$parameter),]
-
-  if (nrow(features) == 0) {
-    cat("Your demographic model has no features so far.\n")
-    return()
+  .print("Used simulation program:", object@currentSimProg)
+  .print()
+  
+  # Print parameters that get estimated
+  if (sum(!object@parameters$fixed) > 0) {
+    .print("Parameters to estimate:")
+    pars.est = object@parameters[!object@parameters$fixed, 
+                                 c('name', 'lower.range', 'upper.range')]
+    rownames(pars.est) <- NULL
+    print(pars.est)
+    .print()
   }
-
-  cat("Your demographic model has the following parameters:\n")
-  for (rw in 1:nrow(features)) {
-    type <- features[rw,'type'] 
-    lR <- as.character(features[rw,'lower.range']) 
-    uR <- as.character(features[rw,'upper.range'])
-    parname <- features[rw,'parameter']
-
-    if (type == "split")
-      cat("-",parname,": A split into two pop.sources between",lR,"and",uR,
-          "Ne generations ago.\n")
-    else if (type == "mutation")
-      cat("-",parname,": A scaled mutation rate between",lR,"and",uR,"\n")
-    else if (type == "recombination")
-      cat("-",parname,": A scaled recombination rate between",lR,"and",uR,"\n")
-    else if (type == "migration")
-      cat("-",parname,":  A scaled migration rate between",lR,"and",uR,"\n")
-    else if (type == "presentSize")
-      cat("-",parname,":  At sample time, the second pop.source two was between",
-          lR,"and",uR,"times as the first one\n")
-    else if (type == "splitSize") 
-      cat("-",parname,":  At time of the pop.source split, the second",
-          "pop.source two was between",lR,"and",uR,"times as the first one\n")
-    else if (type == "migration")
-      cat("-",parname,":  A scaled migration rate between",lR,"and",uR,"\n")
-    else {
-      cat("- Other:\n")
-      print(dm@features[rw,])
-    }
+  
+  # Print fixed parameters
+  if (sum(object@parameters$fixed) > 0) {
+    .print("Fixed parameters:")
+    pars.fixed = object@parameters[object@parameters$fixed, 
+                                   c('name', 'lower.range')]
+    colnames(pars.fixed) <- c('name', 'value')
+    rownames(pars.fixed) <- NULL
+    print(pars.fixed)
+    .print()
   }
-
-
-  features <- dm@features[is.na(dm@features$parameter),]
-  if (dim(features)[1] > 0){
-    cat("\n")
-    cat("Additionally, it has the following features:\n")
-    for (rw in 1:(dim(features)[1])) {
-      type <- features[rw,'type']
-      lR <- as.character(features[rw,'lower.range']) 
-
-      if (type == "split")
-        cat("- A split into two pop.sources",lR,"Ne generations ago.\n")
-      else if (type == "mutation")
-        cat("- A fixed scaled mutation rate of",lR,"\n")
-      else if (type == "recombination")
-        cat("- A fixed scaled recombination rate of",lR,"\n")
-      else if (type == "migration")
-        cat("- A fixed scaled migration rate of",lR,"\n")
-      else if (type == "presentSize")
-        cat("- At sample time, the second pop.source two was",
-            lR,"times as the first one\n")
-      else if (type == "splitSize") 
-        cat("- At time of the pop.source split, the second pop.source
-            two was",lR,"times as the first one\n")
-          else {
-            cat("- Other:\n")
-            print(dm@features[rw,])
-          }
-    }
-  }
+  
+  # Print simulation command
+  .print("Simulation command:")
+  getSimProgram(object@currentSimProg)$print_cmd_func(object)
 } 
-#setMethod("show","DemographicModel",.show)
+setMethod("show", "DemographicModel", .show)
 rm(.show)
-
 
 
 #------------------------------------------------------------------------------
@@ -354,11 +311,11 @@ checkParInRange <- function(dm, param) {
 
 # Selects a program for simulation that is capable of all current features
 .dm.selectSimProg <- function(dm) {
-  for (i in seq(along = .jaatha$simProgs)){
-    if (all(dm@features$type %in% .jaatha$simProgs[[i]]@possible.features) & 
-        all(dm@sum.stats %in% .jaatha$simProgs[[i]]@possible.sum.stats)) {
-      dm@currentSimProg <- .jaatha$simProgs[[i]]
-      .log2("Using", dm@currentSimProg@name, "for simulations")
+  for (sim_prog in .jaatha$sim_progs) {
+    if (all(dm@features$type %in% sim_prog$possible_features) & 
+        all(dm@sum.stats %in% sim_prog$possible_sum_stats)) {
+      dm@currentSimProg <- sim_prog$name
+      .log2("Using", dm@currentSimProg, "for simulations")
       return(dm)
     }
   }
@@ -368,14 +325,14 @@ checkParInRange <- function(dm, param) {
 
 finalizeDM <- function(dm) {
   if (all(dm@features$group == 0)) {
-    return(dm@currentSimProg@finalizationFunc(dm))
+    return(getSimProgram(dm@currentSimProg)$finalization_func(dm))
   }
 
   dm@options$grp.models <- list()
   for (group in dm.getGroups(dm)) {
     grp.model <- generateGroupModel(dm, group)
     dm@options$grp.models[[as.character(group)]] <- 
-      grp.model@currentSimProg@finalizationFunc(grp.model)
+      getSimProgram(dm@currentSimProg)$finalization_func(grp.model)
   }
   return(dm)
 }
@@ -562,9 +519,9 @@ dm.getLociLength <- function(dm, group=NULL) {
 #' 
 #' This functions adds the assumption to the model that neutral mutations
 #' occur in the genomes at a constant rate. The rate is quantified through
-#' a parameter usually named theta in population genetics. It equals 4*Ne*mu,
-#' where Ne is the (effective) number of diploid individuals in the ancestral
-#' population and mu is the neutral mutation rate for an entire locus.
+#' a parameter usually named theta in population genetics. It equals 4*N0*mu,
+#' where N0 is the effective diploid population size of population one at the
+#' time of sampling and mu is the neutral mutation rate for an entire locus.
 #'
 #' @param dm  The demographic model to which mutations should be added
 #' @param par.new  If 'TRUE' a new parameter will be created using the
@@ -668,8 +625,7 @@ dm.getSampleSize <- function(dm, group.nr=NULL) {
 #'
 #' This function add the assumption to the model that recombination
 #' events may occur within each locus. The corresponding parameter
-#' - usually name rho - equals 4*Ne*r, where Ne is the number of
-#' diploid individuals in the ancestral population and r is the 
+#' - usually name rho - equals 4*N0*r, where r is the 
 #' probability that a recombination event within the locus will
 #' occur in one generation. Even when using an infinite sites
 #' mutation model, this assumes an finite locus length which is given
@@ -730,8 +686,7 @@ dm.addRecombination <- function(dm, lower.range, upper.range, fixed.value,
 #' assumed to start (looking backwards in time). From that time on, a 
 #' fixed number of migrants move from population 'pop.from' to
 #' population 'pop.to' each generation. This number is given via this 
-#' feature's parameter, which equals 4*Ne*m,  where Ne is the number of
-#' diploid individuals in the ancestral population and m is the 
+#' feature's parameter, which equals 4*N0*m,  where m is the 
 #' fraction of 'pop.to' that is replaced with migrants each generation. 
 #' If 'pop.to' has also size Ne, than this is just the
 #' expected number of individuals that migrate each generation.
@@ -858,11 +813,11 @@ dm.addSymmetricMigration <- function(dm, lower.range, upper.range, fixed.value,
 #' can be given as parameter or as an expression based on previously
 #' generated time points.
 #'
-#' As always, time in measured in Number of 4Ne generations in the past,
-#' where Ne is the (effective) size of the ancestral population.
+#' Time in measured in Number of 4N0 generations in the past,
+#' where N0 is the size of population 1 at time 0.
 #'
 #' The command will print the number of the new population, which will
-#' be the number of previously existing populations plus one. The ancestral
+#' be the number of previously existing populations plus one. The first
 #' population has number "1".
 #'
 #' @param dm  The demographic model to which the split should be added.
@@ -940,7 +895,7 @@ dm.addSpeciationEvent <- function(dm, min.time, max.time, fixed.time,
 #' population. The change is performed at a given time point
 #' ('at.time') and applies to the time interval farther into 
 #' the past from this point. The population size is set to a
-#' factor of the size of the ancestral population Ne.
+#' fraction of N0, the present day size of population one.
 #'
 #' If you want to add a slow, continuous change over some time,
 #' then use the \link{dm.addGrowth} function.
@@ -1244,7 +1199,7 @@ dm.createThetaTauModel <- function(sample.sizes, loci.num, seq.length=1000) {
 #' An outgroup is required for a finite sites analysis.
 #'
 #' @param dm The demographic model to which we add the outgroup
-#' @param separation.time The time point at which the outgroup splited 
+#' @param separation.time The time point at which the outgroup splits 
 #'           from the ancestral population. This can be an absolute value
 #'           (e.g. 10) or relative to another time points (e.g. '5*t_split_1').
 #' 
@@ -1289,13 +1244,13 @@ dm.simSumStats <- function(dm, parameters, sum.stats=c("all")) {
   checkParInRange(dm, parameters)
 
   if (all(dm@features$group == 0)) {
-    return(dm@currentSimProg@singleSimFunc(dm, parameters))
-  } 
+    return(getSimProgram(dm@currentSimProg)$sim_func(dm, parameters))
+  }
 
   sum.stats <- list(pars=parameters)
   for (loci.group in dm.getGroups(dm)) {
     dm.grp <- generateGroupModel(dm, loci.group)
-    sum.stats.grp <- dm.grp@currentSimProg@singleSimFunc(dm.grp, parameters)
+    sum.stats.grp <- getSimProgram(dm@currentSimProg)$sim_func(dm.grp, parameters)
     for (i in seq(along = sum.stats.grp)) {
       if (names(sum.stats.grp)[i] == 'pars') next()
       name <- paste(names(sum.stats.grp)[i], loci.group, sep='.')

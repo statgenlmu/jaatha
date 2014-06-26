@@ -47,7 +47,7 @@ This function changes the effective population size of one
 population. The change is performed at a given time point
 ('at.time') and applies to the time interval farther into
 the past from this point. The population size is set to a
-factor of the size of the ancestral population Ne.
+fraction of N0, the present day size of population one.
 }
 \details{
 If you want to add a slow, continuous change over some time,

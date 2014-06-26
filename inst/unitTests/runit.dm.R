@@ -216,9 +216,3 @@ test.generateGroupModel <- function() {
   checkEquals(0, sum(dm@features$group == 1))
   checkEquals(2, sum(dm@features$group == 2))
 }
-
-## -- Fixed bugs ----------------------------------------
-test.showEmptyModel <- function() {
-  dm <- dm.createDemographicModel(25:26, 100)
-  invisible(print(dm))
-}
