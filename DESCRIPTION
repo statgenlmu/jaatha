@@ -1,9 +1,9 @@
 Package: jaatha
 Version: 2.97.7
-Date: 2014-06-24
+Date: 2014-06-26
 License: GPL (>= 3)
 Title: A Fast Parameter Estimation Method for Evolutionary Biology
-Author: Lisha Mathew, Paul R. Staab and Dirk Metzler
+Author: Paul R. Staab, Lisha Mathew and Dirk Metzler
 Maintainer: Paul R. Staab <staab@biologie.uni-muenchen.de>
 BugReports: https://github.com/paulstaab/jaatha
 Description: Jaatha is a composite likelihood method for inferring evolutionary

@@ -153,10 +153,10 @@ of the parameter space. The parameters are scaled as in the popular simulation p
 \end{itemize}
 
 \noindent
-%Finally we can check your model using
-%<<Checking the model>>=
-%dm
-%@
+Finally we can check your model:
+<<Checking the model>>=
+dm
+@
 
 \noindent
 Keep in mind that a `good' model -- which is one that approximates the real demographic

@@ -115,7 +115,8 @@ printMsCommand <- function(dm) {
   cmd <- gsub('\"', "", cmd)
   cmd <- gsub('"', " ", cmd)
 
-  return(cmd)
+  cmd <- paste("ms", sum(dm.getSampleSize(dm)), dm.getLociNumber(dm), cmd)
+  .print(cmd)
 }
 
 msSingleSimFunc <- function(dm, parameters) {
@@ -182,8 +183,5 @@ finalizeMs <- function(dm) {
 # }
 # 
 
-createSimProgram("ms", "",
-                 possible.features,
-                 possible.sum.stats,
-                 singleSimFunc=msSingleSimFunc,
-                 finalizationFunc=finalizeMs)
+createSimProgram("ms", possible.features, possible.sum.stats, 
+                 msSingleSimFunc, finalizeMs, printMsCommand)

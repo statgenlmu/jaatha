@@ -1,3 +1,17 @@
+Version 2.4-1
+==================
+## Bug fixes
+- Fixed wrong description of N0 as size of the ancestral population in the documentation (#4)
+
+## New Features
+- Experimental support for an four-gamete-test based summary statistic
+
+## Improvements
+- Simplified internal simulation program interface
+- Print dispatch for demographic model
+- Modularized parsing of simulation output
+
+
 Version 2.4
 ==================
 ## Algorithm changes:

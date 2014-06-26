@@ -207,7 +207,7 @@ rm(init)
 Jaatha.initialize <- function(demographic.model, jsfs,
                               seed, cores=1, scaling.factor=1,
                               use.shm=FALSE, folded=FALSE, 
-                              smoothing=FALSE, seg.sites=NULL) {
+                              smoothing=FALSE) {
 
   checkType(demographic.model, c("dm", "s"))
   checkType(folded, c("bool", "single"))
@@ -223,22 +223,25 @@ Jaatha.initialize <- function(demographic.model, jsfs,
                        instead. See http://www.paulstaab.de/2013/11/r-shm")
 
   dm <- dm.addSummaryStatistic(demographic.model, 'jsfs')
-  if (!is.null(seg.sites)) dm <- dm.addSummaryStatistic(dm, 'fpc')
 
   sum.stats <- list()
+  seg.sites <- NULL
   groups <- dm.getGroups(dm)
 
   for (group in groups) {
     if (group == 1 & all(dm@features$group == 0)) {
+      # Only one group of loci
       jsfs.name <- 'jsfs'
       group <- 0
       if (is.list(jsfs)) { 
         jsfs.value <- jsfs$jsfs
+        seg.sites <- jsfs$seg.sites
       } else {
         jsfs.value <- jsfs
       }
 
       if (!is.null(seg.sites)) { 
+        dm <- dm.addSummaryStatistic(dm, 'fpc')
         fpc.name <- 'fpc'
         stopifnot(is.list(seg.sites))
         stopifnot(is.array(seg.sites[[1]]))
@@ -247,10 +250,16 @@ Jaatha.initialize <- function(demographic.model, jsfs,
       }
 
     } else {
+      # Multiple groups of loci
       jsfs.name <- paste('jsfs', group, sep='.')
       stopifnot(is.list(jsfs))
       stopifnot(is.matrix(jsfs[[jsfs.name]]))
       jsfs.value <- jsfs[[jsfs.name]]
+
+      seg.sites.name <- paste('seg.sites', group, sep='.')
+      if (is.list(jsfs[[seg.sites.name]])) {
+        stop("Using groups together with fpc statistic is not supported at the moment")
+      }
     }
     stopifnot(is.matrix(jsfs.value))
 
@@ -287,26 +296,13 @@ Jaatha.initialize <- function(demographic.model, jsfs,
         border.mask[ , ] <- 0
         border.mask[nrow(border.mask), ] <- 1
         border.mask[ ,ncol(border.mask)] <- 1
-        border.func <- function(x) { 
-          c(border[dim(x)[1],], border[1:(dim(x)[1]-1), dim(x)[2]])
-        }
         fpc.model="(X1+I(X1^2)+X2+I(X2^2))^2"
       } else {
         border.mask[ , , ] <- 0
         border.mask[nrow(border.mask), , ] <- 1
         border.mask[ ,ncol(border.mask), ] <- 1
-        border.func <- function(x) { 
-          border <- apply(x, 1:2, sum)
-          c(border[dim(x)[1],], border[1:(dim(x)[1]-1), dim(x)[2]])
-        }
         fpc.model="(X1+I(X1^2)+X2+I(X2^2)+X3+I(X3^2))^2"
       }
-      # sum.stats[[fpc.name]] <- list(method="poisson.smoothing",
-      #                               border.transformation=as.vector,
-      #                               border.mask=border.mask,
-      #                               border.transformation=border.func,
-      #                               model=fpc.model,
-      #                               value=fpc.value)
       sum.stats[[fpc.name]] <- list(method='poisson.transformed',
                                     transformation=as.vector,
                                     value=fpc.value)

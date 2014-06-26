@@ -47,8 +47,8 @@ checkForMsms <- function(throw.error = TRUE) {
   return(FALSE)
 }
 
-possible.features  <- c(getSimProgram('ms')@possible.features, "pos.selection")
-possible.sum.stats <- getSimProgram('ms')@possible.sum.stats
+possible.features  <- c(getSimProgram('ms')$possible_features, "pos.selection")
+possible.sum.stats <- getSimProgram('ms')$possible_sum_stats
 
 # This function generates an string that contains an R command for generating
 # an msms call to the current model.
@@ -104,7 +104,7 @@ generateMsmsOptions <- function(dm, parameters) {
   return(cmd)
 }
 
-msmsSingleSimFunc <- function(dm, parameters) {
+msmsSimFunc <- function(dm, parameters) {
   checkType(dm, "dm")
   checkType(parameters, "num")
   if (length(parameters) != dm.getNPar(dm)) 
@@ -131,8 +131,25 @@ finalizeMsms <- function(dm) {
   return(dm)
 }
 
-createSimProgram("msms", "",
-                 possible.features,
-                 possible.sum.stats,
-                 singleSimFunc=msmsSingleSimFunc,
-                 finalizationFunc=finalizeMsms)
+printMsmsCommand <- function(dm) {
+  msms.cmd <- printOptionsCmd(generateMsmsOptionsCommand(dm))
+  ms.cmd <- printOptionsCmd(generateMsOptionsCommand(dm)) 
+   
+  cmd <- paste("msms", msms.cmd, 
+               "-ms", sum(dm.getSampleSize(dm)), dm.getLociNumber(dm), ms.cmd)
+  .print(cmd)
+}
+
+printOptionsCmd <- function(cmd) {
+  cmd <- cmd[cmd != ","]
+  cmd <- cmd[-c(1, length(cmd))]
+  
+  cmd <- paste(cmd, collapse=" ")
+  
+  cmd <- gsub(",", " ", cmd)
+  cmd <- gsub('\"', "", cmd)
+  cmd <- gsub('"', " ", cmd)  
+}
+
+createSimProgram("msms", possible.features, possible.sum.stats,
+                 msmsSimFunc, finalizeMsms, printMsmsCommand)

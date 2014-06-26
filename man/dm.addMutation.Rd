@@ -40,9 +40,9 @@ The demographic model with mutation.
 \description{
 This functions adds the assumption to the model that neutral mutations
 occur in the genomes at a constant rate. The rate is quantified through
-a parameter usually named theta in population genetics. It equals 4*Ne*mu,
-where Ne is the (effective) number of diploid individuals in the ancestral
-population and mu is the neutral mutation rate for an entire locus.
+a parameter usually named theta in population genetics. It equals 4*N0*mu,
+where N0 is the effective diploid population size of population one at the
+time of sampling and mu is the neutral mutation rate for an entire locus.
 }
 \examples{
 # Create a new parameter

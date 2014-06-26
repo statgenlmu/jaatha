@@ -89,20 +89,20 @@ test.callMsms <- function() {
   unlink(c(out.file, out.file.2, out.file.3))
 }
 
-test.msms.singleSimFunc <- function() {
+test.msmsSimFunc <- function() {
   if (!checkForMsms(FALSE)) {
     warning('Can not test msms: jar not found')
     return()
   }
   
-  sum.stats <- msmsSingleSimFunc(dm.sel, c(1, 1.5, 1500, 5))
+  sum.stats <- msmsSimFunc(dm.sel, c(1, 1.5, 1500, 5))
   checkTrue( is.list(sum.stats) )
   checkTrue( !is.null(sum.stats$pars) )
   checkTrue( is.matrix(sum.stats$jsfs) )
   checkEquals( 2, length(sum.stats) )
   
   dm.sel@sum.stats <- c('seg.sites', 'file')
-  sum.stats <- msmsSingleSimFunc(dm.sel, c(1, 1.5, 1500, 5))
+  sum.stats <- msmsSimFunc(dm.sel, c(1, 1.5, 1500, 5))
   checkTrue( is.list(sum.stats) )
   checkTrue( !is.null(sum.stats$pars) )
   checkTrue( is.list(sum.stats$seg.sites) )
@@ -112,10 +112,14 @@ test.msms.singleSimFunc <- function() {
   unlink(sum.stats$file)
   
   dm.sel@sum.stats <- c('fpc')
-  sum.stats <- msmsSingleSimFunc(dm.sel, c(1, 1.5, 1500, 5))
+  sum.stats <- msmsSimFunc(dm.sel, c(1, 1.5, 1500, 5))
   checkTrue( is.list(sum.stats) )
   checkTrue( !is.null(sum.stats$pars) )
   checkTrue( is.matrix(sum.stats$fpc) )
   checkEquals( 3, sum(sum.stats$fpc) )
   checkEquals( 2, length(sum.stats) )
+}
+
+test.msmsPrint <- function() {
+  print(dm.sel)
 }
