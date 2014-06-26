@@ -173,6 +173,8 @@ generateSeqgenOptionsCmd <- function(dm) {
 }
 
 printSeqgenCommand <- function(dm) {
+  dm <- finalizeDM(dm)
+  printMsCommand(dm@options[['ms.model']])
   cmd <- generateSeqgenOptionsCmd(dm)
 
   cmd <- cmd[cmd != ","]
@@ -184,7 +186,7 @@ printSeqgenCommand <- function(dm) {
   cmd <- gsub('\"', "", cmd)
   cmd <- gsub('"', " ", cmd)
 
-  return(cmd)
+  .print(cmd)
 }
 
 seqgenOut2Jsfs <- function(dm, seqgen.file) {
@@ -244,4 +246,4 @@ finalizeSeqgen <- function(dm) {
 }
 
 createSimProgram("seq-gen", possible.features, possible.sum.stats,
-                 seqgenSingleSimFunc, finalizeSeqgen)
+                 seqgenSingleSimFunc, finalizeSeqgen, printSeqgenCommand)

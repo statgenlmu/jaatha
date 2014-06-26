@@ -61,13 +61,37 @@ rm(.init)
 #-----------------------------------------------------------------------
 # Print
 #-----------------------------------------------------------------------
-
-.show <- function(dm){
+.show <- function(object){
+  .print("Used simulation program:", object@currentSimProg)
+  .print()
   
+  # Print parameters that get estimated
+  if (sum(!object@parameters$fixed) > 0) {
+    .print("Parameters to estimate:")
+    pars.est = object@parameters[!object@parameters$fixed, 
+                                 c('name', 'lower.range', 'upper.range')]
+    rownames(pars.est) <- NULL
+    print(pars.est)
+    .print()
+  }
+  
+  # Print fixed parameters
+  if (sum(object@parameters$fixed) > 0) {
+    .print("Fixed parameters:")
+    pars.fixed = object@parameters[object@parameters$fixed, 
+                                   c('name', 'lower.range')]
+    colnames(pars.fixed) <- c('name', 'value')
+    rownames(pars.fixed) <- NULL
+    print(pars.fixed)
+    .print()
+  }
+  
+  # Print simulation command
+  .print("Simulation command:")
+  getSimProgram(object@currentSimProg)$print_cmd_func(object)
 } 
-#setMethod("show","DemographicModel",.show)
+setMethod("show", "DemographicModel", .show)
 rm(.show)
-
 
 
 #------------------------------------------------------------------------------
