@@ -121,5 +121,9 @@ test.msmsSimFunc <- function() {
 }
 
 test.msmsPrint <- function() {
+  if (!checkForMsms(FALSE)) {
+    warning('Can not test msms: jar not found')
+    return()
+  }
   print(dm.sel)
 }
