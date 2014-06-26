@@ -34,7 +34,7 @@ checkForMsms <- function(throw.error = TRUE) {
 
   # Works on Linux only maybe
   run.path <- strsplit(Sys.getenv("PATH"), ":")[[1]]
-  executables <- paste(run.path, "/msms.jar", sep="")
+  executables <- paste(c(run.path, getwd()), "/msms.jar", sep="")
   for (exe in executables) {
     if (file.exists(exe)) {
       .print("Using", exe, "as msms implementation\n")
