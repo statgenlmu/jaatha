@@ -76,10 +76,9 @@ test.JaathaInitialize <- function() {
   checkTrue(jaatha@opts[['scaling.factor']] == 17)
 
   # Use Shm
-  jaatha <- Jaatha.initialize(dm.tt, sum.stats.tt, 123, 1, 17, TRUE)
-  jaatha <- Jaatha.initialize(dm.tt, sum.stats.tt, 123, 1, 17, use.shm=TRUE)
+  jaatha <- Jaatha.initialize(dm.tt, sum.stats.tt, 123, 1, 17, FALSE)
+  jaatha <- Jaatha.initialize(dm.tt, sum.stats.tt, 123, 1, 17, use.shm=FALSE)
   checkType(jaatha, "jaatha")
-  checkTrue(jaatha@use.shm)
 
   # Folded
   jaatha <- Jaatha.initialize(dm.tt, sum.stats.tt, 123, 1, 17, FALSE, TRUE)
@@ -130,12 +129,11 @@ test.Jaatha.initialization.groups <- function() {
 test.Jaatha.initialization.fpc <- function() {
   # four-point-condition sum.stat
   jaatha.fpc <- Jaatha.initialize(dm.fpc, sum.stats.fpc, 123, folded=FALSE, 
-                                  smoothing=FALSE, seg.sites=seg.sites)
+                                  smoothing=FALSE)
   checkEquals(2, length(jaatha.fpc@sum.stats))
   checkTrue( is.list(jaatha.fpc@sum.stats[['jsfs']]) )
   checkTrue( is.list(jaatha.fpc@sum.stats[['fpc']]) )
 
-  #checkTrue( jaatha.fpc@sum.stats[['fpc']]$method == "poisson.smoothing" )
   checkTrue( sum(jaatha.fpc@sum.stats[['fpc']]$value) > 0 )
   checkTrue( !is.null(jaatha.fpc@opts$dm@options[['fpc.breaks.near']]) )
   checkTrue( !is.null(jaatha.fpc@opts$dm@options[['fpc.breaks.far']]) )

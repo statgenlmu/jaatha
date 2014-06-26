@@ -38,6 +38,11 @@ area, only one glm is fitted for the complete JSFS, and the
 position of the different entries is treated as a model
 parameter. This feature is still experimental and not
 recommended for productive use at the moment.}
+
+\item{seg.sites}{Observed pattern of segregating sites, used to calculate the
+experimental four-gamete-based summary statistic. Instructions
+on how to create this from actual genetic data will follow once
+the feature is more stable.}
 }
 \value{
 A S4-Object of type jaatha containing the settings
