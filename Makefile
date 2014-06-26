@@ -19,10 +19,10 @@ howtos: install
 	cd howtos; make
 
 test: install
-	cd tests; export RCMDCHECK=FALSE; Rscript doRUnit.R
+	export RCMDCHECK=FALSE; Rscript tests/doRUnit.R
 
 integration-test: inst/unitTests/test-setup.Rda install 
-	cd tests; export RCMDCHECK=FALSE; export INTEGRATION_TESTS=TRUE; Rscript doRUnit.R
+	export RCMDCHECK=FALSE; export INTEGRATION_TESTS=TRUE; Rscript tests/doRUnit.R
 
 test-setup: install
 	cd inst/unitTests; Rscript test-setup.R

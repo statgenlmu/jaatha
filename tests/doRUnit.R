@@ -20,8 +20,8 @@ if(rcmdcheck) {
   path.unit.tests <- system.file(package=pkg, "unitTests")
   path.integration.tests <- system.file(package=pkg, "integrationTests")
 } else {
-  path.unit.tests <- file.path(getwd(), "..", "inst", "unitTests")
-  path.integration.tests <- file.path(getwd(), "..", "inst", "integrationTests")
+  path.unit.tests <- file.path(getwd(), "inst", "unitTests")
+  path.integration.tests <- file.path(getwd(), "inst", "integrationTests")
 }
 
 
