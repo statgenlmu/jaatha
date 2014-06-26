@@ -16,7 +16,7 @@ setClass("DemographicModel" ,
                         sum.stats="character",
                         tsTvRatio="numeric",
                         finiteSites="logical",
-                        currentSimProg="SimProgram",
+                        currentSimProg="character",
                         options="list")
          )
 
@@ -62,75 +62,8 @@ rm(.init)
 # Print
 #-----------------------------------------------------------------------
 
-.show <- function(object){
-  dm <- object
-
-  features <- dm@features[!is.na(dm@features$parameter),]
-
-  if (nrow(features) == 0) {
-    cat("Your demographic model has no features so far.\n")
-    return()
-  }
-
-  cat("Your demographic model has the following parameters:\n")
-  for (rw in 1:nrow(features)) {
-    type <- features[rw,'type'] 
-    lR <- as.character(features[rw,'lower.range']) 
-    uR <- as.character(features[rw,'upper.range'])
-    parname <- features[rw,'parameter']
-
-    if (type == "split")
-      cat("-",parname,": A split into two pop.sources between",lR,"and",uR,
-          "Ne generations ago.\n")
-    else if (type == "mutation")
-      cat("-",parname,": A scaled mutation rate between",lR,"and",uR,"\n")
-    else if (type == "recombination")
-      cat("-",parname,": A scaled recombination rate between",lR,"and",uR,"\n")
-    else if (type == "migration")
-      cat("-",parname,":  A scaled migration rate between",lR,"and",uR,"\n")
-    else if (type == "presentSize")
-      cat("-",parname,":  At sample time, the second pop.source two was between",
-          lR,"and",uR,"times as the first one\n")
-    else if (type == "splitSize") 
-      cat("-",parname,":  At time of the pop.source split, the second",
-          "pop.source two was between",lR,"and",uR,"times as the first one\n")
-    else if (type == "migration")
-      cat("-",parname,":  A scaled migration rate between",lR,"and",uR,"\n")
-    else {
-      cat("- Other:\n")
-      print(dm@features[rw,])
-    }
-  }
-
-
-  features <- dm@features[is.na(dm@features$parameter),]
-  if (dim(features)[1] > 0){
-    cat("\n")
-    cat("Additionally, it has the following features:\n")
-    for (rw in 1:(dim(features)[1])) {
-      type <- features[rw,'type']
-      lR <- as.character(features[rw,'lower.range']) 
-
-      if (type == "split")
-        cat("- A split into two pop.sources",lR,"Ne generations ago.\n")
-      else if (type == "mutation")
-        cat("- A fixed scaled mutation rate of",lR,"\n")
-      else if (type == "recombination")
-        cat("- A fixed scaled recombination rate of",lR,"\n")
-      else if (type == "migration")
-        cat("- A fixed scaled migration rate of",lR,"\n")
-      else if (type == "presentSize")
-        cat("- At sample time, the second pop.source two was",
-            lR,"times as the first one\n")
-      else if (type == "splitSize") 
-        cat("- At time of the pop.source split, the second pop.source
-            two was",lR,"times as the first one\n")
-          else {
-            cat("- Other:\n")
-            print(dm@features[rw,])
-          }
-    }
-  }
+.show <- function(dm){
+  
 } 
 #setMethod("show","DemographicModel",.show)
 rm(.show)
@@ -354,11 +287,11 @@ checkParInRange <- function(dm, param) {
 
 # Selects a program for simulation that is capable of all current features
 .dm.selectSimProg <- function(dm) {
-  for (i in seq(along = .jaatha$simProgs)){
-    if (all(dm@features$type %in% .jaatha$simProgs[[i]]@possible.features) & 
-        all(dm@sum.stats %in% .jaatha$simProgs[[i]]@possible.sum.stats)) {
-      dm@currentSimProg <- .jaatha$simProgs[[i]]
-      .log2("Using", dm@currentSimProg@name, "for simulations")
+  for (sim_prog in .jaatha$sim_progs) {
+    if (all(dm@features$type %in% sim_prog$possible_features) & 
+        all(dm@sum.stats %in% sim_prog$possible_sum_stats)) {
+      dm@currentSimProg <- sim_prog$name
+      .log2("Using", dm@currentSimProg, "for simulations")
       return(dm)
     }
   }
@@ -368,14 +301,14 @@ checkParInRange <- function(dm, param) {
 
 finalizeDM <- function(dm) {
   if (all(dm@features$group == 0)) {
-    return(dm@currentSimProg@finalizationFunc(dm))
+    return(getSimProgram(dm@currentSimProg)$finalization_func(dm))
   }
 
   dm@options$grp.models <- list()
   for (group in dm.getGroups(dm)) {
     grp.model <- generateGroupModel(dm, group)
     dm@options$grp.models[[as.character(group)]] <- 
-      grp.model@currentSimProg@finalizationFunc(grp.model)
+      getSimProgram(dm@currentSimProg)$finalization_func(grp.model)
   }
   return(dm)
 }
@@ -1287,13 +1220,13 @@ dm.simSumStats <- function(dm, parameters, sum.stats=c("all")) {
   checkParInRange(dm, parameters)
 
   if (all(dm@features$group == 0)) {
-    return(dm@currentSimProg@singleSimFunc(dm, parameters))
-  } 
+    return(getSimProgram(dm@currentSimProg)$sim_func(dm, parameters))
+  }
 
   sum.stats <- list(pars=parameters)
   for (loci.group in dm.getGroups(dm)) {
     dm.grp <- generateGroupModel(dm, loci.group)
-    sum.stats.grp <- dm.grp@currentSimProg@singleSimFunc(dm.grp, parameters)
+    sum.stats.grp <- getSimProgram(dm@currentSimProg)$sim_func(dm.grp, parameters)
     for (i in seq(along = sum.stats.grp)) {
       if (names(sum.stats.grp)[i] == 'pars') next()
       name <- paste(names(sum.stats.grp)[i], loci.group, sep='.')
