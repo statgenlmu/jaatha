@@ -12,6 +12,10 @@ test.calcBorders <- function() {
   checkEquals( borders[1, ], c(lower=0.4, upper=1) )
   checkEquals( borders[2, ], c(lower=0.3, upper=.9) )
 
+  borders <- calcBorders(c(-1e-5, 1+1e-4), .1)
+  checkEquals( borders[1, ], c(lower=0, upper=0.2) )
+  checkEquals( borders[2, ], c(lower=0.8, upper=1) )
+  
   checkException(calcBorder(c(-.5, .4), .1))
   checkException(calcBorder(c(.5, 1), .1))
   checkException(calcBorder(c(.5, 1), -.1))
