@@ -130,13 +130,21 @@ refinedSearchSingleBlock <- function(jaatha, start.point, sim, sim.final,
     # Update the Search Blocks Border
     search.block@border <- calcBorders(search.block@MLest, radius=half.block.size)
 
-    # Simulate
-    sim.data <- simulateWithinBlock(sim, search.block, jaatha)
-    sim.saved <- getReusableSimulations(search.block, jaatha, sim.saved,
-                                        sim.data, step.current)
-
-    # Fit the GLM
-    glm.fitted <- fitGlm(sim.data, jaatha)
+    # Simulate Data and Fit Model
+    # If Glm does not converge, try using more simulations
+    for (j in 1:5) {
+      sim.data <- simulateWithinBlock(sim, search.block, jaatha)
+      sim.saved <- getReusableSimulations(search.block, jaatha, sim.saved,
+                                          sim.data, step.current)
+      tryCatch({
+        # Fit the GLM
+        glms.fitted <- fitGlm(sim.saved, jaatha)
+        break
+      }, error = function(e) {
+        if (j < 5) .print("Failed to fit the GLM. Adding more simulations. (", e, ")")
+        else stop('Failed to fit the GLM. Try disabeling smoothing')
+      })
+    }
 
     # Update likelihood of last steps estimate, based on new simulated data.
     # Should be a bit more accurate as previous estimate of the likelihood,
