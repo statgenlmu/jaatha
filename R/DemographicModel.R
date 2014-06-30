@@ -347,6 +347,7 @@ finalizeDM <- function(dm) {
   dm@options$grp.models <- list()
   for (group in dm.getGroups(dm)) {
     grp.model <- generateGroupModel(dm, group)
+    grp.model <- .dm.selectSimProg(grp.model)
     dm@options$grp.models[[as.character(group)]] <- 
       getSimProgram(dm@currentSimProg)$finalization_func(grp.model)
   }
