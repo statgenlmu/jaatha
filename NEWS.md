@@ -1,3 +1,9 @@
+Version 2.4-2
+==================
+## Improvements
+- Models in different groups can now use different simulation software
+
+
 Version 2.4-1
 ==================
 ## Bug fixes
