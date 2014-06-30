@@ -5,7 +5,8 @@
 population to a model.}
 \usage{
 dm.addPositiveSelection(dm, min.strength, max.strength, fixed.strength,
-  par.new = T, new.par.name = "s", parameter, population, at.time)
+  par.new = T, new.par.name = "s", parameter, population, at.time,
+  group = 0)
 }
 \arguments{
 \item{dm}{The demographic model to which the size change should be added.}
@@ -38,6 +39,8 @@ or "5*M+2*alpha" (if M is another parameter) will also
 work (also the latter does not make much sense).}
 
 \item{at.time}{The time point at which the size changes.}
+
+\item{group}{The group of loci to which we add selection.}
 }
 \value{
 The demographic model with a size change.

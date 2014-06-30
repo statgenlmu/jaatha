@@ -1273,6 +1273,7 @@ dm.addOutgroup <- function(dm, separation.time) {
 #'            or "5*M+2*alpha" (if M is another parameter) will also
 #'            work (also the latter does not make much sense).
 #' @param at.time The time point at which the size changes.
+#' @param group The group of loci to which we add selection. 
 #' @return    The demographic model with a size change.
 #' @export
 #' @examples
@@ -1281,7 +1282,7 @@ dm.addOutgroup <- function(dm, separation.time) {
 #' dm <- dm.addGrowth(dm, 0.1, 2, population=2, at.time="0")
 dm.addPositiveSelection <- function(dm, min.strength, max.strength, fixed.strength, 
                          par.new=T, new.par.name="s", parameter, 
-                         population, at.time) {
+                         population, at.time, group=0) {
 
   checkType(population, c("num",  "s"), T, F)
   checkType(at.time,    c("char", "s"), T, F)
@@ -1289,7 +1290,7 @@ dm.addPositiveSelection <- function(dm, min.strength, max.strength, fixed.streng
   if (par.new) parameter <- new.par.name
 
   dm <- addFeature(dm, "pos.selection", parameter, min.strength, max.strength,
-                   fixed.strength, par.new, population, NA, at.time)
+                   fixed.strength, par.new, population, NA, at.time, group)
 
   return(dm)
 }

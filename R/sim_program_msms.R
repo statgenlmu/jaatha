@@ -1,9 +1,9 @@
 # --------------------------------------------------------------
 # sim_prog_msms.R
-# Adaptor to calling ms from a demographic model.
+# Calling msms from a demographic model.
 # 
-# Authors:  Lisha Mathew & Paul R. Staab
-# Date:     2012-10-05
+# Authors:  Paul R. Staab
+# Date:     2014-06-30
 # Licence:  GPLv3 or later
 # --------------------------------------------------------------
 
@@ -63,18 +63,18 @@ generateMsmsOptionsCommand <- function(dm) {
       cmd <- c(cmd, '"-SI"', ',', feat['time.point'], ',', length(dm.getSampleSize(dm)), ',')
       if (feat['pop.source'] == 1) { 
         cmd <- c(cmd, 0.0005, ',', 0, ',') 
-        cmd <- c(cmd, '"-Sc"', ',', 0, ',', 1, ',', 0, ',', 0, ',', 0, ',') 
+#         cmd <- c(cmd, '"-Sc"', ',', 0, ',', 1, ',', 0, ',', 0, ',', 0, ',') 
       }
       else {
         cmd <- c(cmd, 0, ',', 0.0005, ',') 
-        cmd <- c(cmd, '"-Sc"', ',', 0, ',', 0, ',', 0, ',', 0, ',', 0, ',') 
+#         cmd <- c(cmd, '"-Sc"', ',', 0, ',', 0, ',', 0, ',', 0, ',', 0, ',') 
       }
-      cmd <- c(cmd, '"-N 100000"', ',') 
+      cmd <- c(cmd, '"-N 10000"', ',') 
       cmd <- c(cmd, '"-SAA"', ',', paste0("2*", feat['parameter']), ',',  '"-SAa"', ',',
                feat['parameter'], ',') 
       cmd <- c(cmd, '"-Sp 0.5"', ',', '"-SForceKeep"', ',')
     }
-        }
+  }
 
   cmd <- c(cmd, '" ")')
   cmd
