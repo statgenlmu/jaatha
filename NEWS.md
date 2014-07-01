@@ -2,6 +2,11 @@ Version 2.4-2
 ==================
 ## Improvements
 - Models in different groups can now use different simulation software
+- Now Jaatha simulates more data if it fails to fit a glm
+
+## Bug fixes
+- Fixed bug in calculation of JSFS introduced in 2.4-1 (#7)
+- Now old simulations are actually reused (#8)
 
 
 Version 2.4-1
