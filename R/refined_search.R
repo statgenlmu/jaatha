@@ -211,8 +211,17 @@ refinedSearchSingleBlock <- function(jaatha, start.point, sim, sim.final,
 ## determined by subtracting and adding 'around' to each dimension of
 ## point.
 calcBorders <- function(point, radius) {
-  radius <= 0 && stop("Radius is non-positive")
-  any(point < 0 || point > 1) && stop("Point coordinates outside [0,1]")
+  if (any(point < 0 || point > 1)) {
+    # Due to foalting point precisition, the point may be slight outside of the 
+    # parmeter space. Move it to the border if it is.
+    point[point < 0-1e-10] <- 0
+    point[point > 1+1e-10] <- 1
+    
+    # Something is wrong if it is more than 1e-10 ouside the parameter space
+    if (any(point < 0 || point > 1)) {
+      stop("Point coordinates outside [0,1]: ", point[1], "x", point[2])
+    }
+  }
   
   border <- t(sapply(point, function(x) x+c(-radius,radius)))
   colnames(border) <- c("lower", "upper")
