@@ -17,6 +17,7 @@
 #' @return A list containing a list of fitted GLMs for each summary
 #' statistic.
 fitGlm <- function(sim.data, jaatha, weighting=NULL){ 
+  .log2("Using", length(sim.data), 'simulations')
   glm.fitted <- list()
   for (i in seq(along = jaatha@sum.stats)) {
     name <- names(jaatha@sum.stats)[i] 
@@ -55,9 +56,10 @@ fitGlmPoiTransformed <- function(sim.data, sum.stat, transformation, weighting, 
   colnames(stats.sim) <- c(getParNames(jaatha), stats.names) 
 
   formulas <- paste0(stats.names, "~", paste(getParNames(jaatha) ,collapse= "+"))
-  lapply(formulas, glm, data=data.frame(stats.sim), family=poisson,
-         control = list(maxit = 200), model = FALSE,
-         x = FALSE, y = FALSE)
+  glms <- lapply(formulas, glm, data=data.frame(stats.sim), family=poisson,
+          model = FALSE, x = FALSE, y = FALSE)
+  sapply(glms, function(x){if (!x$converged) stop('GLM did not converge')})
+  glms
 }
 
 #' Fits a GLM for a summary statistics of type "poisson.smoothed"
@@ -76,12 +78,15 @@ fitPoiSmoothed <- function(sim.data, sum.stat, weighting, jaatha) {
                                               jaatha@sum.stats[[sum.stat]]$border.mask)
 
   smooth.glm  <- glm(model, data=sim.data.df, family=poisson("log"), 
-                     model = FALSE, x = FALSE, y = FALSE)
+                     model = FALSE, x = FALSE, y = FALSE,
+                     control = list(maxit = 100))
+  if (!smooth.glm$converged) stop('GLM did not converge')
+  
   if (!is.null(jaatha@sum.stats[[sum.stat]]$border.transformation)) {
     glms <- list(smooth=smooth.glm,
                  border=fitGlmPoiTransformed(sim.data, sum.stat,
                         jaatha@sum.stats[[sum.stat]]$border.transformation,
-                        weighting, jaatha))  
+                        weighting, jaatha))
   } else { 
     glms <- list(smooth=smooth.glm)
   }

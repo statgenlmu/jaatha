@@ -130,13 +130,23 @@ refinedSearchSingleBlock <- function(jaatha, start.point, sim, sim.final,
     # Update the Search Blocks Border
     search.block@border <- calcBorders(search.block@MLest, radius=half.block.size)
 
-    # Simulate
-    sim.data <- simulateWithinBlock(sim, search.block, jaatha)
-    sim.saved <- getReusableSimulations(search.block, jaatha, sim.saved,
-                                        sim.data, step.current)
-
-    # Fit the GLM
-    glm.fitted <- fitGlm(sim.data, jaatha)
+    # Simulate Data and Fit Model
+    # If Glm does not converge, try using more simulations
+    for (j in 1:5) {
+      sim.data <- simulateWithinBlock(sim, search.block, jaatha)
+      sim.saved <- getReusableSimulations(search.block, jaatha, sim.saved,
+                                          sim.data, step.current)
+      tryCatch({
+        # Fit the GLM
+        glm.fitted <- fitGlm(sim.saved, jaatha)
+        break
+      }, error = function(e) {
+        .log2("Error fitting GLM:", e$message)
+        if (j < 5) .print("Failed to fit the GLM. Retrying with more simulations...")
+        else stop('Failed to fit the GLM. Try disabeling smoothing')
+      })
+    }
+    stopifnot(exists('glm.fitted'))
 
     # Update likelihood of last steps estimate, based on new simulated data.
     # Should be a bit more accurate as previous estimate of the likelihood,
@@ -210,7 +220,7 @@ calcBorders <- function(point, radius) {
     
     # Something is wrong if it is more than 1e-10 ouside the parameter space
     if (any(point < 0 || point > 1)) {
-      stop("Point coordinates outside [0,1]: ", point)
+      stop("Point coordinates outside [0,1]: ", point[1], "x", point[2])
     }
   }
   
