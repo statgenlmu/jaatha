@@ -5,6 +5,6 @@ test.oneParModel <- function() {
   ss <- dm.simSumStats(dm, 2.5)
   checkTrue(sum(ss$jsfs) > 0)
   jaatha <- Jaatha.initialize(dm, ss)
-  jaatha <- Jaatha.initialSearch(jaatha, 10, 2)
-  jaatha <- Jaatha.refinedSearch(jaatha, 1, 10, max.steps=10)
+  jaatha <- Jaatha.initialSearch(jaatha, 20, 2)
+  jaatha <- Jaatha.refinedSearch(jaatha, 1, 20, max.steps=10)
 }
