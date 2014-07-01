@@ -141,7 +141,8 @@ refinedSearchSingleBlock <- function(jaatha, start.point, sim, sim.final,
         glm.fitted <- fitGlm(sim.saved, jaatha)
         break
       }, error = function(e) {
-        if (j < 5) .print("Failed to fit the GLM. Adding more simulations.")
+        .log2("Error fitting GLM:", e$message)
+        if (j < 5) .print("Failed to fit the GLM. Retrying with more simulations...")
         else stop('Failed to fit the GLM. Try disabeling smoothing')
       })
     }
