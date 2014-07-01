@@ -79,7 +79,7 @@ fitPoiSmoothed <- function(sim.data, sum.stat, weighting, jaatha) {
                      model = FALSE, x = FALSE, y = FALSE, 
                      control = list(maxit = 100))
   
-  #if (!smooth.glm$converged) stop('GLM did not converge')
+  if (!smooth.glm$converged) stop('GLM did not converge')
   
   if (!is.null(jaatha@sum.stats[[sum.stat]]$border.transformation)) {
     glms <- list(smooth=smooth.glm,
