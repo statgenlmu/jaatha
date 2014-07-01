@@ -210,7 +210,7 @@ calcBorders <- function(point, radius) {
     
     # Something is wrong if it is more than 1e-10 ouside the parameter space
     if (any(point < 0 || point > 1)) {
-      stop("Point coordinates outside [0,1]: ", point)
+      stop("Point coordinates outside [0,1]: ", point[1], "x", point[2])
     }
   }
   
