@@ -58,15 +58,13 @@ Jaatha.initialSearch <- function(jaatha, sim=200, blocks.per.par=3, rerun=FALSE)
     for (j in 1:4) {
       sim.data = c(sim.data, simulateWithinBlock(sim, firstBlocks[[i]], jaatha))
       tryCatch({
-        glms.fitted <- fitGlm(sim.data, jaatha)
+        suppressWarnings( glms.fitted <- fitGlm(sim.data, jaatha) )
         break
       }, error = function(e) {
-        print(e)
-        if (j < 4) .print("Failed to fit the GLM. Adding more simulations")
+        if (j < 4) .print("Failed to fit the GLM. Adding more simulations.")
         else stop('Failed to fit the GLM. Try disabeling smoothing or using more simulations')
       })
     }
-    stopifnot(exists('glms.fitted'))
 
     optimal <- findBestParInBlock(firstBlocks[[i]], glms.fitted, jaatha@sum.stats) 
     

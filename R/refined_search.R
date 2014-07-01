@@ -138,13 +138,14 @@ refinedSearchSingleBlock <- function(jaatha, start.point, sim, sim.final,
                                           sim.data, step.current)
       tryCatch({
         # Fit the GLM
-        glms.fitted <- fitGlm(sim.saved, jaatha)
+        glm.fitted <- fitGlm(sim.saved, jaatha)
         break
       }, error = function(e) {
-        if (j < 5) .print("Failed to fit the GLM. Adding more simulations. (", e, ")")
+        if (j < 5) .print("Failed to fit the GLM. Adding more simulations.")
         else stop('Failed to fit the GLM. Try disabeling smoothing')
       })
     }
+    stopifnot(exists('glm.fitted'))
 
     # Update likelihood of last steps estimate, based on new simulated data.
     # Should be a bit more accurate as previous estimate of the likelihood,
