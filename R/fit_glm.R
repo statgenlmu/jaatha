@@ -57,7 +57,7 @@ fitGlmPoiTransformed <- function(sim.data, sum.stat, transformation, weighting, 
 
   formulas <- paste0(stats.names, "~", paste(getParNames(jaatha) ,collapse= "+"))
   glms <- lapply(formulas, glm, data=data.frame(stats.sim), family=poisson,
-          model = FALSE, x = FALSE, y = FALSE)
+                 model = FALSE, x = FALSE, y = FALSE, control = list(maxit = 200))
   sapply(glms, function(x){if (!x$converged) stop('GLM did not converge')})
   glms
 }
@@ -79,7 +79,7 @@ fitPoiSmoothed <- function(sim.data, sum.stat, weighting, jaatha) {
 
   smooth.glm  <- glm(model, data=sim.data.df, family=poisson("log"), 
                      model = FALSE, x = FALSE, y = FALSE,
-                     control = list(maxit = 100))
+                     control = list(maxit = 200))
   if (!smooth.glm$converged) stop('GLM did not converge')
   
   if (!is.null(jaatha@sum.stats[[sum.stat]]$border.transformation)) {
