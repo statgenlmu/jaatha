@@ -48,7 +48,7 @@ test.initialSearch.fpc_groups <- function() {
   set.seed(1234)
   dm.fpc <- dm.addSampleSize(dm.fpc, 11:12, group = 2)
   dm.fpc <- dm.addSampleSize(dm.fpc, 5:6, group = 3)
-  sum.stats <- dm.simSumStats(dm.fpc, c(1, 2, 5))
+  sum.stats <- dm.simSumStats(dm.addSummaryStatistic(dm.fpc, 'seg.sites'), c(1, 2, 5))
   jaatha.fpc <- Jaatha.initialize(dm.fpc, sum.stats, 123)
   jaatha.fpc <- Jaatha.initialSearch(jaatha.fpc, sim=20, blocks.per.par=2)
 }
