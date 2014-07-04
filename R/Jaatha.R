@@ -257,8 +257,14 @@ Jaatha.initialize <- function(demographic.model, jsfs,
       jsfs.value <- jsfs[[jsfs.name]]
 
       seg.sites.name <- paste('seg.sites', group, sep='.')
+      print(seg.sites.name)
       if (is.list(jsfs[[seg.sites.name]])) {
-        stop("Using groups together with fpc statistic is not supported at the moment")
+        seg.sites <- jsfs[[seg.sites.name]]
+        fpc.name <- paste('fpc', group, sep='.')
+        
+        dm <- dm.addSummaryStatistic(dm, 'fpc', group=group)
+        dm <- calcFpcBreaks(dm, seg.sites, group=group)
+        fpc.value <- calcFpcSumStat(seg.sites, dm, group=group)
       }
     }
     stopifnot(is.matrix(jsfs.value))

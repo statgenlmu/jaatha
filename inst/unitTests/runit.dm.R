@@ -227,3 +227,16 @@ test.generateGroupModel <- function() {
   checkEquals(0, sum(dm@features$group == 1))
   checkEquals(2, sum(dm@features$group == 2))
 }
+
+test.dm.getSummaryStatistic <- function() {
+  checkTrue(dm.getSummaryStatistics(dm.tt) == 'jsfs')
+  checkEquals(1, length(dm.getSummaryStatistics(dm.tt)))
+  
+  checkTrue(dm.getSummaryStatistics(dm.grp, 1) == 'jsfs')
+  checkEquals(1, length(dm.getSummaryStatistics(dm.grp, 1)))
+  checkTrue(dm.getSummaryStatistics(dm.grp, 2) == 'jsfs')
+  checkEquals(1, length(dm.getSummaryStatistics(dm.grp, 2)))
+  
+  checkTrue(c('jsfs', 'fpc') %in% dm.getSummaryStatistics(dm.fpc))
+  checkEquals(2, length(dm.getSummaryStatistics(dm.fpc)))
+}

@@ -40,7 +40,7 @@ generateMsOptionsCommand <- function(dm) {
     feat <- unlist(dm@features[i, ])
 
     if ( type == "mutation" ) {
-      if (any(c('seg.sites', 'jsfs', 'fpc') %in% dm@sum.stats)) { 
+      if (any(c('seg.sites', 'jsfs', 'fpc') %in% dm.getSummaryStatistics(dm))) { 
         cmd <- c(cmd,'"-t"', ',', feat["parameter"], ',')
       }
     }
@@ -72,7 +72,7 @@ generateMsOptionsCommand <- function(dm) {
     else stop("Unknown feature:", type)
   }
 
-  if ('trees' %in% dm@sum.stats) cmd <- c(cmd, '"-T",')
+  if ('trees' %in% dm.getSummaryStatistics(dm)) cmd <- c(cmd, '"-T",')
   cmd <- c(cmd, '" ")')
 }
 
@@ -134,24 +134,26 @@ msSingleSimFunc <- function(dm, parameters) {
 }
 
 parseMsOutput <- function(out.file, parameters, dm) {
+  dm.sum.stats = dm.getSummaryStatistics(dm)
+  
   # Parse the output & generate additional summary statistics
-  if ('fpc' %in% dm@sum.stats) {
+  if ('fpc' %in% dm.sum.stats) {
     breaks.near <- dm@options[['fpc.breaks.near']]
     breaks.far <- dm@options[['fpc.breaks.far']]
     stopifnot(!is.null(breaks.near))
     stopifnot(!is.null(breaks.far))
     
     sum.stats <- parseOutput(out.file, dm.getSampleSize(dm), dm.getLociNumber(dm), 0, 
-                             'jsfs' %in% dm@sum.stats, 'seg.sites' %in% dm@sum.stats,
+                             'jsfs' %in% dm.sum.stats, 'seg.sites' %in% dm.sum.stats,
                              TRUE, breaks.near, breaks.far)
   } else {
     sum.stats <- parseOutput(out.file, dm.getSampleSize(dm), dm.getLociNumber(dm), 0, 
-                             'jsfs' %in% dm@sum.stats, 'seg.sites' %in% dm@sum.stats,
+                             'jsfs' %in% dm.sum.stats, 'seg.sites' %in% dm.sum.stats,
                              FALSE)
   }
   
   sum.stats[['pars']] <- parameters
-  if ("file" %in% dm@sum.stats) {
+  if ("file" %in% dm.sum.stats) {
     sum.stats[['file']] <- out.file
   } else {
     unlink(out.file)

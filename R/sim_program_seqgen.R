@@ -39,9 +39,12 @@ checkForSeqgen <- function() {
 }
 
 generateMsModel <- function(dm) {
+  stopifnot(all(dm.getGroups(dm) == 1))
   ms <- getSimProgram('ms')
   dm@features <- dm@features[dm@features$type %in% ms$possible_features, ]
-  dm@sum.stats <- c("file", "trees")
+  dm@sum.stats <- data.frame(name=c(), group=c())
+  dm <- dm.addSummaryStatistic(dm, "file")
+  dm <- dm.addSummaryStatistic(dm, "trees")
   return(dm)
 }
 
@@ -208,23 +211,25 @@ seqgenSingleSimFunc <- function(dm, parameters) {
   sum.stats[['pars']] <- parameters
   
   # Parse the output & generate additional summary statistics
-  if ('fpc' %in% dm@sum.stats) {
+  if ('fpc' %in% dm.getSummaryStatistics(dm)) {
     breaks.near <- dm@options[['fpc.breaks.near']]
     breaks.far <- dm@options[['fpc.breaks.far']]
     stopifnot(!is.null(breaks.near))
     stopifnot(!is.null(breaks.far))
     
     sum.stats <- parseOutput(seqgen.file, dm.getSampleSize(dm), dm.getLociNumber(dm), 1, 
-                             'jsfs' %in% dm@sum.stats, 'seg.sites' %in% dm@sum.stats,
+                             'jsfs' %in% dm.getSummaryStatistics(dm), 
+                             'seg.sites' %in% dm.getSummaryStatistics(dm),
                              TRUE, breaks.near, breaks.far)
   } else {
     sum.stats <- parseOutput(seqgen.file, dm.getSampleSize(dm), dm.getLociNumber(dm), 1, 
-                             'jsfs' %in% dm@sum.stats, 'seg.sites' %in% dm@sum.stats,
+                             'jsfs' %in% dm.getSummaryStatistics(dm), 
+                             'seg.sites' %in% dm.getSummaryStatistics(dm),
                              FALSE)
   }
   
   sum.stats[['pars']] <- parameters
-  if ('file' %in% dm@sum.stats) {
+  if ('file' %in% dm.getSummaryStatistics(dm)) {
     sum.stats[['file']] <- c(ms=sum.stats[['file']],
                              seqgen=seqgen.file)
   } else {
