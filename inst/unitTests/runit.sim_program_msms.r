@@ -51,12 +51,6 @@ example.msms.output <-
     '1 0 0',
     '')
 
-test.readJsfsFromOutput <- function() {
-  #jsfs <- readJsfsFromOutput(example.msms.output)
-  #checkEquals(jsfs, matrix(c(0,13,2,1,15,6,8,0,2,0,2,0), 4, 3))
-  #checkException(readJsfsFromOutput(example.msms.output[-(38:42)]))
-}
-
 test.generateMsmsOptionsCommand <- function() {
   dm <- dm.addPositiveSelection(dm.tt, 100, 500, population=1, at.time="2") 
   opts <- generateMsmsOptionsCommand(dm)
@@ -100,8 +94,10 @@ test.msmsSimFunc <- function() {
   checkTrue( !is.null(sum.stats$pars) )
   checkTrue( is.matrix(sum.stats$jsfs) )
   checkEquals( 2, length(sum.stats) )
-  
-  dm.sel@sum.stats <- c('seg.sites', 'file')
+
+  dm.sel@sum.stats <- data.frame()
+  dm.sel <- dm.addSummaryStatistic(dm.sel, 'seg.sites')
+  dm.sel <- dm.addSummaryStatistic(dm.sel, 'file')
   sum.stats <- msmsSimFunc(dm.sel, c(1, 1.5, 1500, 5))
   checkTrue( is.list(sum.stats) )
   checkTrue( !is.null(sum.stats$pars) )
@@ -111,7 +107,8 @@ test.msmsSimFunc <- function() {
   checkEquals( 3, length(sum.stats) )
   unlink(sum.stats$file)
   
-  dm.sel@sum.stats <- c('fpc')
+  dm.sel@sum.stats <- data.frame()
+  dm.sel <- dm.addSummaryStatistic(dm.sel, 'fpc')
   sum.stats <- msmsSimFunc(dm.sel, c(1, 1.5, 1500, 5))
   checkTrue( is.list(sum.stats) )
   checkTrue( !is.null(sum.stats$pars) )

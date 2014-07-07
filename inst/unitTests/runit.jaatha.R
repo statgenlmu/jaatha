@@ -139,7 +139,7 @@ test.Jaatha.initialization.fpc <- function() {
   checkTrue( !is.null(jaatha.fpc@opts$dm@options[['fpc.breaks.far']]) )
 }
 
-test.Jaatha.initialization.fpc_groups() {
+test.Jaatha.initialization.fpc_groups <- function() {
   set.seed(1234)
   dm.fpc <- dm.addSampleSize(dm.fpc, 11:12, group = 2)
   dm.fpc <- dm.addSampleSize(dm.fpc, 5:6, group = 3)

@@ -8,7 +8,7 @@ test.callMS <- function() {
   checkTrue(file.exists(callMs("-t 5", dm)))
 }
 
-test.msSingleSimFunc <- function() {
+test.msSimFunc <- function() {
   set.seed(789)
   sum.stats <- msSingleSimFunc(dm.tt, c(1,10))
   checkTrue(is.list(sum.stats))
@@ -23,7 +23,8 @@ test.msSingleSimFunc <- function() {
   checkTrue(sum(sum.stats$jsfs) > 0)
 
   set.seed(456)
-  dm@sum.stats <- 'seg.sites'
+  dm@sum.stats <- data.frame()
+  dm <- dm.addSummaryStatistic(dm, 'seg.sites')
   sum.stats <- msSingleSimFunc(dm, c(1, .5))
   checkEquals(2, length(sum.stats))
   checkTrue(!is.null(sum.stats$pars))
@@ -36,7 +37,7 @@ test.msSingleSimFunc <- function() {
     checkEquals(21, nrow(sum.stats$seg.sites[[i]]))
   }
 
-  dm@sum.stats <- c('file', 'seg.sites')
+  dm <- dm.addSummaryStatistic(dm, 'file')
   sum.stats <- msSingleSimFunc(dm, c(1, .5))
   checkEquals(3, length(sum.stats))
   checkTrue(!is.null(sum.stats$pars))
@@ -46,7 +47,8 @@ test.msSingleSimFunc <- function() {
   checkTrue((file.info(sum.stats$file)$size > 0))
 
   set.seed(123)
-  dm@sum.stats <- 'fpc'
+  dm@sum.stats <- data.frame()
+  dm <- dm.addSummaryStatistic(dm, 'fpc')
   dm <- calcFpcBreaks(dm, sum.stats$seg.sites) 
   sum.stats <- msSingleSimFunc(dm, c(1, 10))
   checkEquals(2, length(sum.stats))

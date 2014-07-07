@@ -20,13 +20,28 @@ test.addFeature <- function() {
   checkEquals(n.feat+2, nrow(dm@features))
 }
 
-test.addSummaryStatistics <- function() {
+test.dm.addSummaryStatistics <- function() {
   dm <- dm.createDemographicModel(11:12, 100)
-  checkEquals(dm@sum.stats, c('jsfs'))
+  checkEquals(1, length(dm.getSummaryStatistics(dm)))
+  checkTrue(dm.getSummaryStatistics(dm) == 'jsfs')
+  
   dm <- dm.addSummaryStatistic(dm, 'seg.sites')
-  checkEquals(dm@sum.stats, c('jsfs', 'seg.sites'))
-  checkException(addSummaryStatistic(dm, 'no.existing.sumstat'))
-  checkException(addSummaryStatistic(dm, 1:10))
+  checkEquals(2, length(dm.getSummaryStatistics(dm)))
+  checkTrue(all(dm.getSummaryStatistics(dm) ==  c('jsfs', 'seg.sites')))
+  dm <- dm.addSummaryStatistic(dm, 'seg.sites')
+  checkEquals(2, length(dm.getSummaryStatistics(dm)))
+  checkTrue(all(dm.getSummaryStatistics(dm) ==  c('jsfs', 'seg.sites')))
+  
+  dm <- dm.addSummaryStatistic(dm, 'file', group = 2)
+  checkEquals(2, length(dm.getSummaryStatistics(dm, group = 1)))
+  checkEquals(3, length(dm.getSummaryStatistics(dm, group = 2)))
+  
+  dm <- dm.addSummaryStatistic(dm, 'fpc', group = 1)
+  checkEquals(3, length(dm.getSummaryStatistics(dm, group = 1)))
+  checkEquals(3, length(dm.getSummaryStatistics(dm, group = 2)))
+  
+  checkException(dm.addSummaryStatistic(dm, 'no.existing.sumstat'))
+  checkException(dm.addSummaryStatistic(dm, 1:10))
 }
 
 test.makeThetaLast <- function() {
@@ -237,6 +252,6 @@ test.dm.getSummaryStatistic <- function() {
   checkTrue(dm.getSummaryStatistics(dm.grp, 2) == 'jsfs')
   checkEquals(1, length(dm.getSummaryStatistics(dm.grp, 2)))
   
-  checkTrue(c('jsfs', 'fpc') %in% dm.getSummaryStatistics(dm.fpc))
+  checkTrue(all(c('jsfs', 'fpc') %in% dm.getSummaryStatistics(dm.fpc)))
   checkEquals(2, length(dm.getSummaryStatistics(dm.fpc)))
 }
