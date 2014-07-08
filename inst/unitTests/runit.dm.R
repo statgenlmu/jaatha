@@ -221,26 +221,57 @@ test.searchFeature <- function() {
 }
 
 test.generateGroupModel <- function() {
+  # Check that a model with only one group is not modified
   dm <- generateGroupModel(dm.tt, 1)
   checkEquals(dm.tt@features, dm@features)
+  checkEquals(dm.tt@sum.stats, dm@sum.stats)
+  checkEquals(dm.tt@options, dm@options)
 
+  # Check the correct generation of features
   dm <- dm.setLociLength(dm.tt, 23, group=1)
   dm <- generateGroupModel(dm, 1)
   checkEquals(nrow(dm.tt@features), nrow(dm@features))
-  checkEquals(1, sum(dm@features$group == 1))
-  checkEquals('23', dm@features$parameter[dm@features$group == 1])
+  checkTrue(all(dm@features$group == 0))
+  checkEquals(23, dm.getLociLength(dm))
 
   dm.3 <- dm.setLociLength(dm.tt, 23, group=1)
   dm.3 <- dm.setLociLength(dm.3, 30, group=2)
   dm.3 <- dm.setLociNumber(dm.3, 31, group=2)
   dm <- generateGroupModel(dm.3, 1)
   checkEquals(nrow(dm.tt@features), nrow(dm@features))
-  checkEquals(1, sum(dm@features$group == 1))
-  checkEquals('23', dm@features$parameter[dm@features$group == 1])
+  checkTrue(all(dm@features$group == 0))
+  checkEquals(23, dm.getLociLength(dm))
   dm <- generateGroupModel(dm.3, 2)
   checkEquals(nrow(dm.tt@features), nrow(dm@features))
-  checkEquals(0, sum(dm@features$group == 1))
-  checkEquals(2, sum(dm@features$group == 2))
+  checkTrue(all(dm@features$group == 0))
+  checkEquals(30, dm.getLociLength(dm))
+  checkEquals(31, dm.getLociNumber(dm))
+  
+  # Check the correct generation of sum.stats
+  sum.stats <- dm.tt@sum.stats
+  dm <- dm.addSummaryStatistic(dm.tt, 'file', group=2)
+  dm.1 <- generateGroupModel(dm, 1)
+  checkTrue(sum.stats$name %in% dm.1@sum.stats$name)
+  checkTrue(dm.1@sum.stats$name %in% sum.stats$name)
+  
+  dm.2 <- generateGroupModel(dm, 2)
+  checkEquals(nrow(sum.stats)+1, nrow(dm.2@sum.stats))
+  checkTrue('file' %in% dm.getSummaryStatistics(dm.2))
+  
+  # Check that the options are correct
+  dm@options[['bli']] <- 0
+  dm@options[['bla']] <- 0 
+  dm@options[['blub']] <- 0
+  dm@options[['group.1']] <- list(blub=1, bli=1)
+  dm@options[['group.2']] <- list(blub=2, bla=2)
+  dm.1 <- generateGroupModel(dm, 1)
+  dm.2 <- generateGroupModel(dm, 2)
+  checkEquals(1, dm.1@options$bli)
+  checkEquals(0, dm.1@options$bla)
+  checkEquals(1, dm.1@options$blub)
+  checkEquals(0, dm.2@options$bli)
+  checkEquals(2, dm.2@options$bla)
+  checkEquals(2, dm.2@options$blub)
 }
 
 test.dm.getSummaryStatistic <- function() {
@@ -256,6 +287,15 @@ test.dm.getSummaryStatistic <- function() {
   checkEquals(2, length(dm.getSummaryStatistics(dm.fpc)))
 }
 
-test.calcFpcBreaks <- function() {
-  
+test.finalizeDM <- function() {
+  dm <- finalizeDM(dm.grp)
+  dm.1 <- dm@options$grp.models[['1']]
+  dm.2 <- dm@options$grp.models[['2']]
+  dm.3 <- dm@options$grp.models[['3']]
+  checkTrue(!is.null(dm.1))
+  checkTrue(!is.null(dm.2))
+  checkTrue(!is.null(dm.3))
+  checkTrue(!is.null(dm.1@options$ms.cmd))
+  checkTrue(!is.null(dm.2@options$ms.cmd))
+  checkTrue(!is.null(dm.3@options$ms.cmd))
 }

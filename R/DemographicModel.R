@@ -338,13 +338,16 @@ checkParInRange <- function(dm, param) {
 }
 
 finalizeDM <- function(dm) {
-  if (all(dm@features$group == 0)) {
+  dm.raw <- dm
+  
+  if (length(dm.getGroups(dm)) == 1) {
+    dm <- generateGroupModel(dm, 1)
     return(getSimProgram(dm@currentSimProg)$finalization_func(dm))
   }
 
   dm@options$grp.models <- list()
   for (group in dm.getGroups(dm)) {
-    grp.model <- generateGroupModel(dm, group)
+    grp.model <- generateGroupModel(dm.raw, group)
     grp.model <- .dm.selectSimProg(grp.model)
     dm@options$grp.models[[as.character(group)]] <- 
       getSimProgram(dm@currentSimProg)$finalization_func(grp.model)
@@ -1295,10 +1298,12 @@ dm.simSumStats <- function(dm, parameters, sum.stats=c("all")) {
 }
 
 generateGroupModel <- function(dm, group) {
-  if (all(dm@features$group == 0)) return(dm)
+  if (all(dm@features$group == 0) && all(dm@sum.stats$group == 0)) return(dm)
   if (!is.null(dm@options$grp.models[[as.character(group)]])) { 
     return(dm@options$grp.models[[as.character(group)]]) 
   }
+  
+  # Features
   dm@features <- dm@features[dm@features$group %in% c(0, group), ]
   overwritten <- dm@features$group == 0
   for (i in which(overwritten)) {
@@ -1309,6 +1314,19 @@ generateGroupModel <- function(dm, group) {
       overwritten[i] <- FALSE
   }
   dm@features <- dm@features[!overwritten, ]
+  dm@features$group <- 0
+  
+  # Sum.Stats
+  sum.stats <- unique(dm@sum.stats[dm@sum.stats$group %in% c(0, group), 'name'])
+  dm@sum.stats <- data.frame(name=sum.stats, group=0)
+  
+  # Options
+  group.name <- paste("group", group, sep='.')
+  if (!is.null(dm@options[[group.name]])) {
+    for (option in names(dm@options[[group.name]])) {
+      dm@options[[option]] <- dm@options[[group.name]][[option]]
+    }
+  }
   dm
 }
 

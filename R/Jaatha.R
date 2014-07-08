@@ -263,7 +263,7 @@ Jaatha.initialize <- function(demographic.model, jsfs,
         fpc.name <- paste('fpc', group, sep='.')
         
         dm <- dm.addSummaryStatistic(dm, 'fpc', group=group)
-        fpc.breaks <- calcFpcBreaks(dm, seg.sites)
+        dm <- calcFpcBreaks(dm, seg.sites, group=group)
         fpc.value <- calcFpcSumStat(seg.sites, dm, group=group)
       }
     }
@@ -310,7 +310,6 @@ Jaatha.initialize <- function(demographic.model, jsfs,
       #  fpc.model="(X1+I(X1^2)+X2+I(X2^2)+X3+I(X3^2))^2"
       #}
       sum.stats[[fpc.name]] <- list(method='poisson.transformed',
-                                    breaks=fpc.breaks,
                                     transformation=as.vector,
                                     value=fpc.value)
     }
