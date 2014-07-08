@@ -12,6 +12,7 @@ callMsms <- function(jar.path, ms.args, msms.args) {
   seed <- generateSeeds(1)
 
   # Create the command
+  .log3("Calling msms.  File:", out.file)
   command = paste("java -jar", jar.path, as.character(msms.args), 
                   "-ms", as.character(ms.args), "-seed", seed,
                   ">", out.file)
@@ -153,4 +154,4 @@ printOptionsCmd <- function(cmd) {
 }
 
 createSimProgram("msms", possible.features, possible.sum.stats,
-                 msmsSimFunc, finalizeMsms, printMsmsCommand)
+                 msmsSimFunc, finalizeMsms, printMsmsCommand, priority=40)

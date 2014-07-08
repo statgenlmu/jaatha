@@ -44,13 +44,6 @@ test.dm.addSummaryStatistics <- function() {
   checkException(dm.addSummaryStatistic(dm, 1:10))
 }
 
-test.makeThetaLast <- function() {
-  dm <- dm.createDemographicModel(11:12, 100)
-  dm <- dm.addMutation(dm,5,20)
-  dm <- dm.addSpeciationEvent(dm,0.1,5)
-  checkEquals(dm.getParameters(dm)[dm.getNPar(dm)], "theta")
-}
-
 test.setMutationModel <- function() {
   dm <- dm.createThetaTauModel(11:12, 100)
   dm <- dm.setMutationModel(dm, "HKY")
@@ -287,8 +280,8 @@ test.dm.getSummaryStatistic <- function() {
   checkEquals(2, length(dm.getSummaryStatistics(dm.fpc)))
 }
 
-test.finalizeDM <- function() {
-  dm <- finalizeDM(dm.grp)
+test.dm.finalize <- function() {
+  dm <- dm.finalize(dm.grp)
   dm.1 <- dm@options$grp.models[['1']]
   dm.2 <- dm@options$grp.models[['2']]
   dm.3 <- dm@options$grp.models[['3']]

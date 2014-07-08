@@ -330,7 +330,7 @@ Jaatha.initialize <- function(demographic.model, jsfs,
     jaatha@opts[['scaling.factor']] <- scaling.factor
   }
 
-  jaatha@opts[['dm']] <- finalizeDM(dm)
+  jaatha@opts[['dm']] <- dm.finalize(dm)
   jaatha@opts[['jsfs.folded']] <- folded
 
   return(jaatha)
