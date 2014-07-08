@@ -292,7 +292,8 @@ Jaatha.initialize <- function(demographic.model, jsfs,
       sum.stats[[jsfs.name]] <- list(method="poisson.smoothing",
                                      model=model,
                                      value=jsfs.value,
-                                     border.mask=border.mask)
+                                     border.mask=border.mask,
+                                     border.transformation=summarizeJsfsBorder)
     }
 
     if (!is.null(seg.sites)) { 
