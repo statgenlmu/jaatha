@@ -1,8 +1,12 @@
+Version 2.4.4
+==================
+## Improvements
+- Different Groups can now have different summary statistics
+
 Version 2.4.3
 ==================
 ## Improvements
 - Allow GLM more steps to converge
-
 
 Version 2.4-2
 ==================
