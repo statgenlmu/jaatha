@@ -258,7 +258,12 @@ Jaatha.initialize <- function(demographic.model, jsfs,
 
       seg.sites.name <- paste('seg.sites', group, sep='.')
       if (is.list(jsfs[[seg.sites.name]])) {
-        stop("Using groups together with fpc statistic is not supported at the moment")
+        seg.sites <- jsfs[[seg.sites.name]]
+        fpc.name <- paste('fpc', group, sep='.')
+        
+        dm <- dm.addSummaryStatistic(dm, 'fpc', group=group)
+        dm <- calcFpcBreaks(dm, seg.sites, group=group)
+        fpc.value <- calcFpcSumStat(seg.sites, dm, group=group)
       }
     }
     stopifnot(is.matrix(jsfs.value))
@@ -291,18 +296,18 @@ Jaatha.initialize <- function(demographic.model, jsfs,
     }
 
     if (!is.null(seg.sites)) { 
-      border.mask <- fpc.value
-      if (length(dim(border.mask)) == 2) {
-        border.mask[ , ] <- 0
-        border.mask[nrow(border.mask), ] <- 1
-        border.mask[ ,ncol(border.mask)] <- 1
-        fpc.model="(X1+I(X1^2)+X2+I(X2^2))^2"
-      } else {
-        border.mask[ , , ] <- 0
-        border.mask[nrow(border.mask), , ] <- 1
-        border.mask[ ,ncol(border.mask), ] <- 1
-        fpc.model="(X1+I(X1^2)+X2+I(X2^2)+X3+I(X3^2))^2"
-      }
+      #border.mask <- fpc.value
+      #if (length(dim(border.mask)) == 2) {
+      #  border.mask[ , ] <- 0
+      #  border.mask[nrow(border.mask), ] <- 1
+      #  border.mask[ ,ncol(border.mask)] <- 1
+      #  fpc.model="(X1+I(X1^2)+X2+I(X2^2))^2"
+      #} else {
+      #  border.mask[ , , ] <- 0
+      #  border.mask[nrow(border.mask), , ] <- 1
+      #  border.mask[ ,ncol(border.mask), ] <- 1
+      #  fpc.model="(X1+I(X1^2)+X2+I(X2^2)+X3+I(X3^2))^2"
+      #}
       sum.stats[[fpc.name]] <- list(method='poisson.transformed',
                                     transformation=as.vector,
                                     value=fpc.value)

@@ -13,7 +13,7 @@
 setClass("DemographicModel" ,
          representation(features="data.frame",
                         parameters="data.frame",
-                        sum.stats="character",
+                        sum.stats="data.frame",
                         tsTvRatio="numeric",
                         finiteSites="logical",
                         currentSimProg="character",
@@ -46,10 +46,11 @@ setClass("DemographicModel" ,
   .Object <- dm.addSampleSize(.Object, sample.size)
   .Object <- dm.setLociNumber(.Object, loci.number)
   .Object <- dm.setLociLength(.Object, loci.length)
-
+  
+  .Object@sum.stats <- data.frame(name=character(), group=numeric())
+    
   .Object@finiteSites     <- finiteSites
   .Object@tsTvRatio       <- tsTvRatio
-  .Object@sum.stats       <- c("jsfs")
   .Object@options         <- list()
 
   return(.Object)
@@ -238,15 +239,12 @@ addFeature <- function(dm, type, parameter=NA,
   return(dm)
 }
 
-dm.addSummaryStatistic <- function(dm, sum.stat) {
+dm.addSummaryStatistic <- function(dm, sum.stat, group = 0) {
   checkType(dm, "dm")
   checkType(sum.stat, "char")
 
-  dm@sum.stats <- c(dm@sum.stats, sum.stat)
-  if (sum.stat == '4pc') {
-    dm@options[['fpc.breaks.near']] <- 1:3/4
-    dm@options[['fpc.breaks.far']] <- 1:3/4
-  }
+  dm@sum.stats = rbind(dm@sum.stats, data.frame(name=sum.stat, group=group))
+
   dm <- .dm.selectSimProg(dm)
   return(dm)
 }
@@ -329,7 +327,7 @@ checkParInRange <- function(dm, param) {
 .dm.selectSimProg <- function(dm) {
   for (sim_prog in .jaatha$sim_progs) {
     if (all(dm@features$type %in% sim_prog$possible_features) & 
-        all(dm@sum.stats %in% sim_prog$possible_sum_stats)) {
+        all(dm@sum.stats$name %in% sim_prog$possible_sum_stats)) {
       dm@currentSimProg <- sim_prog$name
       .log2("Using", dm@currentSimProg, "for simulations")
       return(dm)
@@ -340,13 +338,16 @@ checkParInRange <- function(dm, param) {
 }
 
 finalizeDM <- function(dm) {
-  if (all(dm@features$group == 0)) {
+  dm.raw <- dm
+  
+  if (length(dm.getGroups(dm)) == 1) {
+    dm <- generateGroupModel(dm, 1)
     return(getSimProgram(dm@currentSimProg)$finalization_func(dm))
   }
 
   dm@options$grp.models <- list()
   for (group in dm.getGroups(dm)) {
-    grp.model <- generateGroupModel(dm, group)
+    grp.model <- generateGroupModel(dm.raw, group)
     grp.model <- .dm.selectSimProg(grp.model)
     dm@options$grp.models[[as.character(group)]] <- 
       getSimProgram(dm@currentSimProg)$finalization_func(grp.model)
@@ -437,6 +438,7 @@ dm.createDemographicModel <- function(sample.sizes, loci.num, seq.length=1000,
                                       log.level, log.file) {
   setLogging(log.level, log.file)
   dm <- new("DemographicModel", sample.sizes, loci.num, seq.length, F, .33)
+  dm <- dm.addSummaryStatistic(dm, 'jsfs')
   return(dm)
 }
 
@@ -1296,10 +1298,12 @@ dm.simSumStats <- function(dm, parameters, sum.stats=c("all")) {
 }
 
 generateGroupModel <- function(dm, group) {
-  if (all(dm@features$group == 0)) return(dm)
+  if (all(dm@features$group == 0) && all(dm@sum.stats$group == 0)) return(dm)
   if (!is.null(dm@options$grp.models[[as.character(group)]])) { 
     return(dm@options$grp.models[[as.character(group)]]) 
   }
+  
+  # Features
   dm@features <- dm@features[dm@features$group %in% c(0, group), ]
   overwritten <- dm@features$group == 0
   for (i in which(overwritten)) {
@@ -1310,6 +1314,19 @@ generateGroupModel <- function(dm, group) {
       overwritten[i] <- FALSE
   }
   dm@features <- dm@features[!overwritten, ]
+  dm@features$group <- 0
+  
+  # Sum.Stats
+  sum.stats <- unique(dm@sum.stats[dm@sum.stats$group %in% c(0, group), 'name'])
+  dm@sum.stats <- data.frame(name=sum.stats, group=0)
+  
+  # Options
+  group.name <- paste("group", group, sep='.')
+  if (!is.null(dm@options[[group.name]])) {
+    for (option in names(dm@options[[group.name]])) {
+      dm@options[[option]] <- dm@options[[group.name]][[option]]
+    }
+  }
   dm
 }
 
@@ -1365,11 +1382,17 @@ searchFeature <- function(dm, type=NULL, parameter=NULL, pop.source=NULL,
 #' @return The groups in the model.
 #' @export
 dm.getGroups <- function(dm) {
-  if (all(dm@features$group == 0)) return(1)
+  if (all(c(dm@features$group == 0, dm@sum.stats$group == 0))) return(1)
 
-  groups <- sort(unique(c(1, dm@features$group)))
+  groups <- sort(unique(c(1, dm@features$group, dm@sum.stats$group)))
   return(groups[groups != 0])
 }
+
+
+dm.getSummaryStatistics <- function(dm, group = 1) {
+  unique(dm@sum.stats[dm@sum.stats$group %in% c(0,group),'name'])
+} 
+
 
 scaleDemographicModel <- function(dm, scaling.factor) {
   for (group in unique(dm@features$group)) {

@@ -43,3 +43,13 @@ test.initialSearch.fpc <- function() {
   pStartPoints <- Jaatha.getStartingPoints(jaatha)
   checkEquals(6, nrow(pStartPoints))
 }
+
+test.initialSearch.fpc_groups <- function() {
+  set.seed(1234)
+  dm <- dm.addSampleSize(dm.fpc, 11:12, group = 2)
+  dm <- dm.addSampleSize(dm, 5:6, group = 3)
+  sim.model <- finalizeDM(dm.addSummaryStatistic(dm, 'seg.sites'))
+  sum.stats <- dm.simSumStats(sim.model, c(1, 2, 5))
+  jaatha.fpc <- Jaatha.initialize(dm, sum.stats, 123)
+  jaatha.fpc <- Jaatha.initialSearch(jaatha.fpc, sim=20, blocks.per.par=2)
+}
