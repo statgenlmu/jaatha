@@ -1,3 +1,13 @@
+Version 2.4.5
+==================
+## Improvements
+- Prioritizing system for simulations programs
+
+## Bug Fixes
+- It is no longer necessary to have a simulation program that can simulate all
+  groups (#6)
+- Different group now really use different simulation programs
+
 Version 2.4.4
 ==================
 ## Improvements

@@ -212,24 +212,25 @@ NumericMatrix parseSeqgenSegSites(std::ifstream &output,
   //Rprintf("SNPs: %i\n", positions.size());
   
   NumericMatrix seg_sites(individuals, positions.size());
-  for (size_t i=0; i<individuals-1; ++i) {
-    derived_count = 0;
-    for (std::vector<double>::iterator it = positions.begin(); it != positions.end(); ++it) {
-      seg_sites(i, derived_count) = (sequence[i][*it] != sequence[individuals-1][*it]);
-      ++derived_count;
+  
+  if (positions.size() > 0) {
+    for (size_t i=0; i<individuals-1; ++i) {
+      derived_count = 0;
+      for (std::vector<double>::iterator it = positions.begin(); it != positions.end(); ++it) {
+        seg_sites(i, derived_count) = (sequence[i][*it] != sequence[individuals-1][*it]);
+        ++derived_count;
+      }
     }
+  
+    for (std::vector<double>::iterator it = positions.begin(); it != positions.end(); ++it) {
+      *it /= (locus_length - 1);
+   }
+  
+    List dimnames = List(2);
+    position = wrap(positions);
+    dimnames[1] = position;
+    seg_sites.attr("dimnames") = dimnames; 
   }
-  
-  for (std::vector<double>::iterator it = positions.begin(); it != positions.end(); ++it) {
-    *it /= (locus_length - 1);
-  }
-  
-  List dimnames = List(2);
-  position = wrap(positions);
-  dimnames[1] = position;
-  
-  
-  seg_sites.attr("dimnames") = dimnames;
   
   //Rprintf("\n\n");
   return seg_sites;

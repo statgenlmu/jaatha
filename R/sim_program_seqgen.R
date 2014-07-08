@@ -8,16 +8,15 @@
 # --------------------------------------------------------------
 
 # list ms's features + FS related features
-seqgen.features    <- c('mutation.model', 'tstv.ratio', 
-                        'base.freq.A', 'base.freq.C', 'base.freq.G',
-                        'base.freq.T',
-                        'gtr.rate.1', 'gtr.rate.2', 'gtr.rate.3',
-                        'gtr.rate.4','gtr.rate.5','gtr.rate.6',
-                        'gamma.categories', 'gamma.rate')
+sg.features    <- c(getSimProgram('ms')$possible_features,
+                    'mutation.model', 'tstv.ratio', 
+                    'base.freq.A', 'base.freq.C', 'base.freq.G', 'base.freq.T',
+                    'gtr.rate.1', 'gtr.rate.2', 'gtr.rate.3',
+                    'gtr.rate.4','gtr.rate.5','gtr.rate.6',
+                    'gamma.categories', 'gamma.rate')
 
-possible.sum.stats <- c("jsfs", "file", 'seg.sites', 'fpc')
-mutation.models    <- c('HKY', 'F84', 'GTR')
-possible.features  <- c(getSimProgram('ms')$possible_features, seqgen.features)
+sg.sum.stats <- c("jsfs", "file", 'seg.sites', 'fpc')
+sg.mutation.models    <- c('HKY', 'F84', 'GTR')
 
 checkForSeqgen <- function() {
   if ( isJaathaVariable('seqgen.exe') ) return()
@@ -123,8 +122,8 @@ generateSeqgenOptionsCmd <- function(dm) {
 
     if (type == "mutation.model") {
       includes.model <- T
-      model <- mutation.models[dm@parameters[dm@parameters$name == "mutation.model", 
-                                             'lower.range']]
+      model <- sg.mutation.models[dm@parameters[dm@parameters$name == "mutation.model", 
+                                                'lower.range']]
       opts <- c(opts, paste('"-m', model, '"', sep=""), ",")
     }
 
@@ -176,7 +175,6 @@ generateSeqgenOptionsCmd <- function(dm) {
 }
 
 printSeqgenCommand <- function(dm) {
-  dm <- finalizeDM(dm)
   printMsCommand(dm@options[['ms.model']])
   cmd <- generateSeqgenOptionsCmd(dm)
 
@@ -249,5 +247,9 @@ finalizeSeqgen <- function(dm) {
   return(dm)
 }
 
-createSimProgram("seq-gen", possible.features, possible.sum.stats,
-                 seqgenSingleSimFunc, finalizeSeqgen, printSeqgenCommand)
+createSimProgram("seq-gen", sg.features, sg.sum.stats,
+                 seqgenSingleSimFunc, finalizeSeqgen, printSeqgenCommand,
+                 priority=10)
+
+rm(sg.features, sg.sum.stats, seqgenSingleSimFunc, 
+   finalizeSeqgen, printSeqgenCommand)

@@ -15,7 +15,8 @@ if (!exists("sim_progs", envir=.jaatha)) .jaatha$sim_progs <- list()
 
 createSimProgram <- function(name, possible_features, possible_sum_stats,
                              sim_func=NULL, finalization_func=NULL,
-                             print_cmd_func=NULL) {
+                             print_cmd_func=NULL,
+                             priority=50) {
 
   # Basic sanity check
   checkType(name, c('char', 'single'))
@@ -31,8 +32,8 @@ createSimProgram <- function(name, possible_features, possible_sum_stats,
                                    possible_sum_stats=possible_sum_stats,
                                    sim_func=sim_func,
                                    finalization_func=finalization_func,
-                                   print_cmd_func=print_cmd_func)
-
+                                   print_cmd_func=print_cmd_func,
+                                   priority=priority)
 }
 
 getSimProgram <- function(name) {

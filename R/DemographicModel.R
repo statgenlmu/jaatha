@@ -17,7 +17,8 @@ setClass("DemographicModel" ,
                         tsTvRatio="numeric",
                         finiteSites="logical",
                         currentSimProg="character",
-                        options="list")
+                        options="list",
+                        finalized='logical')
          )
 
 
@@ -52,6 +53,7 @@ setClass("DemographicModel" ,
   .Object@finiteSites     <- finiteSites
   .Object@tsTvRatio       <- tsTvRatio
   .Object@options         <- list()
+  .Object@finalized       <- FALSE
 
   return(.Object)
 }
@@ -63,6 +65,7 @@ rm(.init)
 # Print
 #-----------------------------------------------------------------------
 .showModel <- function(object) {
+  if (!object@finalized) dm = dm.finalize(object)
   .print("Used simulation program:", object@currentSimProg)
   .print()
   
@@ -93,7 +96,7 @@ rm(.init)
 }
 
 .show <- function(object) {
-  object <- finalizeDM(object)
+  object <- dm.finalize(object)
   
   if (is.null(object@options$grp.models)) {
     .showModel(object)
@@ -171,7 +174,8 @@ dm.addParameter <- function(dm, par.name, lower.boundary, upper.boundary, fixed.
  
   dm <- appendToParameters(dm, par.name, fixed, lower.boundary, upper.boundary)
 
-  dm <- makeThetaLast(dm)
+  #dm <- makeThetaLast(dm)
+  dm@finalized = FALSE
   return(dm)
 }
 
@@ -233,9 +237,7 @@ addFeature <- function(dm, type, parameter=NA,
                          time.point = time.point,
                          group = group)
 
-  # Update some technical properties of the model
-  dm <- .dm.selectSimProg(dm)
-
+  dm@finalized = FALSE
   return(dm)
 }
 
@@ -243,17 +245,22 @@ dm.addSummaryStatistic <- function(dm, sum.stat, group = 0) {
   checkType(dm, "dm")
   checkType(sum.stat, "char")
 
+  # Add the summary statistic
   dm@sum.stats = rbind(dm@sum.stats, data.frame(name=sum.stat, group=group))
-
-  dm <- .dm.selectSimProg(dm)
-  return(dm)
+  dm@finalized = FALSE
+  
+  # Check if there is any simulation program supporting this summary statistic
+  for (sim.prog in .jaatha$sim_progs) {
+    if (sum.stat %in% sim.prog$possible_sum_stats) return(dm)
+  }
+  stop("No simulation program for summary statistic", sum.stat)
 }
 
 # Helper function that appends a feature to the "feature" dataframe
 # Does not check the feature for consistency
 # This should only be used by addFeature().
 appendToFeatures <- function(dm, type, parameter, pop.source, 
-                             pop.sink, time.point, group    ) {
+                             pop.sink, time.point, group) {
   
   new.feature <- data.frame(type=type,
                             parameter=parameter,
@@ -291,29 +298,6 @@ getPopulations <- function(dm){
   populations <- unique(populations[!is.na(populations)])
 }
 
-
-# To use Watersons estimator, Jaatha requires that the mutation parameter
-# is the last parameter. This swishes it to the end.
-makeThetaLast <- function(dm) {
-  checkType(dm, c("dm", "s"), T, F)
-  
-  par.name <- dm@features$parameter[dm@features$type == "mutation"]
-  if (length(par.name) == 0) return(dm)
-  if (length(par.name) > 1) stop("Multiple Mutations features found")
-
-  pars <- dm@parameters
-  mut.line <- (1:nrow(pars))[pars$name == par.name]
-  last.line <- nrow(pars)
-  if (mut.line == last.line) return(dm)
-
-  new.order <- 1:last.line
-  new.order[c(mut.line, last.line)] <- c(last.line, mut.line)
-
-  dm@parameters <- pars[new.order, ]
-  return(dm)
-}
-
-
 # Checks if a vector of parameters is within the ranges of the model
 checkParInRange <- function(dm, param) {
   if (length(param) != dm.getNPar(dm)) stop("Wrong number of parameters")
@@ -324,34 +308,46 @@ checkParInRange <- function(dm, param) {
 }
 
 # Selects a program for simulation that is capable of all current features
-.dm.selectSimProg <- function(dm) {
+dm.selectSimProg <- function(dm) {
+  name <- NULL
+  priority <- -Inf
+  
   for (sim_prog in .jaatha$sim_progs) {
     if (all(dm@features$type %in% sim_prog$possible_features) & 
         all(dm@sum.stats$name %in% sim_prog$possible_sum_stats)) {
-      dm@currentSimProg <- sim_prog$name
-      .log2("Using", dm@currentSimProg, "for simulations")
-      return(dm)
+      
+      if (sim_prog$priority > priority) {
+        name <- sim_prog$name
+        priority <- sim_prog$priority
+      }
+      
     }
   }
-  stop("No suitable simulation software found!")
+  
+  if (is.null(name)) stop("No suitable simulation software found!")
+  
+  dm@currentSimProg <- name
   return(dm)
 }
 
-finalizeDM <- function(dm) {
-  dm.raw <- dm
-  
+dm.finalize <- function(dm) {
   if (length(dm.getGroups(dm)) == 1) {
     dm <- generateGroupModel(dm, 1)
+    dm <- dm.selectSimProg(dm)
     return(getSimProgram(dm@currentSimProg)$finalization_func(dm))
   }
 
   dm@options$grp.models <- list()
+  dm@currentSimProg <- "groups"
+  dm.raw <- dm
+  
   for (group in dm.getGroups(dm)) {
     grp.model <- generateGroupModel(dm.raw, group)
-    grp.model <- .dm.selectSimProg(grp.model)
-    dm@options$grp.models[[as.character(group)]] <- 
-      getSimProgram(dm@currentSimProg)$finalization_func(grp.model)
+    grp.model <- dm.finalize(grp.model)
+    dm@options$grp.models[[as.character(group)]] <- grp.model
   }
+  
+  dm@finalized = TRUE
   return(dm)
 }
 
@@ -1067,12 +1063,12 @@ dm.setMutationModel <- function(dm, mutation.model,
   checkType(tstv.ratio, c("num", "s"), F, F)
   checkType(gtr.rates, c("num"), F, F)
 
-  if (! mutation.model %in% mutation.models) 
-    stop("Allowed values: ", paste(mutation.models, collapse=" "))
+  if (! mutation.model %in% sg.mutation.models) 
+    stop("Allowed values: ", paste(sg.mutation.models, collapse=" "))
   
-  mutation.model.nr <- seq(along = mutation.models)[mutation.models == mutation.model]
+  mutation.model.nr <- which(mutation.model == sg.mutation.models)
   dm <- addFeature(dm, "mutation.model", "mutation.model", 
-                            fixed.value=mutation.model.nr)
+                   fixed.value=mutation.model.nr)
 
   if ( !missing(tstv.ratio) ) {
     if (!mutation.model %in% c("HKY", "F84"))
@@ -1277,25 +1273,28 @@ dm.addPositiveSelection <- function(dm, min.strength, max.strength, fixed.streng
 #' dm.simSumStats(dm,c(1,10))
 dm.simSumStats <- function(dm, parameters, sum.stats=c("all")) {
   checkType(dm, "dm")
-
   checkParInRange(dm, parameters)
+  
+  if (!dm@finalized) dm = dm.finalize(dm)
 
-  if (all(dm@features$group == 0)) {
+  if (dm@currentSimProg != "groups") {
     return(getSimProgram(dm@currentSimProg)$sim_func(dm, parameters))
-  }
-
+  } 
+    
   sum.stats <- list(pars=parameters)
-  for (loci.group in dm.getGroups(dm)) {
-    dm.grp <- generateGroupModel(dm, loci.group)
-    sum.stats.grp <- getSimProgram(dm@currentSimProg)$sim_func(dm.grp, parameters)
+  for (group in dm.getGroups(dm)) {
+    dm.grp <- dm@options$grp.models[[as.character(group)]]
+    sum.stats.grp <- getSimProgram(dm.grp@currentSimProg)$sim_func(dm.grp, parameters)
     for (i in seq(along = sum.stats.grp)) {
       if (names(sum.stats.grp)[i] == 'pars') next()
-      name <- paste(names(sum.stats.grp)[i], loci.group, sep='.')
+      name <- paste(names(sum.stats.grp)[i], group, sep='.')
       sum.stats[[name]] <- sum.stats.grp[[i]]
     }
   }
+  
   sum.stats
 }
+
 
 generateGroupModel <- function(dm, group) {
   if (all(dm@features$group == 0) && all(dm@sum.stats$group == 0)) return(dm)

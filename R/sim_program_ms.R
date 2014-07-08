@@ -22,7 +22,8 @@ callMs <- function(opts, dm){
   opts <- unlist(strsplit(opts, " "))
 
   ms.file <- getTempFile("ms")
-
+  
+  .log3("Calling ms. Opts:", opts, "file:", ms.file)
   ms(sum(dm.getSampleSize(dm)), dm.getLociNumber(dm), opts, ms.file)
   return(ms.file)
 }
@@ -77,7 +78,6 @@ generateMsOptionsCommand <- function(dm) {
 }
 
 generateMsOptions <- function(dm, parameters) {
-  .log3("Called .ms.generateCmd()")
   ms.tmp <- new.env()
 
   par.names <- dm.getParameters(dm)
@@ -97,8 +97,6 @@ generateMsOptions <- function(dm, parameters) {
   else
     cmd <- generateMsOptionsCommand(dm)
   cmd <- eval(parse(text=cmd), envir=ms.tmp)
-
-  .log3("Finished .ms.generateCmd()")
 
   return(cmd)
 }
@@ -186,4 +184,4 @@ finalizeMs <- function(dm) {
 # 
 
 createSimProgram("ms", possible.features, possible.sum.stats, 
-                 msSingleSimFunc, finalizeMs, printMsCommand)
+                 msSingleSimFunc, finalizeMs, printMsCommand, 100)
