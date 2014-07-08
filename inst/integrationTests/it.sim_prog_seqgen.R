@@ -1,13 +1,17 @@
 test.callSeqgen <- function(opts, ms.file){
+  checkForSeqgen()
   opts <- c("seq-gen", " -mHKY", " -l", dm.getLociLength(dm.tt), " -p", dm.getLociLength(dm.tt) + 1, " -q")
   
-  dm.tt@sum.stats <- 'trees'
+  dm.tt <- dm.addSummaryStatistic(dm.tt, 'trees')
   ms.options <- jaatha:::generateMsOptions(dm.tt, c(1,10))
   ms.file <- jaatha:::callMs(ms.options, dm.tt)
 
   seqgen.file <- callSeqgen(opts, ms.file)
+  
   checkTrue( file.exists(seqgen.file) )
   checkTrue( file.info(seqgen.file)$size != 0 )
+  unlink(ms.file)
+  unlink(seqgen.file)
 }
 
 test.seqgenSingleSimFunc <-function() {

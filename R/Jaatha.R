@@ -257,7 +257,6 @@ Jaatha.initialize <- function(demographic.model, jsfs,
       jsfs.value <- jsfs[[jsfs.name]]
 
       seg.sites.name <- paste('seg.sites', group, sep='.')
-      print(seg.sites.name)
       if (is.list(jsfs[[seg.sites.name]])) {
         seg.sites <- jsfs[[seg.sites.name]]
         fpc.name <- paste('fpc', group, sep='.')
