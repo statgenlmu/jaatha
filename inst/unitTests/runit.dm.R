@@ -255,3 +255,7 @@ test.dm.getSummaryStatistic <- function() {
   checkTrue(all(c('jsfs', 'fpc') %in% dm.getSummaryStatistics(dm.fpc)))
   checkEquals(2, length(dm.getSummaryStatistics(dm.fpc)))
 }
+
+test.calcFpcBreaks <- function() {
+  
+}

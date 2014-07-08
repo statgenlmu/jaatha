@@ -14,14 +14,11 @@ calcFpcSumStat <- function(seg.sites, dm) {
   
 calcFpcBreaks <- function(dm, seg.sites, number=5) {
   fpc.percent <- t(sapply(seg.sites, function(x) 
-                            calcPercentFpcViolation(x, as.numeric(colnames(x))) ))
+                          calcPercentFpcViolation(x, as.numeric(colnames(x))) ))
   props <- seq(0, 1, length.out = number + 2)[-c(1, number+2)]
   
-  dm@options[['fpc.breaks.near']] <- calcBreaks(fpc.percent[, 1], props) 
-  dm@options[['fpc.breaks.far']] <- calcBreaks(fpc.percent[, 2], props) 
-
-  # dm@options[['fpc.breaks.theta']] <- number
-  dm
+  list(near=calcBreaks(fpc.percent[, 1], props), 
+       far=calcBreaks(fpc.percent[, 2], props))
 }
 
 calcBreaks <- function(values, props) {
