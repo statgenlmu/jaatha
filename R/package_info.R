@@ -19,6 +19,6 @@
 #' @importFrom methods representation 
 #' @importFrom parallel mclapply
 #' @importFrom Rcpp evalCpp
-#' @importFrom dplyr as.tbl_cube
+#' @importFrom reshape2 melt
 #' @useDynLib jaatha
 NULL

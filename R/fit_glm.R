@@ -105,16 +105,19 @@ fitPoiSmoothed <- function(sim.data, sum.stat, weighting, jaatha) {
 #' @return The summary statistics as data.frame 
 convertSimResultsToDataFrame <- function(sim.data, sum.stat, mask=NULL) {
   do.call(rbind, lapply(sim.data, function(sim.result) {
+    # Convert array to data.frame
     dim.names <- lapply(dim(sim.result[[sum.stat]]), function(x) 1:x)
     names(dim.names) <- paste0('X', 1:length(dim(sim.result[[sum.stat]])))
     dimnames(sim.result[[sum.stat]]) <- dim.names
+    sum.stat.df <- melt(sim.result[[sum.stat]], value.name = 'sum.stat')
 
-    sum.stat.df <- as.data.frame(as.tbl_cube(sim.result[[sum.stat]]))
-    colnames(sum.stat.df)[length(colnames(sum.stat.df))] <- 'sum.stat'  
+    # Add the corsponding parameters
     pars <- matrix(sim.result$pars.normal, nrow(sum.stat.df),
                    length(sim.result$pars.normal), byrow=TRUE)
     colnames(pars) <- names(sim.result$pars.normal)
     sum.stat.df <- data.frame(pars, sum.stat.df)
+    
+    # Remove masked values (if any)
     if (!is.null(mask)) sum.stat.df <- sum.stat.df[!mask, ]
     sum.stat.df
   }))
