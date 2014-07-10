@@ -51,7 +51,7 @@ isInBlock <- function(block, point) {
 }
 
 getCorners <- function(block) {
-  corners <- t(sapply(1:2^nrow(block@border), function(c) {
+  corners <- matrix(sapply(1:2^nrow(block@border), function(c) {
     # converts 'c-1' to binary system,
     # binary system bc corner is either at lower or upper Bound
     # of parRange for each parameter
@@ -61,7 +61,7 @@ getCorners <- function(block) {
     # +1 bc R indices start at 1 (i.e. 1=lower and 2=upper bound)
     corner <- sapply(1:nrow(block@border), function(p) block@border[p, digitalCorner[p]])
     return(corner)
-  }))
+  }), nrow=2^nrow(block@border), byrow=TRUE)
   
   # Adds parameter names
   rownames(corners) <- NULL
