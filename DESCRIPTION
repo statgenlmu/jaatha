@@ -16,7 +16,6 @@ Depends:
     R (>= 3.0),
     methods
 Imports:
-    foreach (>= 1.2.0-1),
     phyclust (>= 0.1-14),
     Rcpp (>= 0.11.0),
     dplyr (>= 0.2),
@@ -38,6 +37,7 @@ Collate:
     'helper_functions.R'
     'initial_search.R'
     'normalize.R'
+    'package_info.R'
     'parallelization.R'
     'read_fasta.R'
     'refined_search.R'
