@@ -42,8 +42,6 @@ Jaatha.initialSearch <- function(jaatha, sim=200, blocks.per.par=2, rerun=FALSE)
   }
 
   set.seed(jaatha@seeds[2])
-  tmp.dir <- getTempDir(jaatha@use.shm)
-
   setParallelization(jaatha@cores)
 
   firstBlocks <- createInitialBlocks(jaatha@par.ranges, blocks.per.par)
@@ -79,8 +77,6 @@ Jaatha.initialSearch <- function(jaatha, sim=200, blocks.per.par=2, rerun=FALSE)
 
   jaatha@starting.positions <- firstBlocks
   print(Jaatha.getStartingPoints(jaatha))
-
-  removeTempFiles()
 
   return(jaatha)
 }

@@ -413,14 +413,6 @@ getThetaRange <- function(dm){
 #'            containing the sample sizes from each population.
 #' @param loci.num     Number of loci that will be simulated
 #' @param seq.length   (Average) number of bases for each locus
-# @param finiteSites If 'TRUE', a finite sites mutation model is assumed
-#            instead of an infinite sites one.
-# @param tsTvRatio   Transition transversion ratio
-#' @param log.level   An integer specifing the amount of user readable output 
-#'                    that will be produced.
-#'                    0 = no output, 1 = normal verbosity, ..., 
-#'                    3 = maximal verbosity.
-#' @param log.file    If set, the debug output will be written into the given file
 #' @return            The demographic model
 #' @export
 #'
@@ -429,10 +421,7 @@ getThetaRange <- function(dm){
 #' dm <- dm.addSpeciationEvent(dm,0.01,5)
 #' dm <- dm.addMutation(dm,1,20)
 #' dm
-dm.createDemographicModel <- function(sample.sizes, loci.num, seq.length=1000, 
-                                      #finiteSites=F, tsTvRatio=.33, 
-                                      log.level, log.file) {
-  setLogging(log.level, log.file)
+dm.createDemographicModel <- function(sample.sizes, loci.num, seq.length=1000) {
   dm <- new("DemographicModel", sample.sizes, loci.num, seq.length, F, .33)
   dm <- dm.addSummaryStatistic(dm, 'jsfs')
   return(dm)

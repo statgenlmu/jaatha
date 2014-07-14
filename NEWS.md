@@ -1,3 +1,11 @@
+Version 2.4.6
+==================
+## Clean-Ups
+- Removed additional tmp-folders
+- Removed dependency on foreach
+- Changed dependency on dplyr to reshape2
+- Removed optional logging into a file
+
 Version 2.4.5
 ==================
 ## Improvements

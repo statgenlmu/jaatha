@@ -83,7 +83,6 @@ Jaatha.refinedSearch <- function(jaatha, best.start.pos=2,
   # Setup environment for the refined search
   set.seed(jaatha@seeds[3])
   setParallelization(jaatha@cores)
-  tmp.dir <- getTempDir(jaatha@use.shm)
 
   # Start a search for every start point
   for (s in 1:length(startPoints)){
@@ -97,7 +96,6 @@ Jaatha.refinedSearch <- function(jaatha, best.start.pos=2,
   .print("Best log-composite-likelihood values are:")
   print(Jaatha.getLikelihoods(jaatha, 5))
 
-  removeTempFiles()
   return(jaatha)
 }
 

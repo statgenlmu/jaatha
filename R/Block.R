@@ -51,16 +51,19 @@ isInBlock <- function(block, point) {
 }
 
 getCorners <- function(block) {
-  corners <- foreach(c=1:2^nrow(block@border), .combine=rbind) %do% {
-    ## converts 'c-1' to binary system,
-    ##binary system bc corner is either at lower or upper Bound
-    ##of parRange for each parameter
+  corners <- matrix(sapply(1:2^nrow(block@border), function(c) {
+    # converts 'c-1' to binary system,
+    # binary system bc corner is either at lower or upper Bound
+    # of parRange for each parameter
     digitalCorner <- .index2blocks(value=c-1, newBase=2,
                                    expo=nrow(block@border)) + 1
-    ## +1 bc R indices start at 1 (i.e. 1=lower and 2=upper bound)
+    
+    # +1 bc R indices start at 1 (i.e. 1=lower and 2=upper bound)
     corner <- sapply(1:nrow(block@border), function(p) block@border[p, digitalCorner[p]])
     return(corner)
-  }
+  }), nrow=2^nrow(block@border), byrow=TRUE)
+  
+  # Adds parameter names
   rownames(corners) <- NULL
   colnames(corners) <- rownames(block@border)
   return(corners)
