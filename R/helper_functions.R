@@ -36,7 +36,6 @@ isJaathaVariable <- function(name) {
 #-----------------------------------------------------------------------
 
 if (!exists('log.level', envir=.jaatha)) .jaatha$log.level <- 1
-if (!exists('log.file', envir=.jaatha))  .jaatha$log.file  <- ""
 
 # A helper function for easy creation of logging output
 #
@@ -55,13 +54,7 @@ if (!exists('log.file', envir=.jaatha))  .jaatha$log.file  <- ""
     return()
   }
 
-  cat(format(Sys.time(), "%Y-%m-%d %H:%M:%S"), ..., "\n", sep=" ",
-      file=.jaatha$log.file, append=T)
-
-  if (.jaatha$log.file != "" & level == 1) {
-    # Also print normal output when logging to file
-    cat(...,"\n",sep=" ")
-  }
+  cat(..., "\n", sep=" ",)
 }
 
 # Function for creating normal user output 
@@ -86,21 +79,11 @@ if (!exists('log.file', envir=.jaatha))  .jaatha$log.file  <- ""
 #'              If the level is smaller or equal to the log level stored in
 #'              'log.level', than the output is printed, otherwise it is
 #'              discarded. 0 is the default level.
-#' @param log.file If given, the logging output will be written into this file.
 #' @return      nothing
-setLogging <- function(log.level, log.file) {
-  checkType(log.level, c("num", "s"), F)
-  checkType(log.file, c("char", "s"), F)
-
-  if (!missing(log.level)) .jaatha$log.level <- log.level
-  if (!missing(log.file)) .jaatha$log.file <- log.file
+setLogging <- function(log.level) {
+  checkType(log.level, c("num", "s"), T)
+  .jaatha$log.level <- log.level
 }
-
-#' Gets the current logging level
-getLogLevel <- function() return(.jaatha$log.level)
-#' Gets the current logging file
-getLogFile  <- function() return(.jaatha$log.file)
-
 
 
 #-----------------------------------------------------------------------
@@ -198,40 +181,9 @@ checkType <- function(variable, type, required=T, allow.na=T) {
 #-----------------------------------------------------------------------
 # Functions to deal with temporary files
 #-----------------------------------------------------------------------
-getTempDir <- function(use.shm = FALSE) {
-  if (exists("temp.dir", envir=.jaatha) & !use.shm) {
-    return(.jaatha$temp.dir)
-  }
-
-  if (use.shm) {
-    if (!file.exists("/dev/shm")) stop("/dev/shm/ does not exists") 
-    tmp.dir <- "/dev/shm/jaatha"
-  }
-  else tmp.dir <- paste(tempdir(), "/jaatha", sep="")
-  
-  .jaatha$temp.dir <- paste(tmp.dir, "-", Sys.getpid(), sep="")
-  #if (file.exists(.jaatha$temp.dir)) 
-  #    warning("TMP-Dir ", .jaatha$temp.dir, " already exists")
-  dir.create(.jaatha$temp.dir)
-  return(.jaatha$temp.dir)
-}
-
 getTempFile <- function(file.name="file"){
-  if (!exists("temp.file.count", envir=.jaatha))
-      .jaatha$temp.file.count <- 0
-
-  .jaatha$temp.file.count <- .jaatha$temp.file.count + 1 %% 1000000
-  return(paste(getTempDir(), "/", file.name, "_", Sys.getpid(), "_", .jaatha$temp.file.count, sep=""))
+  tempfile(paste0('jaatha', '_', Sys.getpid(), "_", file.name, "_"))
 }
-
-removeTempFiles <- function() {
-  temp.dir <- NULL
-  if (exists("temp.dir", envir=.jaatha)) {
-    unlink(.jaatha$temp.dir, recursive=T)
-    rm(temp.dir, envir=.jaatha)
-  }
-}
-
 
 
 #-----------------------------------------------------------------------

@@ -13,11 +13,12 @@
 setClass("DemographicModel" ,
          representation(features="data.frame",
                         parameters="data.frame",
-                        sum.stats="character",
+                        sum.stats="data.frame",
                         tsTvRatio="numeric",
                         finiteSites="logical",
-                        currentSimProg="SimProgram",
-                        options="list")
+                        currentSimProg="character",
+                        options="list",
+                        finalized='logical')
          )
 
 
@@ -46,11 +47,13 @@ setClass("DemographicModel" ,
   .Object <- dm.addSampleSize(.Object, sample.size)
   .Object <- dm.setLociNumber(.Object, loci.number)
   .Object <- dm.setLociLength(.Object, loci.length)
-
+  
+  .Object@sum.stats <- data.frame(name=character(), group=numeric())
+    
   .Object@finiteSites     <- finiteSites
   .Object@tsTvRatio       <- tsTvRatio
-  .Object@sum.stats       <- c("jsfs")
   .Object@options         <- list()
+  .Object@finalized       <- FALSE
 
   return(.Object)
 }
@@ -61,80 +64,54 @@ rm(.init)
 #-----------------------------------------------------------------------
 # Print
 #-----------------------------------------------------------------------
-
-.show <- function(object){
-  dm <- object
-
-  features <- dm@features[!is.na(dm@features$parameter),]
-
-  if (nrow(features) == 0) {
-    cat("Your demographic model has no features so far.\n")
-    return()
+.showModel <- function(object) {
+  if (!object@finalized) dm = dm.finalize(object)
+  .print("Used simulation program:", object@currentSimProg)
+  .print()
+  
+  # Print parameters that get estimated
+  if (sum(!object@parameters$fixed) > 0) {
+    .print("Parameters to estimate:")
+    pars.est = object@parameters[!object@parameters$fixed, 
+                                 c('name', 'lower.range', 'upper.range')]
+    rownames(pars.est) <- NULL
+    print(pars.est)
+    .print()
   }
-
-  cat("Your demographic model has the following parameters:\n")
-  for (rw in 1:nrow(features)) {
-    type <- features[rw,'type'] 
-    lR <- as.character(features[rw,'lower.range']) 
-    uR <- as.character(features[rw,'upper.range'])
-    parname <- features[rw,'parameter']
-
-    if (type == "split")
-      cat("-",parname,": A split into two pop.sources between",lR,"and",uR,
-          "Ne generations ago.\n")
-    else if (type == "mutation")
-      cat("-",parname,": A scaled mutation rate between",lR,"and",uR,"\n")
-    else if (type == "recombination")
-      cat("-",parname,": A scaled recombination rate between",lR,"and",uR,"\n")
-    else if (type == "migration")
-      cat("-",parname,":  A scaled migration rate between",lR,"and",uR,"\n")
-    else if (type == "presentSize")
-      cat("-",parname,":  At sample time, the second pop.source two was between",
-          lR,"and",uR,"times as the first one\n")
-    else if (type == "splitSize") 
-      cat("-",parname,":  At time of the pop.source split, the second",
-          "pop.source two was between",lR,"and",uR,"times as the first one\n")
-    else if (type == "migration")
-      cat("-",parname,":  A scaled migration rate between",lR,"and",uR,"\n")
-    else {
-      cat("- Other:\n")
-      print(dm@features[rw,])
-    }
+  
+  # Print fixed parameters
+  if (sum(object@parameters$fixed) > 0) {
+    .print("Fixed parameters:")
+    pars.fixed = object@parameters[object@parameters$fixed, 
+                                   c('name', 'lower.range')]
+    colnames(pars.fixed) <- c('name', 'value')
+    rownames(pars.fixed) <- NULL
+    print(pars.fixed)
+    .print()
   }
+  
+  # Print simulation command
+  .print("Simulation command:")
+  getSimProgram(object@currentSimProg)$print_cmd_func(object)
+}
 
-
-  features <- dm@features[is.na(dm@features$parameter),]
-  if (dim(features)[1] > 0){
-    cat("\n")
-    cat("Additionally, it has the following features:\n")
-    for (rw in 1:(dim(features)[1])) {
-      type <- features[rw,'type']
-      lR <- as.character(features[rw,'lower.range']) 
-
-      if (type == "split")
-        cat("- A split into two pop.sources",lR,"Ne generations ago.\n")
-      else if (type == "mutation")
-        cat("- A fixed scaled mutation rate of",lR,"\n")
-      else if (type == "recombination")
-        cat("- A fixed scaled recombination rate of",lR,"\n")
-      else if (type == "migration")
-        cat("- A fixed scaled migration rate of",lR,"\n")
-      else if (type == "presentSize")
-        cat("- At sample time, the second pop.source two was",
-            lR,"times as the first one\n")
-      else if (type == "splitSize") 
-        cat("- At time of the pop.source split, the second pop.source
-            two was",lR,"times as the first one\n")
-          else {
-            cat("- Other:\n")
-            print(dm@features[rw,])
-          }
+.show <- function(object) {
+  object <- dm.finalize(object)
+  
+  if (is.null(object@options$grp.models)) {
+    .showModel(object)
+  } else {
+    for (group in names(object@options$grp.models)) {
+      .print('----------------------------------')
+      .print("Group", group)
+      .print('----------------------------------')
+      .showModel(object@options$grp.models[[group]])
+      .print()
     }
   }
 } 
-#setMethod("show","DemographicModel",.show)
+setMethod("show", "DemographicModel", .show)
 rm(.show)
-
 
 
 #------------------------------------------------------------------------------
@@ -197,7 +174,8 @@ dm.addParameter <- function(dm, par.name, lower.boundary, upper.boundary, fixed.
  
   dm <- appendToParameters(dm, par.name, fixed, lower.boundary, upper.boundary)
 
-  dm <- makeThetaLast(dm)
+  #dm <- makeThetaLast(dm)
+  dm@finalized = FALSE
   return(dm)
 }
 
@@ -259,30 +237,30 @@ addFeature <- function(dm, type, parameter=NA,
                          time.point = time.point,
                          group = group)
 
-  # Update some technical properties of the model
-  dm <- .dm.selectSimProg(dm)
-
+  dm@finalized = FALSE
   return(dm)
 }
 
-dm.addSummaryStatistic <- function(dm, sum.stat) {
+dm.addSummaryStatistic <- function(dm, sum.stat, group = 0) {
   checkType(dm, "dm")
   checkType(sum.stat, "char")
 
-  dm@sum.stats <- c(dm@sum.stats, sum.stat)
-  if (sum.stat == '4pc') {
-    dm@options[['4pc.breaks.near']] <- 0:5/5
-    dm@options[['4pc.breaks.far']] <- 0:5/5
+  # Add the summary statistic
+  dm@sum.stats = rbind(dm@sum.stats, data.frame(name=sum.stat, group=group))
+  dm@finalized = FALSE
+  
+  # Check if there is any simulation program supporting this summary statistic
+  for (sim.prog in .jaatha$sim_progs) {
+    if (sum.stat %in% sim.prog$possible_sum_stats) return(dm)
   }
-  dm <- .dm.selectSimProg(dm)
-  return(dm)
+  stop("No simulation program for summary statistic", sum.stat)
 }
 
 # Helper function that appends a feature to the "feature" dataframe
 # Does not check the feature for consistency
 # This should only be used by addFeature().
 appendToFeatures <- function(dm, type, parameter, pop.source, 
-                             pop.sink, time.point, group    ) {
+                             pop.sink, time.point, group) {
   
   new.feature <- data.frame(type=type,
                             parameter=parameter,
@@ -320,29 +298,6 @@ getPopulations <- function(dm){
   populations <- unique(populations[!is.na(populations)])
 }
 
-
-# To use Watersons estimator, Jaatha requires that the mutation parameter
-# is the last parameter. This swishes it to the end.
-makeThetaLast <- function(dm) {
-  checkType(dm, c("dm", "s"), T, F)
-  
-  par.name <- dm@features$parameter[dm@features$type == "mutation"]
-  if (length(par.name) == 0) return(dm)
-  if (length(par.name) > 1) stop("Multiple Mutations features found")
-
-  pars <- dm@parameters
-  mut.line <- (1:nrow(pars))[pars$name == par.name]
-  last.line <- nrow(pars)
-  if (mut.line == last.line) return(dm)
-
-  new.order <- 1:last.line
-  new.order[c(mut.line, last.line)] <- c(last.line, mut.line)
-
-  dm@parameters <- pars[new.order, ]
-  return(dm)
-}
-
-
 # Checks if a vector of parameters is within the ranges of the model
 checkParInRange <- function(dm, param) {
   if (length(param) != dm.getNPar(dm)) stop("Wrong number of parameters")
@@ -353,30 +308,46 @@ checkParInRange <- function(dm, param) {
 }
 
 # Selects a program for simulation that is capable of all current features
-.dm.selectSimProg <- function(dm) {
-  for (i in seq(along = .jaatha$simProgs)){
-    if (all(dm@features$type %in% .jaatha$simProgs[[i]]@possible.features) & 
-        all(dm@sum.stats %in% .jaatha$simProgs[[i]]@possible.sum.stats)) {
-      dm@currentSimProg <- .jaatha$simProgs[[i]]
-      .log2("Using", dm@currentSimProg@name, "for simulations")
-      return(dm)
+dm.selectSimProg <- function(dm) {
+  name <- NULL
+  priority <- -Inf
+  
+  for (sim_prog in .jaatha$sim_progs) {
+    if (all(dm@features$type %in% sim_prog$possible_features) & 
+        all(dm@sum.stats$name %in% sim_prog$possible_sum_stats)) {
+      
+      if (sim_prog$priority > priority) {
+        name <- sim_prog$name
+        priority <- sim_prog$priority
+      }
+      
     }
   }
-  stop("No suitable simulation software found!")
+  
+  if (is.null(name)) stop("No suitable simulation software found!")
+  
+  dm@currentSimProg <- name
   return(dm)
 }
 
-finalizeDM <- function(dm) {
-  if (all(dm@features$group == 0)) {
-    return(dm@currentSimProg@finalizationFunc(dm))
+dm.finalize <- function(dm) {
+  if (length(dm.getGroups(dm)) == 1) {
+    dm <- generateGroupModel(dm, 1)
+    dm <- dm.selectSimProg(dm)
+    return(getSimProgram(dm@currentSimProg)$finalization_func(dm))
   }
 
   dm@options$grp.models <- list()
+  dm@currentSimProg <- "groups"
+  dm.raw <- dm
+  
   for (group in dm.getGroups(dm)) {
-    grp.model <- generateGroupModel(dm, group)
-    dm@options$grp.models[[as.character(group)]] <- 
-      grp.model@currentSimProg@finalizationFunc(grp.model)
+    grp.model <- generateGroupModel(dm.raw, group)
+    grp.model <- dm.finalize(grp.model)
+    dm@options$grp.models[[as.character(group)]] <- grp.model
   }
+  
+  dm@finalized = TRUE
   return(dm)
 }
 
@@ -437,19 +408,11 @@ getThetaRange <- function(dm){
 #' is returned. Features like mutation, pop.source splits and 
 #' migration can be added afterwards.
 #'
-#' @param sample.sizes Number of individuals that are sampled. If your model 
+#' @param sample.sizes Number of haploid individuals/chromosomes that are sampled. If your model 
 #'            consists of multiple populations, this needs to be a vector
 #'            containing the sample sizes from each population.
 #' @param loci.num     Number of loci that will be simulated
 #' @param seq.length   (Average) number of bases for each locus
-# @param finiteSites If 'TRUE', a finite sites mutation model is assumed
-#            instead of an infinite sites one.
-# @param tsTvRatio   Transition transversion ratio
-#' @param log.level   An integer specifing the amount of user readable output 
-#'                    that will be produced.
-#'                    0 = no output, 1 = normal verbosity, ..., 
-#'                    3 = maximal verbosity.
-#' @param log.file    If set, the debug output will be written into the given file
 #' @return            The demographic model
 #' @export
 #'
@@ -458,14 +421,11 @@ getThetaRange <- function(dm){
 #' dm <- dm.addSpeciationEvent(dm,0.01,5)
 #' dm <- dm.addMutation(dm,1,20)
 #' dm
-dm.createDemographicModel <- function(sample.sizes, loci.num, seq.length=1000, 
-                                      #finiteSites=F, tsTvRatio=.33, 
-                                      log.level, log.file) {
-  setLogging(log.level, log.file)
+dm.createDemographicModel <- function(sample.sizes, loci.num, seq.length=1000) {
   dm <- new("DemographicModel", sample.sizes, loci.num, seq.length, F, .33)
+  dm <- dm.addSummaryStatistic(dm, 'jsfs')
   return(dm)
 }
-
 
 
 #---------------------------------------------------------------------------------
@@ -562,9 +522,9 @@ dm.getLociLength <- function(dm, group=NULL) {
 #' 
 #' This functions adds the assumption to the model that neutral mutations
 #' occur in the genomes at a constant rate. The rate is quantified through
-#' a parameter usually named theta in population genetics. It equals 4*Ne*mu,
-#' where Ne is the (effective) number of diploid individuals in the ancestral
-#' population and mu is the neutral mutation rate for an entire locus.
+#' a parameter usually named theta in population genetics. It equals 4*N0*mu,
+#' where N0 is the effective diploid population size of population one at the
+#' time of sampling and mu is the neutral mutation rate for an entire locus.
 #'
 #' @param dm  The demographic model to which mutations should be added
 #' @param par.new  If 'TRUE' a new parameter will be created using the
@@ -668,8 +628,7 @@ dm.getSampleSize <- function(dm, group.nr=NULL) {
 #'
 #' This function add the assumption to the model that recombination
 #' events may occur within each locus. The corresponding parameter
-#' - usually name rho - equals 4*Ne*r, where Ne is the number of
-#' diploid individuals in the ancestral population and r is the 
+#' - usually name rho - equals 4*N0*r, where r is the 
 #' probability that a recombination event within the locus will
 #' occur in one generation. Even when using an infinite sites
 #' mutation model, this assumes an finite locus length which is given
@@ -730,8 +689,7 @@ dm.addRecombination <- function(dm, lower.range, upper.range, fixed.value,
 #' assumed to start (looking backwards in time). From that time on, a 
 #' fixed number of migrants move from population 'pop.from' to
 #' population 'pop.to' each generation. This number is given via this 
-#' feature's parameter, which equals 4*Ne*m,  where Ne is the number of
-#' diploid individuals in the ancestral population and m is the 
+#' feature's parameter, which equals 4*N0*m,  where m is the 
 #' fraction of 'pop.to' that is replaced with migrants each generation. 
 #' If 'pop.to' has also size Ne, than this is just the
 #' expected number of individuals that migrate each generation.
@@ -858,11 +816,11 @@ dm.addSymmetricMigration <- function(dm, lower.range, upper.range, fixed.value,
 #' can be given as parameter or as an expression based on previously
 #' generated time points.
 #'
-#' As always, time in measured in Number of 4Ne generations in the past,
-#' where Ne is the (effective) size of the ancestral population.
+#' Time in measured in Number of 4N0 generations in the past,
+#' where N0 is the size of population 1 at time 0.
 #'
 #' The command will print the number of the new population, which will
-#' be the number of previously existing populations plus one. The ancestral
+#' be the number of previously existing populations plus one. The first
 #' population has number "1".
 #'
 #' @param dm  The demographic model to which the split should be added.
@@ -940,7 +898,7 @@ dm.addSpeciationEvent <- function(dm, min.time, max.time, fixed.time,
 #' population. The change is performed at a given time point
 #' ('at.time') and applies to the time interval farther into 
 #' the past from this point. The population size is set to a
-#' factor of the size of the ancestral population Ne.
+#' fraction of N0, the present day size of population one.
 #'
 #' If you want to add a slow, continuous change over some time,
 #' then use the \link{dm.addGrowth} function.
@@ -1094,12 +1052,12 @@ dm.setMutationModel <- function(dm, mutation.model,
   checkType(tstv.ratio, c("num", "s"), F, F)
   checkType(gtr.rates, c("num"), F, F)
 
-  if (! mutation.model %in% mutation.models) 
-    stop("Allowed values: ", paste(mutation.models, collapse=" "))
+  if (! mutation.model %in% sg.mutation.models) 
+    stop("Allowed values: ", paste(sg.mutation.models, collapse=" "))
   
-  mutation.model.nr <- seq(along = mutation.models)[mutation.models == mutation.model]
+  mutation.model.nr <- which(mutation.model == sg.mutation.models)
   dm <- addFeature(dm, "mutation.model", "mutation.model", 
-                            fixed.value=mutation.model.nr)
+                   fixed.value=mutation.model.nr)
 
   if ( !missing(tstv.ratio) ) {
     if (!mutation.model %in% c("HKY", "F84"))
@@ -1244,7 +1202,7 @@ dm.createThetaTauModel <- function(sample.sizes, loci.num, seq.length=1000) {
 #' An outgroup is required for a finite sites analysis.
 #'
 #' @param dm The demographic model to which we add the outgroup
-#' @param separation.time The time point at which the outgroup splited 
+#' @param separation.time The time point at which the outgroup splits 
 #'           from the ancestral population. This can be an absolute value
 #'           (e.g. 10) or relative to another time points (e.g. '5*t_split_1').
 #' 
@@ -1261,6 +1219,25 @@ dm.addOutgroup <- function(dm, separation.time) {
                         time.point=separation.time) 
 }
 
+
+#-------------------------------------------------------------------
+# dm.addPositiveSelection
+#-------------------------------------------------------------------
+# This function is highly experimental. Don't use it yet.
+dm.addPositiveSelection <- function(dm, min.strength, max.strength, fixed.strength, 
+                         par.new=T, new.par.name="s", parameter, 
+                         population, at.time, group=0) {
+
+  checkType(population, c("num",  "s"), T, F)
+  checkType(at.time,    c("char", "s"), T, F)
+
+  if (par.new) parameter <- new.par.name
+
+  dm <- addFeature(dm, "pos.selection", parameter, min.strength, max.strength,
+                   fixed.strength, par.new, population, NA, at.time, group)
+
+  return(dm)
+}
 
 
 
@@ -1285,31 +1262,36 @@ dm.addOutgroup <- function(dm, separation.time) {
 #' dm.simSumStats(dm,c(1,10))
 dm.simSumStats <- function(dm, parameters, sum.stats=c("all")) {
   checkType(dm, "dm")
-
   checkParInRange(dm, parameters)
+  
+  if (!dm@finalized) dm = dm.finalize(dm)
 
-  if (all(dm@features$group == 0)) {
-    return(dm@currentSimProg@singleSimFunc(dm, parameters))
+  if (dm@currentSimProg != "groups") {
+    return(getSimProgram(dm@currentSimProg)$sim_func(dm, parameters))
   } 
-
+    
   sum.stats <- list(pars=parameters)
-  for (loci.group in dm.getGroups(dm)) {
-    dm.grp <- generateGroupModel(dm, loci.group)
-    sum.stats.grp <- dm.grp@currentSimProg@singleSimFunc(dm.grp, parameters)
+  for (group in dm.getGroups(dm)) {
+    dm.grp <- dm@options$grp.models[[as.character(group)]]
+    sum.stats.grp <- getSimProgram(dm.grp@currentSimProg)$sim_func(dm.grp, parameters)
     for (i in seq(along = sum.stats.grp)) {
       if (names(sum.stats.grp)[i] == 'pars') next()
-      name <- paste(names(sum.stats.grp)[i], loci.group, sep='.')
+      name <- paste(names(sum.stats.grp)[i], group, sep='.')
       sum.stats[[name]] <- sum.stats.grp[[i]]
     }
   }
+  
   sum.stats
 }
 
+
 generateGroupModel <- function(dm, group) {
-  if (all(dm@features$group == 0)) return(dm)
+  if (all(dm@features$group == 0) && all(dm@sum.stats$group == 0)) return(dm)
   if (!is.null(dm@options$grp.models[[as.character(group)]])) { 
     return(dm@options$grp.models[[as.character(group)]]) 
   }
+  
+  # Features
   dm@features <- dm@features[dm@features$group %in% c(0, group), ]
   overwritten <- dm@features$group == 0
   for (i in which(overwritten)) {
@@ -1320,6 +1302,19 @@ generateGroupModel <- function(dm, group) {
       overwritten[i] <- FALSE
   }
   dm@features <- dm@features[!overwritten, ]
+  dm@features$group <- 0
+  
+  # Sum.Stats
+  sum.stats <- unique(dm@sum.stats[dm@sum.stats$group %in% c(0, group), 'name'])
+  dm@sum.stats <- data.frame(name=sum.stats, group=0)
+  
+  # Options
+  group.name <- paste("group", group, sep='.')
+  if (!is.null(dm@options[[group.name]])) {
+    for (option in names(dm@options[[group.name]])) {
+      dm@options[[option]] <- dm@options[[group.name]][[option]]
+    }
+  }
   dm
 }
 
@@ -1375,11 +1370,17 @@ searchFeature <- function(dm, type=NULL, parameter=NULL, pop.source=NULL,
 #' @return The groups in the model.
 #' @export
 dm.getGroups <- function(dm) {
-  if (all(dm@features$group == 0)) return(1)
+  if (all(c(dm@features$group == 0, dm@sum.stats$group == 0))) return(1)
 
-  groups <- sort(unique(c(1, dm@features$group)))
+  groups <- sort(unique(c(1, dm@features$group, dm@sum.stats$group)))
   return(groups[groups != 0])
 }
+
+
+dm.getSummaryStatistics <- function(dm, group = 1) {
+  unique(dm@sum.stats[dm@sum.stats$group %in% c(0,group),'name'])
+} 
+
 
 scaleDemographicModel <- function(dm, scaling.factor) {
   for (group in unique(dm@features$group)) {

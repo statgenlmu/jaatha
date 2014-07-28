@@ -29,7 +29,7 @@
 #' @return The jaatha object with starting positions
 #'
 #' @export
-Jaatha.initialSearch <- function(jaatha, sim=200, blocks.per.par=3, rerun=FALSE){
+Jaatha.initialSearch <- function(jaatha, sim=200, blocks.per.par=2, rerun=FALSE){
 
   if (rerun) {
     if( is.null(jaatha@calls[['initial.search']]) ) 
@@ -42,8 +42,6 @@ Jaatha.initialSearch <- function(jaatha, sim=200, blocks.per.par=3, rerun=FALSE)
   }
 
   set.seed(jaatha@seeds[2])
-  tmp.dir <- getTempDir(jaatha@use.shm)
-
   setParallelization(jaatha@cores)
 
   firstBlocks <- createInitialBlocks(jaatha@par.ranges, blocks.per.par)
@@ -51,9 +49,21 @@ Jaatha.initialSearch <- function(jaatha, sim=200, blocks.per.par=3, rerun=FALSE)
   for (i in seq(along=firstBlocks)){
     .print("*** Block", i, "of", length(firstBlocks), ":", printBorder(firstBlocks[[i]], jaatha))
 
-    sim.data <- simulateWithinBlock(sim, firstBlocks[[i]], jaatha)       
-
-    glms.fitted <- fitGlm(sim.data, jaatha)
+    sim.data <- list()     
+    
+    # Simulate Data and Fit Model
+    # If Glm does not converge, try using more simulations
+    for (j in 1:5) {
+      sim.data = c(sim.data, simulateWithinBlock(sim, firstBlocks[[i]], jaatha))
+      tryCatch({
+        suppressWarnings( glms.fitted <- fitGlm(sim.data, jaatha) )
+        break
+      }, error = function(e) {
+        .log2("Error fitting GLM:", e$message)
+        if (j < 5) .print("Failed to fit the GLM. Retrying with more simulations...")
+        else stop('Failed to fit the GLM. Try disabeling smoothing or using more simulations')
+      })
+    }
 
     optimal <- findBestParInBlock(firstBlocks[[i]], glms.fitted, jaatha@sum.stats) 
     
@@ -67,8 +77,6 @@ Jaatha.initialSearch <- function(jaatha, sim=200, blocks.per.par=3, rerun=FALSE)
 
   jaatha@starting.positions <- firstBlocks
   print(Jaatha.getStartingPoints(jaatha))
-
-  removeTempFiles()
 
   return(jaatha)
 }

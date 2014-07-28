@@ -20,20 +20,28 @@ test.addFeature <- function() {
   checkEquals(n.feat+2, nrow(dm@features))
 }
 
-test.addSummaryStatistics <- function() {
+test.dm.addSummaryStatistics <- function() {
   dm <- dm.createDemographicModel(11:12, 100)
-  checkEquals(dm@sum.stats, c('jsfs'))
+  checkEquals(1, length(dm.getSummaryStatistics(dm)))
+  checkTrue(dm.getSummaryStatistics(dm) == 'jsfs')
+  
   dm <- dm.addSummaryStatistic(dm, 'seg.sites')
-  checkEquals(dm@sum.stats, c('jsfs', 'seg.sites'))
-  checkException(addSummaryStatistic(dm, 'no.existing.sumstat'))
-  checkException(addSummaryStatistic(dm, 1:10))
-}
-
-test.makeThetaLast <- function() {
-  dm <- dm.createDemographicModel(11:12, 100)
-  dm <- dm.addMutation(dm,5,20)
-  dm <- dm.addSpeciationEvent(dm,0.1,5)
-  checkEquals(dm.getParameters(dm)[dm.getNPar(dm)], "theta")
+  checkEquals(2, length(dm.getSummaryStatistics(dm)))
+  checkTrue(all(dm.getSummaryStatistics(dm) ==  c('jsfs', 'seg.sites')))
+  dm <- dm.addSummaryStatistic(dm, 'seg.sites')
+  checkEquals(2, length(dm.getSummaryStatistics(dm)))
+  checkTrue(all(dm.getSummaryStatistics(dm) ==  c('jsfs', 'seg.sites')))
+  
+  dm <- dm.addSummaryStatistic(dm, 'file', group = 2)
+  checkEquals(2, length(dm.getSummaryStatistics(dm, group = 1)))
+  checkEquals(3, length(dm.getSummaryStatistics(dm, group = 2)))
+  
+  dm <- dm.addSummaryStatistic(dm, 'fpc', group = 1)
+  checkEquals(3, length(dm.getSummaryStatistics(dm, group = 1)))
+  checkEquals(3, length(dm.getSummaryStatistics(dm, group = 2)))
+  
+  checkException(dm.addSummaryStatistic(dm, 'no.existing.sumstat'))
+  checkException(dm.addSummaryStatistic(dm, 1:10))
 }
 
 test.setMutationModel <- function() {
@@ -75,6 +83,17 @@ test.parInRange <- function() {
   checkException( checkParInRange(dm.tt, 1) )
   checkException( checkParInRange(dm.tt, matrix(1, 2, 2) ))
   checkException( checkParInRange(dm.tt, NULL ))
+}
+
+test.addPositiveSelection <- function() {
+  dm <- dm.addPositiveSelection(dm.tt, 1, 2, population=1, at.time="2") 
+  checkTrue( "pos.selection" %in% dm@features$type )
+
+  dm <- dm.addPositiveSelection(dm.tt, fixed.strength=1, population=1, at.time="2") 
+  checkTrue( "pos.selection" %in% dm@features$type )
+
+  checkException( dm.addPositiveSelection(dm.tt, 1, 2, at.time="2") )
+  checkException( dm.addPositiveSelection(dm.tt, 1, 2, population=1) )
 }
 
 test.addSampleSize <- function() {
@@ -195,36 +214,81 @@ test.searchFeature <- function() {
 }
 
 test.generateGroupModel <- function() {
+  # Check that a model with only one group is not modified
   dm <- generateGroupModel(dm.tt, 1)
   checkEquals(dm.tt@features, dm@features)
+  checkEquals(dm.tt@sum.stats, dm@sum.stats)
+  checkEquals(dm.tt@options, dm@options)
 
+  # Check the correct generation of features
   dm <- dm.setLociLength(dm.tt, 23, group=1)
   dm <- generateGroupModel(dm, 1)
   checkEquals(nrow(dm.tt@features), nrow(dm@features))
-  checkEquals(1, sum(dm@features$group == 1))
-  checkEquals('23', dm@features$parameter[dm@features$group == 1])
+  checkTrue(all(dm@features$group == 0))
+  checkEquals(23, dm.getLociLength(dm))
 
   dm.3 <- dm.setLociLength(dm.tt, 23, group=1)
   dm.3 <- dm.setLociLength(dm.3, 30, group=2)
   dm.3 <- dm.setLociNumber(dm.3, 31, group=2)
   dm <- generateGroupModel(dm.3, 1)
   checkEquals(nrow(dm.tt@features), nrow(dm@features))
-  checkEquals(1, sum(dm@features$group == 1))
-  checkEquals('23', dm@features$parameter[dm@features$group == 1])
+  checkTrue(all(dm@features$group == 0))
+  checkEquals(23, dm.getLociLength(dm))
   dm <- generateGroupModel(dm.3, 2)
   checkEquals(nrow(dm.tt@features), nrow(dm@features))
-  checkEquals(0, sum(dm@features$group == 1))
-  checkEquals(2, sum(dm@features$group == 2))
+  checkTrue(all(dm@features$group == 0))
+  checkEquals(30, dm.getLociLength(dm))
+  checkEquals(31, dm.getLociNumber(dm))
+  
+  # Check the correct generation of sum.stats
+  sum.stats <- dm.tt@sum.stats
+  dm <- dm.addSummaryStatistic(dm.tt, 'file', group=2)
+  dm.1 <- generateGroupModel(dm, 1)
+  checkTrue(sum.stats$name %in% dm.1@sum.stats$name)
+  checkTrue(dm.1@sum.stats$name %in% sum.stats$name)
+  
+  dm.2 <- generateGroupModel(dm, 2)
+  checkEquals(nrow(sum.stats)+1, nrow(dm.2@sum.stats))
+  checkTrue('file' %in% dm.getSummaryStatistics(dm.2))
+  
+  # Check that the options are correct
+  dm@options[['bli']] <- 0
+  dm@options[['bla']] <- 0 
+  dm@options[['blub']] <- 0
+  dm@options[['group.1']] <- list(blub=1, bli=1)
+  dm@options[['group.2']] <- list(blub=2, bla=2)
+  dm.1 <- generateGroupModel(dm, 1)
+  dm.2 <- generateGroupModel(dm, 2)
+  checkEquals(1, dm.1@options$bli)
+  checkEquals(0, dm.1@options$bla)
+  checkEquals(1, dm.1@options$blub)
+  checkEquals(0, dm.2@options$bli)
+  checkEquals(2, dm.2@options$bla)
+  checkEquals(2, dm.2@options$blub)
 }
 
-test.finalizeDM <- function() {
-  finalizeDM(dm.tt)
-  finalizeDM(dm.hky)
-  finalizeDM(dm.grp)
+test.dm.getSummaryStatistic <- function() {
+  checkTrue(dm.getSummaryStatistics(dm.tt) == 'jsfs')
+  checkEquals(1, length(dm.getSummaryStatistics(dm.tt)))
+  
+  checkTrue(dm.getSummaryStatistics(dm.grp, 1) == 'jsfs')
+  checkEquals(1, length(dm.getSummaryStatistics(dm.grp, 1)))
+  checkTrue(dm.getSummaryStatistics(dm.grp, 2) == 'jsfs')
+  checkEquals(1, length(dm.getSummaryStatistics(dm.grp, 2)))
+  
+  checkTrue(all(c('jsfs', 'fpc') %in% dm.getSummaryStatistics(dm.fpc)))
+  checkEquals(2, length(dm.getSummaryStatistics(dm.fpc)))
 }
 
-## -- Fixed bugs ----------------------------------------
-test.showEmptyModel <- function() {
-  dm <- dm.createDemographicModel(25:26, 100)
-  invisible(print(dm))
+test.dm.finalize <- function() {
+  dm <- dm.finalize(dm.grp)
+  dm.1 <- dm@options$grp.models[['1']]
+  dm.2 <- dm@options$grp.models[['2']]
+  dm.3 <- dm@options$grp.models[['3']]
+  checkTrue(!is.null(dm.1))
+  checkTrue(!is.null(dm.2))
+  checkTrue(!is.null(dm.3))
+  checkTrue(!is.null(dm.1@options$ms.cmd))
+  checkTrue(!is.null(dm.2@options$ms.cmd))
+  checkTrue(!is.null(dm.3@options$ms.cmd))
 }

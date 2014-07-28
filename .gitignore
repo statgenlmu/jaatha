@@ -36,7 +36,7 @@ jaatha.Rcheck
 unit_tests/results
 howtos/cache
 src/symbols.rds
-inst/unitTests/test_setup.Rda
+inst/unitTests/test-setup.Rda
 inst/integrationTests/results
 DEV_VERSIONS
 NEWS
@@ -49,4 +49,4 @@ README
 *.log
 *.out
 *.tex
-*.pdf
+.Rproj.user

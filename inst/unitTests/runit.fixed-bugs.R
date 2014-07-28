@@ -10,9 +10,13 @@
 ## -- Fixed bugs ----------------------------------------
 
 #print() failed for empty demographic models
-test.showEmptyModel <- function() {
+test.printEmptyDM <- function() {
   dm <- dm.createDemographicModel(25:26, 100)
   print(dm)
+}
+
+test.printGroupDM <- function() {
+  print(dm.grp)
 }
 
 test.ApeCodeInVignette <- function() {

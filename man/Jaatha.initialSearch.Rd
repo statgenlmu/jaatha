@@ -3,7 +3,7 @@
 \alias{Jaatha.initialSearch}
 \title{Search the parameter space for good starting positions}
 \usage{
-Jaatha.initialSearch(jaatha, sim = 200, blocks.per.par = 3, rerun = FALSE)
+Jaatha.initialSearch(jaatha, sim = 200, blocks.per.par = 2, rerun = FALSE)
 }
 \arguments{
 \item{jaatha}{The Jaatha settings (create with \code{\link{Jaatha.initialize}})}

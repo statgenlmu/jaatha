@@ -83,7 +83,6 @@ Jaatha.refinedSearch <- function(jaatha, best.start.pos=2,
   # Setup environment for the refined search
   set.seed(jaatha@seeds[3])
   setParallelization(jaatha@cores)
-  tmp.dir <- getTempDir(jaatha@use.shm)
 
   # Start a search for every start point
   for (s in 1:length(startPoints)){
@@ -97,7 +96,6 @@ Jaatha.refinedSearch <- function(jaatha, best.start.pos=2,
   .print("Best log-composite-likelihood values are:")
   print(Jaatha.getLikelihoods(jaatha, 5))
 
-  removeTempFiles()
   return(jaatha)
 }
 
@@ -130,13 +128,23 @@ refinedSearchSingleBlock <- function(jaatha, start.point, sim, sim.final,
     # Update the Search Blocks Border
     search.block@border <- calcBorders(search.block@MLest, radius=half.block.size)
 
-    # Simulate
-    sim.data <- simulateWithinBlock(sim, search.block, jaatha)
-    sim.saved <- getReusableSimulations(search.block, jaatha, sim.saved,
-                                        sim.data, step.current)
-
-    # Fit the GLM
-    glm.fitted <- fitGlm(sim.data, jaatha)
+    # Simulate Data and Fit Model
+    # If Glm does not converge, try using more simulations
+    for (j in 1:5) {
+      sim.data <- simulateWithinBlock(sim, search.block, jaatha)
+      sim.saved <- getReusableSimulations(search.block, jaatha, sim.saved,
+                                          sim.data, step.current)
+      tryCatch({
+        # Fit the GLM
+        glm.fitted <- fitGlm(sim.saved, jaatha)
+        break
+      }, error = function(e) {
+        .log2("Error fitting GLM:", e$message)
+        if (j < 5) .print("Failed to fit the GLM. Retrying with more simulations...")
+        else stop('Failed to fit the GLM. Try disabeling smoothing')
+      })
+    }
+    stopifnot(exists('glm.fitted'))
 
     # Update likelihood of last steps estimate, based on new simulated data.
     # Should be a bit more accurate as previous estimate of the likelihood,
@@ -202,8 +210,17 @@ refinedSearchSingleBlock <- function(jaatha, start.point, sim, sim.final,
 ## determined by subtracting and adding 'around' to each dimension of
 ## point.
 calcBorders <- function(point, radius) {
-  radius <= 0 && stop("Radius is non-positive")
-  any(point < 0 || point > 1) && stop("Point coordinates outside [0,1]")
+  if (any(point < 0 || point > 1)) {
+    # Due to foalting point precisition, the point may be slight outside of the 
+    # parmeter space. Move it to the border if it is.
+    point[point < 0-1e-10] <- 0
+    point[point > 1+1e-10] <- 1
+    
+    # Something is wrong if it is more than 1e-10 ouside the parameter space
+    if (any(point < 0 || point > 1)) {
+      stop("Point coordinates outside [0,1]: ", point[1], "x", point[2])
+    }
+  }
   
   border <- t(sapply(point, function(x) x+c(-radius,radius)))
   colnames(border) <- c("lower", "upper")

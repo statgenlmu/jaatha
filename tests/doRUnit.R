@@ -20,8 +20,8 @@ if(rcmdcheck) {
   path.unit.tests <- system.file(package=pkg, "unitTests")
   path.integration.tests <- system.file(package=pkg, "integrationTests")
 } else {
-  path.unit.tests <- file.path(getwd(), "..", "inst", "unitTests")
-  path.integration.tests <- file.path(getwd(), "..", "inst", "integrationTests")
+  path.unit.tests <- file.path(getwd(), "inst", "unitTests")
+  path.integration.tests <- file.path(getwd(), "inst", "integrationTests")
 }
 
 
@@ -31,12 +31,15 @@ library(package=pkg, character.only=TRUE)
 if (is.element(pkg, loadedNamespaces()))
   attach(loadNamespace(pkg), name=paste("namespace", pkg, sep=":"), pos=3)
 
-test.setup <- paste(path.unit.tests, "test_setup.Rda", sep="/")
+test.setup <- paste(path.unit.tests, "test-setup.Rda", sep="/")
 if (!file.exists(test.setup)) stop("Failed to load ", test.setup) 
 load(test.setup)
 rm(test.setup)
 
-
+## ---  Set Options ---
+runit.options <- getOption("RUnit")
+runit.options$silent <- TRUE
+options(list(RUnit=runit.options))
 
 ## ---  Define tests ---
 test.suites <- list()

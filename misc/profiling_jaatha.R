@@ -11,20 +11,20 @@
 
 library(jaatha)
 
-dm <- dm.createThetaTauModel(12:13, 50)
+dm <- dm.createThetaTauModel(12:13, 100)
 jsfs <- dm.simSumStats(dm, c(1,5))
-jaatha <- Jaatha.initialize(dm, jsfs=jsfs, use.shm=TRUE)
+jaatha <- Jaatha.initialize(dm, jsfs=jsfs, smoothing=TRUE)
 
-profile.is<- "./tmp/jaatha_is"
+profile.is <- tempfile("jaatha_is")
+gc()
 Rprof(profile.is)
-jaatha <- Jaatha.initialSearch(jaatha, sim=50)
+jaatha <- Jaatha.initialSearch(jaatha)
 Rprof(NULL)
+cat("Now run: R CMD Rprof", profile.is, "| less\n")
 
-profile.rs <- "./tmp/jaatha_rs"
+profile.rs <- tempfile("jaatha_is")
+gc()
 Rprof(profile.rs)
-jaatha <- Jaatha.refinedSearch(jaatha, 2, sim=50)
+jaatha <- Jaatha.refinedSearch(jaatha, 2)
 Rprof(NULL)
-
-cat("Now run\n")
-cat("R CMD Rprof", profile.is, "| less\n")
-cat("R CMD Rprof", profile.rs, "| less\n")
+cat("Now run: R CMD Rprof", profile.rs, "| less\n")

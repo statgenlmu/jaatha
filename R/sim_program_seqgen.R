@@ -8,16 +8,15 @@
 # --------------------------------------------------------------
 
 # list ms's features + FS related features
-seqgen.features    <- c('mutation.model', 'tstv.ratio', 
-                        'base.freq.A', 'base.freq.C', 'base.freq.G',
-                        'base.freq.T',
-                        'gtr.rate.1', 'gtr.rate.2', 'gtr.rate.3',
-                        'gtr.rate.4','gtr.rate.5','gtr.rate.6',
-                        'gamma.categories', 'gamma.rate')
+sg.features    <- c(getSimProgram('ms')$possible_features,
+                    'mutation.model', 'tstv.ratio', 
+                    'base.freq.A', 'base.freq.C', 'base.freq.G', 'base.freq.T',
+                    'gtr.rate.1', 'gtr.rate.2', 'gtr.rate.3',
+                    'gtr.rate.4','gtr.rate.5','gtr.rate.6',
+                    'gamma.categories', 'gamma.rate')
 
-possible.sum.stats <- c("jsfs", "file") # 'seg.sites', 'fpc')
-mutation.models    <- c('HKY', 'F84', 'GTR')
-possible.features  <- c(getSimProgram('ms')@possible.features, seqgen.features)
+sg.sum.stats <- c("jsfs", "file", 'seg.sites', 'fpc')
+sg.mutation.models    <- c('HKY', 'F84', 'GTR')
 
 checkForSeqgen <- function() {
   if ( isJaathaVariable('seqgen.exe') ) return()
@@ -39,9 +38,12 @@ checkForSeqgen <- function() {
 }
 
 generateMsModel <- function(dm) {
+  stopifnot(all(dm.getGroups(dm) == 1))
   ms <- getSimProgram('ms')
-  dm@features <- dm@features[dm@features$type %in% ms@possible.features, ]
-  dm@sum.stats <- c("file", "trees")
+  dm@features <- dm@features[dm@features$type %in% ms$possible_features, ]
+  dm@sum.stats <- data.frame(name=c(), group=c())
+  dm <- dm.addSummaryStatistic(dm, "file")
+  dm <- dm.addSummaryStatistic(dm, "trees")
   return(dm)
 }
 
@@ -120,8 +122,8 @@ generateSeqgenOptionsCmd <- function(dm) {
 
     if (type == "mutation.model") {
       includes.model <- T
-      model <- mutation.models[dm@parameters[dm@parameters$name == "mutation.model", 
-                                             'lower.range']]
+      model <- sg.mutation.models[dm@parameters[dm@parameters$name == "mutation.model", 
+                                                'lower.range']]
       opts <- c(opts, paste('"-m', model, '"', sep=""), ",")
     }
 
@@ -173,6 +175,7 @@ generateSeqgenOptionsCmd <- function(dm) {
 }
 
 printSeqgenCommand <- function(dm) {
+  printMsCommand(dm@options[['ms.model']])
   cmd <- generateSeqgenOptionsCmd(dm)
 
   cmd <- cmd[cmd != ","]
@@ -184,21 +187,7 @@ printSeqgenCommand <- function(dm) {
   cmd <- gsub('\"', "", cmd)
   cmd <- gsub('"', " ", cmd)
 
-  return(cmd)
-}
-
-seqgenOut2Jsfs <- function(dm, seqgen.file) {
-  if( ! file.exists(seqgen.file) ) stop("seq-gen simulation failed!")
-  if (file.info(seqgen.file)$size == 0) stop("seq-gen output is empty!")
-
-  sample.size <- dm.getSampleSize(dm)
-  jsfs <- matrix(.Call("seqgen2jsfs", seqgen.file, sample.size[1], 
-                       sample.size[2], dm.getLociNumber(dm)),
-                 sample.size[1] + 1 ,
-                 sample.size[2] + 1,
-                 byrow=T)
-
-  return(jsfs)
+  .print(cmd)
 }
 
 seqgenSingleSimFunc <- function(dm, parameters) {
@@ -218,12 +207,27 @@ seqgenSingleSimFunc <- function(dm, parameters) {
   seqgen.file <- callSeqgen(seqgen.options, sum.stats[['file']])
 
   sum.stats[['pars']] <- parameters
-
-  if ('jsfs' %in% dm@sum.stats) {
-    sum.stats[['jsfs']] <- seqgenOut2Jsfs(dm, seqgen.file)
+  
+  # Parse the output & generate additional summary statistics
+  if ('fpc' %in% dm.getSummaryStatistics(dm)) {
+    breaks.near <- dm@options[['fpc.breaks.near']]
+    breaks.far <- dm@options[['fpc.breaks.far']]
+    stopifnot(!is.null(breaks.near))
+    stopifnot(!is.null(breaks.far))
+    
+    sum.stats <- parseOutput(seqgen.file, dm.getSampleSize(dm), dm.getLociNumber(dm), 1, 
+                             'jsfs' %in% dm.getSummaryStatistics(dm), 
+                             'seg.sites' %in% dm.getSummaryStatistics(dm),
+                             TRUE, breaks.near, breaks.far)
+  } else {
+    sum.stats <- parseOutput(seqgen.file, dm.getSampleSize(dm), dm.getLociNumber(dm), 1, 
+                             'jsfs' %in% dm.getSummaryStatistics(dm), 
+                             'seg.sites' %in% dm.getSummaryStatistics(dm),
+                             FALSE)
   }
   
-  if ('file' %in% dm@sum.stats) {
+  sum.stats[['pars']] <- parameters
+  if ('file' %in% dm.getSummaryStatistics(dm)) {
     sum.stats[['file']] <- c(ms=sum.stats[['file']],
                              seqgen=seqgen.file)
   } else {
@@ -243,8 +247,9 @@ finalizeSeqgen <- function(dm) {
   return(dm)
 }
 
-createSimProgram("seq-gen", "",
-                 possible.features,
-                 possible.sum.stats,
-                 singleSimFunc=seqgenSingleSimFunc,
-                 finalizationFunc=finalizeSeqgen)
+createSimProgram("seq-gen", sg.features, sg.sum.stats,
+                 seqgenSingleSimFunc, finalizeSeqgen, printSeqgenCommand,
+                 priority=10)
+
+rm(sg.features, sg.sum.stats, seqgenSingleSimFunc, 
+   finalizeSeqgen, printSeqgenCommand)

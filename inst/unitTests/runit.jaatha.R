@@ -76,10 +76,9 @@ test.JaathaInitialize <- function() {
   checkTrue(jaatha@opts[['scaling.factor']] == 17)
 
   # Use Shm
-  jaatha <- Jaatha.initialize(dm.tt, sum.stats.tt, 123, 1, 17, TRUE)
-  jaatha <- Jaatha.initialize(dm.tt, sum.stats.tt, 123, 1, 17, use.shm=TRUE)
+  jaatha <- Jaatha.initialize(dm.tt, sum.stats.tt, 123, 1, 17, FALSE)
+  jaatha <- Jaatha.initialize(dm.tt, sum.stats.tt, 123, 1, 17, use.shm=FALSE)
   checkType(jaatha, "jaatha")
-  checkTrue(jaatha@use.shm)
 
   # Folded
   jaatha <- Jaatha.initialize(dm.tt, sum.stats.tt, 123, 1, 17, FALSE, TRUE)
@@ -97,7 +96,60 @@ test.JaathaInitialize <- function() {
 
   checkException(Jaatha.initialize(dm.tt, sum.stats.tt, folded=TRUE,
                                    smoothing=TRUE))
+}
 
-  # Groups
-  jaatha <- Jaatha.initialize(dm.grp, sum.stats.grp, 123, folded=FALSE, smoothing=FALSE)
+test.Jaatha.initialization.groups <- function() {
+  jaatha.grp <- Jaatha.initialize(dm.grp, sum.stats.grp, 123, folded=FALSE, smoothing=FALSE)
+  checkTrue( is.list(jaatha.grp@sum.stats[['jsfs.1']]) )
+  checkTrue( jaatha.grp@sum.stats[['jsfs.1']]$method == "poisson.transformed" )
+  checkTrue( sum(jaatha.grp@sum.stats[['jsfs.1']]$value) > 0 )
+
+  checkTrue( is.list(jaatha.grp@sum.stats[['jsfs.2']]) )
+  checkTrue( jaatha.grp@sum.stats[['jsfs.2']]$method == "poisson.transformed" )
+  checkTrue( sum(jaatha.grp@sum.stats[['jsfs.2']]$value) > 0 )
+
+  checkTrue( is.list(jaatha.grp@sum.stats[['jsfs.3']]) )
+  checkTrue( jaatha.grp@sum.stats[['jsfs.3']]$method == "poisson.transformed" )
+  checkTrue( sum(jaatha.grp@sum.stats[['jsfs.3']]$value) > 0 )
+
+  jaatha.grp <- Jaatha.initialize(dm.grp, sum.stats.grp, 123, folded=FALSE, smoothing=TRUE)
+  checkTrue( is.list(jaatha.grp@sum.stats[['jsfs.1']]) )
+  checkTrue( jaatha.grp@sum.stats[['jsfs.1']]$method == "poisson.smoothing" )
+  checkTrue( sum(jaatha.grp@sum.stats[['jsfs.1']]$value) > 0 )
+
+  checkTrue( is.list(jaatha.grp@sum.stats[['jsfs.2']]) )
+  checkTrue( jaatha.grp@sum.stats[['jsfs.2']]$method == "poisson.smoothing" )
+  checkTrue( sum(jaatha.grp@sum.stats[['jsfs.2']]$value) > 0 )
+
+  checkTrue( is.list(jaatha.grp@sum.stats[['jsfs.3']]) )
+  checkTrue( jaatha.grp@sum.stats[['jsfs.3']]$method == "poisson.smoothing" )
+  checkTrue( sum(jaatha.grp@sum.stats[['jsfs.3']]$value) > 0 )
+}
+
+test.Jaatha.initialization.fpc <- function() {
+  # four-point-condition sum.stat
+  jaatha.fpc <- Jaatha.initialize(dm.fpc, sum.stats.fpc, 123, folded=FALSE, 
+                                  smoothing=FALSE)
+  checkEquals(2, length(jaatha.fpc@sum.stats))
+  checkTrue( is.list(jaatha.fpc@sum.stats[['jsfs']]) )
+  checkTrue( is.list(jaatha.fpc@sum.stats[['fpc']]) )
+
+  checkTrue( sum(jaatha.fpc@sum.stats[['fpc']]$value) > 0 )
+  checkTrue( !is.null(jaatha.fpc@opts$dm@options[['fpc.breaks.near']]) )
+  checkTrue( !is.null(jaatha.fpc@opts$dm@options[['fpc.breaks.far']]) )
+}
+
+test.Jaatha.initialization.fpc_groups <- function() {
+  set.seed(1234)
+  dm.fpc <- dm.addSampleSize(dm.fpc, 11:12, group = 2)
+  dm.fpc <- dm.addSampleSize(dm.fpc, 5:6, group = 3)
+  sum.stats <- dm.simSumStats(dm.addSummaryStatistic(dm.fpc, 'seg.sites'), c(1, 2, 5))
+  jaatha.fpc <- Jaatha.initialize(dm.fpc, sum.stats, 123)
+  checkEquals(6, length(jaatha.fpc@sum.stats))
+  checkTrue(!is.null(jaatha.fpc@sum.stats$fpc.1))
+  checkTrue(!is.null(jaatha.fpc@sum.stats$fpc.2))
+  checkTrue(!is.null(jaatha.fpc@sum.stats$fpc.3))
+  checkTrue( sum(jaatha.fpc@sum.stats[['fpc.1']]$value) > 0 )
+  checkTrue( sum(jaatha.fpc@sum.stats[['fpc.2']]$value) > 0 )
+  checkTrue( sum(jaatha.fpc@sum.stats[['fpc.3']]$value) > 0 )
 }

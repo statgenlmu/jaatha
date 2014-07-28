@@ -9,7 +9,7 @@
 possible.features  <- c("sample", "loci.number", "loci.length",
                         "mutation", "migration", "split",
                         "recombination", "size.change", "growth")
-possible.sum.stats <- c("jsfs", "4pc", "trees", "seg.sites", "file")
+possible.sum.stats <- c("jsfs", "fpc", "trees", "seg.sites", "file")
 
 #' Function to perform simulation using ms 
 #' 
@@ -22,7 +22,8 @@ callMs <- function(opts, dm){
   opts <- unlist(strsplit(opts, " "))
 
   ms.file <- getTempFile("ms")
-
+  
+  .log3("Calling ms. Opts:", opts, "file:", ms.file)
   ms(sum(dm.getSampleSize(dm)), dm.getLociNumber(dm), opts, ms.file)
   return(ms.file)
 }
@@ -40,7 +41,7 @@ generateMsOptionsCommand <- function(dm) {
     feat <- unlist(dm@features[i, ])
 
     if ( type == "mutation" ) {
-      if (any(c('seg.sites', 'jsfs', '4pc') %in% dm@sum.stats)) { 
+      if (any(c('seg.sites', 'jsfs', 'fpc') %in% dm.getSummaryStatistics(dm))) { 
         cmd <- c(cmd,'"-t"', ',', feat["parameter"], ',')
       }
     }
@@ -68,16 +69,15 @@ generateMsOptionsCommand <- function(dm) {
                feat["pop.source"], ',', feat["parameter"], ',')
       }
 
-    else if (type %in% c("sample", "loci.number", "loci.length")) {}
+    else if (type %in% c("sample", "loci.number", "loci.length", "pos.selection")) {}
     else stop("Unknown feature:", type)
   }
 
-  if ('trees' %in% dm@sum.stats) cmd <- c(cmd, '"-T",')
+  if ('trees' %in% dm.getSummaryStatistics(dm)) cmd <- c(cmd, '"-T",')
   cmd <- c(cmd, '" ")')
 }
 
 generateMsOptions <- function(dm, parameters) {
-  .log3("Called .ms.generateCmd()")
   ms.tmp <- new.env()
 
   par.names <- dm.getParameters(dm)
@@ -98,8 +98,6 @@ generateMsOptions <- function(dm, parameters) {
     cmd <- generateMsOptionsCommand(dm)
   cmd <- eval(parse(text=cmd), envir=ms.tmp)
 
-  .log3("Finished .ms.generateCmd()")
-
   return(cmd)
 }
 
@@ -115,19 +113,8 @@ printMsCommand <- function(dm) {
   cmd <- gsub('\"', "", cmd)
   cmd <- gsub('"', " ", cmd)
 
-  return(cmd)
-}
-
-msOut2Jsfs <- function(dm, ms.out) {
-  .log3("Called .ms.getJSFS()")
-  sample.size <- dm.getSampleSize(dm)
-  jsfs <- matrix(.Call("msFile2jsfs", ms.out,sample.size[1], 
-                       sample.size[2]),
-                 sample.size[1] + 1 ,
-                 sample.size[2] + 1,
-                 byrow=T)
-  .log3("Finished .ms.getJSFS()")
-  return(jsfs)
+  cmd <- paste("ms", sum(dm.getSampleSize(dm)), dm.getLociNumber(dm), cmd)
+  .print(cmd)
 }
 
 msSingleSimFunc <- function(dm, parameters) {
@@ -139,34 +126,38 @@ msSingleSimFunc <- function(dm, parameters) {
   ms.options <- generateMsOptions(dm, parameters)
   sim.time <- system.time(ms.out <- callMs(ms.options, dm))
 
-  sum.stats <- list(pars=parameters)
+  sum.stats <- parseMsOutput(ms.out, parameters, dm)
 
-  if ("jsfs" %in% dm@sum.stats) {
-    sum.stats[['jsfs']] <- msOut2Jsfs(dm, ms.out)
-  }
-
-  if ("file" %in% dm@sum.stats) {
-    sum.stats[['file']] <- ms.out
-  }
-
-  if (any(c('seg.sites', '4pc') %in% dm@sum.stats)) {
-    output <- scan(ms.out, character(), sep="\n", quiet=TRUE)
-
-    if ("seg.sites" %in% dm@sum.stats) {
-      sum.stats[['seg.sites']] <- readSegSitesFromOutput(output,
-                                                         dm.getSampleSize(dm))
-    }
-
-    if ("4pc" %in% dm@sum.stats) {
-      if (!is.null(sum.stats$seg.sites)) seg.sites <- sum.stats$seg.sites
-      else seg.sites <- readSegSitesFromOutput(output, dm.getSampleSize(dm))
-
-      sum.stats[['4pc']] <- calcFpcSumStat(seg.sites, dm)
-    }
-  }
-
-  if (!'file' %in% dm@sum.stats) unlink(ms.out)
   return(sum.stats)
+}
+
+parseMsOutput <- function(out.file, parameters, dm) {
+  dm.sum.stats = dm.getSummaryStatistics(dm)
+  
+  # Parse the output & generate additional summary statistics
+  if ('fpc' %in% dm.sum.stats) {
+    breaks.near <- dm@options[['fpc.breaks.near']]
+    breaks.far <- dm@options[['fpc.breaks.far']]
+    stopifnot(!is.null(breaks.near))
+    stopifnot(!is.null(breaks.far))
+    
+    sum.stats <- parseOutput(out.file, dm.getSampleSize(dm), dm.getLociNumber(dm), 0, 
+                             'jsfs' %in% dm.sum.stats, 'seg.sites' %in% dm.sum.stats,
+                             TRUE, breaks.near, breaks.far)
+  } else {
+    sum.stats <- parseOutput(out.file, dm.getSampleSize(dm), dm.getLociNumber(dm), 0, 
+                             'jsfs' %in% dm.sum.stats, 'seg.sites' %in% dm.sum.stats,
+                             FALSE)
+  }
+  
+  sum.stats[['pars']] <- parameters
+  if ("file" %in% dm.sum.stats) {
+    sum.stats[['file']] <- out.file
+  } else {
+    unlink(out.file)
+  }
+  
+  sum.stats
 }
 
 finalizeMs <- function(dm) {
@@ -174,68 +165,23 @@ finalizeMs <- function(dm) {
   return(dm)
 }
 
-readSegSitesFromOutput <- function(output, pop.sizes) {
-  seg.sites.begin <- which(grepl('^segsites: [0-9]+$', output))
 
-  lapply(seg.sites.begin, function(begin) {
-    positions <- strsplit(output[begin+1], ' ')[[1]][-1]
-    positions <- positions[positions != ""]
-    if (length(positions) == 0) {
-      return(matrix(0, sum(pop.sizes), 0))
-    }
-    stopifnot( all(!is.na(positions)) )
-    seg.sites.char <- output[1:sum(pop.sizes)+begin+1]
-    seg.sites <- matrix(as.integer(unlist(strsplit(seg.sites.char, split= ''))),
-                        length(seg.sites.char), byrow=TRUE)
-    colnames(seg.sites) <- positions
-    seg.sites
-  })
-}
+# calcPercentFpcViolations <- function(snp.matrix) {
+#   snp.matrix <- snp.matrix[, colSums(snp.matrix)>1, drop=FALSE]
+#   if (ncol(snp.matrix) <= 1) return(c(near=NaN, far=NaN, theta=0))
+#   snp.state <- apply(combn(1:ncol(snp.matrix), 2), 2, violatesFpc, snp.matrix)
+#   return(c(near=sum(snp.state[2, snp.state[1, ]])/sum(snp.state[1, ]),
+#            far=sum(snp.state[2, !snp.state[1, ]])/sum(!snp.state[1, ]),
+#            theta=ncol(snp.matrix)/sum(1/1:(nrow(snp.matrix)-1)) ))
+# }
+# 
+# violatesFpc <- function(sites, snp.matrix, near=.1) {
+#   is.near <- diff(as.numeric(colnames(snp.matrix)[sites])) < near
+#   status <- snp.matrix[ ,sites[1]] * 2 + snp.matrix[ ,sites[2]] 
+#   if (all(0:3 %in% status)) return(c(near=is.near, violates=TRUE))
+#   return(c(near=is.near, violates=FALSE))
+# }
+# 
 
-calcFpcSumStat <- function(seg.sites, dm) {
-  breaks.near <- dm@options[['4pc.breaks.near']]
-  breaks.far  <- dm@options[['4pc.breaks.far']]
-
-  fpc <- matrix(0, length(breaks.near)-1,
-                length(breaks.far)-1,
-                dimnames=list(c(3:length(breaks.near)-2,0),
-                              c(3:length(breaks.far)-2,0))) 
-
-  for (seg.site in seg.sites) {
-    violation.percent <- calcPercentFpcViolations(seg.site)
-    if (is.nan(violation.percent['near'])) class.near <- '0'
-    else {
-      class.near <- cut(violation.percent['near'], breaks.near, labels=FALSE,
-                        include.lowest=TRUE)
-    }
-    if (is.nan(violation.percent['far'])) class.far <- '0'
-    else {
-      class.far <- cut(violation.percent['far'], breaks.far, labels=FALSE,
-                       include.lowest=TRUE)
-    }
-
-    fpc[class.near, class.far] <- fpc[class.near, class.far] + 1
-  }
-  return(fpc)
-}
-
-calcPercentFpcViolations <- function(snp.matrix) {
-  snp.matrix <- snp.matrix[, colSums(snp.matrix)>1, drop=FALSE]
-  if (ncol(snp.matrix) <= 1) return(c(near=NaN, far=NaN))
-  snp.state <- apply(combn(1:ncol(snp.matrix), 2), 2, violatesFpc, snp.matrix)
-  return(c(near=sum(snp.state[2, snp.state[1, ]])/sum(snp.state[1, ]),
-           far=sum(snp.state[2, !snp.state[1, ]])/sum(!snp.state[1, ]) ))
-}
-
-violatesFpc <- function(sites, snp.matrix, near=.1) {
-  is.near <- diff(as.numeric(colnames(snp.matrix)[sites])) < near
-  status <- snp.matrix[ ,sites[1]] * 2 + snp.matrix[ ,sites[2]] 
-  if (all(0:3 %in% status)) return(c(near=is.near, violates=TRUE))
-  return(c(near=is.near, violates=FALSE))
-}
-
-createSimProgram("ms", "",
-                 possible.features,
-                 possible.sum.stats,
-                 singleSimFunc=msSingleSimFunc,
-                 finalizationFunc=finalizeMs)
+createSimProgram("ms", possible.features, possible.sum.stats, 
+                 msSingleSimFunc, finalizeMs, printMsCommand, 100)
