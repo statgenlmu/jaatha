@@ -1,48 +1,14 @@
-Version 2.4.6
+Version 2.5
 ==================
-## Clean-Ups
-- Removed additional tmp-folders
-- Removed dependency on foreach
-- Changed dependency on dplyr to reshape2
-- Removed optional logging into a file
-
-Version 2.4.5
-==================
-## Improvements
-- Prioritizing system for simulations programs
-
 ## Bug Fixes
-- It is no longer necessary to have a simulation program that can simulate all
-  groups (#6)
-- Different group now really use different simulation programs
-
-Version 2.4.4
-==================
-## Improvements
-- Different Groups can now have different summary statistics
-
-Version 2.4.3
-==================
-## Improvements
-- Allow GLM more steps to converge
-
-Version 2.4-2
-==================
-## Improvements
-- Models in different groups can now use different simulation software
-- Now Jaatha simulates more data if it fails to fit the GLM
-
-## Bug fixes
+- Fixed wrong description of N0 as size of the ancestral population in the documentation (#4)
 - Fixed an bug with made jaatha abort when a point was slightly outside
   parameter range (#5)
 - Fixed bug in calculation of JSFS introduced in 2.4-1 (#7)
 - Now old simulations are actually reused (#8)
-
-
-Version 2.4-1
-==================
-## Bug fixes
-- Fixed wrong description of N0 as size of the ancestral population in the documentation (#4)
+- It is no longer necessary to have a simulation program that can simulate all
+  groups (#6)
+- Different group now really use different simulation programs
 
 ## New Features
 - Experimental support for an four-gamete-test based summary statistic
@@ -51,6 +17,17 @@ Version 2.4-1
 - Simplified internal simulation program interface
 - Print dispatch for demographic model
 - Modularized parsing of simulation output
+- Models in different groups can now use different simulation software
+- Now Jaatha simulates more data if it fails to fit the GLM
+- Allow GLM more steps to converge
+- Different Groups can now have different summary statistics
+- Prioritizing system for simulations programs
+
+## Clean-Ups
+- Removed additional tmp-folders
+- Removed dependency on foreach
+- Changed dependency on dplyr to reshape2
+- Removed optional logging into a file
 
 
 Version 2.4
