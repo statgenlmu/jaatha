@@ -18,8 +18,8 @@ sg.features    <- c(getSimProgram('ms')$possible_features,
 sg.sum.stats <- c("jsfs", "file", 'seg.sites', 'fpc')
 sg.mutation.models    <- c('HKY', 'F84', 'GTR')
 
-checkForSeqgen <- function() {
-  if ( isJaathaVariable('seqgen.exe') ) return()
+checkForSeqgen <- function(throw.error = TRUE) {
+  if ( isJaathaVariable('seqgen.exe') ) return(TRUE)
 
   # Works on Linux only maybe
   run.path <- strsplit(Sys.getenv("PATH"), ":")[[1]]
@@ -29,12 +29,15 @@ checkForSeqgen <- function() {
     if (file.exists(exe)) {
       .print("Using", exe, "as seqgen executable\n")
       setJaathaVariable('seqgen.exe', exe)     
-      return()
+      return(TRUE)
     }
   }
 
-  stop("No seqgen executable found. Please provide one using
-       Jaatha.setSeqgenExecutable()")
+  if (throw.error) {
+    stop("No seqgen executable found. Please provide one using
+          Jaatha.setSeqgenExecutable()")
+  }
+  return(FALSE)
 }
 
 generateMsModel <- function(dm) {
