@@ -19,7 +19,11 @@ sg.sum.stats <- c("jsfs", "file", 'seg.sites', 'fpc')
 sg.mutation.models    <- c('HKY', 'F84', 'GTR')
 
 checkForSeqgen <- function(throw.error = TRUE) {
-  if ( isJaathaVariable('seqgen.exe') ) return(TRUE)
+  if ( isJaathaVariable('seqgen.exe') ) {
+    if (file.exists(getJaathaVariable('seqgen.exe'))) {  
+      return(TRUE)
+    }
+  }
 
   # Works on Linux only maybe
   run.path <- strsplit(Sys.getenv("PATH"), ":")[[1]]

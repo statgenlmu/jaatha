@@ -97,6 +97,11 @@ test.RateHeterogenity <- function() {
 }
 
 test.finalizeSeqgen <- function() {
+  if (!checkForSeqgen(FALSE)) {
+    warning('Can not test seqgen: jar not found')
+    return()
+  }
+  
   finalizeSeqgen = getSimProgram('seq-gen')$finalization_func
   dm.hky <- finalizeSeqgen(dm.hky)
   dm.f81 <- finalizeSeqgen(dm.f81)
@@ -120,7 +125,7 @@ test.generateMsModel <- function() {
   }
 }
 
-test.simualteFpcWithSeqgen <- function() {
+test.simulateFpcWithSeqgen <- function() {
   if (!checkForSeqgen(FALSE)) {
     warning('Can not test seqgen: jar not found')
     return()
