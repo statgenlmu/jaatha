@@ -48,7 +48,8 @@ checkForMsms <- function(throw.error = TRUE) {
   return(FALSE)
 }
 
-possible.features  <- c(getSimProgram('ms')$possible_features, "pos.selection")
+msms.features <- c("pos.selection")
+possible.features  <- c(getSimProgram('ms')$possible_features, msms.features)
 possible.sum.stats <- getSimProgram('ms')$possible_sum_stats
 
 # This function generates an string that contains an R command for generating
@@ -62,14 +63,10 @@ generateMsmsOptionsCommand <- function(dm) {
 
     if (type == "pos.selection") {
       cmd <- c(cmd, '"-SI"', ',', feat['time.point'], ',', length(dm.getSampleSize(dm)), ',')
-      if (feat['pop.source'] == 1) { 
-        cmd <- c(cmd, 0.0005, ',', 0, ',') 
-#         cmd <- c(cmd, '"-Sc"', ',', 0, ',', 1, ',', 0, ',', 0, ',', 0, ',') 
-      }
-      else {
-        cmd <- c(cmd, 0, ',', 0.0005, ',') 
-#         cmd <- c(cmd, '"-Sc"', ',', 0, ',', 0, ',', 0, ',', 0, ',', 0, ',') 
-      }
+      start.freq <- rep(0, length(dm.getSampleSize(dm)))
+      start.freq[ as.integer(feat['pop.source']) ] <- 0.0005
+      cmd <- c(cmd, paste0('"', paste(start.freq, collapse=' '), '"'), ',')
+      
       cmd <- c(cmd, '"-N 10000"', ',') 
       cmd <- c(cmd, '"-SAA"', ',', paste0("2*", feat['parameter']), ',',  '"-SAa"', ',',
                feat['parameter'], ',') 

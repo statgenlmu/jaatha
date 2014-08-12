@@ -108,16 +108,16 @@ test.finalizeSeqgen <- function() {
   dm.gtr <- finalizeSeqgen(dm.gtr)
   
   checkTrue(!is.null(dm.hky@options[['seqgen.cmd']]))
-  checkTrue(!is.null(dm.hky@options[['ms.model']]))
+  checkTrue(!is.null(dm.hky@options[['tree.model']]))
   checkTrue(!is.null(dm.f81@options[['seqgen.cmd']]))
-  checkTrue(!is.null(dm.f81@options[['ms.model']]))
+  checkTrue(!is.null(dm.f81@options[['tree.model']]))
   checkTrue(!is.null(dm.gtr@options[['seqgen.cmd']]))
-  checkTrue(!is.null(dm.gtr@options[['ms.model']]))
+  checkTrue(!is.null(dm.gtr@options[['tree.model']]))
 }
 
-test.generateMsModel <- function() {
+test.generateTreeModel <- function() {
   for (dm in c(dm.hky, dm.f81, dm.gtr)) { 
-    dm.ms <- dm.finalize(generateMsModel(dm))
+    dm.ms <- dm.finalize(generateTreeModel(dm))
     sum.stats <- dm.simSumStats(dm.ms, c(1,5))
     checkTrue( !is.null(sum.stats$file) )
     checkTrue( file.exists(sum.stats$file) )
@@ -127,11 +127,25 @@ test.generateMsModel <- function() {
 
 test.simulateFpcWithSeqgen <- function() {
   if (!checkForSeqgen(FALSE)) {
-    warning('Can not test seqgen: jar not found')
+    warning('Can not test seqgen: binary not found')
     return()
   }
   
   sum.stats <- dm.simSumStats(dm.sgfpc, c(1,5))
   checkTrue( !is.null(sum.stats$fpc) )
   checkEquals( 5, sum(sum.stats$fpc) )
+}
+
+test.seqgenWithMsms <- function() {
+  if ((!checkForSeqgen(FALSE)) | !checkForMsms(FALSE)) {
+    warning('Can not test seqgen with msms: not found')
+    return()
+  }
+  dm.selsq <- dm.addPositiveSelection(dm.hky, 100, 500, population=1, at.time="2")
+  dm.selsq <- dm.finalize(dm.selsq)
+  checkTrue(!is.null(dm.selsq@options[['seqgen.cmd']]))
+  checkTrue(!is.null(dm.selsq@options[['tree.model']]))
+  
+  sum.stats <- dm.simSumStats(dm.selsq, c(1, 5, 250))
+  checkTrue( !is.null(sum.stats$jsfs) )
 }
