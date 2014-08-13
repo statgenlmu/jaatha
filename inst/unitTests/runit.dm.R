@@ -292,3 +292,14 @@ test.dm.finalize <- function() {
   checkTrue(!is.null(dm.2@options$ms.cmd))
   checkTrue(!is.null(dm.3@options$ms.cmd))
 }
+
+test.getThetaName <- function() {
+  checkEquals('theta', getThetaName(dm.tt))
+  checkEquals('theta', getThetaName(dm.fpc))
+  checkEquals('theta', getThetaName(dm.hky))
+  checkEquals('theta', getThetaName(dm.f81))
+  dm.test <- dm.createDemographicModel(11:12, 100)
+  dm.test <- dm.addMutation(dm.test, 1, 5, new.par.name='abcd')
+  dm.test <- dm.addRecombination(dm.test, 1, 5)
+  checkEquals('abcd', getThetaName(dm.test))
+}

@@ -376,20 +376,13 @@ dm.getParRanges <- function(dm, inklExtTheta=T){
   return(par.ranges)
 }
 
-fixTheta <- function(dm) {
-  param <- dm@parameters
-  param[nrow(param), "fixed"] <- T
-  dm@parameters <- param
-  return(dm)
-}
-
 getThetaName <- function(dm){
-  return(dm@parameters[nrow(dm@parameters), 'name'])
+  searchFeature(dm, "mutation")$parameter[1]
 }
 
-getThetaRange <- function(dm){
-  return(dm@parameters[nrow(dm@parameters),c('lower.range', 'upper.range')])
-}
+#getThetaRange <- function(dm){
+#  return(dm@parameters[nrow(dm@parameters),c('lower.range', 'upper.range')])
+#}
 
 
 

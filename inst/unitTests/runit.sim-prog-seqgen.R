@@ -136,12 +136,21 @@ test.simulateFpcWithSeqgen <- function() {
   checkEquals( 5, sum(sum.stats$fpc) )
 }
 
+test.seqgenMutationParameterNotLast <- function() {
+  dm.test <- dm.hky
+  dm.test@parameters <- dm.test@parameters[3:1, ]
+  cmd <- paste(generateSeqgenOptionsCmd(dm.test), collapse='')
+  checkEquals( 1, grep("theta", cmd) )
+  checkEquals( integer(0), grep("tau", cmd) )
+  checkEquals( integer(0), grep("rho", cmd) )
+}
+
 test.seqgenWithMsms <- function() {
   if ((!checkForSeqgen(FALSE)) | !checkForMsms(FALSE)) {
     warning('Can not test seqgen with msms: not found')
     return()
   }
-  dm.selsq <- dm.addPositiveSelection(dm.hky, 100, 500, population=1, at.time="2")
+  dm.selsq <- dm.addPositiveSelection(dm.hky, 100, 500, population=1, at.time="0.1")
   dm.selsq <- dm.finalize(dm.selsq)
   checkTrue(!is.null(dm.selsq@options[['seqgen.cmd']]))
   checkTrue(!is.null(dm.selsq@options[['tree.model']]))

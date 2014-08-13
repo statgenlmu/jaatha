@@ -108,11 +108,12 @@ List parseOutput(const std::string file_name,
         if (generate_fpc) addToFpc(seg_sites, positions, 
                                    fpc_breaks_near, fpc_breaks_far, fpc);
       } else {
-        throw std::invalid_argument(std::string("Unexpected line in seq-gen output: ") + line.c_str());
+        throw exception("Unexpected line in seq-gen output.");
       }
     }
     
-    if (locus != loci_number-1) throw std::logic_error("Failed to parse seq-gen output: Number of loci mismatch.");
+    if (locus != loci_number-1) 
+      throw exception("Unexpected number of loci in seq-gen output.");
   }
 
   output.close();
@@ -181,35 +182,36 @@ NumericMatrix parseSeqgenSegSites(std::ifstream &output,
   std::vector<std::vector<char> > sequence(individuals);
   for (size_t i=0; i<individuals; ++i) {
     // Read sequence number
+    if (!output.good()) 
+      throw exception("Unexpeced end of seq-gen file.");
     output >> tmp;
     // ms from phyclust adds an "s" to the seqName. Remove it if there.
-    if (tmp.compare(1, 1, "s")) tmp.erase(0,1);
+    if (tmp.compare(0, 1, "s") == 0) tmp.erase(0,1);
     seq_nr = atoi(tmp.c_str());
-    //Rprintf("Ind %i: ", seq_nr);
     
     // Read sequence
     output >> tmp;
-    //Rprintf(tmp.c_str());
-    //Rprintf("\n");
     const char* cstr=tmp.c_str();
-    sequence[seq_nr-1].assign(cstr, cstr+locus_length);
+    sequence.at(seq_nr-1).assign(cstr, cstr+tmp.length());
   }
   
   // Determine which positions are SNPs
   std::vector<double> positions;
   size_t derived_count;
   
-  for (size_t j=0; j<locus_length; ++j) {
-    derived_count = 0;
-    for (size_t i=0; i<individuals-1; ++i) {
-      derived_count += (sequence[i][j] != sequence[individuals-1][j]);
-    }
-    if (derived_count > 0 && derived_count < (individuals - 1)) {
-      //Rprintf("SNP %i\n", j);
-      positions.push_back(j);
-    }
+  try {
+    for (size_t j=0; j<locus_length; ++j) {
+      derived_count = 0;
+      for (size_t i=0; i<individuals-1; ++i) {
+        derived_count += (sequence.at(i).at(j) != sequence.at(individuals-1).at(j));
+      }
+      if (derived_count > 0 && derived_count < (individuals - 1)) {
+        positions.push_back(j);
+      }
+   }
+  } catch (std::exception e) {
+    throw exception("Failed to parse seq-gen output");
   }
-  //Rprintf("SNPs: %i\n", positions.size());
   
   NumericMatrix seg_sites(individuals, positions.size());
   
@@ -232,7 +234,6 @@ NumericMatrix parseSeqgenSegSites(std::ifstream &output,
     seg_sites.attr("dimnames") = dimnames; 
   }
   
-  //Rprintf("\n\n");
   return seg_sites;
 }
 

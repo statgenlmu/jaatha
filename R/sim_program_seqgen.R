@@ -56,8 +56,8 @@ generateTreeModel <- function(dm) {
   
   dm@features <- dm@features[dm@features$type %in% tree.prog$possible_features, ]
   dm@sum.stats <- data.frame(name=c(), group=c())
+  dm <- dm.addSummaryStatistic(dm, "seqgen.trees")
   dm <- dm.addSummaryStatistic(dm, "file")
-  dm <- dm.addSummaryStatistic(dm, "trees")
   return(dm)
 }
 
@@ -89,12 +89,13 @@ callSeqgen <- function(opts, ms.file) {
 
   seqgen.file <- getTempFile("seqgen")
   cmd <- paste(opts, ">", seqgen.file, sep=" ", collapse=" ")
-  .log3("executing: '", cmd, "'")
-  system(cmd)
-
+  
+  # Do the acctual simulation
+  if (system(cmd, intern = FALSE) != 0) stop("seq-gen simulation failed")
   if( !file.exists(seqgen.file) ) stop("seq-gen simulation failed!")
   if( file.info(seqgen.file)$size == 0 ) stop("seq-gen output is empty!")
-  return(seqgen.file)
+  
+  seqgen.file
 }
 
 generateSeqgenOptions <- function(dm, parameters) {

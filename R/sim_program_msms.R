@@ -7,18 +7,18 @@
 # Licence:  GPLv3 or later
 # --------------------------------------------------------------
 
-callMsms <- function(jar.path, ms.args, msms.args) {
+callMsms <- function(jar.path, ms.args, msms.args, seqgen=FALSE) {
   out.file = getTempFile("msms")
   seed <- generateSeeds(1)
 
   # Create the command
-  .log3("Calling msms.  File:", out.file)
-  command = paste("java -jar", jar.path, as.character(msms.args), 
-                  "-ms", as.character(ms.args), "-seed", seed,
-                  ">", out.file)
+  cmd = paste("java -jar", jar.path, as.character(msms.args), 
+              "-ms", as.character(ms.args), "-seed", seed)
+  if (seqgen) cmd <- paste(cmd, '| tail -n +4 | grep -v -e "segsites" -e "//"')
+  cmd <- paste(cmd, ">", out.file)
 
   # Execute the command
-  output <- system(command)
+  output <- system(cmd)
 
   if(!file.exists(out.file)) stop("msms simulation failed!")
   if(file.info(out.file)$size == 0) stop("msms output is empty!")
@@ -115,7 +115,8 @@ msmsSimFunc <- function(dm, parameters) {
   msms.options <- paste(generateMsmsOptions(dm, parameters), collapse= " ") 
 
   # Simulate
-  out.file <- callMsms(getJaathaVariable('msms.jar'), ms.options, msms.options)
+  out.file <- callMsms(getJaathaVariable('msms.jar'), ms.options, msms.options,
+                       'seqgen.trees' %in% dm@sum.stats$name)
 
   # Parse Output
   sum.stats <- parseMsOutput(out.file, parameters, dm)
