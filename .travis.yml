@@ -15,7 +15,7 @@ install:
 - ./travis-tool.sh install_deps
 - ./travis-tool.sh r_install roxygen2
 - ./travis-tool.sh aptget_install seq-gen
-- wget http://www.mabs.at/ewing/msms/msms3.2rc-b163.jar
+- wget http://www.mabs.at/ewing/msms/msms3.2rc-b163.jar && mv msms3.2rc-b163.jar msms.jar
 after_failure:
 - ./travis-tool.sh dump_logs
 branches:
