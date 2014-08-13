@@ -44,7 +44,7 @@ List parseOutput(const std::string file_name,
   size_t individuals = sample_size[0] + sample_size[1];
 
   if (!output.is_open()) {
-    throw exception("Cannot open file");
+    stop("Cannot open file");
   }
 
   NumericMatrix seg_sites(0, 0);
@@ -53,7 +53,7 @@ List parseOutput(const std::string file_name,
 
   if (generate_fpc) {
     if (fpc_breaks_far.size() == 0 || fpc_breaks_near.size() == 0) 
-      throw exception("No breaks for fpc sum stats given");
+      stop("No breaks for fpc sum stats given");
   }
 
   List seg_sites_list(loci_number); 
@@ -99,21 +99,21 @@ List parseOutput(const std::string file_name,
       if (line.substr(0, 1) == " ") {
         ++locus;
         std::stringstream(line) >> total_sample_size >> locus_length;
-
-        //Rprintf("Locus %i: %i %i\n", locus, total_sample_size, locus_length);
-        seg_sites = parseSeqgenSegSites(output, locus_length, total_sample_size, positions);
-        //if (seg_sites.ncol() == 0) Rf_error("Failed to parse seg.sites");
+        
+        seg_sites = parseSeqgenSegSites(output, locus_length, 
+                                        total_sample_size, positions);
+        
         if (generate_seg_sites) seg_sites_list[locus] = seg_sites;
         if (generate_jsfs) addToJsfs(seg_sites, sample_size, jsfs);
         if (generate_fpc) addToFpc(seg_sites, positions, 
                                    fpc_breaks_near, fpc_breaks_far, fpc);
       } else {
-        throw exception("Unexpected line in seq-gen output.");
+        stop("Unexpected line in seq-gen output.");
       }
     }
     
     if (locus != loci_number-1) 
-      throw exception("Unexpected number of loci in seq-gen output.");
+      stop("Unexpected number of loci in seq-gen output.");
   }
 
   output.close();
@@ -183,7 +183,7 @@ NumericMatrix parseSeqgenSegSites(std::ifstream &output,
   for (size_t i=0; i<individuals; ++i) {
     // Read sequence number
     if (!output.good()) 
-      throw exception("Unexpeced end of seq-gen file.");
+      stop("Unexpeced end of seq-gen file.");
     output >> tmp;
     // ms from phyclust adds an "s" to the seqName. Remove it if there.
     if (tmp.compare(0, 1, "s") == 0) tmp.erase(0,1);
@@ -199,18 +199,15 @@ NumericMatrix parseSeqgenSegSites(std::ifstream &output,
   std::vector<double> positions;
   size_t derived_count;
   
-  try {
-    for (size_t j=0; j<locus_length; ++j) {
-      derived_count = 0;
-      for (size_t i=0; i<individuals-1; ++i) {
-        derived_count += (sequence.at(i).at(j) != sequence.at(individuals-1).at(j));
-      }
-      if (derived_count > 0 && derived_count < (individuals - 1)) {
-        positions.push_back(j);
-      }
-   }
-  } catch (std::exception e) {
-    throw exception("Failed to parse seq-gen output");
+
+  for (size_t j=0; j<locus_length; ++j) {
+    derived_count = 0;
+    for (size_t i=0; i<individuals-1; ++i) {
+      derived_count += (sequence.at(i).at(j) != sequence.at(individuals-1).at(j));
+    }
+    if (derived_count > 0 && derived_count < (individuals - 1)) {
+      positions.push_back(j);
+    }
   }
   
   NumericMatrix seg_sites(individuals, positions.size());
@@ -241,8 +238,7 @@ NumericMatrix parseSeqgenSegSites(std::ifstream &output,
 // [[Rcpp::export]]
 NumericVector parseMsPositions(const std::string line) {
   if (line.substr(0, 11) != "positions: ") {
-    Rprintf("%s\n", line.c_str());
-    throw exception("Failed to read positions from ms' output");
+    stop("Failed to read positions from ms' output");
   } 
 
   std::stringstream stream(line);

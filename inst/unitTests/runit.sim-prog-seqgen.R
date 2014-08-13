@@ -150,11 +150,18 @@ test.seqgenWithMsms <- function() {
     warning('Can not test seqgen with msms: not found')
     return()
   }
-  dm.selsq <- dm.addPositiveSelection(dm.hky, 100, 500, population=1, at.time="0.1")
+  dm.selsq <- dm.addPositiveSelection(dm.f81, 100, 500, 
+                                      population=1, at.time="0.1")
   dm.selsq <- dm.finalize(dm.selsq)
   checkTrue(!is.null(dm.selsq@options[['seqgen.cmd']]))
   checkTrue(!is.null(dm.selsq@options[['tree.model']]))
   
+  set.seed(4444)
   sum.stats <- dm.simSumStats(dm.selsq, c(1, 5, 250))
   checkTrue( !is.null(sum.stats$jsfs) )
+  
+  set.seed(4444)
+  sum.stats2 <- dm.simSumStats(dm.selsq, c(1, 5, 250))
+  checkTrue( !is.null(sum.stats2$jsfs) )
+  checkEquals(sum.stats, sum.stats2)
 }
