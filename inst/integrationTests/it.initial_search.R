@@ -52,3 +52,12 @@ test.initialSearch.fpc_groups <- function() {
   jaatha.fpc <- Jaatha.initialize(dm, sum.stats, 123)
   jaatha.fpc <- Jaatha.initialSearch(jaatha.fpc, sim=20, blocks.per.par=2)
 }
+
+test.initialSearch.seqgenAndMsms <- function() {
+  set.seed(333)
+  dm.selsq <- dm.addPositiveSelection(dm.hky, 100, 500, population=1, at.time="0.1")
+  dm.selsq <- dm.finalize(dm.selsq)
+  sum.stats <- dm.simSumStats(dm.selsq, c(1, 2, 255))
+  jaatha.selsq <- Jaatha.initialize(dm.selsq, sum.stats, 123)
+  jaatha.selsq <- Jaatha.initialSearch(jaatha.selsq, sim=20, blocks.per.par=1)
+}
