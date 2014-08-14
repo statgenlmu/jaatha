@@ -1,0 +1,21 @@
+context("Refined Search")
+
+test_that("test.calcBorders", {
+    point <- c(0.5, 0.2)
+    borders <- calcBorders(point, 0.1)
+    expect_equal(c(lower = 0.4, upper = 0.6), borders[1, ])
+    expect_equal(c(lower = 0.1, upper = 0.3), borders[2, ])
+    borders <- calcBorders(point, 0.3)
+    expect_equal(c(lower = 0.2, upper = 0.8), borders[1, ])
+    expect_equal(c(lower = 0, upper = 0.6), borders[2, ])
+    borders <- calcBorders(point + 0.4, 0.3)
+    expect_equal(c(lower = 0.4, upper = 1), borders[1, ])
+    expect_equal(c(lower = 0.3, upper = 0.9), borders[2, ])
+    borders <- calcBorders(c(-1e-05, 1 + 1e-04), 0.1)
+    expect_equal(c(lower = 0, upper = 0.2), borders[1, ])
+    expect_equal(c(lower = 0.8, upper = 1), borders[2, ])
+    expect_error(calcBorder(c(-0.5, 0.4), 0.1))
+    expect_error(calcBorder(c(0.5, 1), 0.1))
+    expect_error(calcBorder(c(0.5, 1), -0.1))
+})
+
