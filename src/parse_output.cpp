@@ -44,7 +44,7 @@ List parseOutput(const std::string file_name,
   size_t individuals = sample_size[0] + sample_size[1];
 
   if (!output.is_open()) {
-    throw exception("Cannot open file");
+    stop("Cannot open file");
   }
 
   NumericMatrix seg_sites(0, 0);
@@ -53,7 +53,7 @@ List parseOutput(const std::string file_name,
 
   if (generate_fpc) {
     if (fpc_breaks_far.size() == 0 || fpc_breaks_near.size() == 0) 
-      throw exception("No breaks for fpc sum stats given");
+      stop("No breaks for fpc sum stats given");
   }
 
   List seg_sites_list(loci_number); 
@@ -99,20 +99,21 @@ List parseOutput(const std::string file_name,
       if (line.substr(0, 1) == " ") {
         ++locus;
         std::stringstream(line) >> total_sample_size >> locus_length;
-
-        //Rprintf("Locus %i: %i %i\n", locus, total_sample_size, locus_length);
-        seg_sites = parseSeqgenSegSites(output, locus_length, total_sample_size, positions);
-        //if (seg_sites.ncol() == 0) Rf_error("Failed to parse seg.sites");
+        
+        seg_sites = parseSeqgenSegSites(output, locus_length, 
+                                        total_sample_size, positions);
+        
         if (generate_seg_sites) seg_sites_list[locus] = seg_sites;
         if (generate_jsfs) addToJsfs(seg_sites, sample_size, jsfs);
         if (generate_fpc) addToFpc(seg_sites, positions, 
                                    fpc_breaks_near, fpc_breaks_far, fpc);
       } else {
-        throw std::invalid_argument(std::string("Unexpected line in seq-gen output: ") + line.c_str());
+        stop("Unexpected line in seq-gen output.");
       }
     }
     
-    if (locus != loci_number-1) throw std::logic_error("Failed to parse seq-gen output: Number of loci mismatch.");
+    if (locus != loci_number-1) 
+      stop("Unexpected number of loci in seq-gen output.");
   }
 
   output.close();
@@ -181,35 +182,33 @@ NumericMatrix parseSeqgenSegSites(std::ifstream &output,
   std::vector<std::vector<char> > sequence(individuals);
   for (size_t i=0; i<individuals; ++i) {
     // Read sequence number
+    if (!output.good()) 
+      stop("Unexpeced end of seq-gen file.");
     output >> tmp;
     // ms from phyclust adds an "s" to the seqName. Remove it if there.
-    if (tmp.compare(1, 1, "s")) tmp.erase(0,1);
+    if (tmp.compare(0, 1, "s") == 0) tmp.erase(0,1);
     seq_nr = atoi(tmp.c_str());
-    //Rprintf("Ind %i: ", seq_nr);
     
     // Read sequence
     output >> tmp;
-    //Rprintf(tmp.c_str());
-    //Rprintf("\n");
     const char* cstr=tmp.c_str();
-    sequence[seq_nr-1].assign(cstr, cstr+locus_length);
+    sequence.at(seq_nr-1).assign(cstr, cstr+tmp.length());
   }
   
   // Determine which positions are SNPs
   std::vector<double> positions;
   size_t derived_count;
   
+
   for (size_t j=0; j<locus_length; ++j) {
     derived_count = 0;
     for (size_t i=0; i<individuals-1; ++i) {
-      derived_count += (sequence[i][j] != sequence[individuals-1][j]);
+      derived_count += (sequence.at(i).at(j) != sequence.at(individuals-1).at(j));
     }
     if (derived_count > 0 && derived_count < (individuals - 1)) {
-      //Rprintf("SNP %i\n", j);
       positions.push_back(j);
     }
   }
-  //Rprintf("SNPs: %i\n", positions.size());
   
   NumericMatrix seg_sites(individuals, positions.size());
   
@@ -232,7 +231,6 @@ NumericMatrix parseSeqgenSegSites(std::ifstream &output,
     seg_sites.attr("dimnames") = dimnames; 
   }
   
-  //Rprintf("\n\n");
   return seg_sites;
 }
 
@@ -240,8 +238,7 @@ NumericMatrix parseSeqgenSegSites(std::ifstream &output,
 // [[Rcpp::export]]
 NumericVector parseMsPositions(const std::string line) {
   if (line.substr(0, 11) != "positions: ") {
-    Rprintf("%s\n", line.c_str());
-    throw exception("Failed to read positions from ms' output");
+    stop("Failed to read positions from ms' output");
   } 
 
   std::stringstream stream(line);

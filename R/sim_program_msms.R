@@ -7,18 +7,18 @@
 # Licence:  GPLv3 or later
 # --------------------------------------------------------------
 
-callMsms <- function(jar.path, ms.args, msms.args) {
+callMsms <- function(jar.path, ms.args, msms.args, seqgen=FALSE) {
   out.file = getTempFile("msms")
   seed <- generateSeeds(1)
 
   # Create the command
-  .log3("Calling msms.  File:", out.file)
-  command = paste("java -jar", jar.path, as.character(msms.args), 
-                  "-ms", as.character(ms.args), "-seed", seed,
-                  ">", out.file)
+  cmd = paste("java -jar", jar.path, as.character(msms.args), 
+              "-ms", as.character(ms.args), "-seed", seed)
+  if (seqgen) cmd <- paste(cmd, '| tail -n +4 | grep -v -e "segsites" -e "//"')
+  cmd <- paste(cmd, ">", out.file)
 
   # Execute the command
-  output <- system(command)
+  output <- system(cmd)
 
   if(!file.exists(out.file)) stop("msms simulation failed!")
   if(file.info(out.file)$size == 0) stop("msms output is empty!")
@@ -48,7 +48,8 @@ checkForMsms <- function(throw.error = TRUE) {
   return(FALSE)
 }
 
-possible.features  <- c(getSimProgram('ms')$possible_features, "pos.selection")
+msms.features <- c("pos.selection")
+possible.features  <- c(getSimProgram('ms')$possible_features, msms.features)
 possible.sum.stats <- getSimProgram('ms')$possible_sum_stats
 
 # This function generates an string that contains an R command for generating
@@ -62,14 +63,10 @@ generateMsmsOptionsCommand <- function(dm) {
 
     if (type == "pos.selection") {
       cmd <- c(cmd, '"-SI"', ',', feat['time.point'], ',', length(dm.getSampleSize(dm)), ',')
-      if (feat['pop.source'] == 1) { 
-        cmd <- c(cmd, 0.0005, ',', 0, ',') 
-#         cmd <- c(cmd, '"-Sc"', ',', 0, ',', 1, ',', 0, ',', 0, ',', 0, ',') 
-      }
-      else {
-        cmd <- c(cmd, 0, ',', 0.0005, ',') 
-#         cmd <- c(cmd, '"-Sc"', ',', 0, ',', 0, ',', 0, ',', 0, ',', 0, ',') 
-      }
+      start.freq <- rep(0, length(dm.getSampleSize(dm)))
+      start.freq[ as.integer(feat['pop.source']) ] <- 0.0005
+      cmd <- c(cmd, paste0('"', paste(start.freq, collapse=' '), '"'), ',')
+      
       cmd <- c(cmd, '"-N 10000"', ',') 
       cmd <- c(cmd, '"-SAA"', ',', paste0("2*", feat['parameter']), ',',  '"-SAa"', ',',
                feat['parameter'], ',') 
@@ -118,7 +115,8 @@ msmsSimFunc <- function(dm, parameters) {
   msms.options <- paste(generateMsmsOptions(dm, parameters), collapse= " ") 
 
   # Simulate
-  out.file <- callMsms(getJaathaVariable('msms.jar'), ms.options, msms.options)
+  out.file <- callMsms(getJaathaVariable('msms.jar'), ms.options, msms.options,
+                       'seqgen.trees' %in% dm@sum.stats$name)
 
   # Parse Output
   sum.stats <- parseMsOutput(out.file, parameters, dm)

@@ -9,7 +9,8 @@
 possible.features  <- c("sample", "loci.number", "loci.length",
                         "mutation", "migration", "split",
                         "recombination", "size.change", "growth")
-possible.sum.stats <- c("jsfs", "fpc", "trees", "seg.sites", "file")
+possible.sum.stats <- c("jsfs", "fpc", "trees", "seg.sites", 
+                        "file", "seqgen.trees")
 
 #' Function to perform simulation using ms 
 #' 
@@ -73,7 +74,8 @@ generateMsOptionsCommand <- function(dm) {
     else stop("Unknown feature:", type)
   }
 
-  if ('trees' %in% dm.getSummaryStatistics(dm)) cmd <- c(cmd, '"-T",')
+  if (any(c('trees', 'seqgen.trees') %in% dm.getSummaryStatistics(dm))) 
+    cmd <- c(cmd, '"-T",')
   cmd <- c(cmd, '" ")')
 }
 
@@ -164,24 +166,6 @@ finalizeMs <- function(dm) {
   dm@options[['ms.cmd']] <- generateMsOptionsCommand(dm)
   return(dm)
 }
-
-
-# calcPercentFpcViolations <- function(snp.matrix) {
-#   snp.matrix <- snp.matrix[, colSums(snp.matrix)>1, drop=FALSE]
-#   if (ncol(snp.matrix) <= 1) return(c(near=NaN, far=NaN, theta=0))
-#   snp.state <- apply(combn(1:ncol(snp.matrix), 2), 2, violatesFpc, snp.matrix)
-#   return(c(near=sum(snp.state[2, snp.state[1, ]])/sum(snp.state[1, ]),
-#            far=sum(snp.state[2, !snp.state[1, ]])/sum(!snp.state[1, ]),
-#            theta=ncol(snp.matrix)/sum(1/1:(nrow(snp.matrix)-1)) ))
-# }
-# 
-# violatesFpc <- function(sites, snp.matrix, near=.1) {
-#   is.near <- diff(as.numeric(colnames(snp.matrix)[sites])) < near
-#   status <- snp.matrix[ ,sites[1]] * 2 + snp.matrix[ ,sites[2]] 
-#   if (all(0:3 %in% status)) return(c(near=is.near, violates=TRUE))
-#   return(c(near=is.near, violates=FALSE))
-# }
-# 
 
 createSimProgram("ms", possible.features, possible.sum.stats, 
                  msSingleSimFunc, finalizeMs, printMsCommand, 100)

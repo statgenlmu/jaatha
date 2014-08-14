@@ -1,3 +1,13 @@
+Version 2.5.1
+==================
+## Bug Fixes
+- Fixed a bug that caused seq-gen to fail if the mutation parameter was not the
+  last model parameter.
+
+## New Features
+- Made it possible to use seq-gen together with msms (Linux only).
+
+
 Version 2.5
 ==================
 ## Bug Fixes
@@ -26,7 +36,7 @@ Version 2.5
 ## Clean-Ups
 - Removed additional tmp-folders
 - Removed dependency on foreach
-- Changed dependency on dplyr to reshape2
+- Changed dependency from dplyr to reshape2
 - Removed optional logging into a file
 
 

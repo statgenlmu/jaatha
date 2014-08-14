@@ -8,18 +8,24 @@
 # --------------------------------------------------------------
 
 # list ms's features + FS related features
-sg.features    <- c(getSimProgram('ms')$possible_features,
-                    'mutation.model', 'tstv.ratio', 
-                    'base.freq.A', 'base.freq.C', 'base.freq.G', 'base.freq.T',
-                    'gtr.rate.1', 'gtr.rate.2', 'gtr.rate.3',
-                    'gtr.rate.4','gtr.rate.5','gtr.rate.6',
-                    'gamma.categories', 'gamma.rate')
+sg.features    <- unique(c(getSimProgram('ms')$possible_features,
+                           getSimProgram('msms')$possible_features,
+                           'mutation.model', 'tstv.ratio', 
+                           'base.freq.A', 'base.freq.C', 'base.freq.G', 
+                           'base.freq.T',
+                           'gtr.rate.1', 'gtr.rate.2', 'gtr.rate.3',
+                           'gtr.rate.4','gtr.rate.5','gtr.rate.6',
+                           'gamma.categories', 'gamma.rate'))
 
-sg.sum.stats <- c("jsfs", "file", 'seg.sites', 'fpc')
-sg.mutation.models    <- c('HKY', 'F84', 'GTR')
+sg.sum.stats <- c('jsfs', 'file', 'seg.sites', 'fpc')
+sg.mutation.models <- c('HKY', 'F84', 'GTR')
 
-checkForSeqgen <- function() {
-  if ( isJaathaVariable('seqgen.exe') ) return()
+checkForSeqgen <- function(throw.error = TRUE) {
+  if ( isJaathaVariable('seqgen.exe') ) {
+    if (file.exists(getJaathaVariable('seqgen.exe'))) {  
+      return(TRUE)
+    }
+  }
 
   # Works on Linux only maybe
   run.path <- strsplit(Sys.getenv("PATH"), ":")[[1]]
@@ -29,23 +35,32 @@ checkForSeqgen <- function() {
     if (file.exists(exe)) {
       .print("Using", exe, "as seqgen executable\n")
       setJaathaVariable('seqgen.exe', exe)     
-      return()
+      return(TRUE)
     }
   }
 
-  stop("No seqgen executable found. Please provide one using
-       Jaatha.setSeqgenExecutable()")
+  if (throw.error) {
+    stop("No seqgen executable found. Please provide one using
+          Jaatha.setSeqgenExecutable()")
+  }
+  return(FALSE)
 }
 
-generateMsModel <- function(dm) {
+generateTreeModel <- function(dm) {
   stopifnot(all(dm.getGroups(dm) == 1))
-  ms <- getSimProgram('ms')
-  dm@features <- dm@features[dm@features$type %in% ms$possible_features, ]
+  if (any(msms.features %in% dm@features$type)) {
+    tree.prog <- getSimProgram('msms')
+  } else {
+    tree.prog <- getSimProgram('ms')
+  }
+  
+  dm@features <- dm@features[dm@features$type %in% tree.prog$possible_features, ]
   dm@sum.stats <- data.frame(name=c(), group=c())
+  dm <- dm.addSummaryStatistic(dm, "seqgen.trees")
   dm <- dm.addSummaryStatistic(dm, "file")
-  dm <- dm.addSummaryStatistic(dm, "trees")
   return(dm)
 }
+
 
 #' Set the path to the executable for seqgen
 #'
@@ -74,12 +89,13 @@ callSeqgen <- function(opts, ms.file) {
 
   seqgen.file <- getTempFile("seqgen")
   cmd <- paste(opts, ">", seqgen.file, sep=" ", collapse=" ")
-  .log3("executing: '", cmd, "'")
-  system(cmd)
-
+  
+  # Do the acctual simulation
+  if (system(cmd, intern = FALSE) != 0) stop("seq-gen simulation failed")
   if( !file.exists(seqgen.file) ) stop("seq-gen simulation failed!")
   if( file.info(seqgen.file)$size == 0 ) stop("seq-gen output is empty!")
-  return(seqgen.file)
+  
+  seqgen.file
 }
 
 generateSeqgenOptions <- function(dm, parameters) {
@@ -175,7 +191,9 @@ generateSeqgenOptionsCmd <- function(dm) {
 }
 
 printSeqgenCommand <- function(dm) {
-  printMsCommand(dm@options[['ms.model']])
+  if (is.null(dm@options[['tree.model']])) dm <- dm.finalize(dm)
+  tree.model <- dm@options[['tree.model']]
+  getSimProgram(tree.model@currentSimProg)$print_cmd_func(tree.model)
   cmd <- generateSeqgenOptionsCmd(dm)
 
   cmd <- cmd[cmd != ","]
@@ -198,9 +216,9 @@ seqgenSingleSimFunc <- function(dm, parameters) {
     stop("Wrong number of parameters!")
 
   # Use ms to simulate the ARG
-  ms.model <- dm@options[['ms.model']]
-  if (is.null(ms.model)) ms.model <- generateMsModel(dm)
-  sum.stats <- msSingleSimFunc(ms.model, parameters)
+  tree.model <- dm@options[['tree.model']]
+  if (is.null(tree.model)) tree.model <- generateTreeModel(dm)
+  sum.stats <- dm.simSumStats(tree.model, parameters)
 
   # Call seq-gen to distribute mutations
   seqgen.options <- generateSeqgenOptions(dm, parameters)
@@ -241,9 +259,9 @@ seqgenSingleSimFunc <- function(dm, parameters) {
 
 finalizeSeqgen <- function(dm) {
   checkForSeqgen()
-  dm@options[['ms.model']] <- finalizeMs(generateMsModel(dm))
+  dm@options[['tree.model']] <- dm.finalize(generateTreeModel(dm))
   dm@options[['seqgen.cmd']] <- generateSeqgenOptionsCmd(dm)
-  stopifnot(!is.null(dm@options[['ms.model']]))
+  stopifnot(!is.null(dm@options[['tree.model']]))
   return(dm)
 }
 
