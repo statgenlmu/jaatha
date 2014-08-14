@@ -1,3 +1,8 @@
+Version 2.5.2
+==================
+## Improvements
+- Switched unittests from RUnit to testthat
+
 Version 2.5.1
 ==================
 ## Bug Fixes
