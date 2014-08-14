@@ -85,8 +85,11 @@ csi.par.ranges <- matrix(c(0.1, 0.1, 10, 10), 2, 2)
 rownames(csi.par.ranges) <- c('x', 'y')
 
 jaatha.csi <- new("Jaatha", csi.sim.func, csi.par.ranges, csi.sum.stats, 123)
+tmp_file <- tempfile()
+sink(tmp_file)
 jaatha.csi <- Jaatha.initialSearch(jaatha.csi, 20, 2)
-jaatha.csi <- Jaatha.refinedSearch(jaatha.csi, 1, 20, max.steps=10)
+sink(NULL)
+unlink(tmp_file)
 
 sim.data.csi <- jaatha:::simulateWithinBlock(10, block.test, jaatha.csi)
 

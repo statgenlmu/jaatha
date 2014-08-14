@@ -22,10 +22,10 @@ howtos: install
 	cd howtos; make
 
 test: install
-	Rscript -e "library(testthat); source('./tests/testthat/setup.R'); test_package('jaatha', filter = '^u-')"
+	Rscript -e "library(testthat); source('./tests/testthat/setup.R'); test_package('jaatha', filter='^u-')"
 
 fulltest: install 
-	Rscript -e "library(testthat); source('./tests/testthat/setup.R'); test_package('jaatha')"
+	Rscript -e "library(testthat); source('./tests/testthat/setup.R'); test_package('jaatha', reporter='stop')"
 
 check: $(PACKAGE)
 	# check: Runs an R CMD check

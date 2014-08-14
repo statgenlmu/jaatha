@@ -201,8 +201,10 @@ test_that("test.getSampleSize", {
 test_that("test.getThetaName", {
     expect_equal(getThetaName(dm.tt), "theta")
     expect_equal(getThetaName(dm.fpc), "theta")
-    expect_equal(getThetaName(dm.hky), "theta")
-    expect_equal(getThetaName(dm.f81), "theta")
+    if (test_seqgen) {
+      expect_equal(getThetaName(dm.hky), "theta")
+      expect_equal(getThetaName(dm.f81), "theta")
+    }
     dm.test <- dm.createDemographicModel(11:12, 100)
     dm.test <- dm.addMutation(dm.test, 1, 5, new.par.name = "abcd")
     dm.test <- dm.addRecombination(dm.test, 1, 5)
