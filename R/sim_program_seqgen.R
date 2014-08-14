@@ -33,7 +33,7 @@ checkForSeqgen <- function(throw.error = TRUE) {
                    paste(run.path, "/seqgen", sep=""))
   for (exe in executables) {
     if (file.exists(exe)) {
-      .print("Using", exe, "as seqgen executable\n")
+      message(paste("Using", exe, "as seqgen executable\n"))
       setJaathaVariable('seqgen.exe', exe)     
       return(TRUE)
     }

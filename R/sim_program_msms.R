@@ -38,7 +38,7 @@ checkForMsms <- function(throw.error = TRUE) {
   executables <- paste(c(run.path, getwd()), "/msms.jar", sep="")
   for (exe in executables) {
     if (file.exists(exe)) {
-      .print("Using", exe, "as msms implementation\n")
+      message(paste("Using", exe, "as msms implementation\n"))
       setJaathaVariable('msms.jar', exe)     
       return(TRUE)
     }

@@ -241,6 +241,27 @@ addFeature <- function(dm, type, parameter=NA,
   return(dm)
 }
 
+#' Adds a summary statistic to the model.
+#' 
+#' This summary statistic will the be calulated for each simualtion
+#' and returned by the simSumStats function.
+#' 
+#' Avaible summary statistics are
+#' 'jsfs' - calculates the Joint Site Frequency Spectrum
+#' 'seg.sites' - return the simulated segregating sites as matrix
+#' 'file' - returns a file in which the simulation output is written
+#' 'fpc' - calculates the Four-Gamete-Condition based statistic
+#' 
+#' @param dm The demographic model to which a summary statistic should be added. 
+#' @param sum.stat The summary statistic to add. Use the names mentioned above.
+#' @param group If given, the summary statistic is only calculated for a 
+#'        given group of loci.
+#' @return The model with a summary statistic added.
+#' @export
+#' @examples
+#' dm <- dm.createThetaTauModel(c(15, 20), 100)
+#' dm <- dm.addSummaryStatistic(dm, 'seg.sites')
+#' dm.simSumStats(dm, c(1, 5))
 dm.addSummaryStatistic <- function(dm, sum.stat, group = 0) {
   checkType(dm, "dm")
   checkType(sum.stat, "char")

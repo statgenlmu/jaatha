@@ -22,7 +22,7 @@ Imports:
     parallel
 Suggests:
     ape (>= 2.7),
-    RUnit
+    testthat
 LinkingTo: Rcpp
 Collate:
     'Block.R'
