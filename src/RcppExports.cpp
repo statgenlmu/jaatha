@@ -43,6 +43,22 @@ BEGIN_RCPP
     return __sexp_result;
 END_RCPP
 }
+// parseTrees
+std::string parseTrees(std::string in_file, std::string out_file);
+RcppExport SEXP jaatha_parseTrees(SEXP in_fileSEXP, SEXP out_fileSEXP) {
+BEGIN_RCPP
+    SEXP __sexp_result;
+    {
+        Rcpp::RNGScope __rngScope;
+        Rcpp::traits::input_parameter< std::string >::type in_file(in_fileSEXP );
+        Rcpp::traits::input_parameter< std::string >::type out_file(out_fileSEXP );
+        std::string __result = parseTrees(in_file, out_file);
+        PROTECT(__sexp_result = Rcpp::wrap(__result));
+    }
+    UNPROTECT(1);
+    return __sexp_result;
+END_RCPP
+}
 // addSegSitesToFpc
 NumericMatrix addSegSitesToFpc(const NumericMatrix seg_sites, const NumericVector positions, const NumericVector breaks_near, const NumericVector breaks_far, NumericMatrix fpc);
 RcppExport SEXP jaatha_addSegSitesToFpc(SEXP seg_sitesSEXP, SEXP positionsSEXP, SEXP breaks_nearSEXP, SEXP breaks_farSEXP, SEXP fpcSEXP) {

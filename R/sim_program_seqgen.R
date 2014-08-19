@@ -56,7 +56,7 @@ generateTreeModel <- function(dm) {
   
   dm@features <- dm@features[dm@features$type %in% tree.prog$possible_features, ]
   dm@sum.stats <- data.frame(name=c(), group=c())
-  dm <- dm.addSummaryStatistic(dm, "seqgen.trees")
+  dm <- dm.addSummaryStatistic(dm, "trees")
   dm <- dm.addSummaryStatistic(dm, "file")
   return(dm)
 }
@@ -219,10 +219,11 @@ seqgenSingleSimFunc <- function(dm, parameters) {
   tree.model <- dm@options[['tree.model']]
   if (is.null(tree.model)) tree.model <- generateTreeModel(dm)
   sum.stats <- dm.simSumStats(tree.model, parameters)
+  tree_file <- parseTrees(sum.stats[['file']], getTempFile('tree_file'))
 
   # Call seq-gen to distribute mutations
   seqgen.options <- generateSeqgenOptions(dm, parameters)
-  seqgen.file <- callSeqgen(seqgen.options, sum.stats[['file']])
+  seqgen.file <- callSeqgen(seqgen.options, tree_file)
 
   sum.stats[['pars']] <- parameters
   
@@ -247,10 +248,10 @@ seqgenSingleSimFunc <- function(dm, parameters) {
   sum.stats[['pars']] <- parameters
   if ('file' %in% dm.getSummaryStatistics(dm)) {
     sum.stats[['file']] <- c(ms=sum.stats[['file']],
+                             trees=tree_file,
                              seqgen=seqgen.file)
   } else {
-    unlink(sum.stats[['file']])
-    unlink(seqgen.file)
+    unlink(c(sum.stats[['file']], seqgen.file, tree_file))
     sum.stats[['file']] <- NULL
   }
 

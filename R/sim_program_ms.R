@@ -9,8 +9,7 @@
 possible.features  <- c("sample", "loci.number", "loci.length",
                         "mutation", "migration", "split",
                         "recombination", "size.change", "growth")
-possible.sum.stats <- c("jsfs", "fpc", "trees", "seg.sites", 
-                        "file", "seqgen.trees")
+possible.sum.stats <- c("jsfs", "fpc", "trees", "seg.sites", "file")
 
 #' Function to perform simulation using ms 
 #' 
@@ -74,8 +73,7 @@ generateMsOptionsCommand <- function(dm) {
     else stop("Unknown feature:", type)
   }
 
-  if (any(c('trees', 'seqgen.trees') %in% dm.getSummaryStatistics(dm))) 
-    cmd <- c(cmd, '"-T",')
+  if ('trees' %in% dm.getSummaryStatistics(dm)) cmd <- c(cmd, '"-T",')
   cmd <- c(cmd, '" ")')
 }
 
