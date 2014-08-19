@@ -31,59 +31,8 @@ isJaathaVariable <- function(name) {
 
 
 
-#-----------------------------------------------------------------------
-# Functions for easy log creation
-#-----------------------------------------------------------------------
-
-if (!exists('log.level', envir=.jaatha)) .jaatha$log.level <- 1
-
-# A helper function for easy creation of logging output
-#
-# @param level An integer indicating the level of the log output.
-#              If the level is smaller or equal to the log level stored in
-#              'log.level', than the output is printed, otherwise it is
-#              discarded. 0 is the default level.
-# @param ...   One or more strings/variables to be written to the log stream
-# @return      nothing
-.log <- function(level, ...) {
-  if (level > .jaatha$log.level) return()
-
-  if ( .jaatha$log.level == 1 )  {
-    # Normal output without dates
-    cat(...,"\n",sep=" ")
-    return()
-  }
-
-  cat(..., "\n", sep=" ",)
-}
-
 # Function for creating normal user output 
-.print <- function(...){
-    .log(0,...)
-}
-.log1 <- .print
-
-# Creates lvl-2 logging output
-.log2 <- function(...) {
-  .log(2, ...)
-}
-
-# Creates lvl-3 logging output
-.log3 <- function(...) {
-  .log(3, ...)
-}
-
-#' Function to activate/change logging
-#'
-#' @param log.level An integer indicating the level of the log output.
-#'              If the level is smaller or equal to the log level stored in
-#'              'log.level', than the output is printed, otherwise it is
-#'              discarded. 0 is the default level.
-#' @return      nothing
-setLogging <- function(log.level) {
-  checkType(log.level, c("num", "s"), T)
-  .jaatha$log.level <- log.level
-}
+.print <- function(...) { cat(..., "\n") }
 
 
 #-----------------------------------------------------------------------

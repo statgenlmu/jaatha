@@ -17,7 +17,6 @@
 #' @return A list containing a list of fitted GLMs for each summary
 #' statistic.
 fitGlm <- function(sim.data, jaatha, weighting=NULL){ 
-  .log2("Using", length(sim.data), 'simulations')
   glm.fitted <- list()
   for (i in seq(along = jaatha@sum.stats)) {
     name <- names(jaatha@sum.stats)[i] 

@@ -23,7 +23,6 @@ callMs <- function(opts, dm){
 
   ms.file <- getTempFile("ms")
   
-  .log3("Calling ms. Opts:", opts, "file:", ms.file)
   ms(sum(dm.getSampleSize(dm)), dm.getLociNumber(dm), opts, ms.file)
   return(ms.file)
 }

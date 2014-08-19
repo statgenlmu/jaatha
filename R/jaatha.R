@@ -437,7 +437,7 @@ Jaatha.getLikelihoods <- function(jaatha, max.entries=NULL) {
 printBestPar <- function(jaatha, block) {
   .print("Best parameters", 
          round(denormalize(block@MLest, jaatha), 3),
-         "with estimated log-likelihood", round(block@score, 3))
+         "with estimated log-likelihood ", round(block@score, 3))
 }
 
 

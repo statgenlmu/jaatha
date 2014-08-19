@@ -86,7 +86,7 @@ Jaatha.refinedSearch <- function(jaatha, best.start.pos=2,
 
   # Start a search for every start point
   for (s in 1:length(startPoints)){
-    .print("*** Search with starting Point in Block",s,"of",length(startPoints),"****")
+    .print("*** Search with starting Point in Block ",s," of ",length(startPoints)," ***")
     jaatha <- refinedSearchSingleBlock(jaatha, startPoints[[s]]@MLest, sim=sim,sim.final=sim.final,
                                         half.block.size=half.block.size,
                                         max.steps=max.steps,block.nr=s)  
@@ -123,7 +123,7 @@ refinedSearchSingleBlock <- function(jaatha, start.point, sim, sim.final,
   repeat{
     .print("-----------------")
     step.current <- step.current + 1
-    .print("Step No", step.current)
+    .print("Step No ", step.current)
 
     # Update the Search Blocks Border
     search.block@border <- calcBorders(search.block@MLest, radius=half.block.size)
@@ -139,7 +139,6 @@ refinedSearchSingleBlock <- function(jaatha, start.point, sim, sim.final,
         glm.fitted <- fitGlm(sim.saved, jaatha)
         break
       }, error = function(e) {
-        .log2("Error fitting GLM:", e$message)
         if (j < 5) .print("Failed to fit the GLM. Retrying with more simulations...")
         else stop('Failed to fit the GLM. Try disabeling smoothing')
       })
@@ -253,7 +252,7 @@ getReusableSimulations <- function(block, jaatha, sim.saved, sim.data, step.curr
 ## written out. If verbose=TRUE details of the blocks that will be kept and 
 ## deleted will be written into logFile. 
 ## 
-findReusableBlocks <- function(MLpoint, blockList, weighOld, verbose=FALSE){  
+findReusableBlocks <- function(MLpoint, blockList, weighOld){  
   reusableBlocks <- list()
   listLen <- 1
   nKeep <- 0
@@ -268,14 +267,7 @@ findReusableBlocks <- function(MLpoint, blockList, weighOld, verbose=FALSE){
         } 
         nKeep <- nKeep +1 
         listLen <- listLen+1        
-      } else{        
-        if (verbose){ 
-          cat("Deleting BLOCK",b,"(lower:",round(blockList[[b]]@lowerBound,3),
-            " upper:",round(blockList[[b]]@upperBound,3),")\n")
-        }else{}
-        #cat(MLpoint,blockList[[b]]@lowerBound,blockList[[b]]@upperBound)
-        #print(isInBlock(blockList[[b]],MLpoint))
-        #cat(blockList[[b]]@lowerBound<=MLpoint,MLpoint<=blockList[[b]]@upperBound)
+      } else {
         nDel <- nDel +1
       }
     }

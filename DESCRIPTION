@@ -25,17 +25,17 @@ Suggests:
     testthat
 LinkingTo: Rcpp
 Collate:
-    'Block.R'
-    'sim_program.R'
-    'DemographicModel.R'
-    'Jaatha.R'
     'RcppExports.R'
+    'block.R'
     'confidence_intervals.R'
+    'sim_program.R'
+    'demographic_model.R'
     'estimate_log_likelihood.R'
     'find_best_par_in_block.R'
     'fit_glm.R'
     'helper_functions.R'
     'initial_search.R'
+    'jaatha.R'
     'normalize.R'
     'package_info.R'
     'parallelization.R'

@@ -5,6 +5,9 @@ Version 2.5.2
 - Added a Rcpp function to parse tree from ms(ms) output for seqgen. This should
   make seqgen less platform dependent (it still requires a Unix platform).
 
+## Clean-Ups
+- Remove logging functionally. 
+
 
 Version 2.5.1
 ==================
