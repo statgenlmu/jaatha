@@ -2,6 +2,9 @@ Version 2.5.2
 ==================
 ## Improvements
 - Switched unittests from RUnit to testthat
+- Added a Rcpp function to parse tree from ms(ms) output for seqgen. This should
+  make seqgen less platform dependent (it still requires a Unix platform).
+
 
 Version 2.5.1
 ==================
