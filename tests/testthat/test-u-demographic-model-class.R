@@ -298,3 +298,23 @@ test_that("test.simSumStats", {
     expect_true(sum(sum.stats$jsfs.3) > 0)
 })
 
+test_that("Loci trios are added to model", {
+  if (!test_seqgen) return()
+  dm.lt <- dm.useLociTrios(dm.hky, c(3, 2, 5, 1, 4))
+  expect_true("trio.1" %in% dm.lt@features$type)
+  expect_true("trio.2" %in% dm.lt@features$type)
+  expect_true("trio.3" %in% dm.lt@features$type)
+  expect_true("trio.4" %in% dm.lt@features$type)
+  expect_true("trio.5" %in% dm.lt@features$type)
+  expect_error(dm.useLociTrios(dm.hky, c(5, 5, 5, 1, 4)))
+  expect_error(dm.useLociTrios(dm.hky, c(5, 5, 5)))
+})
+
+test_that("getTrioOptions works", {
+  if (!test_seqgen) return()
+  dm.lt <- dm.useLociTrios(dm.hky, c(3, 2, 5, 1, 4))
+  
+  expect_equal(dm.getLociTrioOptions(dm.lt), c(3, 2, 5, 1, 4))
+  expect_true(is.na(dm.getLociTrioOptions(dm.tt)))
+})
+

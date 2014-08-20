@@ -15,7 +15,9 @@ sg.features    <- unique(c(getSimProgram('ms')$possible_features,
                            'base.freq.T',
                            'gtr.rate.1', 'gtr.rate.2', 'gtr.rate.3',
                            'gtr.rate.4','gtr.rate.5','gtr.rate.6',
-                           'gamma.categories', 'gamma.rate'))
+                           'gamma.categories', 'gamma.rate',
+                           'trio.1', 'trio.2', 'trio.3', 
+                           'trio.4', 'trio.5'))
 
 sg.sum.stats <- c('jsfs', 'file', 'seg.sites', 'fpc')
 sg.mutation.models <- c('HKY', 'F84', 'GTR')
@@ -176,7 +178,7 @@ generateSeqgenOptionsCmd <- function(dm) {
               ',', 'gtr.rate.5',  
               ',', 'gtr.rate.6', ',')
   }
-
+  
   if (!includes.model) {
     stop("You must specify a finite sites mutation model for this demographic model")
   }
@@ -219,7 +221,8 @@ seqgenSingleSimFunc <- function(dm, parameters) {
   tree.model <- dm@options[['tree.model']]
   if (is.null(tree.model)) tree.model <- generateTreeModel(dm)
   sum.stats <- dm.simSumStats(tree.model, parameters)
-  tree_file <- parseTrees(sum.stats[['file']], getTempFile('tree_file'))
+  tree_file <- parseTrees(sum.stats[['file']], getTempFile('tree_file'),
+                          dm.getLociTrioOptions(dm))
 
   # Call seq-gen to distribute mutations
   seqgen.options <- generateSeqgenOptions(dm, parameters)

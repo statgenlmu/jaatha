@@ -9,8 +9,8 @@ parseMsPositions <- function(line) {
     .Call('jaatha_parseMsPositions', PACKAGE = 'jaatha', line)
 }
 
-parseTrees <- function(in_file, out_file) {
-    .Call('jaatha_parseTrees', PACKAGE = 'jaatha', in_file, out_file)
+parseTrees <- function(in_file, out_file, trio_opts) {
+    .Call('jaatha_parseTrees', PACKAGE = 'jaatha', in_file, out_file, trio_opts)
 }
 
 addSegSitesToFpc <- function(seg_sites, positions, breaks_near, breaks_far, fpc) {

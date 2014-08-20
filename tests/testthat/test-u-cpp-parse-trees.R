@@ -28,7 +28,7 @@ positions: 0.3718 0.8443
 10
 ", file=sim_output);
   
-  expect_equal(parseTrees(sim_output, tree_file), tree_file)
+  expect_equal(parseTrees(sim_output, tree_file, NA), tree_file)
   
   expect_true(file.exists(tree_file))
   trees <- scan(tree_file, "character", quiet=TRUE)

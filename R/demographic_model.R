@@ -401,10 +401,6 @@ getThetaName <- function(dm){
   searchFeature(dm, "mutation")$parameter[1]
 }
 
-#getThetaRange <- function(dm){
-#  return(dm@parameters[nrow(dm@parameters),c('lower.range', 'upper.range')])
-#}
-
 
 
 
@@ -902,6 +898,7 @@ dm.addSpeciationEvent <- function(dm, min.time, max.time, fixed.time,
 }
 
 
+
 #-------------------------------------------------------------------
 # dm.addSizeChange
 #-------------------------------------------------------------------
@@ -1181,6 +1178,30 @@ dm.addMutationRateHeterogenity <-
 
   return(dm)
 }
+
+dm.useLociTrios <- function(dm, bases=c(250, 125, 250, 125, 250), group=0) {
+  if (sum(bases) != dm.getLociLength(dm, group))
+    stop("Bases do not sum up to locus length")
+  if (length(bases) != 5) 
+    stop("bases must consist of exactly 5 values.")
+  
+  bases <- as.character(bases)
+  dm <- addFeature(dm, "trio.1", bases[1], par.new=FALSE, group=group)
+  dm <- addFeature(dm, "trio.2", bases[2], par.new=FALSE, group=group)
+  dm <- addFeature(dm, "trio.3", bases[3], par.new=FALSE, group=group)
+  dm <- addFeature(dm, "trio.4", bases[4], par.new=FALSE, group=group)
+  dm <- addFeature(dm, "trio.5", bases[5], par.new=FALSE, group=group)
+}
+
+dm.getLociTrioOptions <- function(dm) {
+  trio.opts <- rep(NA_real_, 5)
+  tryCatch(for (i in 1:5) {
+      trio.opts[i] <- searchFeature(dm, paste0('trio.', i))$parameter
+    }, error = function(e) { })
+  if (any(is.na(trio.opts))) return(NA)
+  as.numeric(trio.opts)
+}
+
 
 #-------------------------------------------------------------------
 # dm.createThetaTauModel

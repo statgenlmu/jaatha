@@ -9,7 +9,8 @@ using namespace Rcpp;
 // be done with a few grep's, but this function should give us some platform 
 // independence.
 // [[Rcpp::export]]
-std::string parseTrees(std::string in_file, std::string out_file) {
+std::string parseTrees(std::string in_file, std::string out_file,
+                       NumericVector trio_opts) {
     // Open both files
     std::ifstream input(in_file.c_str(), std::ifstream::in);
     std::ofstream output(out_file.c_str(), std::ofstream::out);
