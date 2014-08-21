@@ -3,12 +3,13 @@
 \alias{dm.getLociNumber}
 \title{Gets how many loci belong to a group of loci}
 \usage{
-dm.getLociNumber(dm, group = NULL)
+dm.getLociNumber(dm, group = 1)
 }
 \arguments{
 \item{dm}{The Demographic Model}
 
-\item{group}{The group for which we get the number of loci}
+\item{group}{The group for which we get the number of loci. Defaults to
+the first group.}
 }
 \value{
 The number of loci in the group

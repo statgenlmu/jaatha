@@ -158,34 +158,6 @@ test_that("test.getGroups", {
     expect_equal(dm.getGroups(dm), c(1:2, 4))
 })
 
-test_that("test.getLociLength", {
-    dm.test <- dm.setLociLength(dm.tt, 17)
-    dm.test <- dm.setLociLength(dm.test, 23, group = 1)
-    dm.test <- dm.setLociLength(dm.test, 32, group = 2)
-    expect_equal(dm.getLociLength(dm.test, 0), 17L)
-    expect_equal(dm.getLociLength(dm.test, 1), 23L)
-    expect_equal(dm.getLociLength(dm.test, 2), 32L)
-    expect_error(dm.getLociLength(dm.test))
-    dm.test <- dm.setLociLength(dm.tt, 17)
-    expect_equal(dm.getLociLength(dm.test), 17L)
-    dm.test@features$group[dm.test@features$type == "loci.length"] <- 1
-    expect_equal(dm.getLociLength(dm.test), 17L)
-})
-
-test_that("test.getLociNumber", {
-    dm.test <- dm.setLociNumber(dm.tt, 17)
-    dm.test <- dm.setLociNumber(dm.test, 23, group = 1)
-    dm.test <- dm.setLociNumber(dm.test, 32, group = 2)
-    expect_equal(dm.getLociNumber(dm.test, 0), 17L)
-    expect_equal(dm.getLociNumber(dm.test, 1), 23L)
-    expect_equal(dm.getLociNumber(dm.test, 2), 32L)
-    expect_error(dm.getLociNumber(dm.test))
-    dm.test <- dm.setLociNumber(dm.tt, 17)
-    expect_equal(dm.getLociNumber(dm.test), 17L)
-    dm.test@features$group[dm.test@features$type == "loci.number"] <- 1
-    expect_equal(dm.getLociNumber(dm.test), 17L)
-})
-
 test_that("test.getSampleSize", {
     dm.test <- dm.tt
     expect_equal(dm.getSampleSize(dm.test), c(11L, 12L))
@@ -233,43 +205,61 @@ test_that("test.scaleDemographicModel", {
     expect_equal(dm.getLociNumber(dm, 2), 5L)
 })
 
-test_that("test.searchFeature", {
-    expect_equal(nrow(searchFeature(dm.tt, type = "sample")), 
-        2)
-    expect_equal(nrow(searchFeature(dm.tt, type = c("split", 
-        "sample"))), 3)
-    expect_equal(nrow(searchFeature(dm.tt, type = c("split", 
-        "sample"), pop.sink = NA)), 2)
-    expect_equal(nrow(searchFeature(dm.tt, time.point = "tau", 
-        group = 0)), 1)
-    expect_equal(nrow(searchFeature(dm.tt, time.point = NA)), 
-        3)
+test_that("searchFeature", {
+  expect_equal(nrow(searchFeature(dm.tt, type = "sample")), 2)
+  expect_equal(nrow(searchFeature(dm.tt, type = c("split", "sample"))), 3)
+  expect_equal(nrow(searchFeature(dm.tt, type = c("split", "sample"), 
+                                  pop.sink = NA)), 2)
+  expect_equal(nrow(searchFeature(dm.tt, time.point = "tau")), 1)
+  expect_equal(nrow(searchFeature(dm.tt, time.point = NA)), 3)
+  
+  # With groups
+  expect_equal(searchFeature(dm.grp, 'loci.length', group=0)$parameter, '1000')
+  expect_equal(searchFeature(dm.grp, 'loci.length', group=1)$parameter, '100')
+  expect_equal(searchFeature(dm.grp, 'loci.length', group=2)$parameter, '200')
+  expect_equal(searchFeature(dm.grp, 'loci.length', group=3)$parameter, '1000')
+  
+  expect_equal(nrow(searchFeature(dm.grp, group = 0)), 7)
+  expect_equal(nrow(searchFeature(dm.grp, group = 1)), 7)
+  expect_equal(nrow(searchFeature(dm.grp, group = 2)), 7)
+  expect_equal(nrow(searchFeature(dm.grp, group = 3)), 7)
 })
 
-test_that("test.setLociLength", {
-    dm <- dm.setLociLength(dm.tt, 17)
-    expect_equal(sum(dm@features$type == "loci.length"), 1)
-    expect_equal(dm@features$parameter[dm@features$type == "loci.length"], 
-        "17")
-    dm <- dm.setLociLength(dm, 23, group = 1)
-    expect_equal(sum(dm@features$type == "loci.length"), 2)
-    expect_equal(dm@features$parameter[dm@features$type == "loci.length"][2], 
-        "23")
-    dm <- dm.setLociLength(dm, 32, group = 2)
-    expect_equal(sum(dm@features$type == "loci.length"), 3)
+test_that("set and get loci length works", {
+  dm_tmp <- dm.setLociLength(dm.tt, 17)
+  expect_equal(sum(dm_tmp@features$type == "loci.length"), 1)
+  expect_equal(searchFeature(dm_tmp, "loci.length")$parameter, "17")
+  expect_equal(dm.getLociLength(dm_tmp), 17)
+  
+  dm_tmp <- dm.setLociLength(dm_tmp, 23, group = 2)
+  expect_equal(sum(dm_tmp@features$type == "loci.length"), 2)
+  expect_equal(dm.getLociLength(dm_tmp), 17)
+  expect_equal(dm.getLociLength(dm_tmp, 1), 17)
+  expect_equal(dm.getLociLength(dm_tmp, 2), 23)
+  
+  dm_tmp <- dm.setLociLength(dm_tmp, 32, group = 1)
+  expect_equal(dm.getLociLength(dm_tmp), 32)
+  expect_equal(dm.getLociLength(dm_tmp, 1), 32)
+  expect_equal(dm.getLociLength(dm_tmp, 2), 23)
 })
 
-test_that("test.setLociNumber", {
-    dm <- dm.setLociNumber(dm.tt, 17)
-    expect_equal(sum(dm@features$type == "loci.number"), 1)
-    expect_equal(dm@features$parameter[dm@features$type == "loci.number"], 
-        "17")
-    dm <- dm.setLociNumber(dm, 23, group = 1)
-    expect_equal(sum(dm@features$type == "loci.number"), 2)
-    expect_equal(dm@features$parameter[dm@features$type == "loci.number"][2], 
-        "23")
-    dm <- dm.setLociNumber(dm, 32, group = 2)
-    expect_equal(sum(dm@features$type == "loci.number"), 3)
+test_that("set and get loci number works", {
+  dm <- dm.setLociNumber(dm.tt, 17)
+  expect_equal(sum(dm@features$type == "loci.number"), 1)
+  expect_equal(dm@features$parameter[dm@features$type == "loci.number"], "17")
+  expect_equal(dm.getLociNumber(dm), 17)
+  
+  dm <- dm.setLociNumber(dm, 23, group = 2)
+  expect_equal(sum(dm@features$type == "loci.number"), 2)
+  expect_equal(dm.getLociNumber(dm), 17)
+  expect_equal(dm.getLociNumber(dm, 1), 17)
+  expect_equal(dm.getLociNumber(dm, 2), 23)
+  
+  dm <- dm.setLociNumber(dm, 32, group = 1)
+  expect_equal(sum(dm@features$type == "loci.number"), 3)
+  expect_equal(dm.getLociNumber(dm), 32)
+  expect_equal(dm.getLociNumber(dm, 1), 32)
+  expect_equal(dm.getLociNumber(dm, 2), 23)
 })
 
 test_that("test.setMutationModel", {
@@ -312,9 +302,13 @@ test_that("Loci trios are added to model", {
 
 test_that("getTrioOptions works", {
   if (!test_seqgen) return()
-  dm.lt <- dm.useLociTrios(dm.hky, c(3, 2, 5, 1, 4))
+  dm.lt <- dm.useLociTrios(dm.setLociLength(dm.f81, 50), c(10, 5, 20, 5, 10))
   
-  expect_equal(dm.getLociTrioOptions(dm.lt), c(3, 2, 5, 1, 4))
+  expect_equal(dm.getLociTrioOptions(dm.lt), c(10, 5, 20, 5, 10))
   expect_true(is.na(dm.getLociTrioOptions(dm.tt)))
+  
+  dm.lt <- dm.useLociTrios(dm.setLociLength(dm.f81, 50), c(10, 5, 20, 5, 10), 
+                           group=2)
+  expect_true(is.na(dm.getLociTrioOptions(dm.lt)))
+  expect_equal(dm.getLociTrioOptions(dm.lt, group=2), c(10, 5, 20, 5, 10))
 })
-
