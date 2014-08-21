@@ -10,9 +10,10 @@ NumericMatrix parseMsSegSites(std::ifstream &output,
                               const int individuals);
                               
 NumericMatrix parseSeqgenSegSites(std::ifstream &output,
-                                  const size_t loci_length,
+                                  size_t locus_length,
                                   const size_t individuals,
-                                  NumericVector &positions);
+                                  NumericVector &position,
+                                  const NumericVector trio_opts);
 
 void addToJsfs(const NumericMatrix &seg_sites,
                const NumericVector &sample_size,
@@ -35,7 +36,8 @@ List parseOutput(const std::string file_name,
                  const bool generate_seg_sites = false,
                  const bool generate_fpc = false,
                  const NumericVector fpc_breaks_near = NumericVector(0),
-                 const NumericVector fpc_breaks_far = NumericVector(0)) {
+                 const NumericVector fpc_breaks_far = NumericVector(0),
+                 const NumericVector trio_opts = NumericVector(0)) {
   
   if ((!generate_seg_sites) && (!generate_jsfs) && (!generate_fpc)) return List::create();
 
@@ -101,7 +103,8 @@ List parseOutput(const std::string file_name,
         std::stringstream(line) >> total_sample_size >> locus_length;
         
         seg_sites = parseSeqgenSegSites(output, locus_length, 
-                                        total_sample_size, positions);
+                                        total_sample_size, positions,
+                                        trio_opts);
         
         if (generate_seg_sites) seg_sites_list[locus] = seg_sites;
         if (generate_jsfs) addToJsfs(seg_sites, sample_size, jsfs);
@@ -171,9 +174,10 @@ NumericMatrix parseMsSegSites(std::ifstream &output,
 
 
 NumericMatrix parseSeqgenSegSites(std::ifstream &output,
-                                  const size_t locus_length,
+                                  size_t locus_length,
                                   const size_t individuals,
-                                  NumericVector &position) {
+                                  NumericVector &position,
+                                  const NumericVector trio_opts) {
 
   std::string tmp;
   size_t seq_nr;
@@ -199,7 +203,6 @@ NumericMatrix parseSeqgenSegSites(std::ifstream &output,
   std::vector<double> positions;
   size_t derived_count;
   
-
   for (size_t j=0; j<locus_length; ++j) {
     derived_count = 0;
     for (size_t i=0; i<individuals-1; ++i) {
@@ -221,9 +224,26 @@ NumericMatrix parseSeqgenSegSites(std::ifstream &output,
       }
     }
   
-    for (std::vector<double>::iterator it = positions.begin(); it != positions.end(); ++it) {
-      *it /= (locus_length - 1);
-   }
+    if (trio_opts.size() != 5) {
+      for (std::vector<double>::iterator it = positions.begin(); 
+           it != positions.end(); ++it) {
+        *it /= (locus_length - 1);
+      }
+    } else {
+      locus_length = sum(trio_opts);
+      size_t offset = 0, locus = 0, locus_end = trio_opts[0];
+      for (std::vector<double>::iterator it = positions.begin(); 
+        it != positions.end(); ++it) {
+        while(*it >= locus_end) {
+          ++locus;
+          offset += trio_opts[locus];   // Increase offset that locus 1 + 3
+          ++locus;
+          locus_end += trio_opts[locus]; // Increase locus end at 2+4
+        }
+        *it += offset;
+        *it /= (locus_length - 1);
+      }
+    }
   
     List dimnames = List(2);
     position = wrap(positions);

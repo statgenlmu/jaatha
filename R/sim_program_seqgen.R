@@ -240,12 +240,13 @@ seqgenSingleSimFunc <- function(dm, parameters) {
     sum.stats <- parseOutput(seqgen.file, dm.getSampleSize(dm), dm.getLociNumber(dm), 1, 
                              'jsfs' %in% dm.getSummaryStatistics(dm), 
                              'seg.sites' %in% dm.getSummaryStatistics(dm),
-                             TRUE, breaks.near, breaks.far)
+                             TRUE, breaks.near, breaks.far, 
+                             dm.getLociTrioOptions(dm))
   } else {
     sum.stats <- parseOutput(seqgen.file, dm.getSampleSize(dm), dm.getLociNumber(dm), 1, 
                              'jsfs' %in% dm.getSummaryStatistics(dm), 
                              'seg.sites' %in% dm.getSummaryStatistics(dm),
-                             FALSE)
+                             FALSE, trio_opts = dm.getLociTrioOptions(dm))
   }
   
   sum.stats[['pars']] <- parameters

@@ -141,8 +141,7 @@ test_that("seq-gen can simulate trios", {
   sum.stats <- dm.simSumStats(dm.lt, c(1, 10))
   for (seg.site in sum.stats$seg.sites) {
     pos <- as.numeric(colnames(seg.site))
-    expect_true(all(pos < 0.2 | pos > 0.3))
-    expect_true(all(pos < 0.7 | pos > 0.8))
+    expect_true(all(pos <= 0.2 | pos >= 0.3))
+    expect_true(all(pos <= 0.7 | pos >= 0.8))
   }
 })
-
