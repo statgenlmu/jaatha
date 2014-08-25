@@ -220,15 +220,15 @@ seqgenSingleSimFunc <- function(dm, parameters) {
   # Use ms to simulate the ARG
   tree.model <- dm@options[['tree.model']]
   if (is.null(tree.model)) tree.model <- generateTreeModel(dm)
-  sum.stats <- dm.simSumStats(tree.model, parameters)
-  tree_file <- parseTrees(sum.stats[['file']], getTempFile('tree_file'),
+  sum_stats_ms <- dm.simSumStats(tree.model, parameters)
+  tree_file <- parseTrees(sum_stats_ms[['file']], getTempFile('tree_file'),
                           dm.getLociTrioOptions(dm))
 
   # Call seq-gen to distribute mutations
   seqgen.options <- generateSeqgenOptions(dm, parameters)
   seqgen.file <- callSeqgen(seqgen.options, tree_file)
 
-  sum.stats[['pars']] <- parameters
+  sum.stats <- list(pars=parameters)
   
   # Parse the output & generate additional summary statistics
   if ('fpc' %in% dm.getSummaryStatistics(dm)) {
@@ -251,11 +251,11 @@ seqgenSingleSimFunc <- function(dm, parameters) {
   
   sum.stats[['pars']] <- parameters
   if ('file' %in% dm.getSummaryStatistics(dm)) {
-    sum.stats[['file']] <- c(ms=sum.stats[['file']],
+    sum.stats[['file']] <- c(ms=sum_stats_ms[['file']],
                              trees=tree_file,
                              seqgen=seqgen.file)
   } else {
-    unlink(c(sum.stats[['file']], seqgen.file, tree_file))
+    unlink(c(sum_stats_ms[['file']], seqgen.file, tree_file))
     sum.stats[['file']] <- NULL
   }
 

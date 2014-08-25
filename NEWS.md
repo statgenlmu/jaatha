@@ -5,6 +5,10 @@ Version 2.5.2
 - Added a Rcpp function to parse tree from ms(ms) output for seqgen. This should
   make seqgen less platform dependent (it still requires a Unix platform).
 
+## Bug fixes
+- In 2.5.1, the ms output file was not delete when using seq-gen. This can cause
+  Jaatha to fail if the disk runs out of space (#14). 
+
 ## Clean-Ups
 - Remove logging functionally. 
 
