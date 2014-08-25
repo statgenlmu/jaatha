@@ -401,10 +401,6 @@ getThetaName <- function(dm){
   searchFeature(dm, "mutation")$parameter[1]
 }
 
-#getThetaRange <- function(dm){
-#  return(dm@parameters[nrow(dm@parameters),c('lower.range', 'upper.range')])
-#}
-
 
 
 
@@ -500,17 +496,13 @@ dm.setLociLength <- function(dm, loci.length, group=0) {
 #' Gets how many loci belong to a group of loci
 #'
 #' @param dm The Demographic Model
-#' @param group The group for which we get the number of loci
+#' @param group The group for which we get the number of loci. Defaults to 
+#'              the first group.
 #' @return The number of loci in the group
 #' @export
-dm.getLociNumber <- function(dm, group=NULL) {
-  if (is.null(group)) {
-    ln <- searchFeature(dm, type='loci.number')$parameter
-    if (length(ln) != 1) stop("Cannot identify loci.number") 
-    return(as.integer(ln))
-  }
-  as.integer(dm@features$parameter[dm@features$type=='loci.number' & 
-                                   dm@features$group==group])
+dm.getLociNumber <- function(dm, group=1) {
+  ln <- searchFeature(dm, type='loci.number', group=group)
+  as.integer(ln$parameter)
 }
 
 #' Gets how long the loci in a group are
@@ -519,14 +511,14 @@ dm.getLociNumber <- function(dm, group=NULL) {
 #' @param group The group for which we get the length of loci
 #' @return The length of the loci in the group
 #' @export
-dm.getLociLength <- function(dm, group=NULL) {
-  if (is.null(group)) {
-    ll <- searchFeature(dm, type='loci.length')$parameter
-    if (length(ll) != 1) stop("Cannot identify loci.length") 
-    return(as.integer(ll))
-  }
-  as.integer(dm@features$parameter[dm@features$type=='loci.length' & 
-                                   dm@features$group==group])
+dm.getLociLength <- function(dm, group=1) {
+  # if we are using the locus trio, only return length of coding sequences
+  trio_opts <- dm.getLociTrioOptions(dm, group)
+  if (!any(is.na(trio_opts))) return(sum(trio_opts[c(T,F)]))
+  
+  # otherwise return the length of the complete locus
+  ll <- searchFeature(dm, type='loci.length', group=group)
+  as.integer(ll$parameter)
 }
 
 #--------------------------------------------------------------------
@@ -902,6 +894,7 @@ dm.addSpeciationEvent <- function(dm, min.time, max.time, fixed.time,
 }
 
 
+
 #-------------------------------------------------------------------
 # dm.addSizeChange
 #-------------------------------------------------------------------
@@ -1182,6 +1175,30 @@ dm.addMutationRateHeterogenity <-
   return(dm)
 }
 
+dm.useLociTrios <- function(dm, bases=c(250, 125, 250, 125, 250), group=0) {
+  if (sum(bases) != dm.getLociLength(dm, group))
+    stop("Bases do not sum up to locus length")
+  if (length(bases) != 5) 
+    stop("bases must consist of exactly 5 values.")
+  
+  bases <- as.character(bases)
+  dm <- addFeature(dm, "trio.1", bases[1], par.new=FALSE, group=group)
+  dm <- addFeature(dm, "trio.2", bases[2], par.new=FALSE, group=group)
+  dm <- addFeature(dm, "trio.3", bases[3], par.new=FALSE, group=group)
+  dm <- addFeature(dm, "trio.4", bases[4], par.new=FALSE, group=group)
+  dm <- addFeature(dm, "trio.5", bases[5], par.new=FALSE, group=group)
+}
+
+dm.getLociTrioOptions <- function(dm, group=0) {
+  trio.opts <- rep(NA_real_, 5)
+  tryCatch(for (i in 1:5) {
+      trio.opts[i] <- searchFeature(dm, paste0('trio.', i), group=group)$parameter
+    }, error = function(e) { })
+  if (any(is.na(trio.opts))) return(NA)
+  as.numeric(trio.opts)
+}
+
+
 #-------------------------------------------------------------------
 # dm.createThetaTauModel
 #-------------------------------------------------------------------
@@ -1306,16 +1323,7 @@ generateGroupModel <- function(dm, group) {
   }
   
   # Features
-  dm@features <- dm@features[dm@features$group %in% c(0, group), ]
-  overwritten <- dm@features$group == 0
-  for (i in which(overwritten)) {
-    if (nrow(searchFeature(dm, type=dm@features$type[i],
-                           pop.source=dm@features$pop.source[i],
-                           pop.sink=dm@features$pop.sink[i],
-                           time.point=dm@features$time.point[i])) == 1) 
-      overwritten[i] <- FALSE
-  }
-  dm@features <- dm@features[!overwritten, ]
+  dm@features <- searchFeature(dm, group = group)
   dm@features$group <- 0
   
   # Sum.Stats
@@ -1338,7 +1346,6 @@ searchFeature <- function(dm, type=NULL, parameter=NULL, pop.source=NULL,
   mask <- rep(TRUE, nrow(dm@features))
 
   if (!is.null(type)) mask <- mask & dm@features$type %in% type
-  if (!is.null(group)) mask <- mask & dm@features$group %in% group
 
   if (!is.null(parameter)) {
     if (is.na(parameter)) { 
@@ -1372,6 +1379,24 @@ searchFeature <- function(dm, type=NULL, parameter=NULL, pop.source=NULL,
     }
   }
 
+  if (!is.null(group)) {
+    if (group == 0) mask <- mask & dm@features$group == 0
+    else {
+      mask <- mask & dm@features$group %in% c(0, group)
+      
+      # Check if values for the default group are overwritten in the focal group
+      grp_0 <- dm@features$group == 0
+      overwritten <- grp_0[mask]
+      for (i in which(overwritten)) {
+        duplicats <- searchFeature(dm, type=dm@features$type[mask][i],
+                                   pop.source=dm@features$pop.source[mask][i],
+                                   pop.sink=dm@features$pop.sink[mask][i])
+        if (sum(duplicats$group == group) == 0) overwritten[i] <- FALSE  
+      }
+      mask[mask] <- !overwritten
+    }
+  }
+  
   return(dm@features[mask, ])
 }
 

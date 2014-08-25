@@ -15,7 +15,9 @@ sg.features    <- unique(c(getSimProgram('ms')$possible_features,
                            'base.freq.T',
                            'gtr.rate.1', 'gtr.rate.2', 'gtr.rate.3',
                            'gtr.rate.4','gtr.rate.5','gtr.rate.6',
-                           'gamma.categories', 'gamma.rate'))
+                           'gamma.categories', 'gamma.rate',
+                           'trio.1', 'trio.2', 'trio.3', 
+                           'trio.4', 'trio.5'))
 
 sg.sum.stats <- c('jsfs', 'file', 'seg.sites', 'fpc')
 sg.mutation.models <- c('HKY', 'F84', 'GTR')
@@ -176,7 +178,7 @@ generateSeqgenOptionsCmd <- function(dm) {
               ',', 'gtr.rate.5',  
               ',', 'gtr.rate.6', ',')
   }
-
+  
   if (!includes.model) {
     stop("You must specify a finite sites mutation model for this demographic model")
   }
@@ -218,14 +220,15 @@ seqgenSingleSimFunc <- function(dm, parameters) {
   # Use ms to simulate the ARG
   tree.model <- dm@options[['tree.model']]
   if (is.null(tree.model)) tree.model <- generateTreeModel(dm)
-  sum.stats <- dm.simSumStats(tree.model, parameters)
-  tree_file <- parseTrees(sum.stats[['file']], getTempFile('tree_file'))
+  sum_stats_ms <- dm.simSumStats(tree.model, parameters)
+  tree_file <- parseTrees(sum_stats_ms[['file']], getTempFile('tree_file'),
+                          dm.getLociTrioOptions(dm))
 
   # Call seq-gen to distribute mutations
   seqgen.options <- generateSeqgenOptions(dm, parameters)
   seqgen.file <- callSeqgen(seqgen.options, tree_file)
 
-  sum.stats[['pars']] <- parameters
+  sum.stats <- list(pars=parameters)
   
   # Parse the output & generate additional summary statistics
   if ('fpc' %in% dm.getSummaryStatistics(dm)) {
@@ -237,21 +240,22 @@ seqgenSingleSimFunc <- function(dm, parameters) {
     sum.stats <- parseOutput(seqgen.file, dm.getSampleSize(dm), dm.getLociNumber(dm), 1, 
                              'jsfs' %in% dm.getSummaryStatistics(dm), 
                              'seg.sites' %in% dm.getSummaryStatistics(dm),
-                             TRUE, breaks.near, breaks.far)
+                             TRUE, breaks.near, breaks.far, 
+                             dm.getLociTrioOptions(dm))
   } else {
     sum.stats <- parseOutput(seqgen.file, dm.getSampleSize(dm), dm.getLociNumber(dm), 1, 
                              'jsfs' %in% dm.getSummaryStatistics(dm), 
                              'seg.sites' %in% dm.getSummaryStatistics(dm),
-                             FALSE)
+                             FALSE, trio_opts = dm.getLociTrioOptions(dm))
   }
   
   sum.stats[['pars']] <- parameters
   if ('file' %in% dm.getSummaryStatistics(dm)) {
-    sum.stats[['file']] <- c(ms=sum.stats[['file']],
+    sum.stats[['file']] <- c(ms=sum_stats_ms[['file']],
                              trees=tree_file,
                              seqgen=seqgen.file)
   } else {
-    unlink(c(sum.stats[['file']], seqgen.file, tree_file))
+    unlink(c(sum_stats_ms[['file']], seqgen.file, tree_file))
     sum.stats[['file']] <- NULL
   }
 
