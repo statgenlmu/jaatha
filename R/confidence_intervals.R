@@ -103,8 +103,8 @@ Jaatha.getCIsFromLogs <- function(jaatha, conf_level=0.95, log_folder) {
   
   jaatha@conf.ints <- t(sapply(1:ncol(bs_estimates), function(i) {
     par.name <- getParNames(jaatha)[i]
-    return( jaatha:::calcBCaConfInt(conf_level, bs_estimates[,i], 
-                                    est_pars[i], length(results)) )
+    return(calcBCaConfInt(conf_level, bs_estimates[,i], 
+                          est_pars[i], length(results)) )
   }))
   rownames(jaatha@conf.ints) <- getParNames(jaatha)
   
