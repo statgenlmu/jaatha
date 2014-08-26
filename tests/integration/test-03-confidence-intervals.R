@@ -1,10 +1,5 @@
 context("Confidence Intervals")
 
-test_that("seqgen and msms are available", {
-  expect_true(test_seqgen)
-  expect_true(test_msms)
-})
-
 test_that("Calculation of Confidence Intervals", {
   jaatha <- Jaatha.initialSearch(jaatha.csi, 20, 1)
   jaatha <- Jaatha.refinedSearch(jaatha, 1, 20, max.steps=10)
