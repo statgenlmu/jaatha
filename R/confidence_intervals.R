@@ -94,7 +94,7 @@ Jaatha.getCIsFromLogs <- function(jaatha, conf_level=0.95, log_folder) {
   results <- list.files(log_folder, 'run_[0-9]+.Rda$', full.names = TRUE)
   message("Using ", length(results), " completed runs.")
   
-  est_pars <- jaatha:::denormalize(jaatha@likelihood.table[1, -(1:2)], jaatha)
+  est_pars <- denormalize(jaatha@likelihood.table[1, -(1:2)], jaatha)
   
   bs_estimates <- t(sapply(results, function(result) {
     load(result)
@@ -102,11 +102,11 @@ Jaatha.getCIsFromLogs <- function(jaatha, conf_level=0.95, log_folder) {
   }))
   
   jaatha@conf.ints <- t(sapply(1:ncol(bs_estimates), function(i) {
-    par.name <- jaatha:::getParNames(jaatha)[i]
+    par.name <- getParNames(jaatha)[i]
     return( jaatha:::calcBCaConfInt(conf_level, bs_estimates[,i], 
                                     est_pars[i], length(results)) )
   }))
-  rownames(jaatha@conf.ints) <- jaatha:::getParNames(jaatha)
+  rownames(jaatha@conf.ints) <- getParNames(jaatha)
   
   cat("Confidence Intervals are:\n")
   print(jaatha@conf.ints)
