@@ -18,6 +18,7 @@ install:
 - wget http://www.mabs.at/ewing/msms/msms3.2rc-b163.jar && mv msms3.2rc-b163.jar msms.jar
 after_failure:
 - ./travis-tool.sh dump_logs
-branches:
-  except:
-  - releases
+notifications:
+  email:
+    on_success: always
+    on_failure: always
