@@ -69,7 +69,8 @@ Jaatha.confidenceIntervals <- function(jaatha, conf.level=0.95,
 
   jaatha@conf.ints <- t(sapply(1:ncol(bs.results.li), function(i) {
     par.name <- getParNames(jaatha)[i]
-    return( calcBCaConfInt(conf.level, bs.results.li[,i], est.pars.unscaled[i], replicas) )
+    return( calcBCaConfInt(conf.level, bs.results.li[,i], 
+                           est.pars.unscaled[i], replicas) )
   }))
   rownames(jaatha@conf.ints) <- getParNames(jaatha)
 
@@ -78,6 +79,39 @@ Jaatha.confidenceIntervals <- function(jaatha, conf.level=0.95,
   return(jaatha)
 }
 
+#' Function for calculating bootstrap confidence intervals from logs of a 
+#' previous run of Jaatha.confidenceIntervals.
+#'
+#' @param jaatha The Jaatha object that was used when calling 
+#'               Jaatha.confidenceIntervals.
+#' @param conf_level The intended confidence level of the interval. The actual
+#'               level can vary slightly.
+#' @param log_folder The folder with logs from the previous run. Just use the
+#'               folder that was given as 'log.folder' argument there.
+#' @return The Jaatha Object with confidence intervals included.
+#' @export
+Jaatha.getCIsFromLogs <- function(jaatha, conf_level=0.95, log_folder) {
+  results <- list.files(log_folder, 'run_[0-9]+.Rda$', full.names = TRUE)
+  message("Using ", length(results), " completed runs.")
+  
+  est_pars <- jaatha:::denormalize(jaatha@likelihood.table[1, -(1:2)], jaatha)
+  
+  bs_estimates <- t(sapply(results, function(result) {
+    load(result)
+    Jaatha.getLikelihoods(jaatha, max.entries=1)[,-(1:2)]
+  }))
+  
+  jaatha@conf.ints <- t(sapply(1:ncol(bs_estimates), function(i) {
+    par.name <- jaatha:::getParNames(jaatha)[i]
+    return( jaatha:::calcBCaConfInt(conf_level, bs_estimates[,i], 
+                                    est_pars[i], length(results)) )
+  }))
+  rownames(jaatha@conf.ints) <- jaatha:::getParNames(jaatha)
+  
+  cat("Confidence Intervals are:\n")
+  print(jaatha@conf.ints)
+  return(invisible(jaatha))
+}
 
 rerunAnalysis <- function(idx, jaatha, seeds, sum.stats=NULL, log.folder) {
   .print("* Starting run", idx, "...")
