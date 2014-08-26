@@ -55,6 +55,7 @@ test_that("test.msmsSimFunc", {
   unlink(sum.stats$file)
   dm.sel@sum.stats <- data.frame()
   dm.sel <- dm.addSummaryStatistic(dm.sel, "fpc")
+  dm.sel <- calcFpcBreaks(dm.sel, sum.stats$seg.sites)
   sum.stats <- msmsSimFunc(dm.sel, c(1, 1.5, 1500, 5))
   expect_true(is.list(sum.stats))
   expect_false(is.null(sum.stats$pars))

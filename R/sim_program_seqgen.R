@@ -22,7 +22,7 @@ sg.features    <- unique(c(getSimProgram('ms')$possible_features,
 sg.sum.stats <- c('jsfs', 'file', 'seg.sites', 'fpc')
 sg.mutation.models <- c('HKY', 'F84', 'GTR')
 
-checkForSeqgen <- function(throw.error = TRUE) {
+checkForSeqgen <- function(throw.error = TRUE, silent = FALSE) {
   if ( isJaathaVariable('seqgen.exe') ) {
     if (file.exists(getJaathaVariable('seqgen.exe'))) {  
       return(TRUE)
@@ -35,7 +35,7 @@ checkForSeqgen <- function(throw.error = TRUE) {
                    paste(run.path, "/seqgen", sep=""))
   for (exe in executables) {
     if (file.exists(exe)) {
-      message(paste("Using", exe, "as seqgen executable\n"))
+      if (!silent) message(paste("Using", exe, "as seqgen executable\n"))
       setJaathaVariable('seqgen.exe', exe)     
       return(TRUE)
     }

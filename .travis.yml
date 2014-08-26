@@ -6,7 +6,9 @@ env:
   - R_CHECK_ARGS="--no-build-vignettes --no-manual --as-cran"
   - BOOTSTRAP_LATEX=""
   - WARNINGS_ARE_ERRORS=1
-script: make travis-test
+script: 
+  - ./travis-tool.sh run_tests
+  - ./tests/integration/run-tests.R
 before_install:
 - curl -OL http://raw.github.com/craigcitro/r-travis/master/scripts/travis-tool.sh
 - chmod 755 ./travis-tool.sh

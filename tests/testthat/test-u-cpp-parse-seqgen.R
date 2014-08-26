@@ -1,9 +1,8 @@
-context("Rcpp output parsing: seqgen")
+context("Rcpp output parsing - seqgen")
 
 test_that("test.parseOutputSeqgen", {
   if (!test_seqgen) return()
-  sg.file <- tempfile("seqgen_")
-  write(sg.example, sg.file)
+  sg.file <- dm.simSumStats(dm.hky, c(1, 5))$file['seqgen']
   expect_error(parseOutput(tempfile("seqgen2_"), dm.getSampleSize(dm.hky), 
                            dm.getLociNumber(dm.hky), 1))
   expect_error(parseOutput(sg.file, dm.getSampleSize(dm.hky), 
@@ -28,4 +27,3 @@ test_that("test.parseOutputSeqgen", {
   expect_equal(sum(sum.stats$fpc), 5)
   unlink(sg.file)
 })
-
