@@ -194,10 +194,12 @@ refinedSearchSingleBlock <- function(jaatha, start.point, sim, sim.final,
     likelihoods[t] <- simLikelihood(jaatha, sim.final, topPar)
   }
 
-  likelihood.table <- cbind(log.cl=likelihoods, block=block.nr,topTen[topTen[,1]!=0,-1])
-  jaatha@likelihood.table <- rbind(jaatha@likelihood.table,likelihood.table)
-
-  .emptyGarbage()
+  likelihood.table <- cbind(log.cl=likelihoods, 
+                            block=block.nr,
+                            topTen[topTen[,1]!=0,-1])
+  
+  jaatha@likelihood.table <- rbind(jaatha@likelihood.table,
+                                   likelihood.table)
 
   .print()
   return(jaatha)
@@ -242,44 +244,6 @@ getReusableSimulations <- function(block, jaatha, sim.saved, sim.data, step.curr
                      function(x) isInBlock(block, normalize(x$pars, jaatha)))]) 
 }
 
-
-
-## Function to go through the list of 'blockList' (old blocks) and
-## determine which blocks to keep. A block will be kept if 'MLpoint'
-## falls into the block.  A list of blocks that contain 'MLpoint' will
-## be returned.  Each round a block is kept its weight is halved.
-## If verbose=FALSE (default) only number of deleted and kept blocks will be 
-## written out. If verbose=TRUE details of the blocks that will be kept and 
-## deleted will be written into logFile. 
-## 
-findReusableBlocks <- function(MLpoint, blockList, weighOld){  
-  reusableBlocks <- list()
-  listLen <- 1
-  nKeep <- 0
-  nDel <- 0
-  if (length(blockList)!=0) {
-    for (b in seq(along = blockList)){
-      if(isInBlock(blockList[[b]],MLpoint)){
-        reusableBlocks[[listLen]] <- blockList[[b]]
-        if (verbose){ 
-          cat("Keeping BLOCK",b," (lower:",round(blockList[[b]]@lowerBound,3),
-            " upper:",round(blockList[[b]]@upperBound,3),")\n")
-        } 
-        nKeep <- nKeep +1 
-        listLen <- listLen+1        
-      } else {
-        nDel <- nDel +1
-      }
-    }
-  }
-  
-  if (!verbose){ 
-    cat("Number of blocks kept:",nKeep," / Number of blocks deleted:",nDel,"\n")
-  }
-  return(reusableBlocks)
-}
-
-
 ## Function to save the ten best parameters along the search path with
 ## their likelihoods.
 .saveBestTen <- function (currentTopTen, numSteps, search.block){
@@ -296,7 +260,6 @@ findReusableBlocks <- function(MLpoint, blockList, weighOld){
   return(currentTopTen)
 }
 
-
 ## Function to concatenate all parNsumstat-fields of the blocks in
 ## 'blockList' with newParNsumstat, so they can later be used for the
 ## glm-fitting.
@@ -308,12 +271,4 @@ findReusableBlocks <- function(MLpoint, blockList, weighOld){
     }
   } else{}   
   return (data)
-}
-
-
-## Calls the garbage collector of R. Has to be called explicitly to make memory free
-## twice because otherwise .Last.value allocates some memory.
-.emptyGarbage <- function(){
-  gc()   #verbose=TRUE
-  gc()
 }
