@@ -15,8 +15,7 @@ Practical instructions for running Jaatha are provided in the
 simulation method are given in the [Custom Simulation Method HowTo][3]. Both
 tutorials are also included as vignettes in the CRAN package. 
 
-If you want to follow the development of Jaatha, you can do so on [GitHub][4]. 
-Also, Paul posts development updates under [#jaatha on Google Plus][5].
+If you want to follow the development of Jaatha, you can do so on [GitHub][4].
 
 
 Installation
@@ -35,12 +34,10 @@ in R.
 
 [![Build Status](https://travis-ci.org/paulstaab/jaatha.png?branch=develop)](https://travis-ci.org/paulstaab/jaatha)
 
-You can download and build the development version from GitHub following the
-commands: 
+You can install the development version from GitHub using: 
 
 ```R
-library('devtools')
-install_github("jaatha", "paulstaab", ref="develop")
+devtools::install_github('paulstaab/jaatha', ref='develop')
 ```
 
 
@@ -57,7 +54,6 @@ Links
 [2]: https://github.com/paulstaab/jaatha/raw/master/howtos/jaatha_howto.pdf
 [3]: https://github.com/paulstaab/jaatha/raw/master/howtos/custom_simulator_howto.pdf
 [4]: https://github.com/paulstaab/jaatha
-[5]: https://plus.google.com/s/%23jaatha
 
 * [Jaatha's Homepage](http://evol.bio.lmu.de/_statgen/software/jaatha)
 * [Source Code on GitHub](https://github.com/paulstaab/jaatha)
