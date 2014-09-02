@@ -8,6 +8,9 @@ Version 2.5.2
 ## Bug fixes
 - In 2.5.1, the ms output file was not delete when using seq-gen. This can cause
   Jaatha to fail if the disk runs out of space (#14). 
+- Fixed a severe bug in the `Jaatha.confidenceIntevals` function. There often
+  parameters different from the maximum likelihood estimates were used to
+  calculate the confidence intervals (#15). 
 
 ## Clean-Ups
 - Remove logging functionally. 
