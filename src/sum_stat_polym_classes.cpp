@@ -1,18 +1,12 @@
 #include <Rcpp.h>
 using namespace Rcpp;
 
-// [[Rcpp::export]]
-NumericVector classifyPolym(const NumericMatrix seg_sites,
-                            const NumericVector sample_size) {
-   
-  NumericVector classes = NumericVector::create(
-    _["private"] = 0,
-    _["fixed"] = 0,
-    _["shared"] = 0
-  );
-  
-  size_t idx1, idx2;
-  
+size_t idx1, idx2;
+
+void addToPolymClasses(const NumericMatrix seg_sites,
+                       const NumericVector sample_size,
+                       NumericVector &polym_classes) {
+    
   for (int j = 0; j < seg_sites.ncol(); ++j) {
     idx1 = 0;
     idx2 = 0;
@@ -24,16 +18,33 @@ NumericVector classifyPolym(const NumericMatrix seg_sites,
       idx2 += seg_sites(i,j); 
 
     if (idx1 == 0) {
-      if (idx2 == sample_size[1]) ++classes[1];
-      else ++classes[0];
+      if (idx2 == sample_size[1]) ++polym_classes[1];
+      else ++polym_classes[0];
     } 
     else if (idx2 == 0) {
-      if (idx1 == sample_size[0]) ++classes[1];
-      else ++classes[0];
+      if (idx1 == sample_size[0]) ++polym_classes[1];
+      else ++polym_classes[0];
     } else {
-      ++classes[2];
+      ++polym_classes[2];
     }
   }
+}
+
+NumericVector createPolymVector() {
+  return NumericVector::create(
+    _["private"] = 0,
+    _["fixed"] = 0,
+    _["shared"] = 0
+  );
+}
+
+// For unit testing
+// [[Rcpp::export]]
+NumericVector classifyPolym(const NumericMatrix seg_sites,
+                            const NumericVector sample_size) {
+   
+  NumericVector classes = createPolymVector();
+  addToPolymClasses(seg_sites, sample_size, classes);
   
   return classes;
 }

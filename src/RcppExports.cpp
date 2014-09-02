@@ -6,8 +6,8 @@
 using namespace Rcpp;
 
 // parseOutput
-List parseOutput(const std::string file_name, const NumericVector sample_size, const int loci_number, const int program = 0, const bool generate_jsfs = true, const bool generate_seg_sites = false, const bool generate_fpc = false, const NumericVector fpc_breaks_near = NumericVector(0), const NumericVector fpc_breaks_far = NumericVector(0), const NumericVector trio_opts = NumericVector(0));
-RcppExport SEXP jaatha_parseOutput(SEXP file_nameSEXP, SEXP sample_sizeSEXP, SEXP loci_numberSEXP, SEXP programSEXP, SEXP generate_jsfsSEXP, SEXP generate_seg_sitesSEXP, SEXP generate_fpcSEXP, SEXP fpc_breaks_nearSEXP, SEXP fpc_breaks_farSEXP, SEXP trio_optsSEXP) {
+List parseOutput(const std::string file_name, const NumericVector sample_size, const int loci_number, const int program = 0, const bool generate_jsfs = true, const bool generate_seg_sites = false, const bool generate_fpc = false, const NumericVector fpc_breaks_near = NumericVector(0), const NumericVector fpc_breaks_far = NumericVector(0), const NumericVector trio_opts = NumericVector(0), const bool generate_polym_classes = false);
+RcppExport SEXP jaatha_parseOutput(SEXP file_nameSEXP, SEXP sample_sizeSEXP, SEXP loci_numberSEXP, SEXP programSEXP, SEXP generate_jsfsSEXP, SEXP generate_seg_sitesSEXP, SEXP generate_fpcSEXP, SEXP fpc_breaks_nearSEXP, SEXP fpc_breaks_farSEXP, SEXP trio_optsSEXP, SEXP generate_polym_classesSEXP) {
 BEGIN_RCPP
     SEXP __sexp_result;
     {
@@ -22,7 +22,8 @@ BEGIN_RCPP
         Rcpp::traits::input_parameter< const NumericVector >::type fpc_breaks_near(fpc_breaks_nearSEXP );
         Rcpp::traits::input_parameter< const NumericVector >::type fpc_breaks_far(fpc_breaks_farSEXP );
         Rcpp::traits::input_parameter< const NumericVector >::type trio_opts(trio_optsSEXP );
-        List __result = parseOutput(file_name, sample_size, loci_number, program, generate_jsfs, generate_seg_sites, generate_fpc, fpc_breaks_near, fpc_breaks_far, trio_opts);
+        Rcpp::traits::input_parameter< const bool >::type generate_polym_classes(generate_polym_classesSEXP );
+        List __result = parseOutput(file_name, sample_size, loci_number, program, generate_jsfs, generate_seg_sites, generate_fpc, fpc_breaks_near, fpc_breaks_far, trio_opts, generate_polym_classes);
         PROTECT(__sexp_result = Rcpp::wrap(__result));
     }
     UNPROTECT(1);
