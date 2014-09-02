@@ -23,8 +23,7 @@
 #' be best executed on a small cluster rather than on a desktop computer.
 #'
 #' @param jaatha A jaatha object that was returned by Jaatha.refinedSearch.
-#' @param conf.level The intended confidence level of the interval. The actual
-#' level can vary slightly.
+#' @param conf.level The intended confidence level for the interval.
 #' @param replicas The number of Jaatha runs that we perform for calculating 
 #'  the confidence interval. Should be reasonable large.
 #' @param cores The number of CPU cores that will be used.
@@ -42,8 +41,8 @@ Jaatha.confidenceIntervals <- function(jaatha, conf.level=0.95,
   dir.create(log.folder, showWarnings=FALSE)
 
   setParallelization(cores)
-  est.pars <- jaatha@likelihood.table[1, -(1:2)]
-  est.pars.unscaled <- denormalize(est.pars, jaatha)
+  est.pars.unscaled <- Jaatha.getLikelihoods(jaatha, 1)[, -(1:2)]
+  est.pars <- normalize(est.pars.unscaled, jaatha)
   .print("ML estimates are:", round(est.pars.unscaled, 3), "\n")
 
   # Simulate data under the fitted model
@@ -51,8 +50,10 @@ Jaatha.confidenceIntervals <- function(jaatha, conf.level=0.95,
   set.seed(seeds[length(seeds)])
   sim.pars <- matrix(est.pars, replicas, getParNumber(jaatha), byrow=TRUE)
   sim.data <- runSimulations(sim.pars, cores, jaatha) 
-  sum.stats <- lapply(sim.data, convertSimDataToSumStats, sum.stats=jaatha@sum.stats)
+  sum.stats <- lapply(sim.data, convertSimDataToSumStats, 
+                      sum.stats=jaatha@sum.stats)
 
+  .print("Conducting Bootstrap Runs...")
   bs.results <- mclapply(1:replicas, rerunAnalysis, 
                          seeds=seeds, jaatha=jaatha, sum.stats=sum.stats,
                          log.folder=log.folder, mc.cores=cores)
@@ -69,7 +70,8 @@ Jaatha.confidenceIntervals <- function(jaatha, conf.level=0.95,
 
   jaatha@conf.ints <- t(sapply(1:ncol(bs.results.li), function(i) {
     par.name <- getParNames(jaatha)[i]
-    return( calcBCaConfInt(conf.level, bs.results.li[,i], est.pars.unscaled[i], replicas) )
+    return( calcBCaConfInt(conf.level, bs.results.li[,i], 
+                           est.pars.unscaled[i], replicas) )
   }))
   rownames(jaatha@conf.ints) <- getParNames(jaatha)
 
