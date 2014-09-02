@@ -77,12 +77,45 @@ Jaatha.confidenceIntervals <- function(jaatha, conf.level=0.95,
 
   .print("\nConfidence Intervals are:")
   print(jaatha@conf.ints)
-  return(jaatha)
+  return(invisible(jaatha))
 }
 
+#' Function for calculating bootstrap confidence intervals from logs of a 
+#' previous run of Jaatha.confidenceIntervals.
+#'
+#' @param jaatha The Jaatha object that was used when calling 
+#'               Jaatha.confidenceIntervals.
+#' @param conf_level The intended confidence level of the interval. The actual
+#'               level can vary slightly.
+#' @param log_folder The folder with logs from the previous run. Just use the
+#'               folder that was given as 'log.folder' argument there.
+#' @return The Jaatha Object with confidence intervals included.
+#' @export
+Jaatha.getCIsFromLogs <- function(jaatha, conf_level=0.95, log_folder) {
+  results <- list.files(log_folder, 'run_[0-9]+.Rda$', full.names = TRUE)
+  message("Using ", length(results), " completed runs.")
+  
+  est_pars <- denormalize(jaatha@likelihood.table[1, -(1:2)], jaatha)
+  
+  bs_estimates <- t(sapply(results, function(result) {
+    load(result)
+    Jaatha.getLikelihoods(jaatha, max.entries=1)[,-(1:2)]
+  }))
+  
+  jaatha@conf.ints <- t(sapply(1:ncol(bs_estimates), function(i) {
+    par.name <- getParNames(jaatha)[i]
+    return(calcBCaConfInt(conf_level, bs_estimates[,i], 
+                          est_pars[i], length(results)) )
+  }))
+  rownames(jaatha@conf.ints) <- getParNames(jaatha)
+  
+  cat("Confidence Intervals are:\n")
+  print(jaatha@conf.ints)
+  return(invisible(jaatha))
+}
 
 rerunAnalysis <- function(idx, jaatha, seeds, sum.stats=NULL, log.folder) {
-  .print("* Starting run", idx, "...")
+  message("Starting run ", idx, " ...")
 
   # Initialize a copy of the jaatha object
   set.seed(seeds[idx])
@@ -95,7 +128,7 @@ rerunAnalysis <- function(idx, jaatha, seeds, sum.stats=NULL, log.folder) {
   jaatha <- Jaatha.refinedSearch(jaatha, rerun=TRUE)
 
   save(jaatha, file=paste0(log.folder, "/run_", idx, ".Rda"))
-  sink()
+  sink(NULL)
 
   return(jaatha)
 }
@@ -114,13 +147,14 @@ convertSimDataToSumStats <- function(sim.data, sum.stats) {
 
 
 calcBCaConfInt <- function(conf.level, bs.values, estimates, replicas) {
-  z.hat.null <- calcBiasCorrection(log(bs.values), log(estimates), replicas)
-  a.hat <- calcAcceleration(log(bs.values))
-  z.alpha <- qnorm(p=c((1-conf.level)/2, 1-(1-conf.level)/2)) 
-  quantiles.corrected <- pnorm(z.hat.null + (z.hat.null + z.alpha) / (1-a.hat*(z.hat.null + z.alpha)))  
-  conf.int <- quantile(log(bs.values), probs=quantiles.corrected) 
+  z.hat.null <- calcBiasCorrection(bs.values, estimates, replicas)
+  a.hat <- calcAcceleration(bs.values)
+  z.alpha <- qnorm(p=c((1-conf.level)/2, 1-(1-conf.level)/2))
+  quantiles.corrected <- pnorm(z.hat.null + (z.hat.null + z.alpha) / 
+                                 (1-a.hat*(z.hat.null + z.alpha)))  
+  conf.int <- quantile(bs.values, probs=quantiles.corrected) 
   names(conf.int) <- c('lower', 'upper')
-  return(exp(conf.int))
+  return(conf.int)
 }
 
 

@@ -261,7 +261,7 @@ addFeature <- function(dm, type, parameter=NA,
 #' @examples
 #' dm <- dm.createThetaTauModel(c(15, 20), 100)
 #' dm <- dm.addSummaryStatistic(dm, 'seg.sites')
-#' dm.simSumStats(dm, c(1, 5))
+#' str(dm.simSumStats(dm, c(1, 5)))
 dm.addSummaryStatistic <- function(dm, sum.stat, group = 0) {
   checkType(dm, "dm")
   checkType(sum.stat, "char")

@@ -24,6 +24,12 @@ void addToFpc(const NumericMatrix &seg_sites,
               const NumericVector &breaks_near,
               const NumericVector &breaks_far,
               NumericMatrix &fpc);
+              
+void addToPolymClasses(const NumericMatrix seg_sites,
+                       const NumericVector sample_size,
+                       NumericVector &polym_classes);
+                            
+NumericVector createPolymVector();
 
 std::string line;
 
@@ -37,9 +43,13 @@ List parseOutput(const std::string file_name,
                  const bool generate_fpc = false,
                  const NumericVector fpc_breaks_near = NumericVector(0),
                  const NumericVector fpc_breaks_far = NumericVector(0),
-                 const NumericVector trio_opts = NumericVector(0)) {
+                 const NumericVector trio_opts = NumericVector(0),
+                 const bool generate_polym_classes = false) {
   
-  if ((!generate_seg_sites) && (!generate_jsfs) && (!generate_fpc)) return List::create();
+  if (!(generate_seg_sites || generate_jsfs || 
+              generate_fpc || generate_polym_classes)) {
+    return List::create();            
+  }
 
   //Rprintf("File: %s \n", file_name.c_str());
   std::ifstream output(file_name.c_str(), std::ifstream::in);
@@ -61,6 +71,7 @@ List parseOutput(const std::string file_name,
   List seg_sites_list(loci_number); 
   NumericMatrix jsfs(sample_size[0]+1, sample_size[1]+1);
   NumericMatrix fpc(fpc_breaks_near.size()+2, fpc_breaks_far.size()+2);
+  NumericVector polym_classes = createPolymVector();
 
   // ms
   if (program == 0) { 
@@ -73,6 +84,9 @@ List parseOutput(const std::string file_name,
         if (generate_seg_sites) seg_sites_list[locus] = seg_sites;
         if (generate_fpc) addToFpc(seg_sites, positions, 
                                    fpc_breaks_near, fpc_breaks_far, fpc);
+        if (generate_polym_classes) {
+          addToPolymClasses(seg_sites, sample_size, polym_classes);
+        }
       } 
 
       else if (line.substr(0, 9) == "segsites:") {
@@ -85,6 +99,9 @@ List parseOutput(const std::string file_name,
         if (generate_jsfs) addToJsfs(seg_sites, sample_size, jsfs);
         if (generate_fpc) addToFpc(seg_sites, positions, 
                                    fpc_breaks_near, fpc_breaks_far, fpc);
+        if (generate_polym_classes) {
+          addToPolymClasses(seg_sites, sample_size, polym_classes);
+        }
       }
     }
   }
@@ -110,6 +127,9 @@ List parseOutput(const std::string file_name,
         if (generate_jsfs) addToJsfs(seg_sites, sample_size, jsfs);
         if (generate_fpc) addToFpc(seg_sites, positions, 
                                    fpc_breaks_near, fpc_breaks_far, fpc);
+        if (generate_polym_classes) {
+          addToPolymClasses(seg_sites, sample_size, polym_classes);
+        }
       } else {
         stop("Unexpected line in seq-gen output.");
       }
@@ -120,37 +140,15 @@ List parseOutput(const std::string file_name,
   }
 
   output.close();
-
-  // Return the summary statistics as list without growing it
-  if (generate_seg_sites & (!generate_jsfs) & (!generate_fpc)) {
-    return List::create( _["seg.sites"] = seg_sites_list );
-  }
-  else if ((!generate_seg_sites) & generate_jsfs & (!generate_fpc)) {
-    return List::create( _["jsfs"] = jsfs );
-  }
-  else if ((!generate_seg_sites) & (!generate_jsfs) & (generate_fpc)) {
-    return List::create( _["fpc"] = fpc );
-  }
-
-  else if (generate_seg_sites & generate_jsfs & (!generate_fpc)) {
-    return List::create( _["seg.sites"] = seg_sites_list,
-                         _["jsfs"] = jsfs );
-  }
-  else if (generate_seg_sites & (!generate_jsfs) & (generate_fpc)) {
-    return List::create( _["seg.sites"] = seg_sites_list, 
-                         _["fpc"] = fpc );
-  }
-  else if ((!generate_seg_sites) & generate_jsfs & (generate_fpc)) {
-    return List::create( _["jsfs"] = jsfs, 
-                         _["fpc"] = fpc );
-  }
-
-  else {
-    return List::create( _["seg.sites"] = seg_sites_list,
-                         _["jsfs"] = jsfs, 
-                         _["fpc"] = fpc );
-  }
-
+  
+  // Return the summary statistics
+  List sum_stats;
+  
+  if (generate_seg_sites) sum_stats["seg.sites"] = seg_sites_list;
+  if (generate_jsfs) sum_stats["jsfs"] = jsfs;
+  if (generate_fpc) sum_stats["fpc"] = fpc;
+  if (generate_polym_classes) sum_stats["polym_classes"] = polym_classes;
+  return sum_stats;
 }
 
 NumericMatrix parseMsSegSites(std::ifstream &output, 

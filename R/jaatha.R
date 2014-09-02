@@ -410,7 +410,7 @@ Jaatha.getStartingPoints <- function(jaatha){
                                       denormalize(x@MLest, jaatha)), 3)) )
 
   perm <- sort.list(mat[,1],decreasing=T) 
-  return(mat[perm,])
+  return(mat[perm, , drop=FALSE])
 }
 
 #' Gives the best estimates after a Jaatha search
