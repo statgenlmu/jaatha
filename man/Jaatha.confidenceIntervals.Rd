@@ -10,8 +10,7 @@ Jaatha.confidenceIntervals(jaatha, conf.level = 0.95, replicas = 100,
 \arguments{
 \item{jaatha}{A jaatha object that was returned by Jaatha.refinedSearch.}
 
-\item{conf.level}{The intended confidence level of the interval. The actual
-level can vary slightly.}
+\item{conf.level}{The intended confidence level for the interval.}
 
 \item{replicas}{The number of Jaatha runs that we perform for calculating
 the confidence interval. Should be reasonable large.}

@@ -14,7 +14,7 @@ TESTS=$(wildcard inst/unitTests/*.R) $(wildcard tests/*.R)
 #--------------------------------------------------------------------------
 default: $(PACKAGE)
 
-release: clean fulltest howtos $(PACKAGE) check
+release: clean $(PACKAGE) check integration-test howtos
 
 travis-test: $(PACKAGE) test-setup fulltest check
 
