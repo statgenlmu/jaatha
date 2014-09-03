@@ -1,9 +1,11 @@
-Version 2.5.2
+Version 2.6
 ==================
 ## Improvements
 - Switched unittests from RUnit to testthat
 - Added a Rcpp function to parse tree from ms(ms) output for seqgen. This should
   make seqgen less platform dependent (it still requires a Unix platform).
+- Add a subset parameter to Jaatha.confidenceIntervals that allows to distribute
+  the calculation on multiple machines.
 
 ## Bug fixes
 - In 2.5.1, the ms output file was not delete when using seq-gen. This can cause

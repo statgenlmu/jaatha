@@ -28,17 +28,31 @@
 #'  the confidence interval. Should be reasonable large.
 #' @param cores The number of CPU cores that will be used.
 #' @param log.folder A folder were log-files for the indiviual runs are placed.
-#' @return The Jaatha Object with confidence intervals included.
+#'  The default is to use a temporary folder, even though it is highly 
+#'  recommended to specify a folder and save the logs.
+#' @param subset This setting allows you to distribute the CI calculation on
+#'  multiple machines. You can specify which replicas should be
+#'  run on this machine. Each run is identified by an integer between one and
+#'  replicas. All runs which integers are passed as a vector in this arguments
+#'  are accutally executed. After all runs have finished, you need to manally
+#'  copy all logs into a single folder and call 
+#'  \code{\link{Jaatha.getCIsFromLogs}} on this folder.
+#' @return The Jaatha Object with confidence intervals included if 'subset' was 
+#'  not used. Nothing otherwise.
 #' @export
 Jaatha.confidenceIntervals <- function(jaatha, conf.level=0.95, 
                                       replicas=100, cores = 1, 
-                                      log.folder=paste(tempdir(), "jaatha-logs", sep="/")) {
+                                      log.folder=tempfile('jaatha-logs'),
+                                      subset=1:replicas) {
   
   # Get a seed for each replica plus for simulating data 
   set.seed(jaatha@seeds[1])
-  seeds <- generateSeeds(replicas+3)[-(1:2)]
+  # First two seeds are already used for initial & refined search. 
+  # Last seed will be used for generating the bootstrap data.
+  seeds <- generateSeeds(replicas+3)[-(1:2)] 
 
   dir.create(log.folder, showWarnings=FALSE)
+  message("Storing logs in ", log.folder)
 
   setParallelization(cores)
   est.pars.unscaled <- Jaatha.getLikelihoods(jaatha, 1)[, -(1:2)]
@@ -54,30 +68,13 @@ Jaatha.confidenceIntervals <- function(jaatha, conf.level=0.95,
                       sum.stats=jaatha@sum.stats)
 
   .print("Conducting Bootstrap Runs...")
-  bs.results <- mclapply(1:replicas, rerunAnalysis, 
+  bs.results <- mclapply(subset, rerunAnalysis, 
                          seeds=seeds, jaatha=jaatha, sum.stats=sum.stats,
                          log.folder=log.folder, mc.cores=cores)
 
-  sapply(bs.results, function(x) { 
-         if(class(x) == "try-error") {
-           print(x)
-           stop("Error while runing the bootstrap replicas")
-         }
-        })
-
-  bs.results.li <- t(sapply(bs.results, Jaatha.getLikelihoods,
-                            max.entries=1))[,-(1:2)] 
-
-  jaatha@conf.ints <- t(sapply(1:ncol(bs.results.li), function(i) {
-    par.name <- getParNames(jaatha)[i]
-    return( calcBCaConfInt(conf.level, bs.results.li[,i], 
-                           est.pars.unscaled[i], replicas) )
-  }))
-  rownames(jaatha@conf.ints) <- getParNames(jaatha)
-
-  .print("\nConfidence Intervals are:")
-  print(jaatha@conf.ints)
-  return(invisible(jaatha))
+  if (all(subset == 1:replicas)) {
+    return(invisible(Jaatha.getCIsFromLogs(jaatha, conf.level, log.folder)))
+  } 
 }
 
 #' Function for calculating bootstrap confidence intervals from logs of a 
