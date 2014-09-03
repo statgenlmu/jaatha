@@ -15,4 +15,5 @@ test_that("Calculation of Confidence Intervals", {
   Jaatha.confidenceIntervals(jaatha, 0.95, 20, 2, logs, 11:20)
   jaatha <- Jaatha.getCIsFromLogs(jaatha, 0.95, logs)
   expect_equal(jaatha@conf.ints, conf.ints)
+  unlink(logs, recursive = TRUE)
 })
