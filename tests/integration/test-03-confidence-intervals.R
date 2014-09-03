@@ -9,6 +9,7 @@ test_that("Calculation of Confidence Intervals", {
   expect_equal(dim(conf.ints), c(2, 2))
   expect_true(all(conf.ints[, 1] <= estimates & estimates <= conf.ints[, 2]))
   
+  # Simulate simulation on multiple machines using the subset feature
   logs <- tempfile('j-test-logs')
   Jaatha.confidenceIntervals(jaatha, 0.95, 20, 2, logs, 1:10)
   Jaatha.confidenceIntervals(jaatha, 0.95, 20, 2, logs, 11:20)
