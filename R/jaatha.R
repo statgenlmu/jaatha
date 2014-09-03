@@ -124,9 +124,7 @@ init <- function(.Object, sim.func, par.ranges,
 
   # Check cores 
   if (missing(cores)) cores <- 1
-  checkType(cores, c("num","single"))
-  if (cores > 1) setParallelization(cores)
-  .Object@cores <- cores
+  .Object <- setCores(.Object, cores)
 
   # Placeholders
   .Object@opts <- list()

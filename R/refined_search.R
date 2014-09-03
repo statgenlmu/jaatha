@@ -82,7 +82,6 @@ Jaatha.refinedSearch <- function(jaatha, best.start.pos=2,
 
   # Setup environment for the refined search
   set.seed(jaatha@seeds[3])
-  setParallelization(jaatha@cores)
 
   # Start a search for every start point
   for (s in 1:length(startPoints)){

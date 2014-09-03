@@ -42,7 +42,6 @@ Jaatha.initialSearch <- function(jaatha, sim=200, blocks.per.par=2, rerun=FALSE)
   }
 
   set.seed(jaatha@seeds[2])
-  setParallelization(jaatha@cores)
 
   firstBlocks <- createInitialBlocks(jaatha@par.ranges, blocks.per.par)
 

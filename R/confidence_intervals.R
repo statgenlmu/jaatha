@@ -54,7 +54,6 @@ Jaatha.confidenceIntervals <- function(jaatha, conf.level=0.95,
   dir.create(log.folder, showWarnings=FALSE)
   message("Storing logs in ", log.folder)
 
-  setParallelization(cores)
   est.pars.unscaled <- Jaatha.getLikelihoods(jaatha, 1)[, -(1:2)]
   est.pars <- normalize(est.pars.unscaled, jaatha)
   .print("ML estimates are:", round(est.pars.unscaled, 3), "\n")
