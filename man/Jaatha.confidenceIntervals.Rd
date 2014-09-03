@@ -5,7 +5,7 @@
 jaatha estimates.}
 \usage{
 Jaatha.confidenceIntervals(jaatha, conf.level = 0.95, replicas = 100,
-  cores = 1, log.folder = paste(tempdir(), "jaatha-logs", sep = "/"))
+  cores = 1, log.folder = tempfile("jaatha-logs"), subset = 1:replicas)
 }
 \arguments{
 \item{jaatha}{A jaatha object that was returned by Jaatha.refinedSearch.}
@@ -17,10 +17,21 @@ the confidence interval. Should be reasonable large.}
 
 \item{cores}{The number of CPU cores that will be used.}
 
-\item{log.folder}{A folder were log-files for the indiviual runs are placed.}
+\item{log.folder}{A folder were log-files for the indiviual runs are placed.
+The default is to use a temporary folder, even though it is highly
+recommended to specify a folder and save the logs.}
+
+\item{subset}{This setting allows you to distribute the CI calculation on
+multiple machines. You can specify which replicas should be
+run on this machine. Each run is identified by an integer between one and
+replicas. All runs which integers are passed as a vector in this arguments
+are accutally executed. After all runs have finished, you need to manally
+copy all logs into a single folder and call
+\code{\link{Jaatha.getCIsFromLogs}} on this folder.}
 }
 \value{
-The Jaatha Object with confidence intervals included.
+The Jaatha Object with confidence intervals included if 'subset' was
+ not used. Nothing otherwise.
 }
 \description{
 This functions calculates bias-corrected and accelerated (BCa)
