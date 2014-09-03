@@ -42,6 +42,8 @@ if (jaatha:::checkForSeqgen(FALSE, TRUE)) {
   dm.f81 <- dm.setMutationModel(dm.sg, "F84", c(0.3, 0.2, 0.3, 0.2), 2)
   dm.gtr <- dm.setMutationModel(dm.sg, "GTR", 
                                 gtr.rates=c(0.2, 0.2, 0.1, 0.1, 0.1, 0.2))
+} else {
+  test_seqgen <- FALSE
 }
 
 # Selection Models
