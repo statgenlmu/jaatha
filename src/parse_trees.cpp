@@ -11,15 +11,15 @@ using namespace Rcpp;
 // [[Rcpp::export]]
 std::string parseTrees(std::string in_file, std::string out_file,
                        NumericVector trio_opts) {
-                         
-  // Open both files                      
-  std::ifstream input(in_file.c_str(), std::ifstream::in);
-  std::ofstream output(out_file.c_str(), std::ofstream::out);            
   
   try {
+    // Open both files                      
+    std::ifstream input(in_file.c_str(), std::ifstream::in);
+    std::ofstream output(out_file.c_str(), std::ofstream::out);  
+  
     if (!(input.is_open() && output.is_open())) stop("Failed to open file.");
     
-    std::string line;
+    std::string line; 
     bool trio = false;
     
     if (trio_opts.size() == 5) trio = true;
@@ -93,15 +93,12 @@ std::string parseTrees(std::string in_file, std::string out_file,
     
     input.close();
     output.close();
-    return(out_file);
     
   } catch( std::exception &ex ) {
     forward_exception_to_r( ex );
-    input.close();
-    output.close();
   } catch(...) { 
     ::Rf_error( "c++ exception (unknown reason)" ); 
-    input.close();
-    output.close();
   }
+  
+  return(out_file);
 }

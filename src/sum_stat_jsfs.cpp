@@ -25,9 +25,16 @@ void addToJsfs(const NumericMatrix &seg_sites,
 NumericMatrix addSegSitesToJsfs(const NumericMatrix seg_sites, 
                                 const NumericVector sample_size,
                                 NumericMatrix jsfs) {
-
+  
   NumericMatrix jsfs_copy = clone(jsfs);
-  addToJsfs(seg_sites, sample_size, jsfs_copy);
-
+  
+  try {  
+    addToJsfs(seg_sites, sample_size, jsfs_copy);
+  } catch( std::exception &ex ) {
+    forward_exception_to_r( ex );
+  } catch(...) { 
+    ::Rf_error( "c++ exception (unknown reason)" ); 
+  }
+  
   return jsfs_copy;
 }

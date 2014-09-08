@@ -63,3 +63,16 @@ test_that("test.msmsSimFunc", {
   expect_equal(sum(sum.stats$fpc), 3)
   expect_equal(length(sum.stats), 2)
 })
+
+test_that("Gamma Distributed Rates work", {
+  if (!test_msms) return()
+  dm <- dm.addParameter(dm.tt, par.name = "shape", 100, 500)
+  dm <- dm.addParameter(dm, par.name = "scale", 0.1, 5)
+  dm <- dm.addPositiveSelection(dm, par.new = FALSE, 
+                                parameter = "rgamma(1,shape=shape,scale=scale)",
+                                population = 1, at.time = "2")
+  pars <- c(1, 2, 100, 1.5)
+  sum.stats <- dm.simSumStats(dm, pars)
+  expect_equal(length(sum.stats), 2)
+  expect_equal(sum.stats$pars, pars)
+})
