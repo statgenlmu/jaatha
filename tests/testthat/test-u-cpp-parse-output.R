@@ -52,6 +52,5 @@ test_that("test.parseOutput.ms works", {
   expect_equal(length(sum.stats), 0)
   sum.stats <- parseOutput(ms.file, ss, ln, 0, generate_polym_classes = TRUE)
   expect_equal(length(sum.stats), 2)
-  expect_equal(names(sum.stats$polym_classes), c('private', 'fixed', 'shared'))
-  expect_equal(sum(sum.stats$jsfs), sum(sum.stats$polym_classes))
+  expect_equal(names(sum.stats$polym_classes), c('private', 'fixed'))
 })
