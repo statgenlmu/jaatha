@@ -44,14 +44,7 @@ NumericVector classifyPolym(const NumericMatrix seg_sites,
                             const NumericVector sample_size) {
    
   NumericVector classes = createPolymVector();
-  
-  try {
-    addToPolymClasses(seg_sites, sample_size, classes);
-  } catch( std::exception &ex ) {
-    forward_exception_to_r( ex );
-  } catch(...) { 
-    ::Rf_error( "c++ exception (unknown reason)" ); 
-  }
+  addToPolymClasses(seg_sites, sample_size, classes);
   
   return classes;
 }

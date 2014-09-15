@@ -2,9 +2,9 @@
 using namespace Rcpp;
 
 void calcPercentViolation(const NumericMatrix &seg_sites, 
-                          const NumericVector &positions,
-                          NumericVector &violations, 
-                          NumericVector &total_count) {
+const NumericVector &positions,
+NumericVector &violations, 
+NumericVector &total_count) {
   
   bool far;
   bool combinations[2][2] = { false };
@@ -41,10 +41,10 @@ void calcPercentViolation(const NumericMatrix &seg_sites,
 
 
 void addToFpc(const NumericMatrix &seg_sites, 
-              const NumericVector &positions, 
-              const NumericVector &breaks_near,
-              const NumericVector &breaks_far,
-              NumericMatrix &fpc) {
+const NumericVector &positions, 
+const NumericVector &breaks_near,
+const NumericVector &breaks_far,
+NumericMatrix &fpc) {
   
   NumericVector violations(2); //near - far
   NumericVector total_count(2); //near - far
@@ -82,16 +82,9 @@ NumericMatrix addSegSitesToFpc(const NumericMatrix seg_sites,
                                const NumericVector breaks_near,
                                const NumericVector breaks_far,
                                NumericMatrix fpc) {
-                                 
-  NumericMatrix fpc_copy = clone(fpc);
   
-  try{
-    addToFpc(seg_sites, positions, breaks_near, breaks_far, fpc_copy);
-  } catch( std::exception &ex ) {
-    forward_exception_to_r( ex );
-  } catch(...) { 
-    ::Rf_error( "c++ exception (unknown reason)" ); 
-  }
+  NumericMatrix fpc_copy = clone(fpc);
+  addToFpc(seg_sites, positions, breaks_near, breaks_far, fpc_copy);
   
   return fpc_copy;
 }
@@ -103,19 +96,14 @@ NumericVector calcPercentFpcViolation(const NumericMatrix seg_sites,
   
   NumericVector violations(2);
   NumericVector total_count(2);
-    
-  try {
-    calcPercentViolation(seg_sites, positions, violations, total_count);
-    
-    for (int i = 0; i <= 1; ++i) {
-      if (total_count(i) == 0) violations(i) = NA_REAL;
-      else violations(i) /= total_count(i);
-    }
-  } catch( std::exception &ex ) {
-    forward_exception_to_r( ex );
-  } catch(...) { 
-    ::Rf_error( "c++ exception (unknown reason)" ); 
+  
+  calcPercentViolation(seg_sites, positions, violations, total_count);
+  
+  for (int i = 0; i <= 1; ++i) {
+    if (total_count(i) == 0) violations(i) = NA_REAL;
+    else violations(i) /= total_count(i);
   }
+  
   
   return violations;
 }
