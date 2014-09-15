@@ -7,6 +7,12 @@ void addToPolymClasses(const NumericMatrix seg_sites,
                        const NumericVector sample_size,
                        NumericVector &polym_classes) {
   
+  if (seg_sites.ncol() == 0) {
+    polym_classes[0] = NA_REAL;
+    polym_classes[1] = NA_REAL;
+    return;
+  }
+  
   for (int j = 0; j < seg_sites.ncol(); ++j) {
     idx1 = 0;
     idx2 = 0;
@@ -26,6 +32,9 @@ void addToPolymClasses(const NumericMatrix seg_sites,
       else ++polym_classes[0];
     }
   }
+  
+  polym_classes[0] /= seg_sites.ncol();
+  polym_classes[1] /= seg_sites.ncol();
 }
 
 
