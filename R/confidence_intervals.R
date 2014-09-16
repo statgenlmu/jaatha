@@ -91,11 +91,15 @@ Jaatha.getCIsFromLogs <- function(jaatha, conf_level=0.95, log_folder) {
   results <- list.files(log_folder, 'run_[0-9]+.Rda$', full.names = TRUE)
   message("Using ", length(results), " completed runs.")
   
-  est_pars <- denormalize(jaatha@likelihood.table[1, -(1:2)], jaatha)
+  est_pars <- Jaatha.getLikelihoods(jaatha, 1)[, -(1:2)]
   
   bs_estimates <- t(sapply(results, function(result) {
     load(result)
-    Jaatha.getLikelihoods(jaatha, max.entries=1)[,-(1:2)]
+    pars <- Jaatha.getLikelihoods(jaatha, max.entries=1)[,-(1:2)]
+    pars_scaled <- normalize(pars, jaatha)
+    if (any(pars == 0 | pars == 1))
+      warning("Bootstrap estimate hit boundary of parameter space. Confidence Interval might be inaccurate.")
+    pars
   }))
   
   jaatha@conf.ints <- t(sapply(1:ncol(bs_estimates), function(i) {
@@ -155,14 +159,14 @@ calcBCaConfInt <- function(conf.level, bs.values, estimates, replicas) {
 
 
 calcBiasCorrection <- function(bs.values, estimates, replicas){
-  bias <- sum(bs.values < estimates)
+  bias <- sum(bs.values < estimates) / replicas
   # Maybe 0 if the estimate hit the lower boundary
-  if (bias == 0) bias <- sum(bs.values <= estimates) 
+  if (bias == 0) bias <- sum(bs.values <= estimates) / replicas
   if (bias == 0) stop("Error: All bootstrap estimate are larger 
                        than the estimate. Please try more replicas")
   if (bias == 1) stop("Error: All bootstrap estimate are smaller 
                        than the estimate. Please try more replicas")
-  bc <- qnorm(bias/replicas)
+  bc <- qnorm(bias)
   return(bc)
 }
 
