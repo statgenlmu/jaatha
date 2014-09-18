@@ -1,8 +1,8 @@
 #include <Rcpp.h>
 using namespace Rcpp;
 
-void calcPercentViolation(const NumericMatrix &seg_sites, 
-                          const NumericVector &positions,
+void calcPercentViolation(const NumericMatrix seg_sites, 
+                          const NumericVector positions,
                           NumericVector &violations, 
                           NumericVector &total_count) {
 
@@ -40,10 +40,10 @@ void calcPercentViolation(const NumericMatrix &seg_sites,
 
 
 
-void addToFpc(const NumericMatrix &seg_sites, 
-              const NumericVector &positions, 
-              const NumericVector &breaks_near,
-              const NumericVector &breaks_far,
+void addToFpc(const NumericMatrix seg_sites, 
+              const NumericVector positions, 
+              const NumericVector breaks_near,
+              const NumericVector breaks_far,
               NumericMatrix &fpc) {
 
   NumericVector violations(2); //near - far

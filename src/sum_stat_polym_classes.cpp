@@ -3,14 +3,23 @@ using namespace Rcpp;
 
 size_t idx1, idx2;
 
-void addToPolymClasses(const NumericMatrix seg_sites,
-                       const NumericVector sample_size,
-                       NumericVector &polym_classes) {
-  
+NumericVector createPolymVector() {
+  return NumericVector::create(
+    _["private"] = 0,
+    _["fixed"] = 0
+  );
+}
+
+// [[Rcpp::export]]
+NumericVector classifyPolym(const NumericMatrix seg_sites,
+                            const NumericVector sample_size) {
+   
+  NumericVector polym_classes = createPolymVector();
+
   if (seg_sites.ncol() == 0) {
     polym_classes[0] = NA_REAL;
     polym_classes[1] = NA_REAL;
-    return;
+    return polym_classes;
   }
   
   for (int j = 0; j < seg_sites.ncol(); ++j) {
@@ -35,24 +44,6 @@ void addToPolymClasses(const NumericMatrix seg_sites,
   
   polym_classes[0] /= seg_sites.ncol();
   polym_classes[1] /= seg_sites.ncol();
-}
-
-
-NumericVector createPolymVector() {
-  return NumericVector::create(
-    _["private"] = 0,
-    _["fixed"] = 0
-  );
-}
-
-
-// For unit testing
-// [[Rcpp::export]]
-NumericVector classifyPolym(const NumericMatrix seg_sites,
-                            const NumericVector sample_size) {
-   
-  NumericVector classes = createPolymVector();
-  addToPolymClasses(seg_sites, sample_size, classes);
   
-  return classes;
+  return polym_classes;
 }
