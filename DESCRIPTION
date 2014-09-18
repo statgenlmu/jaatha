@@ -1,5 +1,5 @@
 Package: jaatha
-Version: 2.6
+Version: 2.6.2
 Date: 2014-09-03
 License: GPL (>= 3)
 Title: A Fast Parameter Estimation Method for Evolutionary Biology
@@ -48,4 +48,5 @@ Collate:
     'sim_program_seqgen.R'
     'simulate_within_block.R'
     'sum_stat_fpc.R'
+    'sum_stat_pmc.R'
     'summary_statistics.R'
