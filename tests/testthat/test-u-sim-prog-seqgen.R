@@ -149,3 +149,17 @@ test_that("seq-gen can simulate trios", {
     expect_true(all(pos <= 0.7 | pos >= 0.8))
   }
 })
+
+test_that("Generation of PMC statistic works", {
+  if (!test_seqgen) return()
+  set.seed(941)
+  dm.f81 <- dm.addSummaryStatistic(dm.f81, "pmc")
+  dm.f81@options[['pmc_breaks_private']] <- .5
+  dm.f81@options[['pmc_breaks_fixed']] <- .5
+  sum.stats <- dm.simSumStats(dm.f81, c(1, 10))
+  expect_equal(length(sum.stats), 3)
+  expect_false(is.null(sum.stats$pars))
+  expect_false(is.null(sum.stats$pmc))
+  expect_true(is.array(sum.stats[["pmc"]]))
+  expect_equal(sum(sum.stats[["pmc"]]), dm.getLociNumber(dm.f81))
+})

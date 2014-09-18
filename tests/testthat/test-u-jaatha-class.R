@@ -3,12 +3,19 @@ context("Jaatha class")
 test_that("Jaatha.initialization.fpc", {
   jaatha.fpc <- Jaatha.initialize(dm.fpc, sum.stats.fpc, 123, 
                                   folded = FALSE, smoothing = FALSE)
-  expect_equal(length(jaatha.fpc@sum.stats), 2)
+  
+  expect_equal(length(jaatha.fpc@sum.stats), 3)
   expect_true(is.list(jaatha.fpc@sum.stats[["jsfs"]]))
   expect_true(is.list(jaatha.fpc@sum.stats[["fpc"]]))
+  expect_true(is.list(jaatha.fpc@sum.stats[["pmc"]]))
+  
   expect_true(sum(jaatha.fpc@sum.stats[["fpc"]]$value) > 0)
   expect_false(is.null(jaatha.fpc@opts$dm@options[["fpc.breaks.near"]]))
   expect_false(is.null(jaatha.fpc@opts$dm@options[["fpc.breaks.far"]]))
+  
+  expect_true(sum(jaatha.fpc@sum.stats[["pmc"]]$value) > 0)
+  expect_false(is.null(jaatha.fpc@opts$dm@options[["pmc_breaks_private"]]))
+  expect_false(is.null(jaatha.fpc@opts$dm@options[["pmc_breaks_fixed"]]))  
 })
 
 test_that("Jaatha.initialization.fpc_groups", {
@@ -18,13 +25,19 @@ test_that("Jaatha.initialization.fpc_groups", {
   sum.stats <- dm.simSumStats(dm.addSummaryStatistic(dm.fpc, 
                                                      "seg.sites"), c(1, 2, 5))
   jaatha.fpc <- Jaatha.initialize(dm.fpc, sum.stats, 123)
-  expect_equal(length(jaatha.fpc@sum.stats), 6)
+  expect_equal(length(jaatha.fpc@sum.stats), 9)
   expect_false(is.null(jaatha.fpc@sum.stats$fpc.1))
   expect_false(is.null(jaatha.fpc@sum.stats$fpc.2))
   expect_false(is.null(jaatha.fpc@sum.stats$fpc.3))
+  expect_false(is.null(jaatha.fpc@sum.stats$pmc.1))
+  expect_false(is.null(jaatha.fpc@sum.stats$pmc.2))
+  expect_false(is.null(jaatha.fpc@sum.stats$pmc.3))  
   expect_true(sum(jaatha.fpc@sum.stats[["fpc.1"]]$value) >  0)
   expect_true(sum(jaatha.fpc@sum.stats[["fpc.2"]]$value) >  0)
   expect_true(sum(jaatha.fpc@sum.stats[["fpc.3"]]$value) >  0)
+  expect_true(sum(jaatha.fpc@sum.stats[["pmc.1"]]$value) >  0)
+  expect_true(sum(jaatha.fpc@sum.stats[["pmc.2"]]$value) >  0)
+  expect_true(sum(jaatha.fpc@sum.stats[["pmc.3"]]$value) >  0)  
 })
 
 test_that("Jaatha.initialization.groups", {

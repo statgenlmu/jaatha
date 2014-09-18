@@ -9,7 +9,7 @@
 possible.features  <- c("sample", "loci.number", "loci.length",
                         "mutation", "migration", "split",
                         "recombination", "size.change", "growth")
-possible.sum.stats <- c("jsfs", "fpc", "trees", "seg.sites", "file")
+possible.sum.stats <- c("jsfs", "fpc", "trees", "seg.sites", "file", "pmc")
 
 #' Function to perform simulation using ms 
 #' 
@@ -135,18 +135,29 @@ parseMsOutput <- function(out.file, parameters, dm) {
   
   # Parse the output & generate additional summary statistics
   if ('fpc' %in% dm.sum.stats) {
-    breaks.near <- dm@options[['fpc.breaks.near']]
-    breaks.far <- dm@options[['fpc.breaks.far']]
-    stopifnot(!is.null(breaks.near))
-    stopifnot(!is.null(breaks.far))
-    
-    sum.stats <- parseOutput(out.file, dm.getSampleSize(dm), dm.getLociNumber(dm), 0, 
-                             'jsfs' %in% dm.sum.stats, 'seg.sites' %in% dm.sum.stats,
-                             TRUE, breaks.near, breaks.far)
+    fpc_breaks_near <- dm@options[['fpc.breaks.near']]
+    fpc_breaks_far <- dm@options[['fpc.breaks.far']]
+    stopifnot(!is.null(fpc_breaks_near))
+    stopifnot(!is.null(fpc_breaks_near))
+    generate_fpc <- TRUE
   } else {
-    sum.stats <- parseOutput(out.file, dm.getSampleSize(dm), dm.getLociNumber(dm), 0, 
-                             'jsfs' %in% dm.sum.stats, 'seg.sites' %in% dm.sum.stats,
-                             FALSE)
+    fpc_breaks_near <- numeric(0)
+    fpc_breaks_far <- numeric(0)
+    generate_fpc <- FALSE
+  }
+  
+  generate_seg_sites <- 'seg.sites' %in% dm.sum.stats
+  if ('pmc' %in% dm.sum.stats) {
+    generate_seg_sites <- TRUE
+  }
+    
+  sum.stats <- parseOutput(out.file, dm.getSampleSize(dm), dm.getLociNumber(dm), 
+                           0, 'jsfs' %in% dm.sum.stats, generate_seg_sites,
+                           generate_fpc, fpc_breaks_near, fpc_breaks_far)
+  
+  if ('pmc' %in% dm.sum.stats) {
+    sum.stats[['pmc']] <- createPolymClasses(sum.stats$seg.sites, dm)
+    if (!'seg.sites' %in% dm.sum.stats) sum.stats[['seg.sites']] <- NULL
   }
   
   sum.stats[['pars']] <- parameters

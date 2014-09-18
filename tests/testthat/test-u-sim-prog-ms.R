@@ -65,6 +65,19 @@ test_that("msSimFunc is working", {
     expect_equal(sum(sum.stats[["fpc"]]), dm.getLociNumber(dm.tt))
 })
 
+test_that("Generation of PMC statistic works", {
+  set.seed(941)
+  dm.tt <- dm.addSummaryStatistic(dm.tt, "pmc")
+  dm.tt@options[['pmc_breaks_private']] <- .5
+  dm.tt@options[['pmc_breaks_fixed']] <- .5
+  sum.stats <- msSingleSimFunc(dm.tt, c(1, 0.1))
+  expect_equal(length(sum.stats), 3)
+  expect_false(is.null(sum.stats$pars))
+  expect_false(is.null(sum.stats$pmc))
+  expect_true(is.array(sum.stats[["pmc"]]))
+  expect_equal(sum(sum.stats[["pmc"]]), dm.getLociNumber(dm.tt))
+})
+
 test_that("the ms sim program exists", {
     expect_false(is.null(.jaatha$sim_progs[["ms"]]))
 })

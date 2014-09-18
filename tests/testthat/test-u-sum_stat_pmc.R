@@ -41,3 +41,14 @@ test_that("generatePolyClasses workds", {
   expect_equal(pmc[2, 2], 2)
   expect_equal(pmc[3, 4], 1)
 })
+
+test_that('PMC tranfomration works', {
+  pmc <- matrix(1:12, 3, 4)
+  expect_equal(transformPmc(pmc), c(1, 2, 4, 5, 7, 8, 12))
+  
+  pmc <- matrix(1:15 , 3, 5)
+  expect_equal(transformPmc(pmc), c(1, 2, 4, 5, 7, 8, 10, 11, 15))
+
+  pmc <- matrix(1:12 , 4, 3)
+  expect_equal(transformPmc(pmc), c(1, 2, 3, 5, 6, 7, 12))
+})

@@ -210,13 +210,19 @@ Jaatha.initialize <- function(demographic.model, jsfs,
         jsfs.value <- jsfs
       }
 
-      if (!is.null(seg.sites)) { 
-        dm <- dm.addSummaryStatistic(dm, 'fpc')
-        fpc.name <- 'fpc'
+      if (!is.null(seg.sites)) {
         stopifnot(is.list(seg.sites))
         stopifnot(is.array(seg.sites[[1]]))
+        
+        dm <- dm.addSummaryStatistic(dm, 'fpc')
+        fpc.name <- 'fpc'
         dm <- calcFpcBreaks(dm, seg.sites)
         fpc.value <- calcFpcSumStat(seg.sites, dm)
+        
+        dm <- dm.addSummaryStatistic(dm, 'pmc')
+        pmc.name <- 'pmc'
+        dm <- calcPmcBreaks(dm, seg.sites)
+        pmc.value <- createPolymClasses(seg.sites, dm)
       }
 
     } else {
@@ -230,10 +236,15 @@ Jaatha.initialize <- function(demographic.model, jsfs,
       if (is.list(jsfs[[seg.sites.name]])) {
         seg.sites <- jsfs[[seg.sites.name]]
         fpc.name <- paste('fpc', group, sep='.')
+        pmc.name <- paste('pmc', group, sep='.')
         
         dm <- dm.addSummaryStatistic(dm, 'fpc', group=group)
         dm <- calcFpcBreaks(dm, seg.sites, group=group)
         fpc.value <- calcFpcSumStat(seg.sites, dm, group=group)
+        
+        dm <- dm.addSummaryStatistic(dm, 'pmc', group=group)
+        dm <- calcPmcBreaks(dm, seg.sites, group=group)
+        pmc.value <- createPolymClasses(seg.sites, dm, group=group)
       }
     }
     stopifnot(is.matrix(jsfs.value))
@@ -282,6 +293,9 @@ Jaatha.initialize <- function(demographic.model, jsfs,
       sum.stats[[fpc.name]] <- list(method='poisson.transformed',
                                     transformation=as.vector,
                                     value=fpc.value)
+      sum.stats[[pmc.name]] <- list(method='poisson.transformed',
+                                    transformation=transformPmc,
+                                    value=pmc.value)
     }
   }
 

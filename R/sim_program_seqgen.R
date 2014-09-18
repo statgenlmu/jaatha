@@ -19,7 +19,7 @@ sg.features    <- unique(c(getSimProgram('ms')$possible_features,
                            'trio.1', 'trio.2', 'trio.3', 
                            'trio.4', 'trio.5'))
 
-sg.sum.stats <- c('jsfs', 'file', 'seg.sites', 'fpc')
+sg.sum.stats <- c('jsfs', 'file', 'seg.sites', 'fpc', 'pmc')
 sg.mutation.models <- c('HKY', 'F84', 'GTR')
 
 checkForSeqgen <- function(throw.error = TRUE, silent = FALSE) {
@@ -230,23 +230,34 @@ seqgenSingleSimFunc <- function(dm, parameters) {
 
   sum.stats <- list(pars=parameters)
   
+  dm.sum.stats = dm.getSummaryStatistics(dm)
+  
   # Parse the output & generate additional summary statistics
-  if ('fpc' %in% dm.getSummaryStatistics(dm)) {
-    breaks.near <- dm@options[['fpc.breaks.near']]
-    breaks.far <- dm@options[['fpc.breaks.far']]
-    stopifnot(!is.null(breaks.near))
-    stopifnot(!is.null(breaks.far))
-    
-    sum.stats <- parseOutput(seqgen.file, dm.getSampleSize(dm), dm.getLociNumber(dm), 1, 
-                             'jsfs' %in% dm.getSummaryStatistics(dm), 
-                             'seg.sites' %in% dm.getSummaryStatistics(dm),
-                             TRUE, breaks.near, breaks.far, 
-                             dm.getLociTrioOptions(dm))
+  if ('fpc' %in% dm.sum.stats) {
+    fpc_breaks_near <- dm@options[['fpc.breaks.near']]
+    fpc_breaks_far <- dm@options[['fpc.breaks.far']]
+    stopifnot(!is.null(fpc_breaks_near))
+    stopifnot(!is.null(fpc_breaks_near))
+    generate_fpc <- TRUE
   } else {
-    sum.stats <- parseOutput(seqgen.file, dm.getSampleSize(dm), dm.getLociNumber(dm), 1, 
-                             'jsfs' %in% dm.getSummaryStatistics(dm), 
-                             'seg.sites' %in% dm.getSummaryStatistics(dm),
-                             FALSE, trio_opts = dm.getLociTrioOptions(dm))
+    fpc_breaks_near <- numeric(0)
+    fpc_breaks_far <- numeric(0)
+    generate_fpc <- FALSE
+  }
+  
+  generate_seg_sites <- 'seg.sites' %in% dm.sum.stats
+  if ('pmc' %in% dm.sum.stats) {
+    generate_seg_sites <- TRUE
+  }
+  
+  sum.stats <- parseOutput(seqgen.file, dm.getSampleSize(dm), dm.getLociNumber(dm), 
+                           1, 'jsfs' %in% dm.sum.stats, generate_seg_sites,
+                           generate_fpc, fpc_breaks_near, fpc_breaks_far,
+                           dm.getLociTrioOptions(dm))
+  
+  if ('pmc' %in% dm.sum.stats) {
+    sum.stats[['pmc']] <- createPolymClasses(sum.stats$seg.sites, dm)
+    if (!'seg.sites' %in% dm.sum.stats) sum.stats[['seg.sites']] <- NULL
   }
   
   sum.stats[['pars']] <- parameters
