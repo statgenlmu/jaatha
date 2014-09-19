@@ -20,10 +20,5 @@ test_that("test.parseOutputSeqgen", {
   expect_true(is.matrix(sum.stats$jsfs))
   expect_true(is.list(sum.stats$seg.sites))
   expect_equal(length(sum.stats$seg.sites), dm.getLociNumber(dm.hky))
-  sum.stats = parseOutput(sg.file, dm.getSampleSize(dm.hky), 
-                          dm.getLociNumber(dm.hky), 1, generate_fpc = TRUE, fpc_breaks_near = 1:3/4, 
-                          fpc_breaks_far = 1:3/4)
-  expect_true(is.matrix(sum.stats$fpc))
-  expect_equal(sum(sum.stats$fpc), 5)
   unlink(sg.file)
 })

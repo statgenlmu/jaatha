@@ -125,49 +125,7 @@ msSingleSimFunc <- function(dm, parameters) {
   ms.options <- generateMsOptions(dm, parameters)
   sim.time <- system.time(ms.out <- callMs(ms.options, dm))
 
-  sum.stats <- parseMsOutput(ms.out, parameters, dm)
-
-  return(sum.stats)
-}
-
-parseMsOutput <- function(out.file, parameters, dm) {
-  dm.sum.stats = dm.getSummaryStatistics(dm)
-  
-  # Parse the output & generate additional summary statistics
-  if ('fpc' %in% dm.sum.stats) {
-    fpc_breaks_near <- dm@options[['fpc.breaks.near']]
-    fpc_breaks_far <- dm@options[['fpc.breaks.far']]
-    stopifnot(!is.null(fpc_breaks_near))
-    stopifnot(!is.null(fpc_breaks_near))
-    generate_fpc <- TRUE
-  } else {
-    fpc_breaks_near <- numeric(0)
-    fpc_breaks_far <- numeric(0)
-    generate_fpc <- FALSE
-  }
-  
-  generate_seg_sites <- 'seg.sites' %in% dm.sum.stats
-  if ('pmc' %in% dm.sum.stats) {
-    generate_seg_sites <- TRUE
-  }
-    
-  sum.stats <- parseOutput(out.file, dm.getSampleSize(dm), dm.getLociNumber(dm), 
-                           0, 'jsfs' %in% dm.sum.stats, generate_seg_sites,
-                           generate_fpc, fpc_breaks_near, fpc_breaks_far)
-  
-  if ('pmc' %in% dm.sum.stats) {
-    sum.stats[['pmc']] <- createPolymClasses(sum.stats$seg.sites, dm)
-    if (!'seg.sites' %in% dm.sum.stats) sum.stats[['seg.sites']] <- NULL
-  }
-  
-  sum.stats[['pars']] <- parameters
-  if ("file" %in% dm.sum.stats) {
-    sum.stats[['file']] <- out.file
-  } else {
-    unlink(out.file)
-  }
-  
-  sum.stats
+  generateSumStats(ms.out, 0, parameters, dm)
 }
 
 finalizeMs <- function(dm) {

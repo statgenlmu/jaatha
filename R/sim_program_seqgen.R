@@ -228,39 +228,10 @@ seqgenSingleSimFunc <- function(dm, parameters) {
   seqgen.options <- generateSeqgenOptions(dm, parameters)
   seqgen.file <- callSeqgen(seqgen.options, tree_file)
 
-  sum.stats <- list(pars=parameters)
-  
-  dm.sum.stats = dm.getSummaryStatistics(dm)
-  
-  # Parse the output & generate additional summary statistics
-  if ('fpc' %in% dm.sum.stats) {
-    fpc_breaks_near <- dm@options[['fpc.breaks.near']]
-    fpc_breaks_far <- dm@options[['fpc.breaks.far']]
-    stopifnot(!is.null(fpc_breaks_near))
-    stopifnot(!is.null(fpc_breaks_near))
-    generate_fpc <- TRUE
-  } else {
-    fpc_breaks_near <- numeric(0)
-    fpc_breaks_far <- numeric(0)
-    generate_fpc <- FALSE
-  }
-  
-  generate_seg_sites <- 'seg.sites' %in% dm.sum.stats
-  if ('pmc' %in% dm.sum.stats) {
-    generate_seg_sites <- TRUE
-  }
-  
-  sum.stats <- parseOutput(seqgen.file, dm.getSampleSize(dm), dm.getLociNumber(dm), 
-                           1, 'jsfs' %in% dm.sum.stats, generate_seg_sites,
-                           generate_fpc, fpc_breaks_near, fpc_breaks_far,
-                           dm.getLociTrioOptions(dm))
-  
-  if ('pmc' %in% dm.sum.stats) {
-    sum.stats[['pmc']] <- createPolymClasses(sum.stats$seg.sites, dm)
-    if (!'seg.sites' %in% dm.sum.stats) sum.stats[['seg.sites']] <- NULL
-  }
-  
-  sum.stats[['pars']] <- parameters
+  # Generate the summary statistics
+  sum.stats <- generateSumStats(seqgen.file, 1, parameters, dm)
+
+  # Return or remove all temp.files
   if ('file' %in% dm.getSummaryStatistics(dm)) {
     sum.stats[['file']] <- c(ms=sum_stats_ms[['file']],
                              trees=tree_file,
@@ -270,7 +241,7 @@ seqgenSingleSimFunc <- function(dm, parameters) {
     sum.stats[['file']] <- NULL
   }
 
-  return(sum.stats)
+  sum.stats
 }
 
 finalizeSeqgen <- function(dm) {

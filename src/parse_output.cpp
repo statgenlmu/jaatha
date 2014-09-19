@@ -18,12 +18,6 @@ NumericMatrix parseSeqgenSegSites(std::ifstream &output,
 void addToJsfs(const NumericMatrix seg_sites,
                const NumericVector sample_size,
                NumericMatrix &jsfs);
-
-void addToFpc(const NumericMatrix seg_sites, 
-              const NumericVector positions, 
-              const NumericVector breaks_near,
-              const NumericVector breaks_far,
-              NumericMatrix &fpc);
                        
 std::string line;
 
@@ -34,12 +28,9 @@ List parseOutput(const std::string file_name,
                  const int program = 0,
                  const bool generate_jsfs = true,
                  const bool generate_seg_sites = false,
-                 const bool generate_fpc = false,
-                 const NumericVector fpc_breaks_near = NumericVector(0),
-                 const NumericVector fpc_breaks_far = NumericVector(0),
                  const NumericVector trio_opts = NumericVector(0)) {
   
-  if (!(generate_seg_sites || generate_jsfs || generate_fpc)) {
+  if (!(generate_seg_sites || generate_jsfs)) {
     return List::create();            
   }
 
@@ -55,14 +46,8 @@ List parseOutput(const std::string file_name,
   NumericVector positions(0);
   int locus = -1;
 
-  if (generate_fpc) {
-    if (fpc_breaks_far.size() == 0 || fpc_breaks_near.size() == 0) 
-      stop("No breaks for fpc sum stats given");
-  }
-
   List seg_sites_list(loci_number); 
   NumericMatrix jsfs(sample_size[0]+1, sample_size[1]+1);
-  NumericMatrix fpc(fpc_breaks_near.size()+2, fpc_breaks_far.size()+2);
 
   // ms
   if (program == 0) { 
@@ -84,8 +69,6 @@ List parseOutput(const std::string file_name,
         // Genearte derived statistics
         if (generate_seg_sites) seg_sites_list[locus] = seg_sites;
         if (generate_jsfs) addToJsfs(seg_sites, sample_size, jsfs);
-        if (generate_fpc) addToFpc(seg_sites, positions, 
-                                   fpc_breaks_near, fpc_breaks_far, fpc);
       }
     }
   }
@@ -109,8 +92,6 @@ List parseOutput(const std::string file_name,
         
         if (generate_seg_sites) seg_sites_list[locus] = seg_sites;
         if (generate_jsfs) addToJsfs(seg_sites, sample_size, jsfs);
-        if (generate_fpc) addToFpc(seg_sites, positions, 
-                                   fpc_breaks_near, fpc_breaks_far, fpc);
       } else {
         stop("Unexpected line in seq-gen output.");
       }
@@ -127,8 +108,6 @@ List parseOutput(const std::string file_name,
   
   if (generate_seg_sites) sum_stats["seg.sites"] = seg_sites_list;
   if (generate_jsfs) sum_stats["jsfs"] = jsfs;
-  if (generate_fpc) sum_stats["fpc"] = fpc;
-  //if (generate_polym_classes) sum_stats["polym_classes"] = polym_classes;
   return sum_stats;
 }
 
