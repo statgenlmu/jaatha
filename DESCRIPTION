@@ -49,5 +49,5 @@ Collate:
     'simulate_within_block.R'
     'sum_stat_fpc.R'
     'sum_stat_generate.R'
+    'sum_stat_jsfs.R'
     'sum_stat_pmc.R'
-    'summary_statistics.R'

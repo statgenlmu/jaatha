@@ -116,7 +116,7 @@ msmsSimFunc <- function(dm, parameters) {
   # Simulate
   out.file <- callMsms(getJaathaVariable('msms.jar'), ms.options, msms.options)
 
-  # Generate & return summary statistics
+  # Generate & return summary statistic
   generateSumStats(out.file, 0, parameters, dm)
 }
 
