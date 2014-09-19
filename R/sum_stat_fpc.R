@@ -46,3 +46,42 @@ calcBreaks <- function(values, props) {
   breaks[breaks == 0] <- ifelse(length(breaks)==1, 0.01, min(0.01, min(breaks[-1])/2))
   breaks
 }
+
+generateFpcStat <- function(seg_sites, dm, group = 0) {
+  # Get breaks between classes for each dimension
+  if (group == 0) {
+    breaks_near <- dm@options[['fpc.breaks.near']]
+    breaks_far <- dm@options[['fpc.breaks.far']]
+  } else {
+    group.name <- paste("group", group, sep='.')
+    breaks_near <- dm@options[[group.name]][['fpc.breaks.near']]
+    breaks_far <- dm@options[[group.name]][['fpc.breaks.far']]
+  }
+  if (is.null(breaks_near) || is.null(breaks_far)) 
+    stop("Missing classes breaks for calculating fpc statistic.")
+  
+  # Calculate percent of SNPs that a private and fixed polym
+  percent <- sapply(seg_sites, function(x){
+    calcPercentFpcViolation(x, as.numeric(colnames(x)))
+  })
+  
+  # Classify the loci accordingly
+  locus_class <- matrix(1, nrow(percent), ncol(percent))
+  for (brk in breaks_near) {
+    locus_class[1,] <- locus_class[1,] + (percent[1,] > brk)
+  }
+  for (brk in breaks_far) {
+    locus_class[2,] <- locus_class[2,] + (percent[2,] > brk)
+  }
+  
+  # Count the occurance of each class in a matrix
+  stat <- matrix(0, length(breaks_near)+2, length(breaks_far)+2)
+  for (r in 1:ncol(locus_class)) {
+    if (is.na(locus_class[1, r])) locus_class[1, r] <- length(breaks_near)+2
+    if (is.na(locus_class[2, r])) locus_class[2, r] <- length(breaks_far)+2
+    
+    stat[locus_class[1, r], locus_class[2, r]] <- 
+      stat[locus_class[1, r], locus_class[2, r]] + 1
+  }
+  stat
+}

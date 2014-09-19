@@ -58,25 +58,6 @@ BEGIN_RCPP
     return __sexp_result;
 END_RCPP
 }
-// addSegSitesToFpc
-NumericMatrix addSegSitesToFpc(const NumericMatrix seg_sites, const NumericVector positions, const NumericVector breaks_near, const NumericVector breaks_far, NumericMatrix fpc);
-RcppExport SEXP jaatha_addSegSitesToFpc(SEXP seg_sitesSEXP, SEXP positionsSEXP, SEXP breaks_nearSEXP, SEXP breaks_farSEXP, SEXP fpcSEXP) {
-BEGIN_RCPP
-    SEXP __sexp_result;
-    {
-        Rcpp::RNGScope __rngScope;
-        Rcpp::traits::input_parameter< const NumericMatrix >::type seg_sites(seg_sitesSEXP );
-        Rcpp::traits::input_parameter< const NumericVector >::type positions(positionsSEXP );
-        Rcpp::traits::input_parameter< const NumericVector >::type breaks_near(breaks_nearSEXP );
-        Rcpp::traits::input_parameter< const NumericVector >::type breaks_far(breaks_farSEXP );
-        Rcpp::traits::input_parameter< NumericMatrix >::type fpc(fpcSEXP );
-        NumericMatrix __result = addSegSitesToFpc(seg_sites, positions, breaks_near, breaks_far, fpc);
-        PROTECT(__sexp_result = Rcpp::wrap(__result));
-    }
-    UNPROTECT(1);
-    return __sexp_result;
-END_RCPP
-}
 // calcPercentFpcViolation
 NumericVector calcPercentFpcViolation(const NumericMatrix seg_sites, const NumericVector positions);
 RcppExport SEXP jaatha_calcPercentFpcViolation(SEXP seg_sitesSEXP, SEXP positionsSEXP) {

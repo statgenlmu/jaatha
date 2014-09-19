@@ -24,7 +24,7 @@ generateSumStats <- function(file, program, parameters, dm) {
   # Add fpc statistic if needed
   if ('fpc' %in% model_stats) {
     stopifnot(!is.null(sum_stats$seg.sites))
-    sum_stats[['fpc']] <- calcFpcSumStat(sum_stats$seg.sites, dm)
+    sum_stats[['fpc']] <- generateFpcStat(sum_stats$seg.sites, dm)
   }
   
   # Remove seg.sites if it was just there to generate pmc or fpc.

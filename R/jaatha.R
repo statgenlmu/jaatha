@@ -217,7 +217,7 @@ Jaatha.initialize <- function(demographic.model, jsfs,
         dm <- dm.addSummaryStatistic(dm, 'fpc')
         fpc.name <- 'fpc'
         dm <- calcFpcBreaks(dm, seg.sites)
-        fpc.value <- calcFpcSumStat(seg.sites, dm)
+        fpc.value <- generateFpcStat(seg.sites, dm)
         
         dm <- dm.addSummaryStatistic(dm, 'pmc')
         pmc.name <- 'pmc'
@@ -240,7 +240,7 @@ Jaatha.initialize <- function(demographic.model, jsfs,
         
         dm <- dm.addSummaryStatistic(dm, 'fpc', group=group)
         dm <- calcFpcBreaks(dm, seg.sites, group=group)
-        fpc.value <- calcFpcSumStat(seg.sites, dm, group=group)
+        fpc.value <- generateFpcStat(seg.sites, dm, group=group)
         
         dm <- dm.addSummaryStatistic(dm, 'pmc', group=group)
         dm <- calcPmcBreaks(dm, seg.sites, group=group)
