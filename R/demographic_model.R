@@ -1189,13 +1189,14 @@ dm.useLociTrios <- function(dm, bases=c(250, 125, 250, 125, 250), group=0) {
   dm <- addFeature(dm, "trio.5", bases[5], par.new=FALSE, group=group)
 }
 
-dm.getLociTrioOptions <- function(dm, group=0) {
+dm.getLociTrioOptions <- function(dm, group=0, relative=FALSE) {
   trio.opts <- rep(NA_real_, 5)
   tryCatch(for (i in 1:5) {
       trio.opts[i] <- searchFeature(dm, paste0('trio.', i), group=group)$parameter
     }, error = function(e) { })
   if (any(is.na(trio.opts))) return(NA)
-  as.numeric(trio.opts)
+  if (relative) return(as.numeric(trio.opts) / dm.getLociLength(dm, group))
+  else as.numeric(trio.opts)
 }
 
 

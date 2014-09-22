@@ -13,8 +13,8 @@ parseTrees <- function(in_file, out_file, trio_opts) {
     .Call('jaatha_parseTrees', PACKAGE = 'jaatha', in_file, out_file, trio_opts)
 }
 
-calcPercentFpcViolation <- function(seg_sites, positions) {
-    .Call('jaatha_calcPercentFpcViolation', PACKAGE = 'jaatha', seg_sites, positions)
+calcPercentFpcViolation <- function(seg_sites, positions, trio_opts = numeric(0)) {
+    .Call('jaatha_calcPercentFpcViolation', PACKAGE = 'jaatha', seg_sites, positions, trio_opts)
 }
 
 addSegSitesToJsfs <- function(seg_sites, sample_size, jsfs) {

@@ -1,15 +1,32 @@
 #include <Rcpp.h>
 using namespace Rcpp;
 
-bool far;
+int findLocus(double position, const NumericVector trio_opts) {
+  int ret = 0;
+  while (trio_opts[ret] < position) {
+    position -= trio_opts[ret];
+    ++ret;
+  }
+  return ret;
+}
+
+int far; // 0 = near, 1 = far, 2 = between loci
+NumericVector violations; 
+NumericVector total_count;
 
 // [[Rcpp::export]]
 NumericVector calcPercentFpcViolation(const NumericMatrix seg_sites, 
-                                      const NumericVector positions) {
-                                        
-                             
-  NumericVector violations(2);
-  NumericVector total_count(2);
+                                      const NumericVector positions,
+                                      const NumericVector trio_opts = NumericVector(0)) {
+                                          
+  if (trio_opts.size() == 0) {
+    violations = NumericVector(2);
+    total_count = NumericVector(2);
+  } else {
+    violations = NumericVector(3);
+    total_count = NumericVector(3);  
+  }
+  
   bool combinations[2][2] = { false };
 
   for (int i = 0; i < seg_sites.ncol(); ++i) {
@@ -25,6 +42,12 @@ NumericVector calcPercentFpcViolation(const NumericMatrix seg_sites,
 
       // Are the SNPs near together?
       far = (std::abs(positions[i] - positions[j]) > 0.1); 
+      
+      // Overwrite far if they are on different loci
+      if (trio_opts.size() > 0 && 
+          findLocus(positions[i], trio_opts) != findLocus(positions[j], trio_opts) ) {
+          far = 2;
+      }
 
       // Count combinations
       for (int k = 0; k < seg_sites.nrow(); ++k) {
@@ -43,10 +66,11 @@ NumericVector calcPercentFpcViolation(const NumericMatrix seg_sites,
     }
   }
 
-  for (int i = 0; i <= 1; ++i) {
+  for (int i = 0; i < violations.size(); ++i) {
     if (total_count(i) == 0) violations(i) = NA_REAL;
     else violations(i) /= total_count(i);
   }
 
   return violations;
 }
+

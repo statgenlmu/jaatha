@@ -63,6 +63,23 @@ test_that("generateFpcStat works", {
   fpc <- generateFpcStat(seg.sites, dm)
   expect_equal(sum(abs(fpc)), 4)
   expect_equal(fpc[2, 2], 2)
+  
+  seg.sites <- list(matrix(c(1, 1, 0, 0, 0, 
+                             1, 0, 1, 0, 1, 
+                             1, 1, 1, 1, 0, 
+                             0, 1, 1, 0, 1, 
+                             0, 0, 0, 0, 1, 
+                             1, 0, 0, 0, 0), 6, byrow=TRUE))
+  colnames(seg.sites[[1]]) <- c(0.04, 0.09, 0.41, 0.44, 0.57)
+  
+  dm@options[["fpc.breaks.near"]] <- c(.5)
+  dm@options[["fpc.breaks.far"]] <- c(.5)
+  dm@options[["fpc.breaks.between"]] <- c(.5)
+  
+  dm <- dm.useLociTrios(dm, c(200, 100, 400, 100, 200))
+  fpc <- generateFpcStat(seg.sites, dm)
+  expect_equal(sum(abs(fpc)), 1)
+  expect_equal(dim(fpc), c(3,3,3))
 })
 
 test_that("calcPercentFpcViolation works", {
@@ -83,10 +100,19 @@ test_that("calcPercentFpcViolation works", {
                c(NA, 0.5))
   snp.matrix[1, ] <- 1
   snp.matrix[-1, ] <- 0
-  expect_true(all(is.na(calcPercentFpcViolation(snp.matrix, 
-                                                positions))))
-  expect_true(all(is.na(calcPercentFpcViolation(matrix(0, 5, 
-                                                       0), numeric(0)))))
+  expect_true(all(is.na(calcPercentFpcViolation(snp.matrix, positions))))
+  expect_true(all(is.na(calcPercentFpcViolation(matrix(0, 5, 0), numeric(0)))))
+  
+  # With locus-trios
+  snp.matrix <- matrix(c(1, 1, 0, 0, 0, 
+                         1, 0, 1, 0, 1, 
+                         1, 1, 1, 1, 0, 
+                         0, 1, 1, 0, 1, 
+                         0, 0, 0, 0, 1), 5)
+  positions <- c(0.05, 0.09, 0.41, 0.50, 0.58)  
+  expect_equal(calcPercentFpcViolation(t(snp.matrix), positions, 
+                                       c(0.1, 0.2, 0.4, 0.2, 0.1)),
+               c(1, 1, 0.5))
 })
 
 test_that("countClasses works", {
