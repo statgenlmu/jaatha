@@ -24,17 +24,7 @@ createPolymClasses <- function(seg_sites, dm, group = 0) {
   }
   
   # Count the occurance of each class in a matrix
-  stat <- matrix(0, length(breaks_priv)+2, length(breaks_fixed)+2)
-  for (r in 1:ncol(locus_class)) {
-    if (any(is.na(locus_class[, r]))) {
-      stat[length(breaks_priv)+2, length(breaks_fixed)+2] <-
-        stat[length(breaks_priv)+2, length(breaks_fixed)+2] + 1  
-    } else {
-      stat[locus_class[1, r], locus_class[2, r]] <- 
-        stat[locus_class[1, r], locus_class[2, r]] + 1
-    }
-  }
-  stat
+  countClasses(locus_class, c(length(breaks_priv)+2, length(breaks_fixed)+2))
 }
 
 calcPmcBreaks <- function(dm, seg_sites, number=2, group=0) {

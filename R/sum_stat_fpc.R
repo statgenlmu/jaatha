@@ -75,13 +75,30 @@ generateFpcStat <- function(seg_sites, dm, group = 0) {
   }
   
   # Count the occurance of each class in a matrix
-  stat <- matrix(0, length(breaks_near)+2, length(breaks_far)+2)
-  for (r in 1:ncol(locus_class)) {
-    if (is.na(locus_class[1, r])) locus_class[1, r] <- length(breaks_near)+2
-    if (is.na(locus_class[2, r])) locus_class[2, r] <- length(breaks_far)+2
-    
-    stat[locus_class[1, r], locus_class[2, r]] <- 
-      stat[locus_class[1, r], locus_class[2, r]] + 1
+  countClasses(locus_class, c(length(breaks_near)+2, length(breaks_far)+2))
+}
+
+countClasses <- function(classes, dimension) {
+  stopifnot(nrow(classes) == length(dimension))
+  stat <- array(0, dim = dimension)
+  
+  # Replace NA's with the last value
+  for (r in 1:nrow(classes)) {
+    classes[r, is.na(classes[r,])] <- dimension[r]
   }
+  
+  # Count occurences of classes
+  if (nrow(classes) == 2) {
+    for (r in 1:ncol(classes)) {
+      stat[classes[1, r], classes[2, r]] <- 
+        stat[classes[1, r], classes[2, r]] + 1
+    }
+  } else if (nrow(classes) == 3) {
+    for (r in 1:ncol(classes)) {
+      stat[classes[1, r], classes[2, r], classes[3, r]] <- 
+        stat[classes[1, r], classes[2, r], classes[3, r]] + 1
+    }
+  } else stop("This function can only create 2 and 3-dim. arrays")
+  
   stat
 }

@@ -88,3 +88,17 @@ test_that("calcPercentFpcViolation works", {
   expect_true(all(is.na(calcPercentFpcViolation(matrix(0, 5, 
                                                        0), numeric(0)))))
 })
+
+test_that("countClasses works", {
+  classes <- rbind(c(1, 1, 2, 2, NA, NA),
+                   c(1, 2, 1, NA, NA, NA))
+  dimension <- c(3, 3)
+  expect_equal(countClasses(classes, dimension), 
+               array(c(1, 1, 0, 1, 0, 0, 0, 1, 2), c(3,3)))
+  
+  classes <- rbind(c(1, 1, 1, 1, 2, 2),
+                   c(1, 1, 2, 2, 1, 1),
+                   c(1, 1, 1, 2, 1, 2))
+  expect_equal(countClasses(classes, c(2,2,2)), 
+               array(c(2, 1, 1, 0, 0, 1, 1, 0), c(2,2,2)))
+})
