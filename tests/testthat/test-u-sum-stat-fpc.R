@@ -12,6 +12,18 @@ test_that("test.calcFpcBreaks", {
     expect_false(is.null(dm@options[["group.1"]][["fpc.breaks.far"]]))
     expect_false(is.null(dm@options[["group.2"]][["fpc.breaks.near"]]))
     expect_false(is.null(dm@options[["group.2"]][["fpc.breaks.far"]]))
+    
+    dm.lt <- dm.useLociTrios(dm.fpc, c(200, 100, 400, 100, 200))
+    dm = calcFpcBreaks(dm.lt, seg.sites)
+    expect_false(is.null(dm@options[["fpc.breaks.near"]]))
+    expect_false(is.null(dm@options[["fpc.breaks.far"]]))
+    expect_false(is.null(dm@options[["fpc.breaks.between"]]))
+    
+    dm.lt <- dm.useLociTrios(dm.fpc, c(200, 100, 400, 100, 200), group = 2)
+    dm = calcFpcBreaks(dm.lt, seg.sites)
+    expect_true(is.null(dm@options[["fpc.breaks.between"]]))
+    dm = calcFpcBreaks(dm.lt, seg.sites, group = 2)
+    expect_false(is.null(dm@options[[1]][["fpc.breaks.between"]]))
 })
 
 test_that("generateFpcStat works", {
