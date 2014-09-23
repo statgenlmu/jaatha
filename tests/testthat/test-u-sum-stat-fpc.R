@@ -23,7 +23,7 @@ test_that("test.calcFpcBreaks", {
     dm = calcFpcBreaks(dm.lt, seg.sites)
     expect_true(is.null(dm@options[["fpc.breaks.between"]]))
     dm = calcFpcBreaks(dm.lt, seg.sites, group = 2)
-    expect_false(is.null(dm@options[[1]][["fpc.breaks.between"]]))
+    expect_false(is.null(dm@options[['group.2']][["fpc.breaks.between"]]))
 })
 
 test_that("generateFpcStat works", {
