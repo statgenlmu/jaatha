@@ -8,7 +8,7 @@ NumericVector parseMsPositions(const std::string line);
 NumericMatrix parseMsSegSites(std::ifstream &output, 
                               const NumericVector positions, 
                               const int individuals);
-                              
+
 NumericMatrix parseSeqgenSegSites(std::ifstream &output,
                                   size_t locus_length,
                                   const size_t individuals,
@@ -30,18 +30,20 @@ List parseOutput(const std::string file_name,
                  const bool generate_seg_sites = false,
                  const NumericVector trio_opts = NumericVector(0)) {
   
+  // Create list for returning the summary statistics
+  List sum_stats = List::create();
   if (!(generate_seg_sites || generate_jsfs)) {
-    return List::create();            
+    return sum_stats;
   }
-
-  //Rprintf("File: %s \n", file_name.c_str());
-  std::ifstream output(file_name.c_str(), std::ifstream::in);
+  
   size_t individuals = sample_size[0] + sample_size[1];
 
+  // Open the file
+  std::ifstream output(file_name.c_str(), std::ifstream::in);
   if (!output.is_open()) {
     stop("Cannot open file");
   }
-
+  
   NumericMatrix seg_sites(0, 0);
   NumericVector positions(0);
   int locus = -1;
@@ -54,7 +56,7 @@ List parseOutput(const std::string file_name,
     while( output.good() ) {
       std::getline(output, line);
       if (line == "//") ++locus;
-      
+
       else if (line.substr(0, 9) == "segsites:") {
         // Read seg_sites
         if (line.substr(0, 11) == "segsites: 0") {
@@ -72,13 +74,13 @@ List parseOutput(const std::string file_name,
       }
     }
   }
-
+  
   // seq-gen
   else if (program == 1) {
     // We already know the information in the first line
     
     size_t total_sample_size, locus_length;
-
+    
     while ( output.good() ) {
       std::getline(output, line);
       if (line == "") continue;
@@ -87,34 +89,33 @@ List parseOutput(const std::string file_name,
         std::stringstream(line) >> total_sample_size >> locus_length;
         
         seg_sites = parseSeqgenSegSites(output, locus_length, 
-                                        total_sample_size, positions,
-                                        trio_opts);
+        total_sample_size, positions,
+        trio_opts);
         
         if (generate_seg_sites) seg_sites_list[locus] = seg_sites;
         if (generate_jsfs) addToJsfs(seg_sites, sample_size, jsfs);
+
       } else {
         stop("Unexpected line in seq-gen output.");
       }
     }
     
     if (locus != loci_number-1) 
-      stop("Unexpected number of loci in seq-gen output.");
+    stop("Unexpected number of loci in seq-gen output.");
   }
-
-  output.close();
   
   // Return the summary statistics
-  List sum_stats;
-  
   if (generate_seg_sites) sum_stats["seg.sites"] = seg_sites_list;
   if (generate_jsfs) sum_stats["jsfs"] = jsfs;
+  
+  output.close();
   return sum_stats;
 }
 
 NumericMatrix parseMsSegSites(std::ifstream &output, 
                               const NumericVector positions, 
                               const int individuals) {
-
+  
   NumericMatrix seg_sites(individuals, positions.size());
   List dimnames = List(2);
   dimnames[1] = positions;
@@ -126,7 +127,7 @@ NumericMatrix parseMsSegSites(std::ifstream &output,
       seg_sites(i,j) = (line[j] == '1');
     }
   }
-
+  
   return seg_sites;
 }
 
@@ -136,7 +137,7 @@ NumericMatrix parseSeqgenSegSites(std::ifstream &output,
                                   const size_t individuals,
                                   NumericVector &position,
                                   const NumericVector trio_opts) {
-
+  
   std::string tmp;
   size_t seq_nr;
   
@@ -145,7 +146,7 @@ NumericMatrix parseSeqgenSegSites(std::ifstream &output,
   for (size_t i=0; i<individuals; ++i) {
     // Read sequence number
     if (!output.good()) 
-      stop("Unexpeced end of seq-gen file.");
+    stop("Unexpeced end of seq-gen file.");
     output >> tmp;
     // ms from phyclust adds an "s" to the seqName. Remove it if there.
     if (tmp.compare(0, 1, "s") == 0) tmp.erase(0,1);
@@ -181,17 +182,17 @@ NumericMatrix parseSeqgenSegSites(std::ifstream &output,
         ++derived_count;
       }
     }
-  
+    
     if (trio_opts.size() != 5) {
       for (std::vector<double>::iterator it = positions.begin(); 
-           it != positions.end(); ++it) {
+      it != positions.end(); ++it) {
         *it /= (locus_length - 1);
       }
     } else {
       locus_length = sum(trio_opts);
       size_t offset = 0, locus = 0, locus_end = trio_opts[0];
       for (std::vector<double>::iterator it = positions.begin(); 
-        it != positions.end(); ++it) {
+      it != positions.end(); ++it) {
         while(*it >= locus_end) {
           ++locus;
           offset += trio_opts[locus];   // Increase offset that locus 1 + 3
@@ -202,7 +203,7 @@ NumericMatrix parseSeqgenSegSites(std::ifstream &output,
         *it /= (locus_length - 1);
       }
     }
-  
+    
     List dimnames = List(2);
     position = wrap(positions);
     dimnames[1] = position;
@@ -215,21 +216,20 @@ NumericMatrix parseSeqgenSegSites(std::ifstream &output,
 
 // [[Rcpp::export]]
 NumericVector parseMsPositions(const std::string line) {
-  if (line.substr(0, 11) != "positions: ") {
-    stop("Failed to read positions from ms' output");
-  } 
-
   std::stringstream stream(line);
   std::vector<double> data;
-
+  
+  if (line.substr(0, 11) != "positions: ") {
+    stop("Failed to read positions from ms' output");
+  }
+  
   // Remove the 'positions: ' at the line's beginning
   stream.ignore(11);
-
+  
   // Convert the positions into doubles
   std::copy(std::istream_iterator<double>(stream),
-            std::istream_iterator<double>(),
-            std::back_inserter(data));
-
+  std::istream_iterator<double>(),
+  std::back_inserter(data));
+  
   return(wrap(data));
 }
-

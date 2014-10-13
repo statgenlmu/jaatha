@@ -1,3 +1,10 @@
+Version 2.6.1
+==================
+## Bug fixes
+- Fix two minor bugs in CI calculation.
+- Fix a harmless memory leak in experimental code (#19)
+
+
 Version 2.6
 ==================
 ## Improvements
