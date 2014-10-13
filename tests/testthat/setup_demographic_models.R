@@ -26,10 +26,11 @@ dm.fpc <- dm.addSymmetricMigration(dm.fpc, fixed=.75)
 seg.sites <- dm.simSumStats(dm.addSummaryStatistic(dm.fpc, 'seg.sites'), 
                             c(1, 2, 3))$seg.sites
 dm.fpc <- dm.addSummaryStatistic(dm.fpc, 'fpc')
-dm.fpc <- calcFpcBreaks(dm.fpc, seg.sites)
+dm.fpc <- jaatha:::calcFpcBreaks(dm.fpc, seg.sites)
 sum.stats.fpc <- dm.simSumStats(dm.addSummaryStatistic(dm.fpc, 'seg.sites'), 
                                 c(1, 2, 3))
-dm.fpc <- calcFpcBreaks(dm.fpc, seg.sites)
+
+
 
 # Finite Sites Models
 if (jaatha:::checkForSeqgen(FALSE, TRUE)) {

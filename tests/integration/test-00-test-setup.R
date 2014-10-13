@@ -1,6 +1,6 @@
 # Load the test environment
-source("../testsetup/custom_simulation_interface.R")
-source("../testsetup/demographic_models.R")
+source("../testthat/setup_custom_simulation_interface.R")
+source("../testthat/setup_demographic_models.R")
 
 # Check that we can test all aspekts of Jaatha
 context("Test Environment")
