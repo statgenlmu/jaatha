@@ -28,7 +28,9 @@ setClass("DemographicModel" ,
 
 .init <- function(.Object, sample.size, loci.number, loci.length,
                   finiteSites, tsTvRatio){
-
+  
+  .Object <- resetSumStats(.Object)
+  
   .Object@features <- data.frame(type=character(),
                                  parameter=character(),
                                  pop.source=numeric(),
@@ -41,14 +43,11 @@ setClass("DemographicModel" ,
                                    fixed=logical(),
                                    lower.range=numeric(),
                                    upper.range=numeric(),
-                                   stringsAsFactors=F )
-
+                                   stringsAsFactors=F )  
 
   .Object <- dm.addSampleSize(.Object, sample.size)
   .Object <- dm.setLociNumber(.Object, loci.number)
   .Object <- dm.setLociLength(.Object, loci.length)
-  
-  .Object@sum.stats <- data.frame(name=character(), group=numeric())
     
   .Object@finiteSites     <- finiteSites
   .Object@tsTvRatio       <- tsTvRatio
@@ -401,7 +400,10 @@ getThetaName <- function(dm){
   searchFeature(dm, "mutation")$parameter[1]
 }
 
-
+resetSumStats <- function(dm) {
+  dm@sum.stats <- data.frame(name=character(), group=numeric())
+  dm
+}
 
 
 

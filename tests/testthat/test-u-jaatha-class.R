@@ -1,44 +1,60 @@
 context("Jaatha class")
 
-test_that("Jaatha.initialization.fpc", {
-  jaatha.fpc <- Jaatha.initialize(dm.fpc, sum.stats.fpc, 123, 
-                                  folded = FALSE, smoothing = FALSE)
-  
-  expect_equal(length(jaatha.fpc@sum.stats), 3)
-  expect_true(is.list(jaatha.fpc@sum.stats[["jsfs"]]))
-  expect_true(is.list(jaatha.fpc@sum.stats[["fpc"]]))
-  expect_true(is.list(jaatha.fpc@sum.stats[["pmc"]]))
-  
+test_that("JSFS is added when not in model", {
+  dm <- resetSumStats(dm.tt)
+  expect_warning(j <- Jaatha.initialize(dm, sum.stats.tt$jsfs))
+  expect_equal(length(j@sum.stats), 1)
+  expect_true(is.list(j@sum.stats[["jsfs"]]))
+  expect_equal(dm.getSummaryStatistics(j@opts[['dm']]), as.factor(c('jsfs')))
+})
+
+
+test_that("Initialization of FPC statistic", {
+  expect_error(Jaatha.initialize(dm.fpc, sum.stats.fpc$jsfs))
+       
+  # Without groups
+  jaatha.fpc <- Jaatha.initialize(dm.fpc, sum.stats.fpc)
   expect_true(sum(jaatha.fpc@sum.stats[["fpc"]]$value) > 0)
   expect_false(is.null(jaatha.fpc@opts$dm@options[["fpc.breaks.near"]]))
   expect_false(is.null(jaatha.fpc@opts$dm@options[["fpc.breaks.far"]]))
   
-  expect_true(sum(jaatha.fpc@sum.stats[["pmc"]]$value) > 0)
-  expect_false(is.null(jaatha.fpc@opts$dm@options[["pmc_breaks_private"]]))
-  expect_false(is.null(jaatha.fpc@opts$dm@options[["pmc_breaks_fixed"]]))  
+  # With groups
+  dm.fpc <- dm.addSummaryStatistic(dm.grp, 'fpc')
+  jaatha.fpc <- Jaatha.initialize(dm.fpc, sum.stats.grp, 123)
+  expect_equal(length(jaatha.fpc@sum.stats), 6)
+  expect_false(is.null(jaatha.fpc@sum.stats$fpc.1))
+  expect_true(sum(jaatha.fpc@sum.stats[["fpc.1"]]$value) > 0)
+  expect_false(is.null(jaatha.fpc@sum.stats$fpc.2))
+  expect_true(sum(jaatha.fpc@sum.stats[["fpc.2"]]$value) > 0)
+  expect_false(is.null(jaatha.fpc@sum.stats$fpc.3))
+  expect_true(sum(jaatha.fpc@sum.stats[["fpc.3"]]$value) > 0)
 })
 
-test_that("Jaatha.initialization.fpc_groups", {
-  set.seed(1234)
-  dm.fpc <- dm.addSampleSize(dm.fpc, 11:12, group = 2)
-  dm.fpc <- dm.addSampleSize(dm.fpc, 5:6, group = 3)
-  sum.stats <- dm.simSumStats(dm.addSummaryStatistic(dm.fpc, 
-                                                     "seg.sites"), c(1, 2, 5))
-  jaatha.fpc <- Jaatha.initialize(dm.fpc, sum.stats, 123)
-  expect_equal(length(jaatha.fpc@sum.stats), 9)
-  expect_false(is.null(jaatha.fpc@sum.stats$fpc.1))
-  expect_false(is.null(jaatha.fpc@sum.stats$fpc.2))
-  expect_false(is.null(jaatha.fpc@sum.stats$fpc.3))
-  expect_false(is.null(jaatha.fpc@sum.stats$pmc.1))
-  expect_false(is.null(jaatha.fpc@sum.stats$pmc.2))
-  expect_false(is.null(jaatha.fpc@sum.stats$pmc.3))  
-  expect_true(sum(jaatha.fpc@sum.stats[["fpc.1"]]$value) >  0)
-  expect_true(sum(jaatha.fpc@sum.stats[["fpc.2"]]$value) >  0)
-  expect_true(sum(jaatha.fpc@sum.stats[["fpc.3"]]$value) >  0)
-  expect_true(sum(jaatha.fpc@sum.stats[["pmc.1"]]$value) >  0)
-  expect_true(sum(jaatha.fpc@sum.stats[["pmc.2"]]$value) >  0)
-  expect_true(sum(jaatha.fpc@sum.stats[["pmc.3"]]$value) >  0)  
+
+test_that("Initialization of PMC statistic", {
+  dm.pmc <- dm.addSummaryStatistic(dm.fpc, 'pmc')
+  expect_error(Jaatha.initialize(dm.pmc, sum.stats.fpc$jsfs))
+  
+  # Without groups
+  jaatha.pmc <- Jaatha.initialize(dm.pmc, sum.stats.fpc)
+  expect_true(sum(jaatha.pmc@sum.stats[["fpc"]]$value) > 0)
+  expect_true(sum(jaatha.pmc@sum.stats[["pmc"]]$value) > 0)
+  expect_false(is.null(jaatha.pmc@opts$dm@options[["pmc_breaks_private"]]))
+  expect_false(is.null(jaatha.pmc@opts$dm@options[["pmc_breaks_fixed"]]))  
+  
+  # With groups
+  dm.pmc <- dm.addSummaryStatistic(dm.grp, 'pmc', 1)
+  dm.pmc <- dm.addSummaryStatistic(dm.pmc, 'pmc', 3)
+  
+  jaatha.pmc <- Jaatha.initialize(dm.pmc, sum.stats.grp, 123)
+  expect_equal(length(jaatha.pmc@sum.stats), 5)
+  expect_false(is.null(jaatha.pmc@sum.stats$pmc.1))
+  expect_true(sum(jaatha.pmc@sum.stats[["pmc.1"]]$value) > 0)
+  expect_true(is.null(jaatha.pmc@sum.stats$pmc.2))
+  expect_false(is.null(jaatha.pmc@sum.stats$pmc.3))
+  expect_true(sum(jaatha.pmc@sum.stats[["pmc.3"]]$value) > 0)
 })
+
 
 test_that("Jaatha.initialization.groups", {
   sum.stats.grp <- dm.simSumStats(dm.grp, c(1, 5))
