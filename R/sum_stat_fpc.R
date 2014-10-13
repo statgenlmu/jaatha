@@ -1,25 +1,3 @@
-calcFpcSumStat <- function(seg.sites, dm, group=0) {
-  if (group == 0) {
-    breaks.near <- dm@options[['fpc.breaks.near']]
-    breaks.far  <- dm@options[['fpc.breaks.far']]
-  } else {
-    group.name <- paste("group", group, sep='.')
-    breaks.near <- dm@options[[group.name]][['fpc.breaks.near']]
-    breaks.far  <- dm@options[[group.name]][['fpc.breaks.far']]
-  }
-  stopifnot( !is.null(breaks.near) )
-  stopifnot( !is.null(breaks.far) )
-
-  sum.stat <- matrix(0, length(breaks.near)+2, length(breaks.far)+2)
-
-  for(x in seg.sites) { 
-    sum.stat <- addSegSitesToFpc(x, as.numeric(colnames(x)), breaks.near, 
-                                 breaks.far, sum.stat)
-  }
-
-  sum.stat
-}
-  
 calcFpcBreaks <- function(dm, seg.sites, number=5, group=0) {
   trio_opts <- dm.getLociTrioOptions(dm, group, relative=TRUE)
   if (any(is.na(trio_opts))) trio_opts <- numeric(0)
