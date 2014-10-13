@@ -14,6 +14,8 @@ dm.grp <- dm.setLociLength(dm.grp, 100, 1)
 dm.grp <- dm.setLociNumber(dm.grp, 15, 1) 
 dm.grp <- dm.setLociLength(dm.grp, 200, 2) 
 dm.grp <- dm.addSampleSize(dm.grp, 5:6, 3)
+sum.stats.grp <- dm.simSumStats(dm.addSummaryStatistic(dm.grp, 'seg.sites'), 
+                                                       c(1, 3))
 
 # fpc model
 dm.fpc <- dm.createDemographicModel(c(15,20), 100, 1000)
@@ -27,7 +29,8 @@ dm.fpc <- dm.addSummaryStatistic(dm.fpc, 'fpc')
 dm.fpc <- jaatha:::calcFpcBreaks(dm.fpc, seg.sites)
 sum.stats.fpc <- dm.simSumStats(dm.addSummaryStatistic(dm.fpc, 'seg.sites'), 
                                 c(1, 2, 3))
-dm.fpc <- jaatha:::calcFpcBreaks(dm.fpc, seg.sites)
+
+
 
 # Finite Sites Models
 if (jaatha:::checkForSeqgen(FALSE, TRUE)) {

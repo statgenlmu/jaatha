@@ -28,7 +28,9 @@ setClass("DemographicModel" ,
 
 .init <- function(.Object, sample.size, loci.number, loci.length,
                   finiteSites, tsTvRatio){
-
+  
+  .Object <- resetSumStats(.Object)
+  
   .Object@features <- data.frame(type=character(),
                                  parameter=character(),
                                  pop.source=numeric(),
@@ -41,14 +43,11 @@ setClass("DemographicModel" ,
                                    fixed=logical(),
                                    lower.range=numeric(),
                                    upper.range=numeric(),
-                                   stringsAsFactors=F )
-
+                                   stringsAsFactors=F )  
 
   .Object <- dm.addSampleSize(.Object, sample.size)
   .Object <- dm.setLociNumber(.Object, loci.number)
   .Object <- dm.setLociLength(.Object, loci.length)
-  
-  .Object@sum.stats <- data.frame(name=character(), group=numeric())
     
   .Object@finiteSites     <- finiteSites
   .Object@tsTvRatio       <- tsTvRatio
@@ -401,7 +400,10 @@ getThetaName <- function(dm){
   searchFeature(dm, "mutation")$parameter[1]
 }
 
-
+resetSumStats <- function(dm) {
+  dm@sum.stats <- data.frame(name=character(), group=numeric())
+  dm
+}
 
 
 
@@ -1189,13 +1191,14 @@ dm.useLociTrios <- function(dm, bases=c(250, 125, 250, 125, 250), group=0) {
   dm <- addFeature(dm, "trio.5", bases[5], par.new=FALSE, group=group)
 }
 
-dm.getLociTrioOptions <- function(dm, group=0) {
+dm.getLociTrioOptions <- function(dm, group=0, relative=FALSE) {
   trio.opts <- rep(NA_real_, 5)
   tryCatch(for (i in 1:5) {
       trio.opts[i] <- searchFeature(dm, paste0('trio.', i), group=group)$parameter
     }, error = function(e) { })
   if (any(is.na(trio.opts))) return(NA)
-  as.numeric(trio.opts)
+  if (relative) return(as.numeric(trio.opts) / dm.getLociLength(dm, group))
+  else as.numeric(trio.opts)
 }
 
 

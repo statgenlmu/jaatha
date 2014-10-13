@@ -19,7 +19,7 @@ sg.features    <- unique(c(getSimProgram('ms')$possible_features,
                            'trio.1', 'trio.2', 'trio.3', 
                            'trio.4', 'trio.5'))
 
-sg.sum.stats <- c('jsfs', 'file', 'seg.sites', 'fpc')
+sg.sum.stats <- c('jsfs', 'file', 'seg.sites', 'fpc', 'pmc')
 sg.mutation.models <- c('HKY', 'F84', 'GTR')
 
 checkForSeqgen <- function(throw.error = TRUE, silent = FALSE) {
@@ -228,28 +228,10 @@ seqgenSingleSimFunc <- function(dm, parameters) {
   seqgen.options <- generateSeqgenOptions(dm, parameters)
   seqgen.file <- callSeqgen(seqgen.options, tree_file)
 
-  sum.stats <- list(pars=parameters)
-  
-  # Parse the output & generate additional summary statistics
-  if ('fpc' %in% dm.getSummaryStatistics(dm)) {
-    breaks.near <- dm@options[['fpc.breaks.near']]
-    breaks.far <- dm@options[['fpc.breaks.far']]
-    stopifnot(!is.null(breaks.near))
-    stopifnot(!is.null(breaks.far))
-    
-    sum.stats <- parseOutput(seqgen.file, dm.getSampleSize(dm), dm.getLociNumber(dm), 1, 
-                             'jsfs' %in% dm.getSummaryStatistics(dm), 
-                             'seg.sites' %in% dm.getSummaryStatistics(dm),
-                             TRUE, breaks.near, breaks.far, 
-                             dm.getLociTrioOptions(dm))
-  } else {
-    sum.stats <- parseOutput(seqgen.file, dm.getSampleSize(dm), dm.getLociNumber(dm), 1, 
-                             'jsfs' %in% dm.getSummaryStatistics(dm), 
-                             'seg.sites' %in% dm.getSummaryStatistics(dm),
-                             FALSE, trio_opts = dm.getLociTrioOptions(dm))
-  }
-  
-  sum.stats[['pars']] <- parameters
+  # Generate the summary statistics
+  sum.stats <- generateSumStats(seqgen.file, 1, parameters, dm)
+
+  # Return or remove all temp.files
   if ('file' %in% dm.getSummaryStatistics(dm)) {
     sum.stats[['file']] <- c(ms=sum_stats_ms[['file']],
                              trees=tree_file,
@@ -259,7 +241,7 @@ seqgenSingleSimFunc <- function(dm, parameters) {
     sum.stats[['file']] <- NULL
   }
 
-  return(sum.stats)
+  sum.stats
 }
 
 finalizeSeqgen <- function(dm) {

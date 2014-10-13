@@ -178,116 +178,118 @@ Jaatha.initialize <- function(demographic.model, jsfs,
                               seed, cores=1, scaling.factor=1,
                               use.shm=FALSE, folded=FALSE, 
                               smoothing=FALSE) {
-
+  
   checkType(demographic.model, c("dm", "s"))
   checkType(folded, c("bool", "single"))
   checkType(smoothing, c("bool", "single"))
   checkType(scaling.factor, c("num","single"))
   if (smoothing && folded) 
     stop("You can't use smoothing together with a folded JSFS")
-
+  
   if (missing(seed)) seed <- numeric()
-
+  
   if (use.shm) warning("'use.shm' will be removed in a future version of Jaatha.
                        Manually move your complete R-tmp to your memory disk
                        instead. See http://www.paulstaab.de/2013/11/r-shm")
-
-  dm <- dm.addSummaryStatistic(demographic.model, 'jsfs')
-
+  
+  dm <- demographic.model
+  if (!'jsfs' %in% dm.getSummaryStatistics(dm)) {
+    warning("JSFS is not a summary statistic of the model. Adding it.")
+    dm <- dm.addSummaryStatistic(dm, 'jsfs')
+  }
+  
+  
+  # ------------------------------------------------------------
+  # Create Summary Statistics for each group
+  # ------------------------------------------------------------
   sum.stats <- list()
   seg.sites <- NULL
   groups <- dm.getGroups(dm)
-
+  
   for (group in groups) {
     if (group == 1 & all(dm@features$group == 0)) {
-      # Only one group of loci
-      jsfs.name <- 'jsfs'
+      grp_name_ext <- ''
       group <- 0
-      if (is.list(jsfs)) { 
-        jsfs.value <- jsfs$jsfs
-        seg.sites <- jsfs$seg.sites
-      } else {
-        jsfs.value <- jsfs
-      }
-
-      if (!is.null(seg.sites)) { 
-        dm <- dm.addSummaryStatistic(dm, 'fpc')
-        fpc.name <- 'fpc'
-        stopifnot(is.list(seg.sites))
-        stopifnot(is.array(seg.sites[[1]]))
-        dm <- calcFpcBreaks(dm, seg.sites)
-        fpc.value <- calcFpcSumStat(seg.sites, dm)
-      }
-
     } else {
-      # Multiple groups of loci
-      jsfs.name <- paste('jsfs', group, sep='.')
-      stopifnot(is.list(jsfs))
-      stopifnot(is.matrix(jsfs[[jsfs.name]]))
-      jsfs.value <- jsfs[[jsfs.name]]
-
-      seg.sites.name <- paste('seg.sites', group, sep='.')
-      if (is.list(jsfs[[seg.sites.name]])) {
-        seg.sites <- jsfs[[seg.sites.name]]
-        fpc.name <- paste('fpc', group, sep='.')
-        
-        dm <- dm.addSummaryStatistic(dm, 'fpc', group=group)
-        dm <- calcFpcBreaks(dm, seg.sites, group=group)
-        fpc.value <- calcFpcSumStat(seg.sites, dm, group=group)
-      }
+      grp_name_ext <- paste0('.', group)
     }
-    stopifnot(is.matrix(jsfs.value))
+    
+    if (is.list(jsfs)) { 
+      jsfs.value <- jsfs[[paste0('jsfs', grp_name_ext)]]
+      seg.sites <- jsfs[[paste0('seg.sites', grp_name_ext)]]
+    } else {
+      jsfs.value <- jsfs
+    }
 
+    # ------------------------------------------------------------
+    # JSFS Summary Statistic
+    # ------------------------------------------------------------
     if (!smoothing) {
-      sum.stats[[jsfs.name]] <- list(method="poisson.transformed",
-                                     transformation=summarizeJSFS,
-                                     value=jsfs.value)
-
+      sum.stats[[paste0('jsfs', grp_name_ext)]] <- 
+        list(method="poisson.transformed",
+             transformation=summarizeJSFS,
+             value=jsfs.value)
+    
       if (folded) sum.stats$jsfs$transformation <- summarizeFoldedJSFS
     } else {
       sample.size <- dm.getSampleSize(dm, group)
-      warning("Smoothing is still very experimental")
+      warning("Smoothing is experimental")
       model <- paste0("( X1 + I(X1^2) + X2 + I(X2^2) + log(X1) + log(",
                       sample.size[1]+2,
                       "-X1) + log(X2) + log(",
                       sample.size[2]+2,
                       "-X2) )^2")
-
+  
       border.mask <- jsfs.value
       border.mask[, ] <- 0
       border.mask[c(1, nrow(jsfs.value)), ] <- 1
       border.mask[ ,c(1, ncol(jsfs.value))] <- 1
       border.mask <- as.logical(border.mask)
-
-      sum.stats[[jsfs.name]] <- list(method="poisson.smoothing",
-                                     model=model,
-                                     value=jsfs.value,
-                                     border.mask=border.mask,
-                                     border.transformation=summarizeJsfsBorder)
+  
+      sum.stats[[paste0('jsfs', grp_name_ext)]] <- 
+        list(method="poisson.smoothing",
+             model=model,
+             value=jsfs.value,
+             border.mask=border.mask,
+             border.transformation=summarizeJsfsBorder)
     }
 
-    if (!is.null(seg.sites)) { 
-      #border.mask <- fpc.value
-      #if (length(dim(border.mask)) == 2) {
-      #  border.mask[ , ] <- 0
-      #  border.mask[nrow(border.mask), ] <- 1
-      #  border.mask[ ,ncol(border.mask)] <- 1
-      #  fpc.model="(X1+I(X1^2)+X2+I(X2^2))^2"
-      #} else {
-      #  border.mask[ , , ] <- 0
-      #  border.mask[nrow(border.mask), , ] <- 1
-      #  border.mask[ ,ncol(border.mask), ] <- 1
-      #  fpc.model="(X1+I(X1^2)+X2+I(X2^2)+X3+I(X3^2))^2"
-      #}
-      sum.stats[[fpc.name]] <- list(method='poisson.transformed',
-                                    transformation=as.vector,
-                                    value=fpc.value)
+    # ------------------------------------------------------------
+    # FPC Summary Statistic
+    # ------------------------------------------------------------
+    if ('fpc' %in% dm.getSummaryStatistics(dm, group)) {
+      if (is.null(seg.sites)) {
+        stop("You need to provide 'seg.sites' to use the 'fpc' sum.stat")
+      }
+      
+      dm <- calcFpcBreaks(dm, seg.sites, group = group)
+      sum.stats[[paste0('fpc', grp_name_ext)]] <- 
+        list(method='poisson.transformed', transformation=as.vector,
+             value=generateFpcStat(seg.sites, dm, group = group))
+    }
+
+    # ------------------------------------------------------------
+    # PMC Summary Statistic
+    # ------------------------------------------------------------
+    if ('pmc' %in% dm.getSummaryStatistics(dm, group)) {
+      if (is.null(seg.sites)) {
+        stop("You need to provide 'seg.sites' to use the 'pmc' sum.stat")
+      }
+        
+      dm <- calcPmcBreaks(dm, seg.sites, group = group)
+      sum.stats[[paste0('pmc', grp_name_ext)]] <- 
+        list(method='poisson.transformed', transformation=as.vector,
+             value=createPolymClasses(seg.sites, dm, group = group))
     }
   }
 
+
+  # ------------------------------------------------------------
+  # Create the Jaatha object
+  # ------------------------------------------------------------
   jaatha <- new("Jaatha", 
                 sim.func=function(sim.pars, jaatha) {
-                  dm.simSumStats(jaatha@opts[['dm']], sim.pars, names(jaatha@sum.stats))
+                  dm.simSumStats(jaatha@opts[['dm']], sim.pars)
                 },
                 par.ranges=as.matrix(dm.getParRanges(dm)),  
                 sum.stats=sum.stats,
@@ -303,7 +305,7 @@ Jaatha.initialize <- function(demographic.model, jsfs,
   jaatha@opts[['dm']] <- dm.finalize(dm)
   jaatha@opts[['jsfs.folded']] <- folded
 
-  return(jaatha)
+  invisible(jaatha)
 }
 
 

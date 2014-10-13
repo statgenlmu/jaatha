@@ -42,7 +42,7 @@ install:
 
 clean:
 	# clean: Removes temporary files
-	- rm README NEWS NAMESPACE
+	- rm README NEWS
 	- rm -r jaatha.Rcheck 2> /dev/null
 	- cd src/; rm *.so *.o *.rds ms/*.o 2> /dev/null
 	- rm -r man 2> /dev/null

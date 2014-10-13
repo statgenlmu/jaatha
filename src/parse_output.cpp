@@ -6,31 +6,19 @@ using namespace Rcpp;
 NumericVector parseMsPositions(const std::string line);
 
 NumericMatrix parseMsSegSites(std::ifstream &output, 
-const NumericVector positions, 
-const int individuals);
+                              const NumericVector positions, 
+                              const int individuals);
 
 NumericMatrix parseSeqgenSegSites(std::ifstream &output,
-size_t locus_length,
-const size_t individuals,
-NumericVector &position,
-const NumericVector trio_opts);
+                                  size_t locus_length,
+                                  const size_t individuals,
+                                  NumericVector &position,
+                                  const NumericVector trio_opts);
 
-void addToJsfs(const NumericMatrix &seg_sites,
-const NumericVector &sample_size,
-NumericMatrix &jsfs);
-
-void addToFpc(const NumericMatrix &seg_sites, 
-const NumericVector &positions, 
-const NumericVector &breaks_near,
-const NumericVector &breaks_far,
-NumericMatrix &fpc);
-
-void addToPolymClasses(const NumericMatrix seg_sites,
-const NumericVector sample_size,
-NumericVector &polym_classes);
-
-NumericVector createPolymVector();
-
+void addToJsfs(const NumericMatrix seg_sites,
+               const NumericVector sample_size,
+               NumericMatrix &jsfs);
+                       
 std::string line;
 
 // [[Rcpp::export]]
@@ -40,22 +28,18 @@ List parseOutput(const std::string file_name,
                  const int program = 0,
                  const bool generate_jsfs = true,
                  const bool generate_seg_sites = false,
-                 const bool generate_fpc = false,
-                 const NumericVector fpc_breaks_near = NumericVector(0),
-                 const NumericVector fpc_breaks_far = NumericVector(0),
-                 const NumericVector trio_opts = NumericVector(0),
-                 const bool generate_polym_classes = false) {
+                 const NumericVector trio_opts = NumericVector(0)) {
   
+  // Create list for returning the summary statistics
   List sum_stats = List::create();
-  
-  if (!(generate_seg_sites || generate_jsfs || 
-  generate_fpc || generate_polym_classes)) {
-    return sum_stats;            
+  if (!(generate_seg_sites || generate_jsfs)) {
+    return sum_stats;
   }
   
-  std::ifstream output(file_name.c_str(), std::ifstream::in);
   size_t individuals = sample_size[0] + sample_size[1];
-  
+
+  // Open the file
+  std::ifstream output(file_name.c_str(), std::ifstream::in);
   if (!output.is_open()) {
     stop("Cannot open file");
   }
@@ -63,46 +47,30 @@ List parseOutput(const std::string file_name,
   NumericMatrix seg_sites(0, 0);
   NumericVector positions(0);
   int locus = -1;
-  
-  if (generate_fpc) {
-    if (fpc_breaks_far.size() == 0 || fpc_breaks_near.size() == 0) 
-    stop("No breaks for fpc sum stats given");
-  }
-  
+
   List seg_sites_list(loci_number); 
   NumericMatrix jsfs(sample_size[0]+1, sample_size[1]+1);
-  NumericMatrix fpc(fpc_breaks_near.size()+2, fpc_breaks_far.size()+2);
-  NumericVector polym_classes = createPolymVector();
-  
+
   // ms
   if (program == 0) { 
     while( output.good() ) {
       std::getline(output, line);
       if (line == "//") ++locus;
-      
-      if (line.substr(0, 11) == "segsites: 0") {
-        seg_sites = NumericMatrix(0, 0);
-        if (generate_seg_sites) seg_sites_list[locus] = seg_sites;
-        if (generate_fpc) addToFpc(seg_sites, positions, 
-        fpc_breaks_near, fpc_breaks_far, fpc);
-        if (generate_polym_classes) {
-          addToPolymClasses(seg_sites, sample_size, polym_classes);
-        }
-      } 
-      
+
       else if (line.substr(0, 9) == "segsites:") {
-        //Rprintf("Locus %i\n", locus);
-        std::getline(output, line);
-        positions = parseMsPositions(line);
-        seg_sites = parseMsSegSites(output, positions, individuals);
-        if (seg_sites.ncol() == 0) Rf_error("Failed to parse seg.sites");
+        // Read seg_sites
+        if (line.substr(0, 11) == "segsites: 0") {
+          seg_sites = NumericMatrix(0, 0);
+        } else {
+          std::getline(output, line);
+          positions = parseMsPositions(line);
+          seg_sites = parseMsSegSites(output, positions, individuals);
+          if (seg_sites.ncol() == 0) stop("Failed to parse seg.sites");
+        }
+      
+        // Genearte derived statistics
         if (generate_seg_sites) seg_sites_list[locus] = seg_sites;
         if (generate_jsfs) addToJsfs(seg_sites, sample_size, jsfs);
-        if (generate_fpc) addToFpc(seg_sites, positions, 
-        fpc_breaks_near, fpc_breaks_far, fpc);
-        if (generate_polym_classes) {
-          addToPolymClasses(seg_sites, sample_size, polym_classes);
-        }
       }
     }
   }
@@ -126,11 +94,7 @@ List parseOutput(const std::string file_name,
         
         if (generate_seg_sites) seg_sites_list[locus] = seg_sites;
         if (generate_jsfs) addToJsfs(seg_sites, sample_size, jsfs);
-        if (generate_fpc) addToFpc(seg_sites, positions, 
-        fpc_breaks_near, fpc_breaks_far, fpc);
-        if (generate_polym_classes) {
-          addToPolymClasses(seg_sites, sample_size, polym_classes);
-        }
+
       } else {
         stop("Unexpected line in seq-gen output.");
       }
@@ -143,8 +107,6 @@ List parseOutput(const std::string file_name,
   // Return the summary statistics
   if (generate_seg_sites) sum_stats["seg.sites"] = seg_sites_list;
   if (generate_jsfs) sum_stats["jsfs"] = jsfs;
-  if (generate_fpc) sum_stats["fpc"] = fpc;
-  if (generate_polym_classes) sum_stats["polym_classes"] = polym_classes;
   
   output.close();
   return sum_stats;

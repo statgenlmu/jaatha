@@ -64,6 +64,20 @@ test_that("test.msmsSimFunc", {
   expect_equal(length(sum.stats), 2)
 })
 
+test_that("Generation of PMC statistic works", {
+  if (!test_msms) return()
+  set.seed(941)
+  dm.sel <- dm.addSummaryStatistic(dm.sel, "pmc")
+  dm.sel@options[['pmc_breaks_private']] <- .5
+  dm.sel@options[['pmc_breaks_fixed']] <- .5
+  sum.stats <- msmsSimFunc(dm.sel, c(0.1, 2, 2, 500))
+  expect_equal(length(sum.stats), 3)
+  expect_false(is.null(sum.stats$pars))
+  expect_false(is.null(sum.stats$pmc))
+  expect_true(is.array(sum.stats[["pmc"]]))
+  expect_equal(sum(sum.stats[["pmc"]]), dm.getLociNumber(dm.sel))
+})
+
 test_that("Gamma Distributed Rates work", {
   if (!test_msms) return()
   dm <- dm.addParameter(dm.tt, par.name = "shape", 100, 500)
