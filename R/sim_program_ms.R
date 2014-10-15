@@ -123,7 +123,7 @@ msSingleSimFunc <- function(dm, parameters) {
   if (length(parameters) != dm.getNPar(dm)) stop("Wrong number of parameters!")
 
   ms.options <- generateMsOptions(dm, parameters)
-  sim.time <- system.time(ms.out <- callMs(ms.options, dm))
+  ms.out <- callMs(ms.options, dm)
 
   generateSumStats(ms.out, 0, parameters, dm)
 }
