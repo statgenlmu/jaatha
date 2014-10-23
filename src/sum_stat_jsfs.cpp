@@ -4,7 +4,7 @@ using namespace Rcpp;
 // Fast function to add a locus' seg.sites to a JSFS
 void addToJsfs(const NumericMatrix seg_sites,
                const NumericVector sample_size,
-               NumericMatrix &jsfs) {
+               NumericMatrix jsfs) {
   
   int idx1;
   int idx2;

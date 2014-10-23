@@ -12,12 +12,12 @@ NumericMatrix parseMsSegSites(std::ifstream &output,
 NumericMatrix parseSeqgenSegSites(std::ifstream &output,
                                   size_t locus_length,
                                   const size_t individuals,
-                                  NumericVector &position,
+                                  NumericVector position,
                                   const NumericVector trio_opts);
 
 void addToJsfs(const NumericMatrix seg_sites,
                const NumericVector sample_size,
-               NumericMatrix &jsfs);
+               NumericMatrix jsfs);
                        
 std::string line;
 
@@ -135,7 +135,7 @@ NumericMatrix parseMsSegSites(std::ifstream &output,
 NumericMatrix parseSeqgenSegSites(std::ifstream &output,
                                   size_t locus_length,
                                   const size_t individuals,
-                                  NumericVector &position,
+                                  NumericVector position,
                                   const NumericVector trio_opts) {
   
   std::string tmp;
