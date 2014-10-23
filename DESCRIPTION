@@ -1,6 +1,6 @@
 Package: jaatha
-Version: 2.6.3
-Date: 2014-10-13
+Version: 2.6.9001
+Date: 2014-10-23
 License: GPL (>= 3)
 Title: A Fast Parameter Estimation Method for Evolutionary Biology
 Author: Paul R. Staab, Lisha Mathew and Dirk Metzler
@@ -19,6 +19,7 @@ Imports:
     phyclust (>= 0.1-14),
     Rcpp (>= 0.11.0),
     reshape2 (>= 1.4),
+    scrm,
     parallel
 Suggests:
     ape (>= 2.7),
@@ -37,7 +38,6 @@ Collate:
     'initial_search.R'
     'jaatha.R'
     'normalize.R'
-    'package_info.R'
     'parallelization.R'
     'read_fasta.R'
     'refined_search.R'
