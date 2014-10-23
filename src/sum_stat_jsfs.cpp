@@ -29,6 +29,18 @@ NumericMatrix addSegSitesToJsfs(const NumericMatrix seg_sites,
   NumericMatrix jsfs_copy = clone(jsfs);
   addToJsfs(seg_sites, sample_size, jsfs_copy);
   
-  
   return jsfs_copy;
+}
+
+// [[Rcpp::export]]
+NumericMatrix calcJsfs(const List seg_sites,
+                       const NumericVector sample_size) {
+                         
+  NumericMatrix jsfs(sample_size[0]+1, sample_size[1]+1);
+
+  for (size_t i = 0; i < seg_sites.size(); ++i) {
+    addToJsfs(as<NumericMatrix>(seg_sites(i)), sample_size, jsfs);
+  }
+  
+  return jsfs;
 }

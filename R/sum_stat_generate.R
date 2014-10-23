@@ -1,17 +1,23 @@
 generateSumStats <- function(file, program, parameters, dm) {
   model_stats <- dm.getSummaryStatistics(dm)
   
-  # Detemine if we need to generate seg.sites
-  generate_seg_sites <- 'seg.sites' %in% model_stats
-  if (any(c('fpc', 'pmc') %in% model_stats)) {
-    generate_seg_sites <- TRUE
+  if (program == 2) {
+    sum_stats <- file
+    names(sum_stats)[names(sum_stats) == 'seg_sites'] <- 'seg.sites'
+    sum_stats$jsfs <- calcJsfs(sum_stats$seg.sites, dm.getSampleSize(dm))
+  } else {
+    # Detemine if we need to generate seg.sites
+    generate_seg_sites <- 'seg.sites' %in% model_stats
+    if (any(c('fpc', 'pmc') %in% model_stats)) {
+      generate_seg_sites <- TRUE
+    }
+    
+    # Parse the simulation output
+    sum_stats <- parseOutput(file, dm.getSampleSize(dm), dm.getLociNumber(dm), 
+                             program, 'jsfs' %in% model_stats, generate_seg_sites,
+                             dm.getLociTrioOptions(dm))
   }
-  
-  # Parse the simulation output
-  sum_stats <- parseOutput(file, dm.getSampleSize(dm), dm.getLociNumber(dm), 
-                           program, 'jsfs' %in% model_stats, generate_seg_sites,
-                           dm.getLociTrioOptions(dm))
-  
+
   # Add the parameters of the simulation
   sum_stats[['pars']] <- parameters
   

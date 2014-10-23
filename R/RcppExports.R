@@ -21,6 +21,10 @@ addSegSitesToJsfs <- function(seg_sites, sample_size, jsfs) {
     .Call('jaatha_addSegSitesToJsfs', PACKAGE = 'jaatha', seg_sites, sample_size, jsfs)
 }
 
+calcJsfs <- function(seg_sites, sample_size) {
+    .Call('jaatha_calcJsfs', PACKAGE = 'jaatha', seg_sites, sample_size)
+}
+
 classifyPolym <- function(seg_sites, sample_size) {
     .Call('jaatha_classifyPolym', PACKAGE = 'jaatha', seg_sites, sample_size)
 }

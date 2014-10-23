@@ -19,7 +19,7 @@ Imports:
     phyclust (>= 0.1-14),
     Rcpp (>= 0.11.0),
     reshape2 (>= 1.4),
-    scrm,
+    scrm (>= 1.3-2.9000),
     parallel
 Suggests:
     ape (>= 2.7),
@@ -45,6 +45,7 @@ Collate:
     'sim_likelihood.R'
     'sim_program_ms.R'
     'sim_program_msms.R'
+    'sim_program_scrm.R'
     'sim_program_seqgen.R'
     'simulate_within_block.R'
     'sum_stat_fpc.R'
