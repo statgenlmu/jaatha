@@ -310,3 +310,17 @@ test_that("getTrioOptions works", {
   expect_true(is.na(dm.getLociTrioOptions(dm.lt)))
   expect_equal(dm.getLociTrioOptions(dm.lt, group=2), c(10, 5, 20, 5, 10))
 })
+
+test_that("Adding and Getting Subgroups works", {
+  expect_equal(dm.getSubgroupNumber(dm.tt), 1)
+  dm <- dm.addSubgroups(dm.tt, 2)
+  expect_equal(dm.getSubgroupNumber(dm), 2)
+  
+  dm <- dm.addSubgroups(dm, 5, group = 2)
+  dm <- dm.addSubgroups(dm, 5, group = 3)
+  expect_equal(dm.getSubgroupNumber(dm), 2)
+  expect_equal(dm.getSubgroupNumber(dm), 2, 0)
+  expect_equal(dm.getSubgroupNumber(dm), 2, 1)
+  expect_equal(dm.getSubgroupNumber(dm), 5, 2)
+  expect_equal(dm.getSubgroupNumber(dm), 5, 3)
+})
