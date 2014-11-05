@@ -6,20 +6,18 @@
 using namespace Rcpp;
 
 // parseOutput
-List parseOutput(const std::string file_name, const NumericVector sample_size, const int loci_number, const int program = 0, const bool generate_jsfs = true, const bool generate_seg_sites = false, const NumericVector trio_opts = NumericVector(0));
-RcppExport SEXP jaatha_parseOutput(SEXP file_nameSEXP, SEXP sample_sizeSEXP, SEXP loci_numberSEXP, SEXP programSEXP, SEXP generate_jsfsSEXP, SEXP generate_seg_sitesSEXP, SEXP trio_optsSEXP) {
+List parseOutput(const std::vector<std::string> file_names, const NumericVector sample_size, const int loci_number, const int program = 0, const NumericVector trio_opts = NumericVector(0));
+RcppExport SEXP jaatha_parseOutput(SEXP file_namesSEXP, SEXP sample_sizeSEXP, SEXP loci_numberSEXP, SEXP programSEXP, SEXP trio_optsSEXP) {
 BEGIN_RCPP
     SEXP __sexp_result;
     {
         Rcpp::RNGScope __rngScope;
-        Rcpp::traits::input_parameter< const std::string >::type file_name(file_nameSEXP );
+        Rcpp::traits::input_parameter< const std::vector<std::string> >::type file_names(file_namesSEXP );
         Rcpp::traits::input_parameter< const NumericVector >::type sample_size(sample_sizeSEXP );
         Rcpp::traits::input_parameter< const int >::type loci_number(loci_numberSEXP );
         Rcpp::traits::input_parameter< const int >::type program(programSEXP );
-        Rcpp::traits::input_parameter< const bool >::type generate_jsfs(generate_jsfsSEXP );
-        Rcpp::traits::input_parameter< const bool >::type generate_seg_sites(generate_seg_sitesSEXP );
         Rcpp::traits::input_parameter< const NumericVector >::type trio_opts(trio_optsSEXP );
-        List __result = parseOutput(file_name, sample_size, loci_number, program, generate_jsfs, generate_seg_sites, trio_opts);
+        List __result = parseOutput(file_names, sample_size, loci_number, program, trio_opts);
         PROTECT(__sexp_result = Rcpp::wrap(__result));
     }
     UNPROTECT(1);
@@ -75,17 +73,16 @@ BEGIN_RCPP
     return __sexp_result;
 END_RCPP
 }
-// addSegSitesToJsfs
-NumericMatrix addSegSitesToJsfs(const NumericMatrix seg_sites, const NumericVector sample_size, NumericMatrix jsfs);
-RcppExport SEXP jaatha_addSegSitesToJsfs(SEXP seg_sitesSEXP, SEXP sample_sizeSEXP, SEXP jsfsSEXP) {
+// calcJsfs
+NumericMatrix calcJsfs(const List seg_sites, const NumericVector sample_size);
+RcppExport SEXP jaatha_calcJsfs(SEXP seg_sitesSEXP, SEXP sample_sizeSEXP) {
 BEGIN_RCPP
     SEXP __sexp_result;
     {
         Rcpp::RNGScope __rngScope;
-        Rcpp::traits::input_parameter< const NumericMatrix >::type seg_sites(seg_sitesSEXP );
+        Rcpp::traits::input_parameter< const List >::type seg_sites(seg_sitesSEXP );
         Rcpp::traits::input_parameter< const NumericVector >::type sample_size(sample_sizeSEXP );
-        Rcpp::traits::input_parameter< NumericMatrix >::type jsfs(jsfsSEXP );
-        NumericMatrix __result = addSegSitesToJsfs(seg_sites, sample_size, jsfs);
+        NumericMatrix __result = calcJsfs(seg_sites, sample_size);
         PROTECT(__sexp_result = Rcpp::wrap(__result));
     }
     UNPROTECT(1);

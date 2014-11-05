@@ -8,8 +8,9 @@
 
 possible.features  <- c("sample", "loci.number", "loci.length",
                         "mutation", "migration", "split",
-                        "recombination", "size.change", "growth")
-possible.sum.stats <- c("jsfs", "fpc", "trees", "seg.sites", "file", "pmc")
+                        "recombination", "size.change", "growth",
+                        "subgroups")
+possible.sum.stats <- c("jsfs", "fpc", "trees", "seg.sites", "pmc", "file")
 
 #' Function to perform simulation using ms 
 #' 
@@ -40,9 +41,7 @@ generateMsOptionsCommand <- function(dm) {
     feat <- unlist(dm@features[i, ])
 
     if ( type == "mutation" ) {
-      if (any(c('seg.sites', 'jsfs', 'fpc') %in% dm.getSummaryStatistics(dm))) { 
-        cmd <- c(cmd,'"-t"', ',', feat["parameter"], ',')
-      }
+      cmd <- c(cmd,'"-t"', ',', feat["parameter"], ',')
     }
 
     else if (type == "split") {
@@ -119,13 +118,15 @@ printMsCommand <- function(dm) {
 msSingleSimFunc <- function(dm, parameters) {
   checkType(dm, "dm")
   checkType(parameters, "num")
-
   if (length(parameters) != dm.getNPar(dm)) stop("Wrong number of parameters!")
 
-  ms.options <- generateMsOptions(dm, parameters)
-  ms.out <- callMs(ms.options, dm)
-
-  generateSumStats(ms.out, 0, parameters, dm)
+  ms.files <- sapply(1:dm.getSubgroupNumber(dm), function(subgroup) {
+    ms.options <- generateMsOptions(dm, parameters)
+    callMs(ms.options, dm)
+  })
+  
+  # Parse the simulation output
+  generateSumStats(ms.files, 0, parameters, dm)
 }
 
 finalizeMs <- function(dm) {
