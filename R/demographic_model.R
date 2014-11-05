@@ -1432,3 +1432,16 @@ scaleDemographicModel <- function(dm, scaling.factor) {
   }
   return(dm)
 }
+
+dm.addSubgroups <- function(dm, subgroup_number, group = 0) {
+  checkType(subgroup_number, c('num', 's'))
+  checkType(group, c('num', 's'))
+  addFeature(dm, 'subgroups', as.character(subgroup_number), 
+             group = group, par.new = FALSE)
+}
+
+dm.getSubgroupNumber <- function(dm, group = 1) {
+  number <- searchFeature(dm, 'subgroups', group = group)$parameter
+  if (length(number) == 0) return(1)
+  as.numeric(number)
+}
