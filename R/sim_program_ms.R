@@ -67,7 +67,8 @@ generateMsOptionsCommand <- function(dm) {
                feat["pop.source"], ',', feat["parameter"], ',')
       }
 
-    else if (type %in% c("sample", "loci.number", "loci.length", "pos.selection")) {}
+    else if (type %in% c("sample", "loci.number", "loci.length", 
+                         "pos.selection", "subgroups")) {}
     else stop("Unknown feature:", type)
   }
 

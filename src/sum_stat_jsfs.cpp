@@ -2,6 +2,11 @@
 using namespace Rcpp;
 
 //' Calculate the JSFS from a list of segregating sites statistics
+//' 
+//' @param seg_sites List of segregating sites
+//' @param sample_size A numberic vector of size 2, giving the sample sizes
+//'        of the two population for which the JSFS is calulated
+//' @return The Joint Site Frequency Spectrum, as a matrix.
 // [[Rcpp::export]]
 NumericMatrix calcJsfs(const List seg_sites, const NumericVector sample_size) {
   
