@@ -168,6 +168,6 @@ test_that("seq-gen works with subgroups", {
   if (!test_seqgen) return()
   set.seed(20)
   dm <- dm.addSubgroups(dm.gtr, 2)
-  #sum_stats <- dm.simSumStats(dm, c(1, 10))
-  #expect_true(sum(sum_stats$jsfs) > 0)
+  sum_stats <- dm.simSumStats(dm, c(1, 10))
+  expect_true(sum(sum_stats$jsfs) > 0)
 })
