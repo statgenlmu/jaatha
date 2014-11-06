@@ -202,11 +202,22 @@ dm.addParameter <- function(dm, par.name, lower.boundary, upper.boundary, fixed.
 #'            possibly containing one or more previously created parameter
 #'            names.
 #' @param group     For genomic features, different groups can be created.
-#' @return          The extended demographic model.
+#' @param variance Set to a value different from 0 to introduce a variation of
+#'                 the parameter between loci. Can also be set to a previously 
+#'                 created parameter, or an expression based on parameters. The 
+#'                 variation follows a discrete gamma model with mean equal to
+#'                 the value provided as \code{parameter}, and variance as given
+#'                 here. 
+#' @param var.classes This sets the number of classes used in the discrete gamma
+#'                 distribution descriped in \code{variance}. Fewer classes should
+#'                 increase performance, but leads to harder approximation of the
+#'                 gamma distribution.
+#' @return         The extended demographic model.
 addFeature <- function(dm, type, parameter=NA,
                        lower.range=NA, upper.range=NA, fixed.value=NA, par.new=T,
                        pop.source=NA, pop.sink=NA,
-                       time.point=NA, group=0) {
+                       time.point=NA, group=0, 
+                       variance=0, var.classes=5) {
   
   if (missing(par.new))     par.new <- T
   if (missing(parameter))   parameter <- NA
@@ -224,9 +235,20 @@ addFeature <- function(dm, type, parameter=NA,
   checkType(pop.sink,    c("num",  "s"), T, T)
   checkType(time.point,  c("char", "s"), T, T)
   checkType(group,       c("num",  "s"), T, T)
+  checkType(variance,    c("s"), T, T)
+  checkType(var.classes, c("num",  "s"), T, T)
 
-  if (par.new) dm <- dm.addParameter(dm, parameter, lower.range, upper.range, fixed.value)
+  if (par.new) dm <- dm.addParameter(dm, parameter, lower.range, 
+                                     upper.range, fixed.value)
 
+  if (variance != 0) {
+    if (dm.getSubgroupNumber(dm) > 1) 
+      stop("Variation is only supported for one parameter per model")
+    dm <- dm.addSubgroups(dm, var.classes)
+    parameter <- paste0('calcDiscreteGammaRate(subgroup, ', parameter, ', ',
+                                               variance, ', ', var.classes, ')')
+  }
+  
   # Append the feature
   dm <- appendToFeatures(dm = dm,
                          type = type,
@@ -1259,7 +1281,8 @@ dm.addOutgroup <- function(dm, separation.time) {
 # This function is highly experimental. Don't use it yet.
 dm.addPositiveSelection <- function(dm, min.strength, max.strength, fixed.strength, 
                          par.new=T, new.par.name="s", parameter, 
-                         population, at.time, group=0) {
+                         variance = '0', var.classes = 5, population, 
+                         at.time, group=0) {
 
   checkType(population, c("num",  "s"), T, F)
   checkType(at.time,    c("char", "s"), T, F)
@@ -1267,7 +1290,8 @@ dm.addPositiveSelection <- function(dm, min.strength, max.strength, fixed.streng
   if (par.new) parameter <- new.par.name
 
   dm <- addFeature(dm, "pos.selection", parameter, min.strength, max.strength,
-                   fixed.strength, par.new, population, NA, at.time, group)
+                   fixed.strength, par.new, population, NA, at.time, group,
+                   variance, var.classes)
 
   return(dm)
 }
@@ -1443,4 +1467,12 @@ dm.getSubgroupNumber <- function(dm, group = 1) {
   number <- searchFeature(dm, 'subgroups', group = group)$parameter
   if (length(number) == 0) return(1)
   as.numeric(number)
+}
+
+# Calulates the rate for the different gamma subgroups.
+# Uses the median of the group, because the mean is difficult to approximate.
+calcDiscreteGammaRate <- function(subgroup, mean, var, n_subgroups) {
+  stopifnot(var >= 0)
+  if (var == 0) return(rep(mean, length(subgroup)))
+  qgamma((2*subgroup-1)/(2*n_subgroups), mean^2/var, mean/var)
 }

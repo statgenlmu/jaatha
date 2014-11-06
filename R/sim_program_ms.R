@@ -109,6 +109,7 @@ msSingleSimFunc <- function(dm, parameters) {
   # Run a simulation for each subgroup
   subgroup_sizes <- sampleSubgroupSizes(dm)
   ms.files <- sapply(1:dm.getSubgroupNumber(dm), function(subgroup) {
+    if (subgroup_sizes[subgroup] == 0) return("")
     ms.options <- generateMsOptions(dm, parameters, subgroup)
     ms.file <- getTempFile('ms')
     ms(sum(dm.getSampleSize(dm)), 

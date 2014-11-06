@@ -78,7 +78,7 @@ generateMsmsOptionsCommand <- function(dm) {
   cmd
 }
 
-generateMsmsOptions <- function(dm, parameters) {
+generateMsmsOptions <- function(dm, parameters, subgroup) {
   msms.tmp <- new.env()
 
   par.names <- dm.getParameters(dm)
@@ -111,10 +111,13 @@ msmsSimFunc <- function(dm, parameters) {
   # Generate Options
   subgroup_sizes <- sampleSubgroupSizes(dm)
   msms.files <- sapply(1:dm.getSubgroupNumber(dm), function(subgroup) {
+    if (subgroup_sizes[subgroup] == 0) return("")
     ms.options <- paste(sum(dm.getSampleSize(dm)),
                         subgroup_sizes[subgroup],
-                        paste(generateMsOptions(dm, parameters), collapse=" "))
-    msms.options <- paste(generateMsmsOptions(dm, parameters), collapse= " ") 
+                        paste(generateMsOptions(dm, parameters, subgroup), 
+                              collapse=" "))
+    msms.options <- paste(generateMsmsOptions(dm, parameters, subgroup), 
+                          collapse= " ")
     callMsms(getJaathaVariable('msms.jar'), ms.options, msms.options)
   })
   

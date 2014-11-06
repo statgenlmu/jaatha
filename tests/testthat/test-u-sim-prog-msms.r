@@ -92,15 +92,29 @@ test_that("msms can simulate subgroups", {
 })
 
 test_that("Gamma Distributed Rates work", {
-  #if (!test_msms) return()
-  #dm <- dm.addParameter(dm.tt, par.name = "shape", 100, 500)
-  #dm <- dm.addParameter(dm, par.name = "scale", 0.1, 5)
-  #dm <- dm.addPositiveSelection(dm, par.new = FALSE, 
-  #                              parameter = "rgamma(1,shape=shape,scale=scale)",
-  #                              population = 1, at.time = "2")
-  #pars <- c(1, 2, 100, 1.5)
-  #sum.stats <- dm.simSumStats(dm, pars)
-  #expect_equal(length(sum.stats), 2)
-  #expect_equal(sum.stats$pars, pars)
+  if (!test_msms) return()
+  dm_tmp <- dm.addPositiveSelection(dm.mig, 1000, 2000, population=2,
+                                    at.time='tau/2', variance='s^2',
+                                    var.classes = 3)
+  dm_tmp <- dm.addSummaryStatistic(dm_tmp, 'seg.sites')
+  
+  sum_stats <- dm.simSumStats(dm_tmp, c(1, 5, 2, 1500))
+  for (seg_sites in sum_stats$seg.sites) {
+    expect_true(is.matrix(seg_sites))
+  }
+  expect_false(any(is.na(sum_stats$jsfs)))
+  expect_true(sum(sum_stats$jsfs) > 0)
+  
+  dm_tmp <- dm.addPositiveSelection(dm.mig, 1000, 2000, population=2,
+                                    at.time='tau/2', variance='s^2',
+                                    var.classes = 6)
+  dm_tmp <- dm.addSummaryStatistic(dm_tmp, 'seg.sites')
+  
+  sum_stats <- dm.simSumStats(dm_tmp, c(1, 5, 2, 1500))
+  for (seg_sites in sum_stats$seg.sites) {
+    expect_true(is.matrix(seg_sites))
+  }
+  expect_false(any(is.na(sum_stats$jsfs)))
+  expect_true(sum(sum_stats$jsfs) > 0)
 })
 

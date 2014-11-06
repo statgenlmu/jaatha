@@ -35,6 +35,7 @@ List parseOutput(const std::vector<std::string> file_names,
        file_name != file_names.end(); ++file_name) {
          
     // Open the file
+    if (file_name->size() == 0) continue;
     std::ifstream output(file_name->c_str(), std::ifstream::in);
     if (!output.is_open()) {
       stop("Cannot open file");

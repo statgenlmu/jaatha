@@ -87,4 +87,9 @@ test_that("ms can simulate subgroups", {
   }
   expect_false(any(is.na(sum_stats$jsfs)))
   expect_true(sum(sum_stats$jsfs) > 0)
+  
+  dm_tmp <- dm.addSubgroups(dm.tt, 20)
+  dm_tmp <- dm.addSummaryStatistic(dm_tmp, 'seg.sites')
+  sum_stats <- dm.simSumStats(dm_tmp, c(1, 5))
+  expect_equal(length(sum_stats$seg.sites), 10)
 })
