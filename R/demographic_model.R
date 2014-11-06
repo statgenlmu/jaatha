@@ -500,6 +500,7 @@ dm.setLociLength <- function(dm, loci.length, group=0) {
 #' @param dm The Demographic Model
 #' @param group The group for which we get the number of loci. Defaults to 
 #'              the first group.
+#' @param subgroup If set, the number of loci in a given subgroup are returned.
 #' @return The number of loci in the group
 #' @export
 dm.getLociNumber <- function(dm, group=1, subgroup=NA) {

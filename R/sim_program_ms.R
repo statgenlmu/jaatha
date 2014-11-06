@@ -14,9 +14,9 @@ possible.sum.stats <- c("jsfs", "fpc", "trees", "seg.sites", "pmc", "file")
 
 #' Function to perform simulation using ms 
 #' 
-#' @param opts The options to pass to ms. Must either be a character or character
-#' vector.
-#' @param dm The demographic model we are using
+#' @param opts The options to pass to ms. Must either be character vector.
+#' @param dm The demographic model to simulate.
+#' @param subgroup The subgroup that we are simulating.
 #' @return The file containing the output of ms
 callMs <- function(opts, dm, subgroup=NA){
   if (missing(opts)) stop("No options given!")

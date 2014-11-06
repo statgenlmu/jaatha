@@ -3,13 +3,14 @@
 \alias{callMs}
 \title{Function to perform simulation using ms}
 \usage{
-callMs(opts, dm)
+callMs(opts, dm, subgroup = NA)
 }
 \arguments{
-\item{opts}{The options to pass to ms. Must either be a character or character
-vector.}
+\item{opts}{The options to pass to ms. Must either be character vector.}
 
-\item{dm}{The demographic model we are using}
+\item{dm}{The demographic model to simulate.}
+
+\item{subgroup}{The subgroup that we are simulating.}
 }
 \value{
 The file containing the output of ms

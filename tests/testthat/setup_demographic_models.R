@@ -61,7 +61,7 @@ if (jaatha:::checkForMsms(FALSE, TRUE)) {
   test_msms <- FALSE
 }
 
-if (require('ape')) {
+if (require('ape', quietly = TRUE)) {
   test_ape <- TRUE
 } else {
   test_ape <- FALSE
