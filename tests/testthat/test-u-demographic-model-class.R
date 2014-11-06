@@ -334,3 +334,20 @@ test_that("Adding and Getting Subgroups works", {
   expect_equal(dm.getSubgroupNumber(dm), 5, 2)
   expect_equal(dm.getSubgroupNumber(dm), 5, 3)
 })
+
+test_that("test.printEmptyDM", {
+  tmp_file <- tempfile()
+  sink(tmp_file)
+  dm <- dm.createDemographicModel(25:26, 100)
+  print(dm)
+  sink(NULL)
+  unlink(tmp_file)
+})
+
+test_that("test.printGroupDM", {
+  tmp_file <- tempfile()
+  sink(tmp_file)
+  print(dm.grp)
+  sink(NULL)
+  unlink(tmp_file)
+})

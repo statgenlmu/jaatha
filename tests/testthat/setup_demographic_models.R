@@ -60,3 +60,10 @@ if (jaatha:::checkForMsms(FALSE, TRUE)) {
   warning("Msms not found. Skipping tests.")
   test_msms <- FALSE
 }
+
+if (require('ape')) {
+  test_ape <- TRUE
+} else {
+  test_ape <- FALSE
+  warning("Package ape not available. Skipping some tests.")
+}
