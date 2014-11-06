@@ -59,11 +59,9 @@ test_that("test.finalizeSeqgen", {
 
 test_that("test.generateSeqgenOptions", {
   if (!test_seqgen) return()
-  jaatha:::setJaathaVariable("seqgen.exe", "seq-gen")
   dm.hky@options$seqgen.cmd <- NULL
   opts <- jaatha:::generateSeqgenOptions(dm.hky, c(1, 10))
   opts <- strsplit(opts, " ")[[1]]
-  expect_true(opts[1] == "seq-gen")
   expect_true("-l" %in% opts)
   expect_true("-p" %in% opts)
   expect_true("-z" %in% opts)
@@ -98,7 +96,7 @@ test_that("test.seqgenMutationParameterNotLast", {
 test_that("test.seqgenSingleSimFunc", {
   if (!test_seqgen) return()
   seqgenSingleSimFunc = getSimProgram("seq-gen")$sim_func
-  expect_error(seqgenSingleSimFunc(dm.tt, c(1, 10)))
+  invisible(expect_error(seqgenSingleSimFunc(dm.tt, c(1, 10))))
   set.seed(100)
   sum.stats <- seqgenSingleSimFunc(dm.hky, c(1, 10))
   expect_true(is.list(sum.stats))

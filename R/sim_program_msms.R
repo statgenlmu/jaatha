@@ -7,7 +7,7 @@
 # Licence:  GPLv3 or later
 # --------------------------------------------------------------
 
-callMsms <- function(jar.path, ms.args, msms.args) {
+callMsms <- function(jar.path, ms.args, msms.args, subgroup) {
   out.file = getTempFile("msms")
   seed <- generateSeeds(1)
 
@@ -110,7 +110,8 @@ msmsSimFunc <- function(dm, parameters) {
 
   # Generate Options
   msms.files <- sapply(1:dm.getSubgroupNumber(dm), function(subgroup) {
-    ms.options <- paste(sum(dm.getSampleSize(dm)), dm.getLociNumber(dm), 
+    ms.options <- paste(sum(dm.getSampleSize(dm)),
+                        dm.getLociNumber(dm, subgroup=subgroup),
                         paste(generateMsOptions(dm, parameters), collapse=" "))
     msms.options <- paste(generateMsmsOptions(dm, parameters), collapse= " ") 
     callMsms(getJaathaVariable('msms.jar'), ms.options, msms.options)

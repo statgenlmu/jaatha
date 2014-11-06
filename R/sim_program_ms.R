@@ -18,14 +18,14 @@ possible.sum.stats <- c("jsfs", "fpc", "trees", "seg.sites", "pmc", "file")
 #' vector.
 #' @param dm The demographic model we are using
 #' @return The file containing the output of ms
-callMs <- function(opts, dm){
+callMs <- function(opts, dm, subgroup=NA){
   if (missing(opts)) stop("No options given!")
   opts <- unlist(strsplit(opts, " "))
 
   ms.file <- getTempFile("ms")
-  
-  ms(sum(dm.getSampleSize(dm)), dm.getLociNumber(dm), opts, ms.file)
-  return(ms.file)
+  ms(sum(dm.getSampleSize(dm)), dm.getLociNumber(dm, subgroup=subgroup), 
+     opts, ms.file)
+  ms.file
 }
 
 # This function generates an string that contains an R command for generating
@@ -76,7 +76,7 @@ generateMsOptionsCommand <- function(dm) {
   cmd <- c(cmd, '" ")')
 }
 
-generateMsOptions <- function(dm, parameters) {
+generateMsOptions <- function(dm, parameters, subgroup) {
   ms.tmp <- new.env()
 
   par.names <- dm.getParameters(dm)
@@ -122,8 +122,8 @@ msSingleSimFunc <- function(dm, parameters) {
   if (length(parameters) != dm.getNPar(dm)) stop("Wrong number of parameters!")
 
   ms.files <- sapply(1:dm.getSubgroupNumber(dm), function(subgroup) {
-    ms.options <- generateMsOptions(dm, parameters)
-    callMs(ms.options, dm)
+    ms.options <- generateMsOptions(dm, parameters, subgroup)
+    callMs(ms.options, dm, subgroup)
   })
   
   # Parse the simulation output

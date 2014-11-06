@@ -502,9 +502,21 @@ dm.setLociLength <- function(dm, loci.length, group=0) {
 #'              the first group.
 #' @return The number of loci in the group
 #' @export
-dm.getLociNumber <- function(dm, group=1) {
-  ln <- searchFeature(dm, type='loci.number', group=group)
-  as.integer(ln$parameter)
+dm.getLociNumber <- function(dm, group=1, subgroup=NA) {
+  loci_number <- as.integer(searchFeature(dm, type='loci.number', 
+                                          group=group)$parameter)
+  subg_number <- dm.getSubgroupNumber(dm, group)
+  
+  # Return total number of loci if we don't have subgroups, 
+  # or are not requesting the value for a subgroup
+  if (is.na(subgroup) | subg_number == 1) return(loci_number)
+  
+  # Otherwise return the values for a subgroup
+  loci_per_subgroup <- round(loci_number/subg_number)
+  if (subgroup == subg_number) {
+    return(loci_number - (subg_number-1) * loci_per_subgroup)
+  }
+  loci_per_subgroup
 }
 
 #' Gets how long the loci in a group are

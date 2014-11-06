@@ -79,5 +79,17 @@ test_that("Generation of PMC statistic works", {
 })
 
 test_that("the ms sim program exists", {
-    expect_false(is.null(.jaatha$sim_progs[["ms"]]))
+  expect_false(is.null(.jaatha$sim_progs[["ms"]]))
+})
+
+test_that("ms can simulate subgroups", {
+  dm_tmp <- dm.addSubgroups(dm.tt, 3)
+  dm_tmp <- dm.addSummaryStatistic(dm_tmp, 'seg.sites')
+  sum_stats <- dm.simSumStats(dm_tmp, c(1, 5))
+  expect_equal(length(sum_stats$seg.sites), 10)
+  for (seg_sites in sum_stats$seg.sites) {
+    expect_true(is.matrix(seg_sites))
+  }
+  expect_false(any(is.na(sum_stats$jsfs)))
+  expect_true(sum(sum_stats$jsfs) > 0)
 })
