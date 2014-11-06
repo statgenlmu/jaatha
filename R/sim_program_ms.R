@@ -12,21 +12,6 @@ possible.features  <- c("sample", "loci.number", "loci.length",
                         "subgroups")
 possible.sum.stats <- c("jsfs", "fpc", "trees", "seg.sites", "pmc", "file")
 
-#' Function to perform simulation using ms 
-#' 
-#' @param opts The options to pass to ms. Must either be character vector.
-#' @param dm The demographic model to simulate.
-#' @param subgroup The subgroup that we are simulating.
-#' @return The file containing the output of ms
-callMs <- function(opts, dm, subgroup=NA){
-  if (missing(opts)) stop("No options given!")
-  opts <- unlist(strsplit(opts, " "))
-
-  ms.file <- getTempFile("ms")
-  ms(sum(dm.getSampleSize(dm)), dm.getLociNumber(dm, subgroup=subgroup), 
-     opts, ms.file)
-  ms.file
-}
 
 # This function generates an string that contains an R command for generating
 # an ms call to the current model.
@@ -121,9 +106,16 @@ msSingleSimFunc <- function(dm, parameters) {
   checkType(parameters, "num")
   if (length(parameters) != dm.getNPar(dm)) stop("Wrong number of parameters!")
 
+  # Run a simulation for each subgroup
+  subgroup_sizes <- sampleSubgroupSizes(dm)
   ms.files <- sapply(1:dm.getSubgroupNumber(dm), function(subgroup) {
     ms.options <- generateMsOptions(dm, parameters, subgroup)
-    callMs(ms.options, dm, subgroup)
+    ms.file <- getTempFile('ms')
+    ms(sum(dm.getSampleSize(dm)), 
+       subgroup_sizes[subgroup], 
+       unlist(strsplit(ms.options, " ")), 
+       ms.file)
+    ms.file
   })
   
   # Parse the simulation output
@@ -133,6 +125,12 @@ msSingleSimFunc <- function(dm, parameters) {
 finalizeMs <- function(dm) {
   dm@options[['ms.cmd']] <- generateMsOptionsCommand(dm)
   return(dm)
+}
+
+sampleSubgroupSizes <- function(dm) {
+  subgroup_num <- dm.getSubgroupNumber(dm)
+  if (subgroup_num == 1) return(dm.getLociNumber(dm))
+  rmultinom(1, dm.getLociNumber(dm), rep(1,subgroup_num))[,1]
 }
 
 createSimProgram("ms", possible.features, possible.sum.stats, 

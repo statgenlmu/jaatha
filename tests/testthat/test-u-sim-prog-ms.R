@@ -1,10 +1,5 @@
 context("ms simulation interface")
 
-test_that("ms can be called", {
-    expect_error(callMs())
-    expect_true(file.exists(callMs("-t 5", dm.tt)))
-})
-
 test_that("msSimFunc is working", {
     set.seed(789)
     sum.stats <- msSingleSimFunc(dm.tt, c(1, 10))

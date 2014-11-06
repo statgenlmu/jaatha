@@ -258,16 +258,6 @@ test_that("set and get loci number works", {
   expect_equal(dm.getLociNumber(dm), 32)
   expect_equal(dm.getLociNumber(dm, 1), 32)
   expect_equal(dm.getLociNumber(dm, 2), 23)
-  
-  dm <- dm.addSubgroups(dm, 2, group = 1)
-  dm <- dm.addSubgroups(dm, 3, group = 2)
-  expect_equal(dm.getLociNumber(dm, 1), 32)
-  expect_equal(dm.getLociNumber(dm, 1, 1), 16)
-  expect_equal(dm.getLociNumber(dm, 1, 2), 16)
-  expect_equal(dm.getLociNumber(dm, 2), 23)
-  expect_equal(dm.getLociNumber(dm, 2, 1), 8)
-  expect_equal(dm.getLociNumber(dm, 2, 2), 8)
-  expect_equal(dm.getLociNumber(dm, 2, 3), 7)
 })
 
 test_that("test.setMutationModel", {

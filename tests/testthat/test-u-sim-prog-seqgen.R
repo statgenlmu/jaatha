@@ -34,8 +34,8 @@ test_that("test.callSeqgen", {
   opts <- c("seq-gen", " -mHKY", " -l", dm.getLociLength(dm.tt), 
             " -p", dm.getLociLength(dm.tt) + 1, " -q")
   dm.tt <- dm.addSummaryStatistic(dm.tt, "trees")
-  ms.options <- jaatha:::generateMsOptions(dm.tt, c(1, 10))
-  ms.file <- jaatha:::callMs(ms.options, dm.tt)
+  dm.tt <- dm.addSummaryStatistic(dm.tt, "file")
+  ms.file <- msSingleSimFunc(dm.tt, c(1,5))$file
   seqgen.file <- callSeqgen(opts, ms.file)
   expect_true(file.exists(seqgen.file))
   expect_true(file.info(seqgen.file)$size != 0)
