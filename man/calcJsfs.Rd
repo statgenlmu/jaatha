@@ -5,6 +5,15 @@
 \usage{
 calcJsfs(seg_sites, sample_size)
 }
+\arguments{
+\item{seg_sites}{List of segregating sites}
+
+\item{sample_size}{A numberic vector of size 2, giving the sample sizes
+of the two population for which the JSFS is calulated}
+}
+\value{
+The Joint Site Frequency Spectrum, as a matrix.
+}
 \description{
 Calculate the JSFS from a list of segregating sites statistics
 }
