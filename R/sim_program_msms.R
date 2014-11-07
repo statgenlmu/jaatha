@@ -7,6 +7,10 @@
 # Licence:  GPLv3 or later
 # --------------------------------------------------------------
 
+msms.features <- c("pos.selection")
+possible.features  <- c(getSimProgram('ms')$possible_features, msms.features)
+possible.sum.stats <- getSimProgram('ms')$possible_sum_stats
+
 callMsms <- function(jar.path, ms.args, msms.args, subgroup) {
   out.file = getTempFile("msms")
   seed <- generateSeeds(1)
@@ -47,9 +51,7 @@ checkForMsms <- function(throw.error = TRUE, silent = FALSE) {
   return(FALSE)
 }
 
-msms.features <- c("pos.selection")
-possible.features  <- c(getSimProgram('ms')$possible_features, msms.features)
-possible.sum.stats <- getSimProgram('ms')$possible_sum_stats
+
 
 # This function generates an string that contains an R command for generating
 # an msms call to the current model.
@@ -78,20 +80,27 @@ generateMsmsOptionsCommand <- function(dm) {
   cmd
 }
 
-generateMsmsOptions <- function(dm, parameters, subgroup) {
-  msms.tmp <- new.env()
-
+createParameterEnv <- function(dm, parameters, subgroup) {
+  par_env <- new.env()
+  
   par.names <- dm.getParameters(dm)
   for (i in seq(along = par.names)){
-    msms.tmp[[ par.names[i] ]] <- parameters[i]
+    par_env[[ par.names[i] ]] <- parameters[i]
   }
-
+  
   fixed.pars <- dm@parameters[dm@parameters$fixed, ]
   if (nrow(fixed.pars) > 0) {
     for (i in 1:nrow(fixed.pars)){
-      msms.tmp[[ fixed.pars$name[i] ]] <- fixed.pars$lower.range[i]
+      par_env[[ fixed.pars$name[i] ]] <- fixed.pars$lower.range[i]
     }
   }
+  
+  par_env[['subgroup']] <- subgroup
+  par_env
+}
+
+generateMsmsOptions <- function(dm, parameters, subgroup) {
+  msms.tmp <- createParameterEnv(dm, parameters, subgroup)
 
   if ( !is.null( dm@options[['msms.cmd']] ) )
     cmd <- dm@options[['msms.cmd']]
@@ -109,7 +118,7 @@ msmsSimFunc <- function(dm, parameters) {
     stop("Wrong number of parameters!")
 
   # Generate Options
-  subgroup_sizes <- sampleSubgroupSizes(dm)
+  subgroup_sizes <- sampleSubgroupSizes(dm, parameters)
   msms.files <- sapply(1:dm.getSubgroupNumber(dm), function(subgroup) {
     if (subgroup_sizes[subgroup] == 0) return("")
     ms.options <- paste(sum(dm.getSampleSize(dm)),
@@ -118,6 +127,7 @@ msmsSimFunc <- function(dm, parameters) {
                               collapse=" "))
     msms.options <- paste(generateMsmsOptions(dm, parameters, subgroup), 
                           collapse= " ")
+    #print(c(ms.options, msms.options))
     callMsms(getJaathaVariable('msms.jar'), ms.options, msms.options)
   })
   

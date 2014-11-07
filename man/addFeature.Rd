@@ -5,7 +5,8 @@
 \usage{
 addFeature(dm, type, parameter = NA, lower.range = NA, upper.range = NA,
   fixed.value = NA, par.new = T, pop.source = NA, pop.sink = NA,
-  time.point = NA, group = 0, variance = 0, var.classes = 5)
+  time.point = NA, group = 0, variance = 0, var.classes = 5,
+  zero.inflation = 0)
 }
 \arguments{
 \item{dm}{The demographic model to which the feature will be added}
@@ -49,6 +50,12 @@ created parameter, or an expression based on parameters.}
 distribution described in \code{variance}. Fewer classes should
 increase performance, but leads to harder approximation of the
 gamma distribution.}
+
+\item{zero.inflation}{If used, a zero inflated discrete gamma distribution is
+used to model the variablility between loci. This parameter
+should evluate to the percent of loci for which the parameter
+is 0. The values for all other loci will be drawn from the
+discretized gamma distribution.}
 }
 \value{
 The extended demographic model.

@@ -9,7 +9,7 @@
 possible.features  <- c("sample", "loci.number", "loci.length",
                         "mutation", "migration", "split",
                         "recombination", "size.change", "growth",
-                        "subgroups")
+                        "subgroups", "zero_inflation")
 possible.sum.stats <- c("jsfs", "fpc", "trees", "seg.sites", "pmc", "file")
 
 
@@ -53,7 +53,7 @@ generateMsOptionsCommand <- function(dm) {
       }
 
     else if (type %in% c("sample", "loci.number", "loci.length", 
-                         "pos.selection", "subgroups")) {}
+                         "pos.selection", "subgroups", "zero_inflation")) {}
     else stop("Unknown feature:", type)
   }
 
@@ -107,7 +107,7 @@ msSingleSimFunc <- function(dm, parameters) {
   if (length(parameters) != dm.getNPar(dm)) stop("Wrong number of parameters!")
 
   # Run a simulation for each subgroup
-  subgroup_sizes <- sampleSubgroupSizes(dm)
+  subgroup_sizes <- sampleSubgroupSizes(dm, parameters)
   ms.files <- sapply(1:dm.getSubgroupNumber(dm), function(subgroup) {
     if (subgroup_sizes[subgroup] == 0) return("")
     ms.options <- generateMsOptions(dm, parameters, subgroup)
@@ -128,10 +128,26 @@ finalizeMs <- function(dm) {
   return(dm)
 }
 
-sampleSubgroupSizes <- function(dm) {
-  subgroup_num <- dm.getSubgroupNumber(dm)
-  if (subgroup_num == 1) return(dm.getLociNumber(dm))
-  rmultinom(1, dm.getLociNumber(dm), rep(1,subgroup_num))[,1]
+sampleSubgroupSizes <- function(dm, parameters) {  
+  zero_inflation <- dm.getZeroInflation(dm)
+  loci_num <- dm.getLociNumber(dm)
+  
+  if (!is.na(zero_inflation)) {
+    par_env <- createParameterEnv(dm, parameters, 0)
+    zi_value <- eval(parse(text=zero_inflation), envir=par_env)
+    if(!(is.numeric(zi_value) & 0 < zi_value & zi_value < 1))
+      stop("parsing parameter '", zero_inflation, "' failed.")
+    
+    zero_group <- round(zi_value * loci_num)
+    loci_num <- loci_num - zero_group
+    subgroup_num <- dm.getSubgroupNumber(dm) - 1
+  } else {
+    zero_group <- numeric()
+    subgroup_num <- dm.getSubgroupNumber(dm)
+  }
+  
+  if (subgroup_num == 1) return(c(zero_group, loci_num))
+  c(zero_group, rmultinom(1, loci_num, rep(1, subgroup_num))[,1])
 }
 
 createSimProgram("ms", possible.features, possible.sum.stats, 

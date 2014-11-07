@@ -108,3 +108,32 @@ test_that("ms can simulate variable rates", {
   expect_false(any(is.na(sum_stats$jsfs)))
   expect_true(sum(sum_stats$jsfs) > 0)
 })
+
+test_that("sample subgroup sizes works", {
+  expect_equal(sampleSubgroupSizes(dm.tt), 10)
+  expect_equal(sampleSubgroupSizes(dm.mig), 10)
+  expect_equal(sampleSubgroupSizes(dm.hky), 5)
+  
+  dm_tmp <- dm.addSubgroups(dm.tt, 5)
+  for (i in 1:10) {
+    subg_sizes <- sampleSubgroupSizes(dm_tmp, c(1, 5))
+    expect_equal(length(subg_sizes), 5)
+    expect_equal(sum(subg_sizes), 10)
+  }
+  
+  # Zero inflation
+  dm_tmp <- dm.addSubgroups(dm.tt, 2, zero_inflation = 0.5)
+  subg_sizes <- sampleSubgroupSizes(dm_tmp, c(1, 5))
+  expect_equal(length(subg_sizes), 3)
+  expect_equal(sum(subg_sizes), 10)
+  expect_equal(subg_sizes[1], 5)
+  
+  dm_tmp <- dm.addParameter(dm.tt, 0.01, 0.99, par.name = 'zi')
+  dm_tmp <- dm.addSubgroups(dm_tmp, 2, zero_inflation = 'zi')
+  expect_equal(sampleSubgroupSizes(dm_tmp, c(1, 5, 0.11))[1], 1)
+  expect_equal(sampleSubgroupSizes(dm_tmp, c(1, 5, 0.13))[1], 1)
+  expect_equal(sampleSubgroupSizes(dm_tmp, c(1, 5, 0.17))[1], 2)
+  expect_equal(sampleSubgroupSizes(dm_tmp, c(1, 5, 0.251))[1], 3)
+  expect_equal(sampleSubgroupSizes(dm_tmp, c(1, 5, 0.71))[1], 7)
+  expect_equal(sampleSubgroupSizes(dm_tmp, c(1, 5, 0.97))[1], 10)
+})

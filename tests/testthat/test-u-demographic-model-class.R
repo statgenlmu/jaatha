@@ -326,10 +326,27 @@ test_that("Adding and Getting Subgroups works", {
   dm <- dm.addSubgroups(dm, 5, group = 2)
   dm <- dm.addSubgroups(dm, 5, group = 3)
   expect_equal(dm.getSubgroupNumber(dm), 2)
-  expect_equal(dm.getSubgroupNumber(dm), 2, 0)
-  expect_equal(dm.getSubgroupNumber(dm), 2, 1)
-  expect_equal(dm.getSubgroupNumber(dm), 5, 2)
-  expect_equal(dm.getSubgroupNumber(dm), 5, 3)
+  expect_equal(dm.getSubgroupNumber(dm, group = 0), 2)
+  expect_equal(dm.getSubgroupNumber(dm, group = 1), 2)
+  expect_equal(dm.getSubgroupNumber(dm, group = 2), 5)
+  expect_equal(dm.getSubgroupNumber(dm, group = 3), 5)
+  
+  dm <- dm.addSubgroups(dm, 2, group = 4, zero_inflation = 0.5)
+  expect_equal(dm.getSubgroupNumber(dm, group = 4), 3)
+  expect_equal(dm.getSubgroupNumber(dm, group = 4, with_zero_inflasion = FALSE), 2)
+  expect_equal(dm.getZeroInflation(dm, group = 4), '0.5')
+  
+  dm <- dm.addSubgroups(dm, 3, group = 5, zero_inflation = "zi")
+  expect_equal(dm.getSubgroupNumber(dm, group = 5, with_zero_inflasion = FALSE), 3)
+  expect_equal(dm.getSubgroupNumber(dm, group = 5), 4)
+  expect_equal(dm.getZeroInflation(dm, group = 5), 'zi')
+  
+  expect_equal(dm.getZeroInflation(dm, group = 1),  NA)
+  expect_equal(dm.getZeroInflation(dm, group = 2),  NA)
+  expect_equal(dm.getZeroInflation(dm, group = 3),  NA)
+  
+  dm <- dm.addSubgroups(dm, 1, group = 6, zero_inflation = "zi")
+  expect_equal(dm.getSubgroupNumber(dm, group = 6), 2)
 })
 
 test_that("test.printEmptyDM", {

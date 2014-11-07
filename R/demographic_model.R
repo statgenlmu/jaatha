@@ -212,12 +212,17 @@ dm.addParameter <- function(dm, par.name, lower.boundary, upper.boundary, fixed.
 #'                 distribution described in \code{variance}. Fewer classes should
 #'                 increase performance, but leads to harder approximation of the
 #'                 gamma distribution.
+#' @param zero.inflation If used, a zero inflated discrete gamma distribution is 
+#'                 used to model the variablility between loci. This parameter
+#'                 should evluate to the percent of loci for which the parameter
+#'                 is 0. The values for all other loci will be drawn from the
+#'                 discretized gamma distribution.
 #' @return         The extended demographic model.
 addFeature <- function(dm, type, parameter=NA,
                        lower.range=NA, upper.range=NA, fixed.value=NA, par.new=T,
                        pop.source=NA, pop.sink=NA,
                        time.point=NA, group=0, 
-                       variance=0, var.classes=5) {
+                       variance=0, var.classes=5, zero.inflation = 0) {
   
   if (missing(par.new))     par.new <- T
   if (missing(parameter))   parameter <- NA
@@ -244,9 +249,20 @@ addFeature <- function(dm, type, parameter=NA,
   if (variance != 0) {
     if (dm.getSubgroupNumber(dm) > 1) 
       stop("Variation is only supported for one parameter per model")
-    dm <- dm.addSubgroups(dm, var.classes, group = group)
-    parameter <- paste0('calcDiscreteGammaRate(subgroup, ', parameter, ', ',
-                                               variance, ', ', var.classes, ')')
+    dm <- dm.addSubgroups(dm, var.classes, group = group, 
+                          zero_inflation = zero.inflation)
+    if (zero.inflation == 0) {
+      parameter <- paste0('calcDiscreteGammaRate(subgroup, ', parameter, ', ',
+                          variance, ', ', var.classes, ')')
+    } else {
+      parameter <- paste0('ifelse(subgroup == 1, 0, ', 
+                          'calcDiscreteGammaRate(subgroup-1, ', parameter, ', ',
+                          variance, ', ', var.classes, '))')
+    }
+      
+  } else if (zero.inflation != 0) {
+    dm <- dm.addSubgroups(dm, 1, group = group, zero_inflation = zero.inflation)
+    parameter <- paste0('ifelse(subgroup == 1, 0, ', parameter, ")")
   }
   
   # Append the feature
@@ -1315,8 +1331,8 @@ dm.addOutgroup <- function(dm, separation.time) {
 # This function is highly experimental. Don't use it yet.
 dm.addPositiveSelection <- function(dm, min.strength, max.strength, fixed.strength, 
                          par.new=T, new.par.name="s", parameter, 
-                         variance = 0, var.classes = 5, population, 
-                         at.time, group=0) {
+                         variance = 0, var.classes = 5, fraction.neutral = 0,
+                         population, at.time, group=0) {
 
   checkType(population, c("num",  "s"), T, F)
   checkType(at.time,    c("char", "s"), T, F)
@@ -1325,7 +1341,8 @@ dm.addPositiveSelection <- function(dm, min.strength, max.strength, fixed.streng
 
   dm <- addFeature(dm, "pos.selection", parameter, min.strength, max.strength,
                    fixed.strength, par.new, population, NA, at.time, group,
-                   variance, var.classes)
+                   variance = variance, var.classes = var.classes, 
+                   zero.inflation = fraction.neutral)
 
   return(dm)
 }
@@ -1490,17 +1507,37 @@ scaleDemographicModel <- function(dm, scaling.factor) {
   return(dm)
 }
 
-dm.addSubgroups <- function(dm, subgroup_number, group = 0) {
+dm.addSubgroups <- function(dm, subgroup_number, zero_inflation = 0, group = 0) {
   checkType(subgroup_number, c('num', 's'))
   checkType(group, c('num', 's'))
+  checkType(zero_inflation, c('s'), FALSE)
+  
+  if (zero_inflation != 0) {
+    dm <- addFeature(dm, 'zero_inflation', as.character(zero_inflation),
+                     group = group, par.new = FALSE)
+  }
+  
   addFeature(dm, 'subgroups', as.character(subgroup_number), 
              group = group, par.new = FALSE)
 }
 
-dm.getSubgroupNumber <- function(dm, group = 1) {
+dm.getSubgroupNumber <- function(dm, group = 1, with_zero_inflasion = TRUE) {
   number <- searchFeature(dm, 'subgroups', group = group)$parameter
-  if (length(number) == 0) return(1)
-  as.numeric(number)
+  
+  if (length(number) == 0) number <- 1
+  else number <- as.numeric(number)
+  
+  if(with_zero_inflasion) {
+    if (!is.na(dm.getZeroInflation(dm, group = group))) number <- number + 1
+  }
+  
+  number
+}
+
+dm.getZeroInflation <- function(dm, group = 1) {
+  zi <- searchFeature(dm, 'zero_inflation', group = group)
+  if (nrow(zi) == 0) return(NA)
+  zi$parameter
 }
 
 # Calulates the rate for the different gamma subgroups.
