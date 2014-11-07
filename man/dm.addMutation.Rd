@@ -4,7 +4,8 @@
 \title{Adds mutations to a demographic model}
 \usage{
 dm.addMutation(dm, lower.range, upper.range, fixed.value, par.new = T,
-  new.par.name = "theta", parameter, variance = 0, var.classes = 5)
+  new.par.name = "theta", parameter, group = 0, variance = 0,
+  var.classes = 5)
 }
 \arguments{
 \item{dm}{The demographic model to which mutations should be added}
@@ -33,6 +34,11 @@ an parameter with name theta that you have previously
 created. You can also use R expression here, so "2*theta"
 or "5*theta+2*tau" (if tau is another parameter) will also
 work (also it does not make much sense).}
+
+\item{group}{Group of loci for with this feature is added. 0 means that
+the feature applies to all groups, and 1 is the default group.
+Set to 1 or an greater integer to set this feature only for
+the corresponding group of loci.}
 
 \item{variance}{Set to a value different from 0 to introduce variation in the
 the parameter value for different loci. The
