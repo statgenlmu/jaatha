@@ -4,7 +4,7 @@
 \title{Adds recombination events to a demographic model}
 \usage{
 dm.addRecombination(dm, lower.range, upper.range, fixed.value, par.new = T,
-  new.par.name = "rho", parameter)
+  new.par.name = "rho", parameter, variance = 0, var.classes = 5)
 }
 \arguments{
 \item{dm}{The demographic model to which recombination events should be added.}
@@ -31,6 +31,18 @@ an parameter with name theta that you have previously
 created. You can also use R expression here, so "2*rho"
 or "5*rho+2*tau" (if tau is another parameter) will also
 work (also it does not make much sense).}
+
+\item{variance}{Set to a value different from 0 to introduce variation in the
+the parameter value for different loci. The
+variation follows a discrete gamma distribution with mean equal to
+the value provided as \code{parameter}, and variance as given
+here. Can also be set to a previously
+created parameter, or an expression based on parameters.}
+
+\item{var.classes}{This sets the number of classes used in the discrete gamma
+distribution described in \code{variance}. Fewer classes should
+increase performance, but leads to harder approximation of the
+gamma distribution.}
 }
 \value{
 The demographic model with recombination
