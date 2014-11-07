@@ -61,7 +61,7 @@ markerTableToJsfs <- function(marker.table, pop1.cols, pop2.cols,
   snps  <- marker.table[snp.mask,]
 
   snp.types <- getSNPTypes(snps, pop1.mask, pop2.mask, folded)
-  jsfs <- calcJSFS(snp.types, c(length(pop1.cols),length(pop2.cols)))
+  jsfs <- calcJSFSfromSnpTypes(snp.types, c(length(pop1.cols),length(pop2.cols)))
   return(jsfs)
 }
 
@@ -105,7 +105,7 @@ getSNPTypes <- function(snps, pop1.mask, pop2.mask, folded){
 }
 
 
-calcJSFS <- function(snp.types, sample.sizes) {
+calcJSFSfromSnpTypes <- function(snp.types, sample.sizes) {
   jsfs <- matrix(0, sample.sizes[1] + 1, sample.sizes[2] + 1)
   
   if (nrow(snp.types) == 0) return(jsfs)

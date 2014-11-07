@@ -14,102 +14,80 @@ NumericMatrix parseSeqgenSegSites(std::ifstream &output,
                                   const size_t individuals,
                                   NumericVector &position,
                                   const NumericVector trio_opts);
-
-void addToJsfs(const NumericMatrix seg_sites,
-               const NumericVector sample_size,
-               NumericMatrix &jsfs);
                        
 std::string line;
 
 // [[Rcpp::export]]
-List parseOutput(const std::string file_name, 
+List parseOutput(const std::vector<std::string> file_names, 
                  const NumericVector sample_size,
                  const int loci_number,
                  const int program = 0,
-                 const bool generate_jsfs = true,
-                 const bool generate_seg_sites = false,
                  const NumericVector trio_opts = NumericVector(0)) {
-  
-  // Create list for returning the summary statistics
-  List sum_stats = List::create();
-  if (!(generate_seg_sites || generate_jsfs)) {
-    return sum_stats;
-  }
   
   size_t individuals = sample_size[0] + sample_size[1];
 
-  // Open the file
-  std::ifstream output(file_name.c_str(), std::ifstream::in);
-  if (!output.is_open()) {
-    stop("Cannot open file");
-  }
-  
-  NumericMatrix seg_sites(0, 0);
+  List seg_sites(loci_number);
+
   NumericVector positions(0);
   int locus = -1;
 
-  List seg_sites_list(loci_number); 
-  NumericMatrix jsfs(sample_size[0]+1, sample_size[1]+1);
-
-  // ms
-  if (program == 0) { 
-    while( output.good() ) {
-      std::getline(output, line);
-      if (line == "//") ++locus;
-
-      else if (line.substr(0, 9) == "segsites:") {
-        // Read seg_sites
-        if (line.substr(0, 11) == "segsites: 0") {
-          seg_sites = NumericMatrix(0, 0);
-        } else {
-          std::getline(output, line);
-          positions = parseMsPositions(line);
-          seg_sites = parseMsSegSites(output, positions, individuals);
-          if (seg_sites.ncol() == 0) stop("Failed to parse seg.sites");
-        }
-      
-        // Genearte derived statistics
-        if (generate_seg_sites) seg_sites_list[locus] = seg_sites;
-        if (generate_jsfs) addToJsfs(seg_sites, sample_size, jsfs);
-      }
+  for (std::vector<std::string>::const_iterator file_name = file_names.begin();
+       file_name != file_names.end(); ++file_name) {
+         
+    // Open the file
+    if (file_name->size() == 0) continue;
+    std::ifstream output(file_name->c_str(), std::ifstream::in);
+    if (!output.is_open()) {
+      stop("Cannot open file");
     }
-  }
   
-  // seq-gen
-  else if (program == 1) {
-    // We already know the information in the first line
-    
-    size_t total_sample_size, locus_length;
-    
-    while ( output.good() ) {
-      std::getline(output, line);
-      if (line == "") continue;
-      if (line.substr(0, 1) == " ") {
-        ++locus;
-        std::stringstream(line) >> total_sample_size >> locus_length;
-        
-        seg_sites = parseSeqgenSegSites(output, locus_length, 
-        total_sample_size, positions,
-        trio_opts);
-        
-        if (generate_seg_sites) seg_sites_list[locus] = seg_sites;
-        if (generate_jsfs) addToJsfs(seg_sites, sample_size, jsfs);
+    // ms
+    if (program == 0) { 
+      while( output.good() ) {
+        std::getline(output, line);
+        if (line == "//") ++locus;
 
-      } else {
-        stop("Unexpected line in seq-gen output.");
+        else if (line.substr(0, 9) == "segsites:") {
+          // Read seg_sites
+          if (line.substr(0, 11) == "segsites: 0") {
+            seg_sites[locus] = NumericMatrix(0, 0);
+          } else {
+            std::getline(output, line);
+            positions = parseMsPositions(line);
+            seg_sites[locus] = parseMsSegSites(output, positions, 
+                                               individuals);
+          }
+        }
       }
     }
+  
+    // seq-gen
+    else if (program == 1) {
+      // We already know the information in the first line
+      size_t total_sample_size, locus_length;
     
-    if (locus != loci_number-1) 
-    stop("Unexpected number of loci in seq-gen output.");
+      while ( output.good() ) {
+        std::getline(output, line);
+        if (line == "") continue;
+        if (line.substr(0, 1) == " ") {
+          ++locus;
+          std::stringstream(line) >> total_sample_size >> locus_length;
+        
+          seg_sites[locus] = parseSeqgenSegSites(output, locus_length, 
+                                                 total_sample_size, 
+                                                 positions, trio_opts);
+        
+        } else {
+          stop("Unexpected line in seq-gen output.");
+        }
+      }
+    }
+  
+    output.close();
   }
   
   // Return the summary statistics
-  if (generate_seg_sites) sum_stats["seg.sites"] = seg_sites_list;
-  if (generate_jsfs) sum_stats["jsfs"] = jsfs;
-  
-  output.close();
-  return sum_stats;
+  return seg_sites;
 }
 
 NumericMatrix parseMsSegSites(std::ifstream &output, 

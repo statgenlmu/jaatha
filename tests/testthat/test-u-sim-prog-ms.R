@@ -1,10 +1,5 @@
 context("ms simulation interface")
 
-test_that("ms can be called", {
-    expect_error(callMs())
-    expect_true(file.exists(callMs("-t 5", dm.tt)))
-})
-
 test_that("msSimFunc is working", {
     set.seed(789)
     sum.stats <- msSingleSimFunc(dm.tt, c(1, 10))
@@ -79,5 +74,37 @@ test_that("Generation of PMC statistic works", {
 })
 
 test_that("the ms sim program exists", {
-    expect_false(is.null(.jaatha$sim_progs[["ms"]]))
+  expect_false(is.null(.jaatha$sim_progs[["ms"]]))
+})
+
+test_that("ms can simulate subgroups", {
+  dm_tmp <- dm.addSubgroups(dm.tt, 3)
+  dm_tmp <- dm.addSummaryStatistic(dm_tmp, 'seg.sites')
+  sum_stats <- dm.simSumStats(dm_tmp, c(1, 5))
+  expect_equal(length(sum_stats$seg.sites), 10)
+  for (seg_sites in sum_stats$seg.sites) {
+    expect_true(is.matrix(seg_sites))
+  }
+  expect_false(any(is.na(sum_stats$jsfs)))
+  expect_true(sum(sum_stats$jsfs) > 0)
+  
+  dm_tmp <- dm.addSubgroups(dm.tt, 20)
+  dm_tmp <- dm.addSummaryStatistic(dm_tmp, 'seg.sites')
+  sum_stats <- dm.simSumStats(dm_tmp, c(1, 5))
+  expect_equal(length(sum_stats$seg.sites), 10)
+})
+
+test_that("ms can simulate variable rates", {
+  dm_tmp <- dm.createDemographicModel(5:6, 10, 1000)
+  dm_tmp <- dm.addSpeciationEvent(dm_tmp, 0.01, 5, new.time.point.name="tau")  
+  dm_tmp <- dm.addRecombination(dm_tmp, fixed.value=2)
+  dm_tmp <- dm.addMutation(dm_tmp, 1, 20, variance = 20)
+  dm_tmp <- dm.addSummaryStatistic(dm_tmp, 'seg.sites')
+  sum_stats <- dm.simSumStats(dm_tmp, c(1, 5))
+  expect_equal(length(sum_stats$seg.sites), 10)
+  for (seg_sites in sum_stats$seg.sites) {
+    expect_true(is.matrix(seg_sites))
+  }
+  expect_false(any(is.na(sum_stats$jsfs)))
+  expect_true(sum(sum_stats$jsfs) > 0)
 })

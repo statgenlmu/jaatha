@@ -34,8 +34,8 @@ test_that("test.callSeqgen", {
   opts <- c("seq-gen", " -mHKY", " -l", dm.getLociLength(dm.tt), 
             " -p", dm.getLociLength(dm.tt) + 1, " -q")
   dm.tt <- dm.addSummaryStatistic(dm.tt, "trees")
-  ms.options <- jaatha:::generateMsOptions(dm.tt, c(1, 10))
-  ms.file <- jaatha:::callMs(ms.options, dm.tt)
+  dm.tt <- dm.addSummaryStatistic(dm.tt, "file")
+  ms.file <- msSingleSimFunc(dm.tt, c(1,5))$file
   seqgen.file <- callSeqgen(opts, ms.file)
   expect_true(file.exists(seqgen.file))
   expect_true(file.info(seqgen.file)$size != 0)
@@ -59,11 +59,9 @@ test_that("test.finalizeSeqgen", {
 
 test_that("test.generateSeqgenOptions", {
   if (!test_seqgen) return()
-  jaatha:::setJaathaVariable("seqgen.exe", "seq-gen")
   dm.hky@options$seqgen.cmd <- NULL
   opts <- jaatha:::generateSeqgenOptions(dm.hky, c(1, 10))
   opts <- strsplit(opts, " ")[[1]]
-  expect_true(opts[1] == "seq-gen")
   expect_true("-l" %in% opts)
   expect_true("-p" %in% opts)
   expect_true("-z" %in% opts)
@@ -98,7 +96,7 @@ test_that("test.seqgenMutationParameterNotLast", {
 test_that("test.seqgenSingleSimFunc", {
   if (!test_seqgen) return()
   seqgenSingleSimFunc = getSimProgram("seq-gen")$sim_func
-  expect_error(seqgenSingleSimFunc(dm.tt, c(1, 10)))
+  invisible(expect_error(seqgenSingleSimFunc(dm.tt, c(1, 10))))
   set.seed(100)
   sum.stats <- seqgenSingleSimFunc(dm.hky, c(1, 10))
   expect_true(is.list(sum.stats))
@@ -162,4 +160,12 @@ test_that("Generation of PMC statistic works", {
   expect_false(is.null(sum.stats$pmc))
   expect_true(is.array(sum.stats[["pmc"]]))
   expect_equal(sum(sum.stats[["pmc"]]), dm.getLociNumber(dm.f81))
+})
+
+test_that("seq-gen works with subgroups", {
+  if (!test_seqgen) return()
+  set.seed(20)
+  dm <- dm.addSubgroups(dm.gtr, 2)
+  sum_stats <- dm.simSumStats(dm, c(1, 10))
+  expect_true(sum(sum_stats$jsfs) > 0)
 })

@@ -72,8 +72,10 @@ test_that("Jaatha.initialization.groups", {
   expect_true(jaatha.grp@sum.stats[["jsfs.3"]]$method == "poisson.transformed")
   expect_true(sum(jaatha.grp@sum.stats[["jsfs.3"]]$value) > 
                 0)
-  jaatha.grp <- Jaatha.initialize(dm.grp, sum.stats.grp, 123, 
-                                  folded = FALSE, smoothing = TRUE)
+  suppressWarnings(
+    jaatha.grp <- Jaatha.initialize(dm.grp, sum.stats.grp, 123, 
+                                    folded = FALSE, smoothing = TRUE)
+  )
   expect_true(is.list(jaatha.grp@sum.stats[["jsfs.1"]]))
   expect_true(jaatha.grp@sum.stats[["jsfs.1"]]$method == "poisson.smoothing")
   expect_true(sum(jaatha.grp@sum.stats[["jsfs.1"]]$value) > 

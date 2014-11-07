@@ -202,11 +202,22 @@ dm.addParameter <- function(dm, par.name, lower.boundary, upper.boundary, fixed.
 #'            possibly containing one or more previously created parameter
 #'            names.
 #' @param group     For genomic features, different groups can be created.
-#' @return          The extended demographic model.
+#' @param variance Set to a value different from 0 to introduce variation in the
+#'                 the parameter value for different loci. The 
+#'                 variation follows a discrete gamma distribution with mean equal to
+#'                 the value provided as \code{parameter}, and variance as given
+#'                 here. Can also be set to a previously 
+#'                 created parameter, or an expression based on parameters. 
+#' @param var.classes This sets the number of classes used in the discrete gamma
+#'                 distribution described in \code{variance}. Fewer classes should
+#'                 increase performance, but leads to harder approximation of the
+#'                 gamma distribution.
+#' @return         The extended demographic model.
 addFeature <- function(dm, type, parameter=NA,
                        lower.range=NA, upper.range=NA, fixed.value=NA, par.new=T,
                        pop.source=NA, pop.sink=NA,
-                       time.point=NA, group=0) {
+                       time.point=NA, group=0, 
+                       variance=0, var.classes=5) {
   
   if (missing(par.new))     par.new <- T
   if (missing(parameter))   parameter <- NA
@@ -224,9 +235,20 @@ addFeature <- function(dm, type, parameter=NA,
   checkType(pop.sink,    c("num",  "s"), T, T)
   checkType(time.point,  c("char", "s"), T, T)
   checkType(group,       c("num",  "s"), T, T)
+  checkType(variance,    c("s"), T, T)
+  checkType(var.classes, c("num",  "s"), T, T)
 
-  if (par.new) dm <- dm.addParameter(dm, parameter, lower.range, upper.range, fixed.value)
+  if (par.new) dm <- dm.addParameter(dm, parameter, lower.range, 
+                                     upper.range, fixed.value)
 
+  if (variance != 0) {
+    if (dm.getSubgroupNumber(dm) > 1) 
+      stop("Variation is only supported for one parameter per model")
+    dm <- dm.addSubgroups(dm, var.classes, group = group)
+    parameter <- paste0('calcDiscreteGammaRate(subgroup, ', parameter, ', ',
+                                               variance, ', ', var.classes, ')')
+  }
+  
   # Append the feature
   dm <- appendToFeatures(dm = dm,
                          type = type,
@@ -503,8 +525,7 @@ dm.setLociLength <- function(dm, loci.length, group=0) {
 #' @return The number of loci in the group
 #' @export
 dm.getLociNumber <- function(dm, group=1) {
-  ln <- searchFeature(dm, type='loci.number', group=group)
-  as.integer(ln$parameter)
+  as.integer(searchFeature(dm, type='loci.number', group=group)$parameter)
 }
 
 #' Gets how long the loci in a group are
@@ -554,6 +575,20 @@ dm.getLociLength <- function(dm, group=1) {
 #'            created. You can also use R expression here, so "2*theta"
 #'            or "5*theta+2*tau" (if tau is another parameter) will also
 #'            work (also it does not make much sense).
+#' @param variance Set to a value different from 0 to introduce variation in the
+#'                 the parameter value for different loci. The 
+#'                 variation follows a discrete gamma distribution with mean equal to
+#'                 the value provided as \code{parameter}, and variance as given
+#'                 here. Can also be set to a previously 
+#'                 created parameter, or an expression based on parameters. 
+#' @param var.classes This sets the number of classes used in the discrete gamma
+#'                 distribution described in \code{variance}. Fewer classes should
+#'                 increase performance, but leads to harder approximation of the
+#'                 gamma distribution.
+#' @param group    Group of loci for with this feature is added. 0 means that
+#'                 the feature applies to all groups, and 1 is the default group.
+#'                 Set to 1 or an greater integer to set this feature only for 
+#'                 the corresponding group of loci. 
 #' @return    The demographic model with mutation.
 #' @export
 #'
@@ -573,7 +608,8 @@ dm.getLociLength <- function(dm, group=1) {
 #' dm <- dm.addParameter(dm, "theta", 0.01, 5)
 #' dm <- dm.addMutation(dm, par.new=FALSE, parameter="2*log(theta)+1")
 dm.addMutation <- function(dm, lower.range, upper.range, fixed.value,
-                           par.new=T, new.par.name="theta", parameter) {
+                           par.new=T, new.par.name="theta", parameter,
+                           group = 0, variance = 0, var.classes = 5) {
 
   if ( missing(lower.range) & missing(upper.range) & 
        missing(fixed.value) & missing(parameter) ) {
@@ -583,7 +619,9 @@ dm.addMutation <- function(dm, lower.range, upper.range, fixed.value,
 
   if (par.new) parameter <- new.par.name
   dm <- addFeature(dm, "mutation", parameter, lower.range, upper.range,
-                   fixed.value, par.new=par.new, time.point=NA)
+                   fixed.value, par.new=par.new, time.point=NA, 
+                   variance = variance, var.classes = var.classes,
+                   group = group)
   return(dm)
 }
 
@@ -664,6 +702,20 @@ dm.getSampleSize <- function(dm, group.nr=NULL) {
 #'            created. You can also use R expression here, so "2*rho"
 #'            or "5*rho+2*tau" (if tau is another parameter) will also
 #'            work (also it does not make much sense).
+#' @param variance Set to a value different from 0 to introduce variation in the
+#'                 the parameter value for different loci. The 
+#'                 variation follows a discrete gamma distribution with mean equal to
+#'                 the value provided as \code{parameter}, and variance as given
+#'                 here. Can also be set to a previously 
+#'                 created parameter, or an expression based on parameters. 
+#' @param var.classes This sets the number of classes used in the discrete gamma
+#'                 distribution described in \code{variance}. Fewer classes should
+#'                 increase performance, but leads to harder approximation of the
+#'                 gamma distribution.
+#' @param group    Group of loci for with this feature is added. 0 means that
+#'                 the feature applies to all groups, and 1 is the default group.
+#'                 Set to 1 or an greater integer to set this feature only for 
+#'                 the corresponding group of loci. 
 #' @return    The demographic model with recombination
 #' @export
 #'
@@ -673,11 +725,14 @@ dm.getSampleSize <- function(dm, group.nr=NULL) {
 #' dm <- dm.addRecombination(dm, fixed=20)
 #' dm <- dm.addMutation(dm, 1, 20)
 dm.addRecombination <- function(dm, lower.range, upper.range, fixed.value,
-                                par.new=T, new.par.name="rho", parameter) {
+                                par.new=T, new.par.name="rho", parameter, 
+                                group = 0, variance = 0, var.classes = 5) {
 
   if (par.new) parameter <- new.par.name
   dm <- addFeature(dm, "recombination", parameter, lower.range, upper.range,
-                   fixed.value, par.new=par.new, time.point="0")
+                   fixed.value, par.new=par.new, time.point="0",
+                   group = group, 
+                   variance = variance, var.classes = var.classes)
   return(dm)
 }
 
@@ -1107,8 +1162,8 @@ dm.setMutationModel <- function(dm, mutation.model,
 #-------------------------------------------------------------------
 # dm.addMutationRateHeterogenity
 #-------------------------------------------------------------------
-#' Allows the mutation rate on different sites to vary according to 
-#' a Gamma Distribution.
+#' Allows the mutation rate on different sites within one locus to 
+#' vary according to a Gamma Distribution.
 #'
 #' This function adds a Gamma distributed rate heterogeneity as implemented 
 #' in 'seq-gen' to the model.
@@ -1260,7 +1315,8 @@ dm.addOutgroup <- function(dm, separation.time) {
 # This function is highly experimental. Don't use it yet.
 dm.addPositiveSelection <- function(dm, min.strength, max.strength, fixed.strength, 
                          par.new=T, new.par.name="s", parameter, 
-                         population, at.time, group=0) {
+                         variance = 0, var.classes = 5, population, 
+                         at.time, group=0) {
 
   checkType(population, c("num",  "s"), T, F)
   checkType(at.time,    c("char", "s"), T, F)
@@ -1268,7 +1324,8 @@ dm.addPositiveSelection <- function(dm, min.strength, max.strength, fixed.streng
   if (par.new) parameter <- new.par.name
 
   dm <- addFeature(dm, "pos.selection", parameter, min.strength, max.strength,
-                   fixed.strength, par.new, population, NA, at.time, group)
+                   fixed.strength, par.new, population, NA, at.time, group,
+                   variance, var.classes)
 
   return(dm)
 }
@@ -1444,4 +1501,12 @@ dm.getSubgroupNumber <- function(dm, group = 1) {
   number <- searchFeature(dm, 'subgroups', group = group)$parameter
   if (length(number) == 0) return(1)
   as.numeric(number)
+}
+
+# Calulates the rate for the different gamma subgroups.
+# Uses the median of the group, because the mean is difficult to approximate.
+calcDiscreteGammaRate <- function(subgroup, mean, var, n_subgroups) {
+  stopifnot(var >= 0)
+  if (var == 0) return(rep(mean, length(subgroup)))
+  qgamma((2*subgroup-1)/(2*n_subgroups), mean^2/var, mean/var)
 }

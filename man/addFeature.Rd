@@ -5,7 +5,7 @@
 \usage{
 addFeature(dm, type, parameter = NA, lower.range = NA, upper.range = NA,
   fixed.value = NA, par.new = T, pop.source = NA, pop.sink = NA,
-  time.point = NA, group = 0)
+  time.point = NA, group = 0, variance = 0, var.classes = 5)
 }
 \arguments{
 \item{dm}{The demographic model to which the feature will be added}
@@ -37,6 +37,18 @@ will be evaluated instead.}
 starts.}
 
 \item{group}{For genomic features, different groups can be created.}
+
+\item{variance}{Set to a value different from 0 to introduce variation in the
+the parameter value for different loci. The
+variation follows a discrete gamma distribution with mean equal to
+the value provided as \code{parameter}, and variance as given
+here. Can also be set to a previously
+created parameter, or an expression based on parameters.}
+
+\item{var.classes}{This sets the number of classes used in the discrete gamma
+distribution described in \code{variance}. Fewer classes should
+increase performance, but leads to harder approximation of the
+gamma distribution.}
 }
 \value{
 The extended demographic model.
