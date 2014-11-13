@@ -25,6 +25,10 @@ std::string parseTrees(const std::vector<std::string> in_files,
   for (std::vector<std::string>::const_iterator in_file = in_files.begin();
        in_file != in_files.end(); ++in_file) {
   
+    // If subgroups by chance consist of 0 loci, in_file is an empty string and
+    // there are no trees to parse.
+    if (in_file->size() == 0) continue;
+    
     std::ifstream input(in_file->c_str(), std::ifstream::in);
     if (!input.is_open()) 
       stop(std::string("Failed to open simulation results in ") + *in_file);
