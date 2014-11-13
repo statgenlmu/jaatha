@@ -8,24 +8,10 @@
 
 possible.features  <- c("sample", "loci.number", "loci.length",
                         "mutation", "migration", "split",
-                        "recombination", "size.change", "growth")
-possible.sum.stats <- c("jsfs", "fpc", "trees", "seg.sites", "file", "pmc")
+                        "recombination", "size.change", "growth",
+                        "subgroups", "zero_inflation")
+possible.sum.stats <- c("jsfs", "fpc", "trees", "seg.sites", "pmc", "file")
 
-#' Function to perform simulation using ms 
-#' 
-#' @param opts The options to pass to ms. Must either be a character or character
-#' vector.
-#' @param dm The demographic model we are using
-#' @return The file containing the output of ms
-callMs <- function(opts, dm){
-  if (missing(opts)) stop("No options given!")
-  opts <- unlist(strsplit(opts, " "))
-
-  ms.file <- getTempFile("ms")
-  
-  ms(sum(dm.getSampleSize(dm)), dm.getLociNumber(dm), opts, ms.file)
-  return(ms.file)
-}
 
 # This function generates an string that contains an R command for generating
 # an ms call to the current model.
@@ -40,9 +26,7 @@ generateMsOptionsCommand <- function(dm) {
     feat <- unlist(dm@features[i, ])
 
     if ( type == "mutation" ) {
-      if (any(c('seg.sites', 'jsfs', 'fpc') %in% dm.getSummaryStatistics(dm))) { 
-        cmd <- c(cmd,'"-t"', ',', feat["parameter"], ',')
-      }
+      cmd <- c(cmd,'"-t"', ',', feat["parameter"], ',')
     }
 
     else if (type == "split") {
@@ -68,7 +52,8 @@ generateMsOptionsCommand <- function(dm) {
                feat["pop.source"], ',', feat["parameter"], ',')
       }
 
-    else if (type %in% c("sample", "loci.number", "loci.length", "pos.selection")) {}
+    else if (type %in% c("sample", "loci.number", "loci.length", 
+                         "pos.selection", "subgroups", "zero_inflation")) {}
     else stop("Unknown feature:", type)
   }
 
@@ -76,7 +61,7 @@ generateMsOptionsCommand <- function(dm) {
   cmd <- c(cmd, '" ")')
 }
 
-generateMsOptions <- function(dm, parameters) {
+generateMsOptions <- function(dm, parameters, subgroup) {
   ms.tmp <- new.env()
 
   par.names <- dm.getParameters(dm)
@@ -119,18 +104,50 @@ printMsCommand <- function(dm) {
 msSingleSimFunc <- function(dm, parameters) {
   checkType(dm, "dm")
   checkType(parameters, "num")
-
   if (length(parameters) != dm.getNPar(dm)) stop("Wrong number of parameters!")
 
-  ms.options <- generateMsOptions(dm, parameters)
-  ms.out <- callMs(ms.options, dm)
-
-  generateSumStats(ms.out, 0, parameters, dm)
+  # Run a simulation for each subgroup
+  subgroup_sizes <- sampleSubgroupSizes(dm, parameters)
+  ms.files <- sapply(1:dm.getSubgroupNumber(dm), function(subgroup) {
+    if (subgroup_sizes[subgroup] == 0) return("")
+    ms.options <- generateMsOptions(dm, parameters, subgroup)
+    ms.file <- getTempFile('ms')
+    ms(sum(dm.getSampleSize(dm)), 
+       subgroup_sizes[subgroup], 
+       unlist(strsplit(ms.options, " ")), 
+       ms.file)
+    ms.file
+  })
+  
+  # Parse the simulation output
+  generateSumStats(ms.files, 0, parameters, dm)
 }
 
 finalizeMs <- function(dm) {
   dm@options[['ms.cmd']] <- generateMsOptionsCommand(dm)
   return(dm)
+}
+
+sampleSubgroupSizes <- function(dm, parameters) {  
+  zero_inflation <- dm.getZeroInflation(dm)
+  loci_num <- dm.getLociNumber(dm)
+  
+  if (!is.na(zero_inflation)) {
+    par_env <- createParameterEnv(dm, parameters, 0)
+    zi_value <- eval(parse(text=zero_inflation), envir=par_env)
+    if(!(is.numeric(zi_value) & 0 < zi_value & zi_value < 1))
+      stop("parsing parameter '", zero_inflation, "' failed.")
+    
+    zero_group <- round(zi_value * loci_num)
+    loci_num <- loci_num - zero_group
+    subgroup_num <- dm.getSubgroupNumber(dm) - 1
+  } else {
+    zero_group <- numeric()
+    subgroup_num <- dm.getSubgroupNumber(dm)
+  }
+  
+  if (subgroup_num == 1) return(c(zero_group, loci_num))
+  c(zero_group, rmultinom(1, loci_num, rep(1, subgroup_num))[,1])
 }
 
 createSimProgram("ms", possible.features, possible.sum.stats, 

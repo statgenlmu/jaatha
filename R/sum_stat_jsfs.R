@@ -47,6 +47,7 @@ summarizeJSFS <- function(jsfs){
     sum(jsfs[(n-2):(n-1),m]) )
 }
 
+
 summarizeJsfsBorder <- function(jsfs) {
   if (is.list(jsfs)) jsfs <- jsfs$jsfs 
   n <- nrow(jsfs)

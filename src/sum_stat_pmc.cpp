@@ -3,18 +3,14 @@ using namespace Rcpp;
 
 size_t idx1, idx2;
 
-NumericVector createPolymVector() {
-  return NumericVector::create(
-    _["private"] = 0,
-    _["fixed"] = 0
-  );
-}
-
 // [[Rcpp::export]]
 NumericVector classifyPolym(const NumericMatrix seg_sites,
                             const NumericVector sample_size) {
    
-  NumericVector polym_classes = createPolymVector();
+  NumericVector polym_classes = NumericVector::create(
+    _["private"] = 0,
+    _["fixed"] = 0
+  );
 
   if (seg_sites.ncol() == 0) {
     polym_classes[0] = NA_REAL;

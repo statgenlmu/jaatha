@@ -1,7 +1,24 @@
-Version 2.6.1
+Version 2.6.0.9003
+==================
+- Implement a candidate loci approach for selection. So far only for interal
+  testing.
+
+
+Version 2.6.0.9002
+==================
+- Allow for gamma distributed recombination and mutation rates
+  between loci.
+
+
+Version 2.6.0.9001
+==================
+- Add support for simulation with _scrm_.
+  
+
+Version 2.6.0.9000
 ==================
 ## Bug fixes
-- Fix two minor bugs in CI calculation.
+- Fix two bugs in CI calculation.
 - Fix a harmless memory leak in experimental code (#19)
 
 

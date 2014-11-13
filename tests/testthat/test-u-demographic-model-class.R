@@ -1,14 +1,21 @@
 context("Demographic Model")
 
-test_that("test.addFeature", {
-  dm <- dm.createDemographicModel(11:12, 100)
-  n.feat <- nrow(dm@features)
-  dm <- addFeature(dm, type = "split", parameter = "tau", lower.range = 1, 
+test_that("addFeature works", {
+  dm_tmp <- dm.createDemographicModel(11:12, 100)
+  n.feat <- nrow(dm_tmp@features)
+  dm_tmp <- addFeature(dm_tmp, type = "split", parameter = "tau", lower.range = 1, 
                    upper.range = 10)
-  expect_equal(nrow(dm@features), n.feat + 1)
-  dm <- addFeature(dm, "mutation", "theta", fixed.value = 5, 
+  expect_equal(nrow(dm_tmp@features), n.feat + 1)
+  dm_tmp <- addFeature(dm_tmp, "mutation", "theta", fixed.value = 5, 
                    pop.source = 1, pop.sink = 2, time.point = "t2", group = 3)
-  expect_equal(nrow(dm@features), n.feat + 2)
+  expect_equal(nrow(dm_tmp@features), n.feat + 2)
+  
+  # Add variation
+  dm_tmp <- addFeature(dm_tmp, "recombination", "rho", 1, 5, 
+                       variance = '17', var.classes = 10)
+  expect_equal(searchFeature(dm_tmp, "subgroups")$parameter, '10')
+  expect_equal(nrow(searchFeature(dm_tmp, "recombination")), 1)  
+  expect_error(addFeature(dm_tmp, "mut", "theta2", 1, 5, variance = '5'))
 })
 
 test_that("test.addParameter", {
@@ -309,4 +316,82 @@ test_that("getTrioOptions works", {
                            group=2)
   expect_true(is.na(dm.getLociTrioOptions(dm.lt)))
   expect_equal(dm.getLociTrioOptions(dm.lt, group=2), c(10, 5, 20, 5, 10))
+})
+
+test_that("Adding and Getting Subgroups works", {
+  expect_equal(dm.getSubgroupNumber(dm.tt), 1)
+  dm <- dm.addSubgroups(dm.tt, 2)
+  expect_equal(dm.getSubgroupNumber(dm), 2)
+  
+  dm <- dm.addSubgroups(dm, 5, group = 2)
+  dm <- dm.addSubgroups(dm, 5, group = 3)
+  expect_equal(dm.getSubgroupNumber(dm), 2)
+  expect_equal(dm.getSubgroupNumber(dm, group = 0), 2)
+  expect_equal(dm.getSubgroupNumber(dm, group = 1), 2)
+  expect_equal(dm.getSubgroupNumber(dm, group = 2), 5)
+  expect_equal(dm.getSubgroupNumber(dm, group = 3), 5)
+  
+  dm <- dm.addSubgroups(dm, 2, group = 4, zero_inflation = 0.5)
+  expect_equal(dm.getSubgroupNumber(dm, group = 4), 3)
+  expect_equal(dm.getSubgroupNumber(dm, group = 4, with_zero_inflasion = FALSE), 2)
+  expect_equal(dm.getZeroInflation(dm, group = 4), '0.5')
+  
+  dm <- dm.addSubgroups(dm, 3, group = 5, zero_inflation = "zi")
+  expect_equal(dm.getSubgroupNumber(dm, group = 5, with_zero_inflasion = FALSE), 3)
+  expect_equal(dm.getSubgroupNumber(dm, group = 5), 4)
+  expect_equal(dm.getZeroInflation(dm, group = 5), 'zi')
+  
+  expect_equal(dm.getZeroInflation(dm, group = 1),  NA)
+  expect_equal(dm.getZeroInflation(dm, group = 2),  NA)
+  expect_equal(dm.getZeroInflation(dm, group = 3),  NA)
+  
+  dm <- dm.addSubgroups(dm, 1, group = 6, zero_inflation = "zi")
+  expect_equal(dm.getSubgroupNumber(dm, group = 6), 2)
+})
+
+test_that("test.printEmptyDM", {
+  tmp_file <- tempfile()
+  sink(tmp_file)
+  dm <- dm.createDemographicModel(25:26, 100)
+  print(dm)
+  sink(NULL)
+  unlink(tmp_file)
+})
+
+test_that("test.printGroupDM", {
+  tmp_file <- tempfile()
+  sink(tmp_file)
+  print(dm.grp)
+  sink(NULL)
+  unlink(tmp_file)
+})
+
+test_that("addMutation works", {
+  dm_tmp <- dm.createDemographicModel(5:6, 10, 1000)
+  dm_tmp <- dm.addSpeciationEvent(dm_tmp, 0.01, 5, new.time.point.name="tau")  
+  dm_tmp <- dm.addRecombination(dm_tmp, fixed.value=2)
+  dm_tmp2 <- dm.addMutation(dm_tmp, 1, 20)
+  
+  expect_equal(searchFeature(dm_tmp2, "mutation")$parameter, 'theta')
+  expect_equal(nrow(searchFeature(dm_tmp2, "mutation")), 1)  
+  
+  dm_tmp3 <- dm.addMutation(dm_tmp, 1, 20, variance = 20, var.classes = 7)
+  expect_equal(dm.getSubgroupNumber(dm_tmp3), 7)
+})
+
+test_that("addRecombination works", {
+  dm_tmp <- dm.createDemographicModel(5:6, 10, 1000)
+  dm_tmp <- dm.addSpeciationEvent(dm_tmp, 0.01, 5, new.time.point.name="tau")  
+  dm_tmp <- dm.addRecombination(dm_tmp, fixed.value=2)
+  dm_tmp <- dm.addMutation(dm_tmp, 1, 20)
+  
+  expect_equal(searchFeature(dm_tmp, "recombination")$parameter, 'rho')
+  expect_equal(nrow(searchFeature(dm_tmp, "recombination")), 1)  
+  
+  dm_tmp <- dm.addRecombination(dm_tmp, 1, 20, variance = 20,
+                                new.par.name = 'rho2', var.classes = 8, 
+                                group = 2)
+  expect_equal(nrow(searchFeature(dm_tmp, "recombination")), 2) 
+  expect_equal(dm.getSubgroupNumber(dm_tmp), 1)
+  expect_equal(dm.getSubgroupNumber(dm_tmp, group = 2), 8)
 })
