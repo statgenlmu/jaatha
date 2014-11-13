@@ -12,17 +12,19 @@
 library(jaatha)
 
 dm <- dm.createThetaTauModel(12:13, 100)
-jsfs <- dm.simSumStats(dm, c(1,5))
-jaatha <- Jaatha.initialize(dm, jsfs=jsfs, smoothing=TRUE)
+jsfs <- dm.simSumStats(dm.addSummaryStatistic(dm, 'seg.sites'), c(1,5))
+dm <- dm.addSummaryStatistic(dm, 'fpc')
+dm <- dm.addSummaryStatistic(dm, 'pmc')
+jaatha <- Jaatha.initialize(dm, jsfs=jsfs, smoothing=FALSE)
 
-profile.is <- tempfile("jaatha_is")
+profile.is <- "./jaatha_is.prof"
 gc()
 Rprof(profile.is)
 jaatha <- Jaatha.initialSearch(jaatha)
 Rprof(NULL)
 cat("Now run: R CMD Rprof", profile.is, "| less\n")
 
-profile.rs <- tempfile("jaatha_is")
+profile.rs <- "./jaatha_rs"
 gc()
 Rprof(profile.rs)
 jaatha <- Jaatha.refinedSearch(jaatha, 2)
