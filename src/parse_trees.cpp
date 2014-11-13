@@ -15,7 +15,8 @@ std::string parseTrees(const std::vector<std::string> in_files,
   
   // Open both files                      
   std::ofstream output(out_file.c_str(), std::ofstream::out);
-  if (!output.is_open()) stop("Failed to open file.");
+  if (!output.is_open()) 
+    stop("Failed to create a file for writing trees.");
   
   std::string line; 
   bool trio = false;
@@ -25,7 +26,8 @@ std::string parseTrees(const std::vector<std::string> in_files,
        in_file != in_files.end(); ++in_file) {
   
     std::ifstream input(in_file->c_str(), std::ifstream::in);
-    if (!input.is_open()) stop("Failed to open file.");
+    if (!input.is_open()) 
+      stop(std::string("Failed to open simulation results in ") + *in_file);
   
     // Filter trees
     if (!trio) {
