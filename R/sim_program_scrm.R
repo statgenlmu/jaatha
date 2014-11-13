@@ -9,7 +9,7 @@ scrm_features  <- c("sample", "loci.number", "loci.length",
                     "mutation", "migration", "split",
                     "recombination", "size.change", "growth")
 
-scrm_sum_stats <- c("jsfs", "fpc", "seg.sites", "file", "pmc")
+scrm_sum_stats <- c("jsfs", "fpc", "seg.sites", "file", "pmc", "trees")
 
 scrm_simulate <- function(dm, parameters) {
   checkType(dm, "dm")
@@ -21,8 +21,14 @@ scrm_simulate <- function(dm, parameters) {
                 dm.getLociNumber(dm),
                 paste(generateMsOptions(dm, parameters), collapse = ' '))
   
+  if ('file' %in% dm.getSummaryStatistics(dm)) {
+    file <- getTempFile('scrm')
+    sum_stats <- scrm(args, file)
+    return(generateSumStats(file, 0, parameters, dm))
+  }
+
   sum_stats <- scrm(args)
-  generateSumStats(sum_stats, 2, parameters, dm)
+  generateSumStats(sum_stats, "scrm", parameters, dm)
 }
 
 scrm_finalize <- function(dm) {
@@ -31,5 +37,5 @@ scrm_finalize <- function(dm) {
 }
 
 createSimProgram("scrm", scrm_features, scrm_sum_stats,
-                  scrm_simulate, scrm_finalize, printMsCommand, 100)
+                  scrm_simulate, scrm_finalize, printMsCommand, 110)
 rm(scrm_features, scrm_sum_stats, scrm_simulate, scrm_finalize)

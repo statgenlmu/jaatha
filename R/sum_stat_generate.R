@@ -3,9 +3,13 @@ generateSumStats <- function(files, program, parameters, dm, seg_sites) {
   
   calc_seg_sites <- any(c('seg.sites', 'jsfs', 'pmc', 'fpc') %in% model_stats)
   if (missing(seg_sites) & calc_seg_sites) {
-    seg_sites <- parseOutput(files, dm.getSampleSize(dm), 
-                             dm.getLociNumber(dm), program, 
-                             dm.getLociTrioOptions(dm))
+    if ('seg_sites' %in% names(files)) {
+      seg_sites <- files$seg_sites
+    } else {
+      seg_sites <- parseOutput(files, dm.getSampleSize(dm), 
+                               dm.getLociNumber(dm), program, 
+                               dm.getLociTrioOptions(dm))
+    }
   }
 
   # Add the parameters of the simulation
