@@ -27,10 +27,6 @@ calcJsfs <- function(seg_sites, sample_size) {
     .Call('jaatha_calcJsfs', PACKAGE = 'jaatha', seg_sites, sample_size)
 }
 
-calcJsfs <- function(seg_sites, sample_size) {
-    .Call('jaatha_calcJsfs', PACKAGE = 'jaatha', seg_sites, sample_size)
-}
-
 classifyPolym <- function(seg_sites, sample_size) {
     .Call('jaatha_classifyPolym', PACKAGE = 'jaatha', seg_sites, sample_size)
 }

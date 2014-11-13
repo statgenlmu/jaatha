@@ -89,22 +89,6 @@ BEGIN_RCPP
     return __sexp_result;
 END_RCPP
 }
-// calcJsfs
-NumericMatrix calcJsfs(const List seg_sites, const NumericVector sample_size);
-RcppExport SEXP jaatha_calcJsfs(SEXP seg_sitesSEXP, SEXP sample_sizeSEXP) {
-BEGIN_RCPP
-    SEXP __sexp_result;
-    {
-        Rcpp::RNGScope __rngScope;
-        Rcpp::traits::input_parameter< const List >::type seg_sites(seg_sitesSEXP );
-        Rcpp::traits::input_parameter< const NumericVector >::type sample_size(sample_sizeSEXP );
-        NumericMatrix __result = calcJsfs(seg_sites, sample_size);
-        PROTECT(__sexp_result = Rcpp::wrap(__result));
-    }
-    UNPROTECT(1);
-    return __sexp_result;
-END_RCPP
-}
 // classifyPolym
 NumericVector classifyPolym(const NumericMatrix seg_sites, const NumericVector sample_size);
 RcppExport SEXP jaatha_classifyPolym(SEXP seg_sitesSEXP, SEXP sample_sizeSEXP) {
