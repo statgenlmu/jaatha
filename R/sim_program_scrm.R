@@ -30,6 +30,6 @@ scrm_finalize <- function(dm) {
   return(dm)
 }
 
-createSimProgram("scrm", scrm_features, scrm_sum_stats, 
-                 scrm_simulate, scrm_finalize, printMsCommand, 90)
+createSimProgram("scrm", scrm_features, scrm_sum_stats,
+                  scrm_simulate, scrm_finalize, printMsCommand, 100)
 rm(scrm_features, scrm_sum_stats, scrm_simulate, scrm_finalize)
