@@ -60,7 +60,7 @@ test_that("msSimFunc is working", {
     expect_equal(sum(sum.stats[["fpc"]]), dm.getLociNumber(dm.tt))
 })
 
-test_that("Generation of PMC statistic works", {
+test_that("generation of PMC statistic works for ms", {
   set.seed(941)
   dm.tt <- dm.addSummaryStatistic(dm.tt, "pmc")
   dm.tt@options[['pmc_breaks_private']] <- .5

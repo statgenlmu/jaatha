@@ -57,16 +57,15 @@ BEGIN_RCPP
 END_RCPP
 }
 // calcPercentFpcViolation
-NumericVector calcPercentFpcViolation(const NumericMatrix seg_sites, const NumericVector positions, const NumericVector trio_opts = NumericVector(0));
-RcppExport SEXP jaatha_calcPercentFpcViolation(SEXP seg_sitesSEXP, SEXP positionsSEXP, SEXP trio_optsSEXP) {
+NumericVector calcPercentFpcViolation(const NumericMatrix seg_sites, const NumericVector trio_opts = NumericVector(0));
+RcppExport SEXP jaatha_calcPercentFpcViolation(SEXP seg_sitesSEXP, SEXP trio_optsSEXP) {
 BEGIN_RCPP
     SEXP __sexp_result;
     {
         Rcpp::RNGScope __rngScope;
         Rcpp::traits::input_parameter< const NumericMatrix >::type seg_sites(seg_sitesSEXP );
-        Rcpp::traits::input_parameter< const NumericVector >::type positions(positionsSEXP );
         Rcpp::traits::input_parameter< const NumericVector >::type trio_opts(trio_optsSEXP );
-        NumericVector __result = calcPercentFpcViolation(seg_sites, positions, trio_opts);
+        NumericVector __result = calcPercentFpcViolation(seg_sites, trio_opts);
         PROTECT(__sexp_result = Rcpp::wrap(__result));
     }
     UNPROTECT(1);

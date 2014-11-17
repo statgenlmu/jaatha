@@ -50,7 +50,9 @@ List parseOutput(const std::vector<std::string> file_names,
         else if (line.substr(0, 9) == "segsites:") {
           // Read seg_sites
           if (line.substr(0, 11) == "segsites: 0") {
-            seg_sites[locus] = NumericMatrix(0, 0);
+            NumericMatrix ss = NumericMatrix(0, 0);
+            ss.attr("positions") = NumericVector(0);
+            seg_sites[locus] = ss;
           } else {
             std::getline(output, line);
             positions = parseMsPositions(line);
@@ -95,9 +97,7 @@ NumericMatrix parseMsSegSites(std::ifstream &output,
                               const int individuals) {
   
   NumericMatrix seg_sites(individuals, positions.size());
-  List dimnames = List(2);
-  dimnames[1] = positions;
-  seg_sites.attr("dimnames") = dimnames;
+  seg_sites.attr("positions") = positions;
   
   for (int i = 0; i < individuals; ++i) {
     std::getline(output, line);
@@ -182,10 +182,7 @@ NumericMatrix parseSeqgenSegSites(std::ifstream &output,
       }
     }
     
-    List dimnames = List(2);
-    position = wrap(positions);
-    dimnames[1] = position;
-    seg_sites.attr("dimnames") = dimnames; 
+    seg_sites.attr("positions") = wrap(positions); 
   }
   
   return seg_sites;

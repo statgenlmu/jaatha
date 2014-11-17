@@ -1,4 +1,6 @@
 #include <Rcpp.h>
+#include "seg_sites.h"
+
 using namespace Rcpp;
 
 int findLocus(double position, const NumericVector trio_opts) {
@@ -16,9 +18,10 @@ NumericVector total_count;
 
 // [[Rcpp::export]]
 NumericVector calcPercentFpcViolation(const NumericMatrix seg_sites, 
-                                      const NumericVector positions,
                                       const NumericVector trio_opts = NumericVector(0)) {
-                                          
+                                        
+  NumericVector positions = getPositions(seg_sites);
+  
   if (trio_opts.size() == 0) {
     violations = NumericVector(2);
     total_count = NumericVector(2);
