@@ -99,8 +99,8 @@ createParameterEnv <- function(dm, parameters, subgroup) {
   par_env
 }
 
-generateMsmsOptions <- function(dm, parameters, subgroup) {
-  msms.tmp <- createParameterEnv(dm, parameters, subgroup)
+generateMsmsOptions <- function(dm, parameters, locus) {
+  msms.tmp <- createParameterEnv(dm, parameters, locus)
 
   if ( !is.null( dm@options[['msms.cmd']] ) )
     cmd <- dm@options[['msms.cmd']]
@@ -117,22 +117,29 @@ msmsSimFunc <- function(dm, parameters) {
   if (length(parameters) != dm.getNPar(dm)) 
     stop("Wrong number of parameters!")
 
-  # Generate Options
-  subgroup_sizes <- sampleSubgroupSizes(dm, parameters)
-  msms.files <- sapply(1:dm.getSubgroupNumber(dm), function(subgroup) {
-    if (subgroup_sizes[subgroup] == 0) return("")
-    ms.options <- paste(sum(dm.getSampleSize(dm)),
-                        subgroup_sizes[subgroup],
-                        paste(generateMsOptions(dm, parameters, subgroup), 
+  # Run all simulation in with one ms call if they loci are identical,
+  # or call ms for each locus if there is variation between the loci.
+  if (dm.hasInterLocusVariation(dm)) {
+    sim_reps <- 1:dm.getLociNumber(dm)
+    sim_loci <- 1
+  } else {
+    sim_reps <- 1
+    sim_loci <- dm.getLociNumber(dm)
+  }
+  
+  # Run the simulation(s)
+  msms.files <- lapply(sim_reps, function(locus) {
+    ms.options <- paste(sum(dm.getSampleSize(dm)), sim_loci,
+                        paste(generateMsOptions(dm, parameters, locus), 
                               collapse=" "))
-    msms.options <- paste(generateMsmsOptions(dm, parameters, subgroup), 
+    msms.options <- paste(generateMsmsOptions(dm, parameters, locus), 
                           collapse= " ")
     #print(c(ms.options, msms.options))
     callMsms(getJaathaVariable('msms.jar'), ms.options, msms.options)
   })
   
   # Parse the simulation output
-  generateSumStats(msms.files, 0, parameters, dm)
+  generateSumStats(msms.files, 'ms', parameters, dm)
 }
 
 finalizeMsms <- function(dm) {

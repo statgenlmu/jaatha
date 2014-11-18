@@ -35,33 +35,29 @@ test_that("test.msmsPrint", {
   unlink(tmp_file)
 })
 
-test_that("test.msmsSimFunc", {
+test_that("msmsSimFunc works", {
   if (!test_msms) return()
-  sum.stats <- msmsSimFunc(dm.sel, c(1, 1.5, 1500, 5))
-  expect_true(is.list(sum.stats))
-  expect_false(is.null(sum.stats$pars))
-  expect_true(is.matrix(sum.stats$jsfs))
-  expect_equal(length(sum.stats), 2)
-  dm.sel@sum.stats <- data.frame()
-  dm.sel <- dm.addSummaryStatistic(dm.sel, "seg.sites")
-  dm.sel <- dm.addSummaryStatistic(dm.sel, "file")
-  sum.stats <- msmsSimFunc(dm.sel, c(1, 1.5, 1500, 5))
-  expect_true(is.list(sum.stats))
-  expect_false(is.null(sum.stats$pars))
-  expect_true(is.list(sum.stats$seg.sites))
-  expect_equal(length(sum.stats$seg.sites), 3)
-  expect_true(file.exists(sum.stats$file))
-  expect_equal(length(sum.stats), 3)
-  unlink(sum.stats$file)
-  dm.sel@sum.stats <- data.frame()
-  dm.sel <- dm.addSummaryStatistic(dm.sel, "fpc")
-  dm.sel <- calcFpcBreaks(dm.sel, sum.stats$seg.sites)
-  sum.stats <- msmsSimFunc(dm.sel, c(1, 1.5, 1500, 5))
-  expect_true(is.list(sum.stats))
-  expect_false(is.null(sum.stats$pars))
-  expect_true(is.matrix(sum.stats$fpc))
-  expect_equal(sum(sum.stats$fpc), 3)
-  expect_equal(length(sum.stats), 2)
+  set.seed(6688)
+  sum_stats <- msmsSimFunc(dm.sel, c(1, 1.5, 1500, 5))
+  expect_true(is.matrix(sum_stats$jsfs))
+  expect_true(sum(sum_stats$jsfs) > 0)
+  
+  set.seed(6688)
+  sum_stats2 <- msmsSimFunc(dm.sel, c(1, 1.5, 1500, 5))
+  expect_equal(sum_stats, sum_stats2)
+})
+
+test_that("msmsSimFunc works with inter-locus variation", {
+  dm_tmp <- dm.addInterLocusVariation(dm.sel)
+  
+  set.seed(1100)
+  sum_stats <- msmsSimFunc(dm_tmp, c(1, 1.5, 1500, 5))
+  expect_true(is.matrix(sum_stats$jsfs))
+  expect_true(sum(sum_stats$jsfs) > 0)
+  
+  set.seed(1100)
+  sum_stats2 <- msmsSimFunc(dm_tmp, c(1, 1.5, 1500, 5))
+  expect_equal(sum_stats$jsfs, sum_stats2$jsfs)
 })
 
 test_that("Generation of PMC statistic works", {
