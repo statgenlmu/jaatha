@@ -1,6 +1,6 @@
-context("Rcpp output parsing")
+context("parse ms output")
 
-test_that("parseMsPositions works", {
+test_that("parsing positions works", {
   positions <- rep(0, 10)
   positions <- parseMsPositions("positions: 0.0010 0.0474 0.3171")
   expect_equal(positions[1], 0.001)
@@ -14,7 +14,7 @@ test_that("parseMsPositions works", {
   expect_error(parseMsPositions("segsites: 0"))
 })
 
-test_that("parseOutput works for ms", {
+test_that("parsing output works", {
   set.seed(25)
   dm.tt@sum.stats <- data.frame()
   dm.tt <- dm.addSummaryStatistic(dm.tt, "file")
@@ -22,23 +22,14 @@ test_that("parseOutput works for ms", {
   ln <- dm.getLociNumber(dm.tt)
 
   ms.file <- dm.simSumStats(dm.tt, c(1, 5))$file
-  expect_error(parseOutput("bulb.txt", ss, ln))
+  expect_error(parseMsOutput(list("bulb.txt"), ss, ln))
   
-  seg_sites <- parseOutput(ms.file, ss, ln, 0)
+  seg_sites <- parseMsOutput(ms.file, ss, ln)
   expect_true(is.list(seg_sites))
   expect_equal(length(seg_sites), dm.getLociNumber(dm.tt))
   for (seg_site in seg_sites) {
     expect_true(is.matrix(seg_site))
-    expect_equal(nrow(seg_site), sum(ss))
-    expect_true(all(seg_site %in% c(0, 1)))
-  }
-  
-  ms.file <- c(ms.file, dm.simSumStats(dm.tt, c(1, 5))$file)
-  seg_sites <- parseOutput(ms.file, ss, 2*ln, 0)
-  expect_true(is.list(seg_sites))
-  expect_equal(length(seg_sites), 2*dm.getLociNumber(dm.tt))
-  for (seg_site in seg_sites) {
-    expect_true(is.matrix(seg_site))
+    expect_true(is.numeric(attr(seg_site, 'positions')))
     expect_equal(nrow(seg_site), sum(ss))
     expect_true(all(seg_site %in% c(0, 1)))
   }

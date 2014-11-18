@@ -5,19 +5,17 @@
 
 using namespace Rcpp;
 
-// parseOutput
-List parseOutput(const std::vector<std::string> file_names, const NumericVector sample_size, const int loci_number, const int program = 0, const NumericVector trio_opts = NumericVector(0));
-RcppExport SEXP jaatha_parseOutput(SEXP file_namesSEXP, SEXP sample_sizeSEXP, SEXP loci_numberSEXP, SEXP programSEXP, SEXP trio_optsSEXP) {
+// parseMsOutput
+List parseMsOutput(const List file_names, const NumericVector sample_size, const int loci_number);
+RcppExport SEXP jaatha_parseMsOutput(SEXP file_namesSEXP, SEXP sample_sizeSEXP, SEXP loci_numberSEXP) {
 BEGIN_RCPP
     SEXP __sexp_result;
     {
         Rcpp::RNGScope __rngScope;
-        Rcpp::traits::input_parameter< const std::vector<std::string> >::type file_names(file_namesSEXP );
+        Rcpp::traits::input_parameter< const List >::type file_names(file_namesSEXP );
         Rcpp::traits::input_parameter< const NumericVector >::type sample_size(sample_sizeSEXP );
         Rcpp::traits::input_parameter< const int >::type loci_number(loci_numberSEXP );
-        Rcpp::traits::input_parameter< const int >::type program(programSEXP );
-        Rcpp::traits::input_parameter< const NumericVector >::type trio_opts(trio_optsSEXP );
-        List __result = parseOutput(file_names, sample_size, loci_number, program, trio_opts);
+        List __result = parseMsOutput(file_names, sample_size, loci_number);
         PROTECT(__sexp_result = Rcpp::wrap(__result));
     }
     UNPROTECT(1);

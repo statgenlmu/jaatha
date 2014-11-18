@@ -106,16 +106,11 @@ msSingleSimFunc <- function(dm, parameters) {
   checkType(parameters, "num")
   if (length(parameters) != dm.getNPar(dm)) stop("Wrong number of parameters!")
 
-  # Run a simulation for each subgroup
-  subgroup_sizes <- sampleSubgroupSizes(dm, parameters)
-  ms.files <- sapply(1:dm.getSubgroupNumber(dm), function(subgroup) {
-    if (subgroup_sizes[subgroup] == 0) return("")
-    ms.options <- generateMsOptions(dm, parameters, subgroup)
+  # Run a simulation for each locus
+  ms.files <- lapply(1:dm.getLociNumber(dm), function(locus) {
+    ms.options <- generateMsOptions(dm, parameters, locus)
     ms.file <- getTempFile('ms')
-    ms(sum(dm.getSampleSize(dm)), 
-       subgroup_sizes[subgroup], 
-       unlist(strsplit(ms.options, " ")), 
-       ms.file)
+    ms(sum(dm.getSampleSize(dm)), 1, unlist(strsplit(ms.options, " ")), ms.file)
     ms.file
   })
   
