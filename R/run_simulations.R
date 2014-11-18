@@ -30,10 +30,9 @@ runSimulations <- function(pars, cores, jaatha) {
            function(x) print(attr(x, 'condition')))
     stop("One or more errors while simulating. Check your sim.func")
   }
-     
-
+  
   set.seed(seeds[length(seeds)])
-  return(sim.data)
+  sim.data
 }
 
 runSimulation <- function(i, pars, seeds, jaatha) {
@@ -42,5 +41,5 @@ runSimulation <- function(i, pars, seeds, jaatha) {
   sim.results <- jaatha@simFunc(sim.pars, jaatha)
   sim.results$pars <- sim.pars
   sim.results$pars.normal <- pars[i, ]
-  return(sim.results)
+  sim.results
 }
