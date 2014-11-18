@@ -40,16 +40,15 @@ BEGIN_RCPP
 END_RCPP
 }
 // parseTrees
-std::string parseTrees(const std::vector<std::string> in_files, const std::string out_file, const NumericVector trio_opts);
-RcppExport SEXP jaatha_parseTrees(SEXP in_filesSEXP, SEXP out_fileSEXP, SEXP trio_optsSEXP) {
+CharacterVector parseTrees(const std::string in_file, const NumericVector trio_opts);
+RcppExport SEXP jaatha_parseTrees(SEXP in_fileSEXP, SEXP trio_optsSEXP) {
 BEGIN_RCPP
     SEXP __sexp_result;
     {
         Rcpp::RNGScope __rngScope;
-        Rcpp::traits::input_parameter< const std::vector<std::string> >::type in_files(in_filesSEXP );
-        Rcpp::traits::input_parameter< const std::string >::type out_file(out_fileSEXP );
+        Rcpp::traits::input_parameter< const std::string >::type in_file(in_fileSEXP );
         Rcpp::traits::input_parameter< const NumericVector >::type trio_opts(trio_optsSEXP );
-        std::string __result = parseTrees(in_files, out_file, trio_opts);
+        CharacterVector __result = parseTrees(in_file, trio_opts);
         PROTECT(__sexp_result = Rcpp::wrap(__result));
     }
     UNPROTECT(1);
