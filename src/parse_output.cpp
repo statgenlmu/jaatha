@@ -180,11 +180,10 @@ NumericMatrix parseSeqgenSegSites(std::ifstream &output,
         *it += offset;
         *it /= (locus_length - 1);
       }
-    }
-    
-    seg_sites.attr("positions") = wrap(positions); 
+    } 
   }
   
+  seg_sites.attr("positions") = wrap(positions); 
   return seg_sites;
 }
 
