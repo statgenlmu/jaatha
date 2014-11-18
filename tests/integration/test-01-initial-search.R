@@ -55,8 +55,7 @@ test_that("test.initialSearch.normal", {
 })
 
 test_that("test.initialSearch.seqgen", {
-  dm.sq <- dm.setMutationModel(dm.tt, "HKY", c(0.2, 0.2, 0.2, 
-                                               0.4), 0.5)
+  dm.sq <- dm.setMutationModel(dm.tt, "HKY", c(0.2, 0.2, 0.2, 0.4), 0.5)
   jaatha <- Jaatha.initialize(dm.sq, sum.stats.tt, seed = 24, cores = 2)
   jaatha <- Jaatha.initialSearch(jaatha, sim = 10, blocks.per.par = 1)
   pStartPoints <- Jaatha.getStartingPoints(jaatha)
