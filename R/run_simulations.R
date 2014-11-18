@@ -24,8 +24,13 @@ runSimulations <- function(pars, cores, jaatha) {
                        seeds=seeds, jaatha=jaatha,
                        mc.preschedule=TRUE, mc.cores=cores)
 
-  if ( "try-error" %in% unlist(sapply(sim.data, is)) ) 
-    stop("Error while simulating. Check your sim.func") 
+  if ( "try-error" %in% unlist(sapply(sim.data, is)) ) {
+    cat("Error(s) while simulating:\n")
+    sapply(sim.data["try-error" %in% unlist(sapply(sim.data, is))],
+           function(x) print(attr(x, 'condition')))
+    stop("One or more errors while simulating. Check your sim.func")
+  }
+     
 
   set.seed(seeds[length(seeds)])
   return(sim.data)
