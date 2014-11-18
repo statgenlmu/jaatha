@@ -1507,31 +1507,13 @@ scaleDemographicModel <- function(dm, scaling.factor) {
   return(dm)
 }
 
-dm.addSubgroups <- function(dm, subgroup_number, zero_inflation = 0, group = 0) {
-  checkType(subgroup_number, c('num', 's'))
-  checkType(group, c('num', 's'))
-  checkType(zero_inflation, c('s'), FALSE)
-  
-  if (zero_inflation != 0) {
-    dm <- addFeature(dm, 'zero_inflation', as.character(zero_inflation),
-                     group = group, par.new = FALSE)
-  }
-  
-  addFeature(dm, 'subgroups', as.character(subgroup_number), 
-             group = group, par.new = FALSE)
+dm.addInterLocusVariation <- function(dm, group = 0) {
+  dm <- addFeature(dm, 'inter_locus_variation', par.new = FALSE, group = group)
+  dm
 }
 
-dm.getSubgroupNumber <- function(dm, group = 1, with_zero_inflasion = TRUE) {
-  number <- searchFeature(dm, 'subgroups', group = group)$parameter
-  
-  if (length(number) == 0) number <- 1
-  else number <- as.numeric(number)
-  
-  if(with_zero_inflasion) {
-    if (!is.na(dm.getZeroInflation(dm, group = group))) number <- number + 1
-  }
-  
-  number
+dm.hasInterLocusVariation <- function(dm, group = 0) {
+  nrow(searchFeature(dm, 'inter_locus_variation', group = group)) > 0
 }
 
 dm.getZeroInflation <- function(dm, group = 1) {

@@ -5,6 +5,21 @@
 
 using namespace Rcpp;
 
+// parseMsPositions
+NumericVector parseMsPositions(const std::string line);
+RcppExport SEXP jaatha_parseMsPositions(SEXP lineSEXP) {
+BEGIN_RCPP
+    SEXP __sexp_result;
+    {
+        Rcpp::RNGScope __rngScope;
+        Rcpp::traits::input_parameter< const std::string >::type line(lineSEXP );
+        NumericVector __result = parseMsPositions(line);
+        PROTECT(__sexp_result = Rcpp::wrap(__result));
+    }
+    UNPROTECT(1);
+    return __sexp_result;
+END_RCPP
+}
 // parseMsOutput
 List parseMsOutput(const List file_names, const NumericVector sample_size, const int loci_number);
 RcppExport SEXP jaatha_parseMsOutput(SEXP file_namesSEXP, SEXP sample_sizeSEXP, SEXP loci_numberSEXP) {
@@ -16,21 +31,6 @@ BEGIN_RCPP
         Rcpp::traits::input_parameter< const NumericVector >::type sample_size(sample_sizeSEXP );
         Rcpp::traits::input_parameter< const int >::type loci_number(loci_numberSEXP );
         List __result = parseMsOutput(file_names, sample_size, loci_number);
-        PROTECT(__sexp_result = Rcpp::wrap(__result));
-    }
-    UNPROTECT(1);
-    return __sexp_result;
-END_RCPP
-}
-// parseMsPositions
-NumericVector parseMsPositions(const std::string line);
-RcppExport SEXP jaatha_parseMsPositions(SEXP lineSEXP) {
-BEGIN_RCPP
-    SEXP __sexp_result;
-    {
-        Rcpp::RNGScope __rngScope;
-        Rcpp::traits::input_parameter< const std::string >::type line(lineSEXP );
-        NumericVector __result = parseMsPositions(line);
         PROTECT(__sexp_result = Rcpp::wrap(__result));
     }
     UNPROTECT(1);
