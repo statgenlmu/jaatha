@@ -391,8 +391,8 @@ test_that("addMutation works", {
   expect_equal(searchFeature(dm_tmp2, "mutation")$parameter, 'theta')
   expect_equal(nrow(searchFeature(dm_tmp2, "mutation")), 1)  
   
-  #dm_tmp3 <- dm.addMutation(dm_tmp, 1, 20, variance = 20, var.classes = 7)
-  #expect_equal(dm.getSubgroupNumber(dm_tmp3), 7)
+  dm_tmp3 <- dm.addMutation(dm_tmp, 1, 20, variance = 20)
+  expect_equal(nrow(searchFeature(dm_tmp3, "mutation")), 1)
 })
 
 test_that("addRecombination works", {
@@ -404,10 +404,7 @@ test_that("addRecombination works", {
   expect_equal(searchFeature(dm_tmp, "recombination")$parameter, 'rho')
   expect_equal(nrow(searchFeature(dm_tmp, "recombination")), 1)  
   
-  #dm_tmp <- dm.addRecombination(dm_tmp, 1, 20, variance = 20,
-  #                              new.par.name = 'rho2', var.classes = 8, 
-  #                              group = 2)
-  #expect_equal(nrow(searchFeature(dm_tmp, "recombination")), 2) 
-  #expect_equal(dm.getSubgroupNumber(dm_tmp), 1)
-  #expect_equal(dm.getSubgroupNumber(dm_tmp, group = 2), 8)
+  dm_tmp <- dm.addRecombination(dm_tmp, 1, 20, variance = 20,
+                                new.par.name = 'rho2', group = 2)
+  expect_equal(nrow(searchFeature(dm_tmp, "recombination")), 2)
 })
