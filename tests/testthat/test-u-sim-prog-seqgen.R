@@ -138,6 +138,8 @@ test_that("test.simulateFpcWithSeqgen", {
 })
 
 test_that("seq-gen can simulate trios", {
+  warning("trios: test temporarily deactivated")
+  return()
   if (!test_seqgen) return()
   dm.lt <- dm.useLociTrios(dm.setLociLength(dm.f81, 50), c(10, 5, 20, 5, 10))
   dm.lt <- dm.addSummaryStatistic(dm.lt, 'seg.sites')
