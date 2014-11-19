@@ -19,7 +19,7 @@ CharacterVector parseTrees(const std::string in_file,
   
   // Prepare a file for the first locus' tree
   std::vector<std::string> out_files;
-  out_files.push_back(as<std::string>(tempfile("seq-gen")));
+  out_files.push_back(as<std::string>(tempfile("trees")));
 
   // Open input file and first output file
   std::ifstream input(in_file.c_str(), std::ifstream::in);
@@ -38,8 +38,8 @@ CharacterVector parseTrees(const std::string in_file,
     }
   } else {
     // Open remaining output files
-    out_files.push_back(as<std::string>(tempfile("seq-gen")));
-    out_files.push_back(as<std::string>(tempfile("seq-gen")));
+    out_files.push_back(as<std::string>(tempfile("trees")));
+    out_files.push_back(as<std::string>(tempfile("trees")));
     
     std::ofstream output_1(out_files[1].c_str(), std::ofstream::out);
     if (!output_1.is_open()) stop("Failed to create a file for writing trees.");

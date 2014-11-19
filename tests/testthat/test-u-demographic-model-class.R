@@ -103,15 +103,11 @@ test_that("test.dm.addSummaryStatistics", {
   expect_true(all(dm.getSummaryStatistics(dm) == c("jsfs", 
                                                    "seg.sites")))
   dm <- dm.addSummaryStatistic(dm, "file", group = 2)
-  expect_equal(length(dm.getSummaryStatistics(dm, group = 1)), 
-               2)
-  expect_equal(length(dm.getSummaryStatistics(dm, group = 2)), 
-               3)
+  expect_equal(length(dm.getSummaryStatistics(dm, group = 1)), 2)
+  expect_equal(length(dm.getSummaryStatistics(dm, group = 2)), 3)
   dm <- dm.addSummaryStatistic(dm, "fpc", group = 1)
-  expect_equal(length(dm.getSummaryStatistics(dm, group = 1)), 
-               3)
-  expect_equal(length(dm.getSummaryStatistics(dm, group = 2)), 
-               3)
+  expect_equal(length(dm.getSummaryStatistics(dm, group = 1)), 3)
+  expect_equal(length(dm.getSummaryStatistics(dm, group = 2)), 3)
   expect_error(dm.addSummaryStatistic(dm, "no.existing.sumstat"))
   expect_error(dm.addSummaryStatistic(dm, 1:10))
 })

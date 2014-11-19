@@ -1,7 +1,7 @@
 context("Rcpp tree parsing")
 
 test_that("Trees are extracted from simulation output", {
-  sim_output <- tempfile("sim_output")
+  sim_output <- getTempFile("sim_output")
   
   cat("ms 3 1 -t 1 -r 1 20 -T 
 30461 15911 34727
@@ -27,9 +27,9 @@ positions: 0.3718 0.8443
 10
 ", file=sim_output);
   
-  tree_file <- parseTrees(sim_output, NA, getTempFile)
-  expect_true(file.exists(tree_file))
-  trees <- scan(tree_file, "character", quiet=TRUE)
+  tree_files <- parseTrees(sim_output, NA, getTempFile)
+  expect_true(file.exists(tree_files))
+  trees <- scan(tree_files, "character", quiet=TRUE)
   expect_equal(length(trees), 6)
   expect_equal(trees[1], '[2](2:0.865,(1:0.015,3:0.015):0.850);')
   expect_equal(trees[2], '[3](2:0.865,(1:0.015,3:0.015):0.850);')
@@ -37,7 +37,7 @@ positions: 0.3718 0.8443
   expect_equal(trees[4], '[11](2:1.261,(1:0.015,3:0.015):1.246);')
   expect_equal(trees[5], '[2](3:0.613,(1:0.076,2:0.076):0.537);')
   expect_equal(trees[6], '[18](3:0.460,(1:0.076,2:0.076):0.384);')
-  unlink(tree_file)
+  unlink(tree_files)
   
   tree_files <- parseTrees(sim_output, c(2, 4, 8, 2, 4), getTempFile)
   expect_true(all(sapply(tree_files, file.exists)))
@@ -50,6 +50,7 @@ positions: 0.3718 0.8443
   expect_equal(trees[[1]][2], '[2](3:0.613,(1:0.076,2:0.076):0.537);')
   expect_equal(trees[[2]][3], '[8](3:0.460,(1:0.076,2:0.076):0.384);')
   expect_equal(trees[[3]][2], '[4](3:0.460,(1:0.076,2:0.076):0.384);')
+  unlink(tree_files)
   
   tree_files <- parseTrees(sim_output, c(9, 2, 2, 5, 2), getTempFile)
   expect_true(all(sapply(tree_files, file.exists)))
@@ -65,6 +66,9 @@ positions: 0.3718 0.8443
   expect_equal(trees[[2]][2], '[2](3:0.460,(1:0.076,2:0.076):0.384);')
   expect_equal(trees[[3]][2], '[2](3:0.460,(1:0.076,2:0.076):0.384);')
   
-  expect_error(parseTrees(sim_output, c(9, 2, 2, 5, 1)))
-  expect_error(parseTrees(sim_output, c(19, 2, 2, 5, 1)))
+  #expect_error(parseTrees(sim_output, c(9, 2, 2, 5, 1)))
+  #expect_error(parseTrees(sim_output, c(19, 2, 2, 5, 1)))
+  unlink(tree_files)
+  
+  unlink(sim_output)
 })

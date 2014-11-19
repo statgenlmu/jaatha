@@ -29,20 +29,6 @@ test_that("test.RateHeterogenity", {
   expect_true(sum(jsfs$jsfs) > 0)
 })
 
-test_that("test.callSeqgen", {
-  if (!test_seqgen) return()
-  opts <- c("seq-gen", " -mHKY", " -l", dm.getLociLength(dm.tt), 
-            " -p", dm.getLociLength(dm.tt) + 1, " -q")
-  dm.tt <- dm.addSummaryStatistic(dm.tt, "trees")
-  dm.tt <- dm.addSummaryStatistic(dm.tt, "file")
-  ms.file <- msSingleSimFunc(dm.tt, c(1,5))$file[[1]]
-  seqgen.file <- callSeqgen(opts, ms.file)
-  expect_true(file.exists(seqgen.file))
-  expect_true(file.info(seqgen.file)$size != 0)
-  unlink(ms.file)
-  unlink(seqgen.file)
-})
-
 test_that("test.finalizeSeqgen", {
   if (!test_seqgen) return()
   finalizeSeqgen = getSimProgram("seq-gen")$finalization_func
