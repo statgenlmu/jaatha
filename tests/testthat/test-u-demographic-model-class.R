@@ -9,6 +9,45 @@ test_that("addFeature works", {
   dm_tmp <- addFeature(dm_tmp, "mutation", "theta", fixed.value = 5, 
                    pop.source = 1, pop.sink = 2, time.point = "t2", group = 3)
   expect_equal(nrow(dm_tmp@features), n.feat + 2)
+  
+  # Test variance
+  dm_tmp <- dm.createDemographicModel(11:12, 100)
+  dm_tmp <- addFeature(dm_tmp, 'mutation', parameter = 'theta', variance = '10')
+  expect_true(dm.hasInterLocusVariation(dm_tmp))
+  par_expr <- searchFeature(dm_tmp, 'mutation')$parameter
+  theta = 5
+  sim <- sapply(1:1000, function(x) eval(parse(text=par_expr)))
+  expect_true(abs(mean(sim) - theta) < .3)
+  
+  # Test zero.inflation
+  dm_tmp <- dm.createDemographicModel(11:12, 100)
+  dm_tmp <- addFeature(dm_tmp, 'mutation', parameter = 'theta', 
+                       zero.inflation = '.1')
+  expect_true(dm.hasInterLocusVariation(dm_tmp))
+  
+  par_expr <- searchFeature(dm_tmp, 'mutation')$parameter
+  theta = 5
+  locus <- 1; expect_equal(eval(parse(text=par_expr)), 0)
+  locus <- 5; expect_equal(eval(parse(text=par_expr)), 0)
+  locus <- 10; expect_equal(eval(parse(text=par_expr)), 0)
+  locus <- 11; expect_equal(eval(parse(text=par_expr)), 5)
+  locus <- 30; expect_equal(eval(parse(text=par_expr)), 5)
+  locus <- 72; expect_equal(eval(parse(text=par_expr)), 5)  
+  
+  # Test zero.inflation & variance
+  dm_tmp <- dm.createDemographicModel(11:12, 100)
+  dm_tmp <- addFeature(dm_tmp, 'mutation', parameter = 'theta', 
+                       variance = '10', zero.inflation = '.1')
+  expect_true(dm.hasInterLocusVariation(dm_tmp))
+  par_expr <- searchFeature(dm_tmp, 'mutation')$parameter
+  theta = 5
+  sim <- sapply(1:1000, function(x) { 
+    locus <- x %% 100; 
+    eval(parse(text=par_expr))
+  })
+  expect_true(abs(mean(sim) - theta*0.9) < .3)
+  expect_equal(sum(sim == 5), 0)
+  expect_true(sum(sim == 0) > 80)
 })
 
 test_that("test.addParameter", {
