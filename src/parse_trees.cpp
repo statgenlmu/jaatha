@@ -10,7 +10,8 @@ using namespace Rcpp;
 // independence.
 // [[Rcpp::export]]
 CharacterVector parseTrees(const std::string in_file, 
-                           const NumericVector trio_opts) {
+                           const NumericVector trio_opts,
+                           Function tempfile) {
     
   std::string line; 
   bool trio = false;
@@ -18,7 +19,6 @@ CharacterVector parseTrees(const std::string in_file,
   
   // Prepare a file for the first locus' tree
   std::vector<std::string> out_files;
-  Function tempfile("getTempFile");
   out_files.push_back(as<std::string>(tempfile("seq-gen")));
 
   // Open input file and first output file

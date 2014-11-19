@@ -13,8 +13,8 @@ parseSeqgenOutput <- function(file_names, sample_size, loci_number, trio_opts = 
     .Call('jaatha_parseSeqgenOutput', PACKAGE = 'jaatha', file_names, sample_size, loci_number, trio_opts)
 }
 
-parseTrees <- function(in_file, trio_opts) {
-    .Call('jaatha_parseTrees', PACKAGE = 'jaatha', in_file, trio_opts)
+parseTrees <- function(in_file, trio_opts, tempfile) {
+    .Call('jaatha_parseTrees', PACKAGE = 'jaatha', in_file, trio_opts, tempfile)
 }
 
 calcPercentFpcViolation <- function(seg_sites, trio_opts = numeric(0)) {

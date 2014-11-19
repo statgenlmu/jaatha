@@ -224,7 +224,9 @@ seqgenSingleSimFunc <- function(dm, parameters) {
   
   seqgen.files <- lapply(1:dm.getLociNumber(dm), function(locus) {
     sum_stats_ms <- dm.simSumStats(tree.model, parameters)
-    tree_files <- parseTrees(sum_stats_ms[['file']][[1]], dm.getLociTrioOptions(dm))
+    tree_files <- parseTrees(sum_stats_ms[['file']][[1]], 
+                             dm.getLociTrioOptions(dm),
+                             getTempFile)
     
     # Call seq-gen to distribute mutations
     seqgen.options <- generateSeqgenOptions(dm, parameters)
