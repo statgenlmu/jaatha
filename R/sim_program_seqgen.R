@@ -60,6 +60,7 @@ generateTreeModel <- function(dm) {
   dm@sum.stats <- data.frame(name=c(), group=c())
   dm <- dm.addSummaryStatistic(dm, "trees")
   dm <- dm.addSummaryStatistic(dm, "file")
+  dm <- dm.setLociNumber(dm, 1)
   return(dm)
 }
 
@@ -220,28 +221,20 @@ seqgenSingleSimFunc <- function(dm, parameters) {
   # Use ms to simulate the ARG
   tree.model <- dm@options[['tree.model']]
   if (is.null(tree.model)) tree.model <- generateTreeModel(dm)
-  sum_stats_ms <- dm.simSumStats(tree.model, parameters)
-  tree_file <- parseTrees(sum_stats_ms[['file']], getTempFile('tree_file'),
-                          dm.getLociTrioOptions(dm))
-
-  # Call seq-gen to distribute mutations
-  seqgen.options <- generateSeqgenOptions(dm, parameters)
-  seqgen.file <- callSeqgen(seqgen.options, tree_file)
-
+  
+  seqgen.files <- lapply(1:dm.getLociNumber(dm), function(locus) {
+    sum_stats_ms <- dm.simSumStats(tree.model, parameters)
+    tree_files <- parseTrees(sum_stats_ms[['file']][[1]], dm.getLociTrioOptions(dm))
+    
+    # Call seq-gen to distribute mutations
+    seqgen.options <- generateSeqgenOptions(dm, parameters)
+    seqgen.file <- callSeqgen(seqgen.options, tree_files)
+    unlink(c(tree_files, sum_stats_ms[['file']]))
+    seqgen.file
+  })
+  
   # Generate the summary statistics
-  sum.stats <- generateSumStats(seqgen.file, 1, parameters, dm)
-
-  # Return or remove all temp.files
-  if ('file' %in% dm.getSummaryStatistics(dm)) {
-    sum.stats[['file']] <- c(ms=sum_stats_ms[['file']],
-                             trees=tree_file,
-                             seqgen=seqgen.file)
-  } else {
-    unlink(c(sum_stats_ms[['file']], seqgen.file, tree_file))
-    sum.stats[['file']] <- NULL
-  }
-
-  sum.stats
+  generateSumStats(seqgen.files, 'seqgen', parameters, dm)
 }
 
 finalizeSeqgen <- function(dm) {
@@ -255,6 +248,3 @@ finalizeSeqgen <- function(dm) {
 createSimProgram("seq-gen", sg.features, sg.sum.stats,
                  seqgenSingleSimFunc, finalizeSeqgen, printSeqgenCommand,
                  priority=10)
-
-rm(sg.features, sg.sum.stats, seqgenSingleSimFunc, 
-   finalizeSeqgen, printSeqgenCommand)

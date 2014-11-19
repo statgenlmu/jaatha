@@ -4,8 +4,16 @@ generateSumStats <- function(files, program, parameters, dm, seg_sites) {
   calc_seg_sites <- any(c('seg.sites', 'jsfs', 'pmc', 'fpc') %in% model_stats)
   if (missing(seg_sites) & calc_seg_sites) {
     if (program == 'ms') {
-      seg_sites <- parseMsOutput(files, dm.getSampleSize(dm), 
+      seg_sites <- parseMsOutput(files, 
+                                 dm.getSampleSize(dm), 
                                  dm.getLociNumber(dm))
+    } else if (program == 'seqgen') {
+      seg_sites <- parseSeqgenOutput(files, 
+                                     dm.getSampleSize(dm), 
+                                     dm.getLociNumber(dm),
+                                     dm.getLociTrioOptions(dm))
+    } else {
+      stop("Unknown program: ", program)
     }
   }
 

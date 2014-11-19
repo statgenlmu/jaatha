@@ -1,4 +1,4 @@
-context("parse ms output")
+context("parsing ms output")
 
 test_that("parsing positions works", {
   positions <- rep(0, 10)
@@ -35,32 +35,4 @@ test_that("parsing output works", {
   }
   
   unlink(ms.file)
-})
-
-test_that("parseOutput work for seq-gen", {
-  if (!test_seqgen) return()
-  invisible(files <- dm.simSumStats(dm.hky, c(1, 5))$file)
-  
-  seg_sites <- parseOutput(files[['seqgen']], dm.getSampleSize(dm.hky), 
-                           dm.getLociNumber(dm.hky), 1)
-  expect_true(is.list(seg_sites))
-  expect_equal(length(seg_sites), dm.getLociNumber(dm.hky))
-  for (seg_site in seg_sites) {
-    expect_true(is.matrix(seg_site))
-    expect_equal(nrow(seg_site), sum(dm.getSampleSize(dm.hky)))
-    expect_true(all(seg_site %in% c(0, 1)))
-  }
-  
-  seg_sites <- parseOutput(c(files[['seqgen']], files[['seqgen']]), 
-                           dm.getSampleSize(dm.hky), 
-                           2*dm.getLociNumber(dm.hky), 1)
-  expect_true(is.list(seg_sites))
-  expect_equal(length(seg_sites), 2*dm.getLociNumber(dm.hky))
-  for (seg_site in seg_sites) {
-    expect_true(is.matrix(seg_site))
-    expect_equal(nrow(seg_site), sum(dm.getSampleSize(dm.hky)))
-    expect_true(all(seg_site %in% c(0, 1)))
-  }
-  
-  unlink(files)
 })

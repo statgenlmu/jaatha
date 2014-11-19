@@ -97,11 +97,13 @@ test_that("test.seqgenSingleSimFunc", {
   if (!test_seqgen) return()
   seqgenSingleSimFunc = getSimProgram("seq-gen")$sim_func
   invisible(expect_error(seqgenSingleSimFunc(dm.tt, c(1, 10))))
+  
   set.seed(100)
   sum.stats <- seqgenSingleSimFunc(dm.hky, c(1, 10))
   expect_true(is.list(sum.stats))
   expect_true(is.array(sum.stats$jsfs))
   expect_true(sum(sum.stats$jsfs) > 0)
+  
   set.seed(100)
   sum.stats2 <- seqgenSingleSimFunc(dm.hky, c(1, 10))
   expect_equal(sum.stats2$jsfs, sum.stats$jsfs)
