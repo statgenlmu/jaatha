@@ -35,7 +35,7 @@ test_that("test.callSeqgen", {
             " -p", dm.getLociLength(dm.tt) + 1, " -q")
   dm.tt <- dm.addSummaryStatistic(dm.tt, "trees")
   dm.tt <- dm.addSummaryStatistic(dm.tt, "file")
-  ms.file <- msSingleSimFunc(dm.tt, c(1,5))$file
+  ms.file <- msSingleSimFunc(dm.tt, c(1,5))$file[[1]]
   seqgen.file <- callSeqgen(opts, ms.file)
   expect_true(file.exists(seqgen.file))
   expect_true(file.info(seqgen.file)$size != 0)
@@ -78,7 +78,7 @@ test_that("test.generateTreeModel", {
     dm.ms <- dm.finalize(generateTreeModel(dm))
     sum.stats <- dm.simSumStats(dm.ms, c(1, 5))
     expect_false(is.null(sum.stats$file))
-    expect_true(file.exists(sum.stats$file))
+    expect_true(file.exists(sum.stats$file[[1]]))
     unlink(sum.stats$file)
   }
 })
@@ -162,12 +162,4 @@ test_that("Generation of PMC statistic works", {
   expect_false(is.null(sum.stats$pmc))
   expect_true(is.array(sum.stats[["pmc"]]))
   expect_equal(sum(sum.stats[["pmc"]]), dm.getLociNumber(dm.f81))
-})
-
-test_that("seq-gen works with subgroups", {
-  if (!test_seqgen) return()
-  set.seed(20)
-  dm <- dm.addSubgroups(dm.gtr, 2)
-  sum_stats <- dm.simSumStats(dm, c(1, 10))
-  expect_true(sum(sum_stats$jsfs) > 0)
 })

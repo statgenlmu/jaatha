@@ -9,13 +9,6 @@ test_that("addFeature works", {
   dm_tmp <- addFeature(dm_tmp, "mutation", "theta", fixed.value = 5, 
                    pop.source = 1, pop.sink = 2, time.point = "t2", group = 3)
   expect_equal(nrow(dm_tmp@features), n.feat + 2)
-  
-  # Add variation
-  dm_tmp <- addFeature(dm_tmp, "recombination", "rho", 1, 5, 
-                       variance = '17', var.classes = 10)
-  expect_equal(searchFeature(dm_tmp, "subgroups")$parameter, '10')
-  expect_equal(nrow(searchFeature(dm_tmp, "recombination")), 1)  
-  expect_error(addFeature(dm_tmp, "mut", "theta2", 1, 5, variance = '5'))
 })
 
 test_that("test.addParameter", {
@@ -356,8 +349,8 @@ test_that("addMutation works", {
   expect_equal(searchFeature(dm_tmp2, "mutation")$parameter, 'theta')
   expect_equal(nrow(searchFeature(dm_tmp2, "mutation")), 1)  
   
-  dm_tmp3 <- dm.addMutation(dm_tmp, 1, 20, variance = 20, var.classes = 7)
-  expect_equal(dm.getSubgroupNumber(dm_tmp3), 7)
+  #dm_tmp3 <- dm.addMutation(dm_tmp, 1, 20, variance = 20, var.classes = 7)
+  #expect_equal(dm.getSubgroupNumber(dm_tmp3), 7)
 })
 
 test_that("addRecombination works", {
@@ -369,10 +362,10 @@ test_that("addRecombination works", {
   expect_equal(searchFeature(dm_tmp, "recombination")$parameter, 'rho')
   expect_equal(nrow(searchFeature(dm_tmp, "recombination")), 1)  
   
-  dm_tmp <- dm.addRecombination(dm_tmp, 1, 20, variance = 20,
-                                new.par.name = 'rho2', var.classes = 8, 
-                                group = 2)
-  expect_equal(nrow(searchFeature(dm_tmp, "recombination")), 2) 
-  expect_equal(dm.getSubgroupNumber(dm_tmp), 1)
-  expect_equal(dm.getSubgroupNumber(dm_tmp, group = 2), 8)
+  #dm_tmp <- dm.addRecombination(dm_tmp, 1, 20, variance = 20,
+  #                              new.par.name = 'rho2', var.classes = 8, 
+  #                              group = 2)
+  #expect_equal(nrow(searchFeature(dm_tmp, "recombination")), 2) 
+  #expect_equal(dm.getSubgroupNumber(dm_tmp), 1)
+  #expect_equal(dm.getSubgroupNumber(dm_tmp, group = 2), 8)
 })
