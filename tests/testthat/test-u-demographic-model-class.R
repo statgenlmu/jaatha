@@ -316,6 +316,9 @@ test_that("Adding and Getting inter locus variation works", {
   
   dm_tmp <- dm.addInterLocusVariation(dm.tt, 0)
   expect_true(dm.hasInterLocusVariation(dm_tmp))
+  dm_tmp <- dm.addInterLocusVariation(dm_tmp, 0)
+  expect_true(dm.hasInterLocusVariation(dm_tmp))
+  expect_equal(nrow(searchFeature(dm_tmp, 'inter_locus_variation')), 1)
   
   dm_tmp <- dm.addInterLocusVariation(dm.tt, 2)
   expect_false(dm.hasInterLocusVariation(dm_tmp))  

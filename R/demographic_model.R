@@ -1508,6 +1508,7 @@ scaleDemographicModel <- function(dm, scaling.factor) {
 }
 
 dm.addInterLocusVariation <- function(dm, group = 0) {
+  if (dm.hasInterLocusVariation(dm, group)) return(dm)
   dm <- addFeature(dm, 'inter_locus_variation', par.new = FALSE, group = group)
   dm
 }
