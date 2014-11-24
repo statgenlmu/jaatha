@@ -1,7 +1,7 @@
 context("msms simulation interface")
 
 test_that("test.callMsms", {
-  if (!test_msms) return()
+  if (!test_msms) skip('msms not installed')
   jar.path = getJaathaVariable("msms.jar")
   ms.args <- "5 1 -r 10 100 -t 5 -I 2 3 2 1"
   msms.args <- ""
@@ -27,7 +27,7 @@ test_that("test.generateMsmsOptionsCommand", {
 })
 
 test_that("test.msmsPrint", {
-  if (!test_msms) return()
+  if (!test_msms) skip('msms not installed')
   tmp_file <- tempfile()
   sink(tmp_file)
   print(dm.sel)
@@ -36,7 +36,7 @@ test_that("test.msmsPrint", {
 })
 
 test_that("msmsSimFunc works", {
-  if (!test_msms) return()
+  if (!test_msms) skip('msms not installed')
   set.seed(6688)
   sum_stats <- msmsSimFunc(dm.sel, c(1, 1.5, 1500, 5))
   expect_true(is.matrix(sum_stats$jsfs))
@@ -61,7 +61,7 @@ test_that("msmsSimFunc works with inter-locus variation", {
 })
 
 test_that("Generation of PMC statistic works", {
-  if (!test_msms) return()
+  if (!test_msms) skip('msms not installed')
   set.seed(941)
   dm.sel <- dm.addSummaryStatistic(dm.sel, "pmc")
   dm.sel@options[['pmc_breaks_private']] <- .5

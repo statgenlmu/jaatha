@@ -1,28 +1,28 @@
 context("seqgen simulation interface")
 
 test_that("test.F81Model", {
-  if (!test_seqgen) return()
+  if (!test_seqgen) skip('seq-gen not installed')
   set.seed(12)
   jsfs <- dm.simSumStats(dm.f81, c(1, 10))
   expect_true(sum(jsfs$jsfs) > 0)
 })
 
 test_that("test.GtrModel", {
-  if (!test_seqgen) return()
+  if (!test_seqgen) skip('seq-gen not installed')
   set.seed(12)
   jsfs <- dm.simSumStats(dm.gtr, c(1, 10))
   expect_true(sum(jsfs$jsfs) > 0)
 })
 
 test_that("test.HkyModel", {
-  if (!test_seqgen) return()
+  if (!test_seqgen) skip('seq-gen not installed')
   set.seed(12)
   jsfs <- dm.simSumStats(dm.hky, c(1, 10))
   expect_true(sum(jsfs$jsfs) > 0)
 })
 
 test_that("test.RateHeterogenity", {
-  if (!test_seqgen) return()
+  if (!test_seqgen) skip('seq-gen not installed')
   set.seed(12)
   dm.rh <- dm.addMutationRateHeterogenity(dm.hky, 0.1, 5, categories.number = 5)
   jsfs <- dm.simSumStats(dm.rh, c(1, 10, 1))
@@ -30,7 +30,7 @@ test_that("test.RateHeterogenity", {
 })
 
 test_that("test.finalizeSeqgen", {
-  if (!test_seqgen) return()
+  if (!test_seqgen) skip('seq-gen not installed')
   finalizeSeqgen = getSimProgram("seq-gen")$finalization_func
   dm.hky <- finalizeSeqgen(dm.hky)
   dm.f81 <- finalizeSeqgen(dm.f81)
@@ -44,7 +44,7 @@ test_that("test.finalizeSeqgen", {
 })
 
 test_that("test.generateSeqgenOptions", {
-  if (!test_seqgen) return()
+  if (!test_seqgen) skip('seq-gen not installed')
   dm.hky@options$seqgen.cmd <- NULL
   opts <- generateSeqgenOptions(dm.hky, c(1, 10), 1)
   opts <- strsplit(opts, " ")[[1]]
@@ -59,7 +59,7 @@ test_that("test.generateSeqgenOptions", {
 })
 
 test_that("test.generateTreeModel", {
-  if (!test_seqgen) return()
+  if (!test_seqgen) skip('seq-gen not installed')
   for (dm in c(dm.hky, dm.f81, dm.gtr)) {
     dm.ms <- dm.finalize(generateTreeModel(dm))
     sum.stats <- dm.simSumStats(dm.ms, c(1, 5))
@@ -70,7 +70,7 @@ test_that("test.generateTreeModel", {
 })
 
 test_that("test.seqgenMutationParameterNotLast", {
-  if (!test_seqgen) return()
+  if (!test_seqgen) skip('seq-gen not installed')
   dm.test <- dm.hky
   dm.test@parameters <- dm.test@parameters[3:1, ]
   cmd <- paste(generateSeqgenOptionsCmd(dm.test), collapse = "")
@@ -80,7 +80,7 @@ test_that("test.seqgenMutationParameterNotLast", {
 })
 
 test_that("test.seqgenSingleSimFunc", {
-  if (!test_seqgen) return()
+  if (!test_seqgen) skip('seq-gen not installed')
   seqgenSingleSimFunc = getSimProgram("seq-gen")$sim_func
   invisible(expect_error(seqgenSingleSimFunc(dm.tt, c(1, 10))))
   
@@ -96,8 +96,8 @@ test_that("test.seqgenSingleSimFunc", {
 })
 
 test_that("test.seqgenWithMsms", {
-  if (!test_seqgen) return()
-  if (!test_msms) return()
+  if (!test_seqgen) skip('seq-gen not installed')
+  if (!test_msms) skip('seq-gen not installed')
   dm.selsq <- dm.addPositiveSelection(dm.f81, 100, 500, population = 1, 
                                       at.time = "0.1")
   dm.selsq <- dm.finalize(dm.selsq)
@@ -113,7 +113,7 @@ test_that("test.seqgenWithMsms", {
 })
 
 test_that("test.simulateFpcWithSeqgen", {
-  if (!test_seqgen) return()
+  if (!test_seqgen) skip('seq-gen not installed')
   seg.sites <- dm.simSumStats(dm.addSummaryStatistic(dm.hky, 'seg.sites'),
                               c(1, 5))$seg.sites
   dm.sgfpc <- dm.addSummaryStatistic(dm.hky, 'fpc')
@@ -124,7 +124,8 @@ test_that("test.simulateFpcWithSeqgen", {
 })
 
 test_that("seq-gen can simulate trios", {
-  if (!test_seqgen) return()
+  skip("Temporarily deactivated")
+  if (!test_seqgen) skip('seq-gen not installed')
   dm.lt <- dm.useLociTrios(dm.setLociLength(dm.f81, 50), c(10, 5, 20, 5, 10))
   dm.lt <- dm.addSummaryStatistic(dm.lt, 'seg.sites')
   
@@ -137,7 +138,7 @@ test_that("seq-gen can simulate trios", {
 })
 
 test_that("Generation of PMC statistic works", {
-  if (!test_seqgen) return()
+  if (!test_seqgen) skip('seq-gen not installed')
   set.seed(941)
   dm.f81 <- dm.addSummaryStatistic(dm.f81, "pmc")
   dm.f81@options[['pmc_breaks_private']] <- .5
