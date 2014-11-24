@@ -17,8 +17,7 @@ callMsms <- function(jar.path, ms.args, msms.args, subgroup) {
 
   # Create the command
   cmd = paste("java -jar", jar.path, as.character(msms.args), 
-              "-ms", as.character(ms.args), "-seed", seed)
-  cmd <- paste(cmd, ">", out.file)
+              "-ms", as.character(ms.args), "-seed", seed, ">", out.file)
 
   # Execute the command
   output <- system(cmd)
@@ -80,7 +79,7 @@ generateMsmsOptionsCommand <- function(dm) {
   cmd
 }
 
-createParameterEnv <- function(dm, parameters, subgroup) {
+createParameterEnv <- function(dm, parameters, locus) {
   par_env <- new.env()
   
   par.names <- dm.getParameters(dm)
@@ -95,7 +94,7 @@ createParameterEnv <- function(dm, parameters, subgroup) {
     }
   }
   
-  par_env[['subgroup']] <- subgroup
+  if (!missing(locus)) par_env[['locus']] <- locus
   par_env
 }
 

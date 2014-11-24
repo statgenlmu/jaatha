@@ -82,41 +82,29 @@ Jaatha.setSeqgenExecutable <- function(seqgen.exe) {
 # 
 # @param opts The options to pass to ms. Must either be a character or character
 # vector.
-callSeqgen <- function(opts, ms.file) {
-  if (missing(opts)) stop("No options given!")
-  opts[length(opts) + 1:2] <- c("<", ms.file)
-  opts <- paste(opts, collapse=" ")
+callSeqgen <- function(opts, ms_files, trio_opts) {
+  stopifnot(!missing(opts))
+  stopifnot(length(opts) == length(ms_files))
 
-  if( !file.exists(ms.file) ) stop("ms file not found")
-  if( file.info(ms.file)$size == 0 ) stop("ms output is empty")
-
-  seqgen.file <- getTempFile("seqgen")
-  cmd <- paste(opts, ">", seqgen.file, sep=" ", collapse=" ")
-  
-  # Do the acctual simulation
-  if (system(cmd, intern = FALSE) != 0) stop("seq-gen simulation failed")
-  if( !file.exists(seqgen.file) ) stop("seq-gen simulation failed!")
-  if( file.info(seqgen.file)$size == 0 ) stop("seq-gen output is empty!")
-  
-  seqgen.file
+  sapply(ms_files, function(file) {
+    if(!file.exists(file)) stop("ms file not found")
+    if(file.info(file)$size == 0 ) stop("ms output is empty")
+    
+    seqgen_file <- getTempFile("seqgen")
+    opts <- paste(opts, "<", file, ">", seqgen_file)
+    
+    # Do the acctual simulation
+    if (system(opts, intern = FALSE) != 0) stop("seq-gen simulation failed")
+    
+    if( !file.exists(seqgen_file) ) stop("seq-gen simulation failed!")
+    if( file.info(seqgen_file)$size == 0 ) stop("seq-gen output is empty!")
+    
+    seqgen_file
+  })
 }
 
-generateSeqgenOptions <- function(dm, parameters) {
-  seqgen.tmp <- new.env()
-
-  par.names <- dm.getParameters(dm)
-
-  for (i in seq(along = par.names)){
-    seqgen.tmp[[ par.names[i] ]] <- parameters[i]
-  }
-
-  fixed.pars <- dm@parameters[dm@parameters$fixed, ]
-  if (nrow(fixed.pars) > 0) {
-    for (i in 1:nrow(fixed.pars)){
-      seqgen.tmp[[ fixed.pars$name[i] ]] <- fixed.pars$lower.range[i]
-    }
-  }
-
+generateSeqgenOptions <- function(dm, parameters, locus, trio_opt) {
+  seqgen.tmp <- createParameterEnv(dm, parameters, locus)
   seqgen.tmp[['seed']] <- generateSeeds(1)
   
   if ( !is.null( dm@options[['seqgen.cmd']] ) )
@@ -224,13 +212,16 @@ seqgenSingleSimFunc <- function(dm, parameters) {
   
   seqgen.files <- lapply(1:dm.getLociNumber(dm), function(locus) {
     # Generate options for seqgen
-    seqgen.options <- generateSeqgenOptions(dm, parameters)
+    seqgen.options <- generateSeqgenOptions(dm, parameters, locus,
+                                            dm.getLociTrioOptions(dm))
     
     # Simulate the trees
     sum_stats_ms <- dm.simSumStats(tree.model, parameters)
-    tree_files <- parseTrees(sum_stats_ms[['file']][[1]], 
+    #print(sum_stats_ms[['file']])
+    tree_files <- parseTrees(sum_stats_ms[['file']][[1]],
                              dm.getLociTrioOptions(dm),
                              getTempFile)
+    #print(tree_files)
     
     # Call seq-gen to distribute mutations
     seqgen.file <- callSeqgen(seqgen.options, tree_files)
