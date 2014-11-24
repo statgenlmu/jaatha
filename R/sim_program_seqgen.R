@@ -82,19 +82,19 @@ Jaatha.setSeqgenExecutable <- function(seqgen.exe) {
 # 
 # @param opts The options to pass to ms. Must either be a character or character
 # vector.
-callSeqgen <- function(opts, ms_files, trio_opts) {
+callSeqgen <- function(opts, ms_files) {
   stopifnot(!missing(opts))
   stopifnot(length(opts) == length(ms_files))
 
-  sapply(ms_files, function(file) {
-    if(!file.exists(file)) stop("ms file not found")
-    if(file.info(file)$size == 0 ) stop("ms output is empty")
+  sapply(seq(along = opts), function(i) {
+    if(!file.exists(ms_files[i])) stop("ms file not found")
+    if(file.info(ms_files[i])$size == 0 ) stop("ms output is empty")
     
     seqgen_file <- getTempFile("seqgen")
-    opts <- paste(opts, "<", file, ">", seqgen_file)
+    cmd <- paste(opts[i], "<", ms_files[i], ">", seqgen_file)
     
     # Do the acctual simulation
-    if (system(opts, intern = FALSE) != 0) stop("seq-gen simulation failed")
+    if (system(cmd, intern = FALSE) != 0) stop("seq-gen simulation failed")
     
     if( !file.exists(seqgen_file) ) stop("seq-gen simulation failed!")
     if( file.info(seqgen_file)$size == 0 ) stop("seq-gen output is empty!")
@@ -103,18 +103,33 @@ callSeqgen <- function(opts, ms_files, trio_opts) {
   })
 }
 
-generateSeqgenOptions <- function(dm, parameters, locus, trio_opt) {
-  seqgen.tmp <- createParameterEnv(dm, parameters, locus = locus, 
-                                   seed = generateSeeds(1))
-  
-  if ( !is.null( dm@options[['seqgen.cmd']] ) )
+generateSeqgenOptions <- function(dm, parameters, locus, trio_opt = NA) {
+  # Generate the command template to execute or use the buffered one
+  if ( !is.null( dm@options[['seqgen.cmd']] ) ) {
     cmd <- dm@options[['seqgen.cmd']]
-  else
+  } else {
     cmd <- generateSeqgenOptionsCmd(dm)
-  cmd <- paste(eval(parse(text=cmd), envir=seqgen.tmp), collapse=" ")
-
-  return(cmd)
+  }
+  
+  # Get the length of the loci we simulate
+  if (is.na(trio_opt) || length(trio_opt) == 0) {
+    locus_lengths <- dm.getLociLength(dm)
+  } else if (length(trio_opt) == 5) {
+    locus_lengths <- trio_opt[c(1,3,5)]
+  } else {
+    print(trio_opt)
+    stop('failed to parse trio options')
+  }
+  
+  # Fill the parameters in the template
+  sapply(locus_lengths, function(locus_length) {
+    par_envir <- createParameterEnv(dm, parameters, locus = locus, 
+                                    locus_length = locus_length,
+                                    seed = generateSeeds(1))
+    paste(eval(parse(text=cmd), envir=par_envir), collapse=" ")
+  })
 }
+
 
 generateSeqgenOptionsCmd <- function(dm) {  
   base.freqs <- F
@@ -172,10 +187,9 @@ generateSeqgenOptionsCmd <- function(dm) {
     stop("You must specify a finite sites mutation model for this demographic model")
   }
 
-  loci.length <- dm.getLociLength(dm)
-  opts <- c(opts, '"-l"', ',', loci.length, ',')
-  opts <- c(opts, '"-s"', ',', paste(getThetaName(dm), "/", loci.length), ',')
-  opts <- c(opts, '"-p"', ',', loci.length + 1, ',')
+  opts <- c(opts, '"-l"', ',', 'locus_length', ',')
+  opts <- c(opts, '"-s"', ',', paste(getThetaName(dm), ' / locus_length'), ',')
+  opts <- c(opts, '"-p"', ',', 'locus_length + 1', ',')
   opts <- c(opts, '"-z"', ',', 'seed', ',')
   opts <- c(opts, '"-q"', ')')
   return(opts)
