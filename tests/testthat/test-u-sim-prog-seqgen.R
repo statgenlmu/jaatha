@@ -129,7 +129,7 @@ test_that("seq-gen can simulate trios", {
   dm.lt <- dm.addSummaryStatistic(dm.lt, 'seg.sites')
   
   sum.stats <- dm.simSumStats(dm.lt, c(1, 10))
-  expect_equal(sum(sum.stats$jsfs), sum(sapply(sum.stats$seg.sites, ncol)))
+  expect_that(sum(sum.stats$jsfs), is_less_than(sum(sapply(sum.stats$seg.sites, ncol))))
 })
 
 test_that("Generation of PMC statistic works", {
