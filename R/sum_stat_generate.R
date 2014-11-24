@@ -3,9 +3,19 @@ generateSumStats <- function(files, program, parameters, dm, seg_sites) {
   
   calc_seg_sites <- any(c('seg.sites', 'jsfs', 'pmc', 'fpc') %in% model_stats)
   if (missing(seg_sites) & calc_seg_sites) {
-    seg_sites <- parseOutput(files, dm.getSampleSize(dm), 
-                             dm.getLociNumber(dm), program, 
-                             dm.getLociTrioOptions(dm))
+    if (program == 'ms') {
+      seg_sites <- parseMsOutput(files, 
+                                 dm.getSampleSize(dm), 
+                                 dm.getLociNumber(dm))
+    } else if (program == 'seqgen') {
+      seg_sites <- parseSeqgenOutput(files, 
+                                     sum(dm.getSampleSize(dm)),
+                                     dm.getLociLength(dm),
+                                     dm.getLociNumber(dm),
+                                     dm.getLociTrioOptions(dm))
+    } else {
+      stop("Unknown program: ", program)
+    }
   }
 
   # Add the parameters of the simulation
@@ -35,7 +45,7 @@ generateSumStats <- function(files, program, parameters, dm, seg_sites) {
   if ('file' %in% model_stats) {
     sum_stats[['file']] <- files
   } else {
-    unlink(files)
+    unlink(unlist(files))
   }
   
   sum_stats

@@ -3,8 +3,7 @@ calcFpcBreaks <- function(dm, seg.sites, number=5, group=0) {
   if (any(is.na(trio_opts))) trio_opts <- numeric(0)
     
   fpc.percent <- t(sapply(seg.sites, function(x) 
-                          calcPercentFpcViolation(x, as.numeric(colnames(x)), 
-                                                  trio_opts) ))
+                          calcPercentFpcViolation(x, trio_opts) ))
   props <- seq(0, 1, length.out = number + 2)[-c(1, number+2)]
     
   if (group == 0) {
@@ -54,7 +53,7 @@ generateFpcStat <- function(seg_sites, dm, group = 0) {
             
   if (any(is.na(trio_opts))) trio_opts <- numeric(0)
   percent <- sapply(seg_sites, function(x){
-    calcPercentFpcViolation(x, as.numeric(colnames(x)), trio_opts)
+    calcPercentFpcViolation(x, trio_opts)
   })
   
   # Classify the loci accordingly

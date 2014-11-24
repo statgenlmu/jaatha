@@ -1,3 +1,8 @@
+Version 2.6.0.9005
+==================
+- allows for an arbitrary number of parameters with variation.
+
+
 Version 2.6.0.9003
 ==================
 - Implement a candidate loci approach for selection. So far only for interal

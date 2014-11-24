@@ -130,7 +130,7 @@ checkType <- function(variable, type, required=T, allow.na=T) {
 #-----------------------------------------------------------------------
 # Functions to deal with temporary files
 #-----------------------------------------------------------------------
-getTempFile <- function(file.name="file"){
+getTempFile <- function(file.name="file") {
   tempfile(paste0('jaatha', '_', Sys.getpid(), "_", file.name, "_"))
 }
 

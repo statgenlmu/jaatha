@@ -17,8 +17,7 @@ callMsms <- function(jar.path, ms.args, msms.args, subgroup) {
 
   # Create the command
   cmd = paste("java -jar", jar.path, as.character(msms.args), 
-              "-ms", as.character(ms.args), "-seed", seed)
-  cmd <- paste(cmd, ">", out.file)
+              "-ms", as.character(ms.args), "-seed", seed, ">", out.file)
 
   # Execute the command
   output <- system(cmd)
@@ -80,7 +79,7 @@ generateMsmsOptionsCommand <- function(dm) {
   cmd
 }
 
-createParameterEnv <- function(dm, parameters, subgroup) {
+createParameterEnv <- function(dm, parameters, ...) {
   par_env <- new.env()
   
   par.names <- dm.getParameters(dm)
@@ -95,12 +94,16 @@ createParameterEnv <- function(dm, parameters, subgroup) {
     }
   }
   
-  par_env[['subgroup']] <- subgroup
+  additional_pars = list(...)
+  for (i in seq(along = additional_pars)) {
+    par_env[[names(additional_pars)[i]]] <- additional_pars[[i]]
+  }
+  
   par_env
 }
 
-generateMsmsOptions <- function(dm, parameters, subgroup) {
-  msms.tmp <- createParameterEnv(dm, parameters, subgroup)
+generateMsmsOptions <- function(dm, parameters, locus) {
+  msms.tmp <- createParameterEnv(dm, parameters, locus = locus)
 
   if ( !is.null( dm@options[['msms.cmd']] ) )
     cmd <- dm@options[['msms.cmd']]
@@ -108,7 +111,7 @@ generateMsmsOptions <- function(dm, parameters, subgroup) {
     cmd <- generateMsmsOptionsCommand(dm)
   cmd <- eval(parse(text=cmd), envir=msms.tmp)
 
-  return(cmd)
+  cmd
 }
 
 msmsSimFunc <- function(dm, parameters) {
@@ -117,22 +120,29 @@ msmsSimFunc <- function(dm, parameters) {
   if (length(parameters) != dm.getNPar(dm)) 
     stop("Wrong number of parameters!")
 
-  # Generate Options
-  subgroup_sizes <- sampleSubgroupSizes(dm, parameters)
-  msms.files <- sapply(1:dm.getSubgroupNumber(dm), function(subgroup) {
-    if (subgroup_sizes[subgroup] == 0) return("")
-    ms.options <- paste(sum(dm.getSampleSize(dm)),
-                        subgroup_sizes[subgroup],
-                        paste(generateMsOptions(dm, parameters, subgroup), 
+  # Run all simulation in with one ms call if they loci are identical,
+  # or call ms for each locus if there is variation between the loci.
+  if (dm.hasInterLocusVariation(dm)) {
+    sim_reps <- 1:dm.getLociNumber(dm)
+    sim_loci <- 1
+  } else {
+    sim_reps <- 1
+    sim_loci <- dm.getLociNumber(dm)
+  }
+  
+  # Run the simulation(s)
+  msms.files <- lapply(sim_reps, function(locus) {
+    ms.options <- paste(sum(dm.getSampleSize(dm)), sim_loci,
+                        paste(generateMsOptions(dm, parameters, locus), 
                               collapse=" "))
-    msms.options <- paste(generateMsmsOptions(dm, parameters, subgroup), 
+    msms.options <- paste(generateMsmsOptions(dm, parameters, locus), 
                           collapse= " ")
     #print(c(ms.options, msms.options))
     callMsms(getJaathaVariable('msms.jar'), ms.options, msms.options)
   })
   
   # Parse the simulation output
-  generateSumStats(msms.files, 0, parameters, dm)
+  generateSumStats(msms.files, 'ms', parameters, dm)
 }
 
 finalizeMsms <- function(dm) {

@@ -1,6 +1,6 @@
 Package: jaatha
-Version: 2.6.0.9004
-Date: 2014-11-13
+Version: 2.6.0.9005
+Date: 2014-11-17
 License: GPL (>= 3)
 Title: A Fast Parameter Estimation Method for Evolutionary Biology
 Authors@R: c( person('Paul', 'Staab', , 'develop@paulstaab.de', role=c('aut',

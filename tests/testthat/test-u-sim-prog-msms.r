@@ -1,7 +1,7 @@
 context("msms simulation interface")
 
 test_that("test.callMsms", {
-  if (!test_msms) return()
+  if (!test_msms) skip('msms not installed')
   jar.path = getJaathaVariable("msms.jar")
   ms.args <- "5 1 -r 10 100 -t 5 -I 2 3 2 1"
   msms.args <- ""
@@ -27,7 +27,7 @@ test_that("test.generateMsmsOptionsCommand", {
 })
 
 test_that("test.msmsPrint", {
-  if (!test_msms) return()
+  if (!test_msms) skip('msms not installed')
   tmp_file <- tempfile()
   sink(tmp_file)
   print(dm.sel)
@@ -35,37 +35,33 @@ test_that("test.msmsPrint", {
   unlink(tmp_file)
 })
 
-test_that("test.msmsSimFunc", {
-  if (!test_msms) return()
-  sum.stats <- msmsSimFunc(dm.sel, c(1, 1.5, 1500, 5))
-  expect_true(is.list(sum.stats))
-  expect_false(is.null(sum.stats$pars))
-  expect_true(is.matrix(sum.stats$jsfs))
-  expect_equal(length(sum.stats), 2)
-  dm.sel@sum.stats <- data.frame()
-  dm.sel <- dm.addSummaryStatistic(dm.sel, "seg.sites")
-  dm.sel <- dm.addSummaryStatistic(dm.sel, "file")
-  sum.stats <- msmsSimFunc(dm.sel, c(1, 1.5, 1500, 5))
-  expect_true(is.list(sum.stats))
-  expect_false(is.null(sum.stats$pars))
-  expect_true(is.list(sum.stats$seg.sites))
-  expect_equal(length(sum.stats$seg.sites), 3)
-  expect_true(file.exists(sum.stats$file))
-  expect_equal(length(sum.stats), 3)
-  unlink(sum.stats$file)
-  dm.sel@sum.stats <- data.frame()
-  dm.sel <- dm.addSummaryStatistic(dm.sel, "fpc")
-  dm.sel <- calcFpcBreaks(dm.sel, sum.stats$seg.sites)
-  sum.stats <- msmsSimFunc(dm.sel, c(1, 1.5, 1500, 5))
-  expect_true(is.list(sum.stats))
-  expect_false(is.null(sum.stats$pars))
-  expect_true(is.matrix(sum.stats$fpc))
-  expect_equal(sum(sum.stats$fpc), 3)
-  expect_equal(length(sum.stats), 2)
+test_that("msmsSimFunc works", {
+  if (!test_msms) skip('msms not installed')
+  set.seed(6688)
+  sum_stats <- msmsSimFunc(dm.sel, c(1, 1.5, 1500, 5))
+  expect_true(is.matrix(sum_stats$jsfs))
+  expect_true(sum(sum_stats$jsfs) > 0)
+  
+  set.seed(6688)
+  sum_stats2 <- msmsSimFunc(dm.sel, c(1, 1.5, 1500, 5))
+  expect_equal(sum_stats, sum_stats2)
+})
+
+test_that("msmsSimFunc works with inter-locus variation", {
+  dm_tmp <- dm.addInterLocusVariation(dm.sel)
+  
+  set.seed(1100)
+  sum_stats <- msmsSimFunc(dm_tmp, c(1, 1.5, 1500, 5))
+  expect_true(is.matrix(sum_stats$jsfs))
+  expect_true(sum(sum_stats$jsfs) > 0)
+  
+  set.seed(1100)
+  sum_stats2 <- msmsSimFunc(dm_tmp, c(1, 1.5, 1500, 5))
+  expect_equal(sum_stats$jsfs, sum_stats2$jsfs)
 })
 
 test_that("Generation of PMC statistic works", {
-  if (!test_msms) return()
+  if (!test_msms) skip('msms not installed')
   set.seed(941)
   dm.sel <- dm.addSummaryStatistic(dm.sel, "pmc")
   dm.sel@options[['pmc_breaks_private']] <- .5
@@ -78,84 +74,16 @@ test_that("Generation of PMC statistic works", {
   expect_equal(sum(sum.stats[["pmc"]]), dm.getLociNumber(dm.sel))
 })
 
-test_that("msms can simulate subgroups", {
-  if (!test_msms) return()
-  dm_tmp <- dm.addSubgroups(dm.sel, 3)
-  dm_tmp <- dm.addSummaryStatistic(dm_tmp, 'seg.sites')
-  sum_stats <- dm.simSumStats(dm_tmp, c(1, 5, 2, 1500))
-  expect_equal(length(sum_stats$seg.sites), 3)
-  for (seg_sites in sum_stats$seg.sites) {
-    expect_true(is.matrix(seg_sites))
-  }
-  expect_false(any(is.na(sum_stats$jsfs)))
-  expect_true(sum(sum_stats$jsfs) > 0)
-})
-
-test_that("Gamma Distributed Rates work", {
-  if (!test_msms) return()
-  dm_tmp <- dm.addPositiveSelection(dm.mig, 1000, 2000, population=2,
-                                    at.time='tau/2', variance='s^2',
-                                    var.classes = 3)
-  dm_tmp <- dm.addSummaryStatistic(dm_tmp, 'seg.sites')
+test_that("Creation of parameter enviroment works", {
+  par_envir <- createParameterEnv(dm.tt, c(1,5))
+  expect_equal(par_envir[['tau']], 1)
+  expect_equal(par_envir[['theta']], 5)
+  expect_equal(par_envir[['rho']], 20)
   
-  sum_stats <- dm.simSumStats(dm_tmp, c(1, 5, 2, 1500))
-  for (seg_sites in sum_stats$seg.sites) {
-    expect_true(is.matrix(seg_sites))
-  }
-  expect_false(any(is.na(sum_stats$jsfs)))
-  expect_true(sum(sum_stats$jsfs) > 0)
+  par_envir <- createParameterEnv(dm.tt, c(1,5), locus = 17)
+  expect_equal(par_envir[['locus']], 17)
   
-  dm_tmp <- dm.addPositiveSelection(dm.mig, 1000, 2000, population=2,
-                                    at.time='tau/2', variance='s^2',
-                                    var.classes = 6)
-  dm_tmp <- dm.addSummaryStatistic(dm_tmp, 'seg.sites')
-  
-  sum_stats <- dm.simSumStats(dm_tmp, c(1, 5, 2, 1500))
-  for (seg_sites in sum_stats$seg.sites) {
-    expect_true(is.matrix(seg_sites))
-  }
-  expect_false(any(is.na(sum_stats$jsfs)))
-  expect_true(sum(sum_stats$jsfs) > 0)
-})
-
-test_that("Candiate loci simulation works", {
-  if (!test_msms) return()
-  # Without variation & fixed
-  dm_tmp <- dm.addPositiveSelection(dm.mig, 1000, 2000, population=2,
-                                    at.time='tau/2', fraction.neutral = .55)
-  dm_tmp <- dm.addSummaryStatistic(dm_tmp, 'seg.sites')
-  expect_equal(dm.getSubgroupNumber(dm_tmp), 2)
-  sum_stats <- dm.simSumStats(dm_tmp, c(1, 5, 2, 1500))
-  for (seg_sites in sum_stats$seg.sites) {
-    expect_true(is.matrix(seg_sites))
-  }
-  expect_false(any(is.na(sum_stats$jsfs)))
-  expect_true(sum(sum_stats$jsfs) > 0)
-  
-  # With variation & fixed
-  dm_tmp <- dm.addPositiveSelection(dm.mig, 1000, 2000, population=2,
-                                    at.time='tau/2', variance = 1000, 
-                                    var.classes = 2, fraction.neutral = .1)
-  dm_tmp <- dm.addSummaryStatistic(dm_tmp, 'seg.sites')
-  expect_equal(dm.getSubgroupNumber(dm_tmp), 3)
-  sum_stats <- dm.simSumStats(dm_tmp, c(1, 5, 2, 1500))
-  for (seg_sites in sum_stats$seg.sites) {
-    expect_true(is.matrix(seg_sites))
-  }
-  expect_false(any(is.na(sum_stats$jsfs)))
-  expect_true(sum(sum_stats$jsfs) > 0)
-  
-  # With variation & as parameter
-  dm_tmp <- dm.addParameter(dm.tt, 0.01, 0.99, par.name = 'zi')
-  dm_tmp <- dm.addPositiveSelection(dm_tmp, 1000, 2000, population=2,
-                                    at.time='tau/2', variance = 1000, 
-                                    var.classes = 2, fraction.neutral = 'zi')
-  dm_tmp <- dm.addSummaryStatistic(dm_tmp, 'seg.sites')
-  expect_equal(dm.getSubgroupNumber(dm_tmp), 3)
-  sum_stats <- dm.simSumStats(dm_tmp, c(1, 5, .2, 1500))
-  for (seg_sites in sum_stats$seg.sites) {
-    expect_true(is.matrix(seg_sites))
-  }
-  expect_false(any(is.na(sum_stats$jsfs)))
-  expect_true(sum(sum_stats$jsfs) > 0)
+  par_envir <- createParameterEnv(dm.tt, c(1,5), locus = 23, seed = 115)
+  expect_equal(par_envir[['locus']], 23)
+  expect_equal(par_envir[['seed']], 115)
 })
