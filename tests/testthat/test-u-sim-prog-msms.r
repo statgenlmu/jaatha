@@ -73,3 +73,17 @@ test_that("Generation of PMC statistic works", {
   expect_true(is.array(sum.stats[["pmc"]]))
   expect_equal(sum(sum.stats[["pmc"]]), dm.getLociNumber(dm.sel))
 })
+
+test_that("Creation of parameter enviroment works", {
+  par_envir <- createParameterEnv(dm.tt, c(1,5))
+  expect_equal(par_envir[['tau']], 1)
+  expect_equal(par_envir[['theta']], 5)
+  expect_equal(par_envir[['rho']], 20)
+  
+  par_envir <- createParameterEnv(dm.tt, c(1,5), locus = 17)
+  expect_equal(par_envir[['locus']], 17)
+  
+  par_envir <- createParameterEnv(dm.tt, c(1,5), locus = 23, seed = 115)
+  expect_equal(par_envir[['locus']], 23)
+  expect_equal(par_envir[['seed']], 115)
+})

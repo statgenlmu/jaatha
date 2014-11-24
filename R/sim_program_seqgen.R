@@ -104,8 +104,8 @@ callSeqgen <- function(opts, ms_files, trio_opts) {
 }
 
 generateSeqgenOptions <- function(dm, parameters, locus, trio_opt) {
-  seqgen.tmp <- createParameterEnv(dm, parameters, locus)
-  seqgen.tmp[['seed']] <- generateSeeds(1)
+  seqgen.tmp <- createParameterEnv(dm, parameters, locus = locus, 
+                                   seed = generateSeeds(1))
   
   if ( !is.null( dm@options[['seqgen.cmd']] ) )
     cmd <- dm@options[['seqgen.cmd']]

@@ -79,7 +79,7 @@ generateMsmsOptionsCommand <- function(dm) {
   cmd
 }
 
-createParameterEnv <- function(dm, parameters, locus) {
+createParameterEnv <- function(dm, parameters, ...) {
   par_env <- new.env()
   
   par.names <- dm.getParameters(dm)
@@ -94,12 +94,16 @@ createParameterEnv <- function(dm, parameters, locus) {
     }
   }
   
-  if (!missing(locus)) par_env[['locus']] <- locus
+  additional_pars = list(...)
+  for (i in seq(along = additional_pars)) {
+    par_env[[names(additional_pars)[i]]] <- additional_pars[[i]]
+  }
+  
   par_env
 }
 
 generateMsmsOptions <- function(dm, parameters, locus) {
-  msms.tmp <- createParameterEnv(dm, parameters, locus)
+  msms.tmp <- createParameterEnv(dm, parameters, locus = locus)
 
   if ( !is.null( dm@options[['msms.cmd']] ) )
     cmd <- dm@options[['msms.cmd']]
@@ -107,7 +111,7 @@ generateMsmsOptions <- function(dm, parameters, locus) {
     cmd <- generateMsmsOptionsCommand(dm)
   cmd <- eval(parse(text=cmd), envir=msms.tmp)
 
-  return(cmd)
+  cmd
 }
 
 msmsSimFunc <- function(dm, parameters) {

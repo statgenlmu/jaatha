@@ -46,7 +46,7 @@ test_that("test.finalizeSeqgen", {
 test_that("test.generateSeqgenOptions", {
   if (!test_seqgen) return()
   dm.hky@options$seqgen.cmd <- NULL
-  opts <- jaatha:::generateSeqgenOptions(dm.hky, c(1, 10))
+  opts <- generateSeqgenOptions(dm.hky, c(1, 10), 1)
   opts <- strsplit(opts, " ")[[1]]
   expect_true("-l" %in% opts)
   expect_true("-p" %in% opts)
