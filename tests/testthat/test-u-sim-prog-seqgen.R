@@ -124,17 +124,12 @@ test_that("test.simulateFpcWithSeqgen", {
 })
 
 test_that("seq-gen can simulate trios", {
-  skip("Temporarily deactivated")
   if (!test_seqgen) skip('seq-gen not installed')
   dm.lt <- dm.useLociTrios(dm.setLociLength(dm.f81, 50), c(10, 5, 20, 5, 10))
   dm.lt <- dm.addSummaryStatistic(dm.lt, 'seg.sites')
   
   sum.stats <- dm.simSumStats(dm.lt, c(1, 10))
-  for (seg.site in sum.stats$seg.sites) {
-    pos <- as.numeric(colnames(seg.site))
-    expect_true(all(pos <= 0.2 | pos >= 0.3))
-    expect_true(all(pos <= 0.7 | pos >= 0.8))
-  }
+  expect_equal(sum(sum.stats$jsfs), sum(sapply(sum.stats$seg.sites, ncol)))
 })
 
 test_that("Generation of PMC statistic works", {

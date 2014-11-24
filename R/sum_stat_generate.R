@@ -9,7 +9,8 @@ generateSumStats <- function(files, program, parameters, dm, seg_sites) {
                                  dm.getLociNumber(dm))
     } else if (program == 'seqgen') {
       seg_sites <- parseSeqgenOutput(files, 
-                                     dm.getSampleSize(dm), 
+                                     sum(dm.getSampleSize(dm)),
+                                     dm.getLociLength(dm),
                                      dm.getLociNumber(dm),
                                      dm.getLociTrioOptions(dm))
     } else {
@@ -44,7 +45,7 @@ generateSumStats <- function(files, program, parameters, dm, seg_sites) {
   if ('file' %in% model_stats) {
     sum_stats[['file']] <- files
   } else {
-    unlink(files)
+    unlink(unlist(files))
   }
   
   sum_stats
