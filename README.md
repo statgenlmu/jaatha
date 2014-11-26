@@ -19,9 +19,10 @@ If you want to follow the development of Jaatha, you can do so on [GitHub][4].
 Installation
 ------------
 
+## Stable Version from CRAN:
+
 [![Build Status](https://travis-ci.org/paulstaab/jaatha.png?branch=master)](https://travis-ci.org/paulstaab/jaatha)
 
-## From CRAN:
 To install the current stable version of jaatha from CRAN, simply type
 
 ```R
@@ -30,7 +31,7 @@ install.packages('jaatha')
 
 in R.
 
-## Development version from GitHub  
+## Development Version from GitHub  
 
 [![Build Status](https://travis-ci.org/paulstaab/jaatha.png?branch=develop)](https://travis-ci.org/paulstaab/jaatha)
 
