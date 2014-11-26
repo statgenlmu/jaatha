@@ -1,8 +1,6 @@
 Jaatha's README
 ===============
 
-[![Build Status](https://travis-ci.org/paulstaab/jaatha.png?branch=master)](https://travis-ci.org/paulstaab/jaatha)
-
 Jaatha is a fast parameter estimation method primarily designed for Evolutionary
 Biology. The method is described in 
 
@@ -20,6 +18,8 @@ If you want to follow the development of Jaatha, you can do so on [GitHub][4].
 
 Installation
 ------------
+
+[![Build Status](https://travis-ci.org/paulstaab/jaatha.png?branch=master)](https://travis-ci.org/paulstaab/jaatha)
 
 ## From CRAN:
 To install the current stable version of jaatha from CRAN, simply type
