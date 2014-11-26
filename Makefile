@@ -2,7 +2,7 @@
 
 VERSION=$(shell grep Version DESCRIPTION | awk '{print $$2}')
 PACKAGE=jaatha_$(VERSION).tar.gz
-R_CHECK_ARGS?="--as-cran"
+R_CHECK_ARGS?=--as-cran
 R_BUILD_ARGS?=
 
 R_SOURCES=$(wildcard R/*.R) 
@@ -29,7 +29,7 @@ integration-test: install
 
 check: $(PACKAGE)
 	# check: Runs an R CMD check
-	R CMD check $(R_CHECK_ARGS) $(PACKAGE)
+	R CMD check $(R_CHECK_ARGS) --use-valgrind $(PACKAGE)
 
 package: $(PACKAGE) 
 	# package: Builds the package
