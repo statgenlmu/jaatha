@@ -42,7 +42,6 @@ install:
 
 clean:
 	# clean: Removes temporary files
-	- rm NEWS
 	- rm -r jaatha.Rcheck 2> /dev/null
 	- cd src/; rm *.so *.o *.rds ms/*.o 2> /dev/null
 	- rm -r man 2> /dev/null
@@ -52,10 +51,7 @@ clean:
 # Real targets
 #--------------------------------------------------------------------------
 
-$(PACKAGE): $(R_SOURCES) $(CPP_SOURCES) $(TESTS) NEWS
+$(PACKAGE): $(R_SOURCES) $(CPP_SOURCES) $(TESTS)
 	Rscript -e 'library(Rcpp); compileAttributes()'
 	Rscript -e 'library(roxygen2); roxygenise(".")'
 	R CMD build $(R_BUILD_ARGS) .
-
-NEWS: NEWS.md
-	cp NEWS.md NEWS
