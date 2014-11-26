@@ -48,6 +48,7 @@ test_that("msmsSimFunc works", {
 })
 
 test_that("msmsSimFunc works with inter-locus variation", {
+  if (!test_msms) skip('msms not installed')
   dm_tmp <- dm.addInterLocusVariation(dm.sel)
   
   set.seed(1100)
