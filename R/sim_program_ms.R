@@ -9,7 +9,7 @@
 possible.features  <- c("sample", "loci.number", "loci.length",
                         "mutation", "migration", "split",
                         "recombination", "size.change", "growth",
-                        "subgroups", "zero_inflation")
+                        "inter_locus_variation")
 possible.sum.stats <- c("jsfs", "fpc", "trees", "seg.sites", "pmc", "file")
 
 
@@ -53,7 +53,7 @@ generateMsOptionsCommand <- function(dm) {
       }
 
     else if (type %in% c("sample", "loci.number", "loci.length", 
-                         "pos.selection", "subgroups", "zero_inflation")) {}
+                         "pos.selection", "inter_locus_variation")) {}
     else stop("Unknown feature:", type)
   }
 
@@ -106,48 +106,32 @@ msSingleSimFunc <- function(dm, parameters) {
   checkType(parameters, "num")
   if (length(parameters) != dm.getNPar(dm)) stop("Wrong number of parameters!")
 
-  # Run a simulation for each subgroup
-  subgroup_sizes <- sampleSubgroupSizes(dm, parameters)
-  ms.files <- sapply(1:dm.getSubgroupNumber(dm), function(subgroup) {
-    if (subgroup_sizes[subgroup] == 0) return("")
-    ms.options <- generateMsOptions(dm, parameters, subgroup)
+  # Run all simulation in with one ms call if they loci are identical,
+  # or call ms for each locus if there is variation between the loci.
+  if (dm.hasInterLocusVariation(dm)) {
+    sim_reps <- 1:dm.getLociNumber(dm)
+    sim_loci <- 1
+  } else {
+    sim_reps <- 1
+    sim_loci <- dm.getLociNumber(dm)
+  }
+  
+  # Do the actuall simulation
+  ms.files <- lapply(sim_reps, function(locus) {
+    ms.options <- generateMsOptions(dm, parameters, locus)
     ms.file <- getTempFile('ms')
-    ms(sum(dm.getSampleSize(dm)), 
-       subgroup_sizes[subgroup], 
-       unlist(strsplit(ms.options, " ")), 
-       ms.file)
+    ms(sum(dm.getSampleSize(dm)), sim_loci, 
+       unlist(strsplit(ms.options, " ")), ms.file)
     ms.file
   })
   
-  # Parse the simulation output
-  generateSumStats(ms.files, 0, parameters, dm)
+  # Parse & return the simulation output
+  generateSumStats(ms.files, 'ms', parameters, dm)
 }
 
 finalizeMs <- function(dm) {
   dm@options[['ms.cmd']] <- generateMsOptionsCommand(dm)
   return(dm)
-}
-
-sampleSubgroupSizes <- function(dm, parameters) {  
-  zero_inflation <- dm.getZeroInflation(dm)
-  loci_num <- dm.getLociNumber(dm)
-  
-  if (!is.na(zero_inflation)) {
-    par_env <- createParameterEnv(dm, parameters, 0)
-    zi_value <- eval(parse(text=zero_inflation), envir=par_env)
-    if(!(is.numeric(zi_value) & 0 < zi_value & zi_value < 1))
-      stop("parsing parameter '", zero_inflation, "' failed.")
-    
-    zero_group <- round(zi_value * loci_num)
-    loci_num <- loci_num - zero_group
-    subgroup_num <- dm.getSubgroupNumber(dm) - 1
-  } else {
-    zero_group <- numeric()
-    subgroup_num <- dm.getSubgroupNumber(dm)
-  }
-  
-  if (subgroup_num == 1) return(c(zero_group, loci_num))
-  c(zero_group, rmultinom(1, loci_num, rep(1, subgroup_num))[,1])
 }
 
 createSimProgram("ms", possible.features, possible.sum.stats, 

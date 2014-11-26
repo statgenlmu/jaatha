@@ -33,7 +33,7 @@ test_that("generateFpcStat works", {
                              0, 1, 1, 0, 1, 
                              0, 0, 0, 0, 1, 
                              1, 0, 0, 0, 0), 6, byrow=TRUE))
-  colnames(seg.sites[[1]]) <- c(0.1, 0.12, 0.5, 0.51, 0.61)
+  attr(seg.sites[[1]], "positions") <- c(0.1, 0.12, 0.5, 0.51, 0.61)
   dm <- dm.createDemographicModel(c(3,3), 1)
   dm@options[["fpc.breaks.near"]] <- .5
   dm@options[["fpc.breaks.far"]] <- .5
@@ -54,19 +54,20 @@ test_that("generateFpcStat works", {
                              0, 1, 1, 0, 1, 
                              0, 0, 0, 0, 1, 
                              1, 0, 0, 0, 0), 6, byrow=TRUE)
-  colnames(seg.sites[[2]]) <- c(0.1, 0.3, 0.5, 0.7, 0.9)
+  attr(seg.sites[[2]], "positions") <- c(0.1, 0.3, 0.5, 0.7, 0.9)
   fpc <- generateFpcStat(seg.sites, dm)
   expect_equal(sum(abs(fpc)), 2)
   expect_equal(fpc[2, 2], 1)
   expect_equal(fpc[3, 2], 1)
 
-  colnames(seg.sites[[2]]) <- c(0.1, 0.11, 0.12, 0.13, 0.14)
+  attr(seg.sites[[2]], "positions") <- c(0.1, 0.11, 0.12, 0.13, 0.14)
   fpc <- generateFpcStat(seg.sites, dm)
   expect_equal(sum(abs(fpc)), 2)
   expect_equal(fpc[2, 2], 1)
   expect_equal(fpc[2, 4], 1)
   
   seg.sites[[3]] <- matrix(0, 6, 0)
+  attr(seg.sites[[3]], "positions") <- numeric()
   fpc <- generateFpcStat(seg.sites, dm)
   expect_equal(sum(abs(fpc)), 3)
   expect_equal(fpc[3, 4], 1)
@@ -82,7 +83,7 @@ test_that("generateFpcStat works", {
                              0, 1, 1, 0, 1, 
                              0, 0, 0, 0, 1, 
                              1, 0, 0, 0, 0), 6, byrow=TRUE))
-  colnames(seg.sites[[1]]) <- c(0.04, 0.09, 0.41, 0.44, 0.57)
+  attr(seg.sites[[1]], "positions") <- c(0.04, 0.09, 0.41, 0.44, 0.57)
   
   dm@options[["fpc.breaks.near"]] <- c(.5)
   dm@options[["fpc.breaks.far"]] <- c(.5)
@@ -101,19 +102,22 @@ test_that("calcPercentFpcViolation works", {
                          0, 1, 1, 0, 1, 
                          0, 0, 0, 0, 1), 5)
   
-  positions <- c(0.1, 0.12, 0.5, 0.51, 0.61)
-  expect_equal(calcPercentFpcViolation(snp.matrix, positions), 
-               c(0.5, 0.5))
-  positions[4:5] <- c(0.7, 0.75)
-  expect_equal(calcPercentFpcViolation(snp.matrix, positions), 
-               c(1, 0.4))
-  positions <- 1:5/5
-  expect_equal(calcPercentFpcViolation(snp.matrix, positions), 
-               c(NA, 0.5))
+  attr(snp.matrix, 'positions') <- c(0.1, 0.12, 0.5, 0.51, 0.61)
+  expect_equal(calcPercentFpcViolation(snp.matrix), c(0.5, 0.5))
+  
+  attr(snp.matrix, 'positions')[4:5] <- c(0.7, 0.75)
+  expect_equal(calcPercentFpcViolation(snp.matrix), c(1, 0.4))
+  
+  attr(snp.matrix, 'positions') <- 1:5/5
+  expect_equal(calcPercentFpcViolation(snp.matrix), c(NA, 0.5))
+  
   snp.matrix[1, ] <- 1
   snp.matrix[-1, ] <- 0
-  expect_true(all(is.na(calcPercentFpcViolation(snp.matrix, positions))))
-  expect_true(all(is.na(calcPercentFpcViolation(matrix(0, 5, 0), numeric(0)))))
+  expect_true(all(is.na(calcPercentFpcViolation(snp.matrix))))
+  
+  snp.matrix <- matrix(0, 5, 0)
+  attr(snp.matrix, 'positions') <- numeric(0)
+  expect_true(all(is.na(calcPercentFpcViolation(snp.matrix))))
   
   # With locus-trios
   snp.matrix <- matrix(c(1, 1, 0, 0, 0, 
@@ -121,8 +125,8 @@ test_that("calcPercentFpcViolation works", {
                          1, 1, 1, 1, 0, 
                          0, 1, 1, 0, 1, 
                          0, 0, 0, 0, 1), 5)
-  positions <- c(0.05, 0.09, 0.41, 0.50, 0.58)  
-  expect_equal(calcPercentFpcViolation(t(snp.matrix), positions, 
+  attr(snp.matrix, 'positions') <- c(0.05, 0.09, 0.41, 0.50, 0.58)  
+  expect_equal(calcPercentFpcViolation(t(snp.matrix),
                                        c(0.1, 0.2, 0.4, 0.2, 0.1)),
                c(1, 1, 0.5))
 })

@@ -10,12 +10,44 @@ test_that("addFeature works", {
                    pop.source = 1, pop.sink = 2, time.point = "t2", group = 3)
   expect_equal(nrow(dm_tmp@features), n.feat + 2)
   
-  # Add variation
-  dm_tmp <- addFeature(dm_tmp, "recombination", "rho", 1, 5, 
-                       variance = '17', var.classes = 10)
-  expect_equal(searchFeature(dm_tmp, "subgroups")$parameter, '10')
-  expect_equal(nrow(searchFeature(dm_tmp, "recombination")), 1)  
-  expect_error(addFeature(dm_tmp, "mut", "theta2", 1, 5, variance = '5'))
+  # Test variance
+  dm_tmp <- dm.createDemographicModel(11:12, 100)
+  dm_tmp <- addFeature(dm_tmp, 'mutation', parameter = 'theta', variance = '10')
+  expect_true(dm.hasInterLocusVariation(dm_tmp))
+  par_expr <- searchFeature(dm_tmp, 'mutation')$parameter
+  theta = 5
+  sim <- sapply(1:1000, function(x) eval(parse(text=par_expr)))
+  expect_true(abs(mean(sim) - theta) < .3)
+  
+  # Test zero.inflation
+  dm_tmp <- dm.createDemographicModel(11:12, 100)
+  dm_tmp <- addFeature(dm_tmp, 'mutation', parameter = 'theta', 
+                       zero.inflation = '.1')
+  expect_true(dm.hasInterLocusVariation(dm_tmp))
+  
+  par_expr <- searchFeature(dm_tmp, 'mutation')$parameter
+  theta = 5
+  locus <- 1; expect_equal(eval(parse(text=par_expr)), 0)
+  locus <- 5; expect_equal(eval(parse(text=par_expr)), 0)
+  locus <- 10; expect_equal(eval(parse(text=par_expr)), 0)
+  locus <- 11; expect_equal(eval(parse(text=par_expr)), 5)
+  locus <- 30; expect_equal(eval(parse(text=par_expr)), 5)
+  locus <- 72; expect_equal(eval(parse(text=par_expr)), 5)  
+  
+  # Test zero.inflation & variance
+  dm_tmp <- dm.createDemographicModel(11:12, 100)
+  dm_tmp <- addFeature(dm_tmp, 'mutation', parameter = 'theta', 
+                       variance = '10', zero.inflation = '.1')
+  expect_true(dm.hasInterLocusVariation(dm_tmp))
+  par_expr <- searchFeature(dm_tmp, 'mutation')$parameter
+  theta = 5
+  sim <- sapply(1:1000, function(x) { 
+    locus <- x %% 100; 
+    eval(parse(text=par_expr))
+  })
+  expect_true(abs(mean(sim) - theta*0.9) < .3)
+  expect_equal(sum(sim == 5), 0)
+  expect_true(sum(sim == 0) > 80)
 })
 
 test_that("test.addParameter", {
@@ -71,15 +103,11 @@ test_that("test.dm.addSummaryStatistics", {
   expect_true(all(dm.getSummaryStatistics(dm) == c("jsfs", 
                                                    "seg.sites")))
   dm <- dm.addSummaryStatistic(dm, "file", group = 2)
-  expect_equal(length(dm.getSummaryStatistics(dm, group = 1)), 
-               2)
-  expect_equal(length(dm.getSummaryStatistics(dm, group = 2)), 
-               3)
+  expect_equal(length(dm.getSummaryStatistics(dm, group = 1)), 2)
+  expect_equal(length(dm.getSummaryStatistics(dm, group = 2)), 3)
   dm <- dm.addSummaryStatistic(dm, "fpc", group = 1)
-  expect_equal(length(dm.getSummaryStatistics(dm, group = 1)), 
-               3)
-  expect_equal(length(dm.getSummaryStatistics(dm, group = 2)), 
-               3)
+  expect_equal(length(dm.getSummaryStatistics(dm, group = 1)), 3)
+  expect_equal(length(dm.getSummaryStatistics(dm, group = 2)), 3)
   expect_error(dm.addSummaryStatistic(dm, "no.existing.sumstat"))
   expect_error(dm.addSummaryStatistic(dm, 1:10))
 })
@@ -318,35 +346,19 @@ test_that("getTrioOptions works", {
   expect_equal(dm.getLociTrioOptions(dm.lt, group=2), c(10, 5, 20, 5, 10))
 })
 
-test_that("Adding and Getting Subgroups works", {
-  expect_equal(dm.getSubgroupNumber(dm.tt), 1)
-  dm <- dm.addSubgroups(dm.tt, 2)
-  expect_equal(dm.getSubgroupNumber(dm), 2)
+test_that("Adding and Getting inter locus variation works", {
+  expect_false(dm.hasInterLocusVariation(dm.tt))
   
-  dm <- dm.addSubgroups(dm, 5, group = 2)
-  dm <- dm.addSubgroups(dm, 5, group = 3)
-  expect_equal(dm.getSubgroupNumber(dm), 2)
-  expect_equal(dm.getSubgroupNumber(dm, group = 0), 2)
-  expect_equal(dm.getSubgroupNumber(dm, group = 1), 2)
-  expect_equal(dm.getSubgroupNumber(dm, group = 2), 5)
-  expect_equal(dm.getSubgroupNumber(dm, group = 3), 5)
+  dm_tmp <- dm.addInterLocusVariation(dm.tt, 0)
+  expect_true(dm.hasInterLocusVariation(dm_tmp))
+  dm_tmp <- dm.addInterLocusVariation(dm_tmp, 0)
+  expect_true(dm.hasInterLocusVariation(dm_tmp))
+  expect_equal(nrow(searchFeature(dm_tmp, 'inter_locus_variation')), 1)
   
-  dm <- dm.addSubgroups(dm, 2, group = 4, zero_inflation = 0.5)
-  expect_equal(dm.getSubgroupNumber(dm, group = 4), 3)
-  expect_equal(dm.getSubgroupNumber(dm, group = 4, with_zero_inflasion = FALSE), 2)
-  expect_equal(dm.getZeroInflation(dm, group = 4), '0.5')
-  
-  dm <- dm.addSubgroups(dm, 3, group = 5, zero_inflation = "zi")
-  expect_equal(dm.getSubgroupNumber(dm, group = 5, with_zero_inflasion = FALSE), 3)
-  expect_equal(dm.getSubgroupNumber(dm, group = 5), 4)
-  expect_equal(dm.getZeroInflation(dm, group = 5), 'zi')
-  
-  expect_equal(dm.getZeroInflation(dm, group = 1),  NA)
-  expect_equal(dm.getZeroInflation(dm, group = 2),  NA)
-  expect_equal(dm.getZeroInflation(dm, group = 3),  NA)
-  
-  dm <- dm.addSubgroups(dm, 1, group = 6, zero_inflation = "zi")
-  expect_equal(dm.getSubgroupNumber(dm, group = 6), 2)
+  dm_tmp <- dm.addInterLocusVariation(dm.tt, 2)
+  expect_false(dm.hasInterLocusVariation(dm_tmp))  
+  expect_false(dm.hasInterLocusVariation(dm_tmp, 1))
+  expect_true(dm.hasInterLocusVariation(dm_tmp, 2))  
 })
 
 test_that("test.printEmptyDM", {
@@ -375,8 +387,8 @@ test_that("addMutation works", {
   expect_equal(searchFeature(dm_tmp2, "mutation")$parameter, 'theta')
   expect_equal(nrow(searchFeature(dm_tmp2, "mutation")), 1)  
   
-  dm_tmp3 <- dm.addMutation(dm_tmp, 1, 20, variance = 20, var.classes = 7)
-  expect_equal(dm.getSubgroupNumber(dm_tmp3), 7)
+  dm_tmp3 <- dm.addMutation(dm_tmp, 1, 20, variance = 20)
+  expect_equal(nrow(searchFeature(dm_tmp3, "mutation")), 1)
 })
 
 test_that("addRecombination works", {
@@ -389,9 +401,6 @@ test_that("addRecombination works", {
   expect_equal(nrow(searchFeature(dm_tmp, "recombination")), 1)  
   
   dm_tmp <- dm.addRecombination(dm_tmp, 1, 20, variance = 20,
-                                new.par.name = 'rho2', var.classes = 8, 
-                                group = 2)
-  expect_equal(nrow(searchFeature(dm_tmp, "recombination")), 2) 
-  expect_equal(dm.getSubgroupNumber(dm_tmp), 1)
-  expect_equal(dm.getSubgroupNumber(dm_tmp, group = 2), 8)
+                                new.par.name = 'rho2', group = 2)
+  expect_equal(nrow(searchFeature(dm_tmp, "recombination")), 2)
 })

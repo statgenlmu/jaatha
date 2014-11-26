@@ -41,7 +41,6 @@ if (jaatha:::checkForSeqgen(FALSE, TRUE)) {
   dm.hky <- dm.setLociLength(dm.hky, 15)
   dm.hky@sum.stats <- data.frame()
   dm.hky <- dm.addSummaryStatistic(dm.hky, 'jsfs')
-  dm.hky <- dm.addSummaryStatistic(dm.hky, 'file')
   dm.f81 <- dm.setMutationModel(dm.sg, "F84", c(0.3, 0.2, 0.3, 0.2), 2)
   dm.gtr <- dm.setMutationModel(dm.sg, "GTR", 
                                 gtr.rates=c(0.2, 0.2, 0.1, 0.1, 0.1, 0.2))

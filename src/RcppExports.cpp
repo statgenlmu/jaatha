@@ -5,25 +5,6 @@
 
 using namespace Rcpp;
 
-// parseOutput
-List parseOutput(const std::vector<std::string> file_names, const NumericVector sample_size, const int loci_number, const int program = 0, const NumericVector trio_opts = NumericVector(0));
-RcppExport SEXP jaatha_parseOutput(SEXP file_namesSEXP, SEXP sample_sizeSEXP, SEXP loci_numberSEXP, SEXP programSEXP, SEXP trio_optsSEXP) {
-BEGIN_RCPP
-    SEXP __sexp_result;
-    {
-        Rcpp::RNGScope __rngScope;
-        Rcpp::traits::input_parameter< const std::vector<std::string> >::type file_names(file_namesSEXP );
-        Rcpp::traits::input_parameter< const NumericVector >::type sample_size(sample_sizeSEXP );
-        Rcpp::traits::input_parameter< const int >::type loci_number(loci_numberSEXP );
-        Rcpp::traits::input_parameter< const int >::type program(programSEXP );
-        Rcpp::traits::input_parameter< const NumericVector >::type trio_opts(trio_optsSEXP );
-        List __result = parseOutput(file_names, sample_size, loci_number, program, trio_opts);
-        PROTECT(__sexp_result = Rcpp::wrap(__result));
-    }
-    UNPROTECT(1);
-    return __sexp_result;
-END_RCPP
-}
 // parseMsPositions
 NumericVector parseMsPositions(const std::string line);
 RcppExport SEXP jaatha_parseMsPositions(SEXP lineSEXP) {
@@ -39,17 +20,53 @@ BEGIN_RCPP
     return __sexp_result;
 END_RCPP
 }
-// parseTrees
-std::string parseTrees(const std::vector<std::string> in_files, const std::string out_file, const NumericVector trio_opts);
-RcppExport SEXP jaatha_parseTrees(SEXP in_filesSEXP, SEXP out_fileSEXP, SEXP trio_optsSEXP) {
+// parseMsOutput
+List parseMsOutput(const List file_names, const NumericVector sample_size, const int loci_number);
+RcppExport SEXP jaatha_parseMsOutput(SEXP file_namesSEXP, SEXP sample_sizeSEXP, SEXP loci_numberSEXP) {
 BEGIN_RCPP
     SEXP __sexp_result;
     {
         Rcpp::RNGScope __rngScope;
-        Rcpp::traits::input_parameter< const std::vector<std::string> >::type in_files(in_filesSEXP );
-        Rcpp::traits::input_parameter< const std::string >::type out_file(out_fileSEXP );
+        Rcpp::traits::input_parameter< const List >::type file_names(file_namesSEXP );
+        Rcpp::traits::input_parameter< const NumericVector >::type sample_size(sample_sizeSEXP );
+        Rcpp::traits::input_parameter< const int >::type loci_number(loci_numberSEXP );
+        List __result = parseMsOutput(file_names, sample_size, loci_number);
+        PROTECT(__sexp_result = Rcpp::wrap(__result));
+    }
+    UNPROTECT(1);
+    return __sexp_result;
+END_RCPP
+}
+// parseSeqgenOutput
+List parseSeqgenOutput(const List file_names, const int sample_size, const int sequence_length, const int loci_number, const NumericVector trio_opts = NumericVector(0));
+RcppExport SEXP jaatha_parseSeqgenOutput(SEXP file_namesSEXP, SEXP sample_sizeSEXP, SEXP sequence_lengthSEXP, SEXP loci_numberSEXP, SEXP trio_optsSEXP) {
+BEGIN_RCPP
+    SEXP __sexp_result;
+    {
+        Rcpp::RNGScope __rngScope;
+        Rcpp::traits::input_parameter< const List >::type file_names(file_namesSEXP );
+        Rcpp::traits::input_parameter< const int >::type sample_size(sample_sizeSEXP );
+        Rcpp::traits::input_parameter< const int >::type sequence_length(sequence_lengthSEXP );
+        Rcpp::traits::input_parameter< const int >::type loci_number(loci_numberSEXP );
         Rcpp::traits::input_parameter< const NumericVector >::type trio_opts(trio_optsSEXP );
-        std::string __result = parseTrees(in_files, out_file, trio_opts);
+        List __result = parseSeqgenOutput(file_names, sample_size, sequence_length, loci_number, trio_opts);
+        PROTECT(__sexp_result = Rcpp::wrap(__result));
+    }
+    UNPROTECT(1);
+    return __sexp_result;
+END_RCPP
+}
+// parseTrees
+CharacterVector parseTrees(const std::string in_file, const NumericVector trio_opts, Function tempfile);
+RcppExport SEXP jaatha_parseTrees(SEXP in_fileSEXP, SEXP trio_optsSEXP, SEXP tempfileSEXP) {
+BEGIN_RCPP
+    SEXP __sexp_result;
+    {
+        Rcpp::RNGScope __rngScope;
+        Rcpp::traits::input_parameter< const std::string >::type in_file(in_fileSEXP );
+        Rcpp::traits::input_parameter< const NumericVector >::type trio_opts(trio_optsSEXP );
+        Rcpp::traits::input_parameter< Function >::type tempfile(tempfileSEXP );
+        CharacterVector __result = parseTrees(in_file, trio_opts, tempfile);
         PROTECT(__sexp_result = Rcpp::wrap(__result));
     }
     UNPROTECT(1);
@@ -57,16 +74,15 @@ BEGIN_RCPP
 END_RCPP
 }
 // calcPercentFpcViolation
-NumericVector calcPercentFpcViolation(const NumericMatrix seg_sites, const NumericVector positions, const NumericVector trio_opts = NumericVector(0));
-RcppExport SEXP jaatha_calcPercentFpcViolation(SEXP seg_sitesSEXP, SEXP positionsSEXP, SEXP trio_optsSEXP) {
+NumericVector calcPercentFpcViolation(const NumericMatrix seg_sites, const NumericVector trio_opts = NumericVector(0));
+RcppExport SEXP jaatha_calcPercentFpcViolation(SEXP seg_sitesSEXP, SEXP trio_optsSEXP) {
 BEGIN_RCPP
     SEXP __sexp_result;
     {
         Rcpp::RNGScope __rngScope;
         Rcpp::traits::input_parameter< const NumericMatrix >::type seg_sites(seg_sitesSEXP );
-        Rcpp::traits::input_parameter< const NumericVector >::type positions(positionsSEXP );
         Rcpp::traits::input_parameter< const NumericVector >::type trio_opts(trio_optsSEXP );
-        NumericVector __result = calcPercentFpcViolation(seg_sites, positions, trio_opts);
+        NumericVector __result = calcPercentFpcViolation(seg_sites, trio_opts);
         PROTECT(__sexp_result = Rcpp::wrap(__result));
     }
     UNPROTECT(1);

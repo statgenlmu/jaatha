@@ -60,6 +60,7 @@ generateTreeModel <- function(dm) {
   dm@sum.stats <- data.frame(name=c(), group=c())
   dm <- dm.addSummaryStatistic(dm, "trees")
   dm <- dm.addSummaryStatistic(dm, "file")
+  dm <- dm.setLociNumber(dm, 1)
   return(dm)
 }
 
@@ -81,51 +82,54 @@ Jaatha.setSeqgenExecutable <- function(seqgen.exe) {
 # 
 # @param opts The options to pass to ms. Must either be a character or character
 # vector.
-callSeqgen <- function(opts, ms.file) {
-  if (missing(opts)) stop("No options given!")
-  opts[length(opts) + 1:2] <- c("<", ms.file)
-  opts <- paste(opts, collapse=" ")
+callSeqgen <- function(opts, ms_files) {
+  stopifnot(!missing(opts))
+  stopifnot(length(opts) == length(ms_files))
 
-  if( !file.exists(ms.file) ) stop("ms file not found")
-  if( file.info(ms.file)$size == 0 ) stop("ms output is empty")
-
-  seqgen.file <- getTempFile("seqgen")
-  cmd <- paste(opts, ">", seqgen.file, sep=" ", collapse=" ")
-  
-  # Do the acctual simulation
-  if (system(cmd, intern = FALSE) != 0) stop("seq-gen simulation failed")
-  if( !file.exists(seqgen.file) ) stop("seq-gen simulation failed!")
-  if( file.info(seqgen.file)$size == 0 ) stop("seq-gen output is empty!")
-  
-  seqgen.file
+  sapply(seq(along = opts), function(i) {
+    if(!file.exists(ms_files[i])) stop("ms file not found")
+    if(file.info(ms_files[i])$size == 0 ) stop("ms output is empty")
+    
+    seqgen_file <- getTempFile("seqgen")
+    cmd <- paste(opts[i], "<", ms_files[i], ">", seqgen_file)
+    
+    # Do the acctual simulation
+    if (system(cmd, intern = FALSE) != 0) stop("seq-gen simulation failed")
+    
+    if( !file.exists(seqgen_file) ) stop("seq-gen simulation failed!")
+    if( file.info(seqgen_file)$size == 0 ) stop("seq-gen output is empty!")
+    
+    seqgen_file
+  })
 }
 
-generateSeqgenOptions <- function(dm, parameters) {
-  seqgen.tmp <- new.env()
-
-  par.names <- dm.getParameters(dm)
-
-  for (i in seq(along = par.names)){
-    seqgen.tmp[[ par.names[i] ]] <- parameters[i]
-  }
-
-  fixed.pars <- dm@parameters[dm@parameters$fixed, ]
-  if (nrow(fixed.pars) > 0) {
-    for (i in 1:nrow(fixed.pars)){
-      seqgen.tmp[[ fixed.pars$name[i] ]] <- fixed.pars$lower.range[i]
-    }
-  }
-
-  seqgen.tmp[['seed']] <- generateSeeds(1)
-  
-  if ( !is.null( dm@options[['seqgen.cmd']] ) )
+generateSeqgenOptions <- function(dm, parameters, locus, trio_opt = NA) {
+  # Generate the command template to execute or use the buffered one
+  if ( !is.null( dm@options[['seqgen.cmd']] ) ) {
     cmd <- dm@options[['seqgen.cmd']]
-  else
+  } else {
     cmd <- generateSeqgenOptionsCmd(dm)
-  cmd <- paste(eval(parse(text=cmd), envir=seqgen.tmp), collapse=" ")
-
-  return(cmd)
+  }
+  
+  # Get the length of the loci we simulate
+  if (is.na(trio_opt) || length(trio_opt) == 0) {
+    locus_lengths <- dm.getLociLength(dm)
+  } else if (length(trio_opt) == 5) {
+    locus_lengths <- trio_opt[c(1,3,5)]
+  } else {
+    print(trio_opt)
+    stop('failed to parse trio options')
+  }
+  
+  # Fill the parameters in the template
+  sapply(locus_lengths, function(locus_length) {
+    par_envir <- createParameterEnv(dm, parameters, locus = locus, 
+                                    locus_length = locus_length,
+                                    seed = generateSeeds(1))
+    paste(eval(parse(text=cmd), envir=par_envir), collapse=" ")
+  })
 }
+
 
 generateSeqgenOptionsCmd <- function(dm) {  
   base.freqs <- F
@@ -183,10 +187,9 @@ generateSeqgenOptionsCmd <- function(dm) {
     stop("You must specify a finite sites mutation model for this demographic model")
   }
 
-  loci.length <- dm.getLociLength(dm)
-  opts <- c(opts, '"-l"', ',', loci.length, ',')
-  opts <- c(opts, '"-s"', ',', paste(getThetaName(dm), "/", loci.length), ',')
-  opts <- c(opts, '"-p"', ',', loci.length + 1, ',')
+  opts <- c(opts, '"-l"', ',', 'locus_length', ',')
+  opts <- c(opts, '"-s"', ',', paste(getThetaName(dm), ' / locus_length'), ',')
+  opts <- c(opts, '"-p"', ',', 'locus_length + 1', ',')
   opts <- c(opts, '"-z"', ',', 'seed', ',')
   opts <- c(opts, '"-q"', ')')
   return(opts)
@@ -220,28 +223,30 @@ seqgenSingleSimFunc <- function(dm, parameters) {
   # Use ms to simulate the ARG
   tree.model <- dm@options[['tree.model']]
   if (is.null(tree.model)) tree.model <- generateTreeModel(dm)
-  sum_stats_ms <- dm.simSumStats(tree.model, parameters)
-  tree_file <- parseTrees(sum_stats_ms[['file']], getTempFile('tree_file'),
-                          dm.getLociTrioOptions(dm))
-
-  # Call seq-gen to distribute mutations
-  seqgen.options <- generateSeqgenOptions(dm, parameters)
-  seqgen.file <- callSeqgen(seqgen.options, tree_file)
-
+  
+  seqgen.files <- lapply(1:dm.getLociNumber(dm), function(locus) {
+    # Generate options for seqgen
+    seqgen.options <- generateSeqgenOptions(dm, parameters, locus,
+                                            dm.getLociTrioOptions(dm))
+    
+    # Simulate the trees
+    sum_stats_ms <- dm.simSumStats(tree.model, parameters)
+    #print(sum_stats_ms[['file']])
+    tree_files <- parseTrees(sum_stats_ms[['file']][[1]],
+                             dm.getLociTrioOptions(dm),
+                             getTempFile)
+    #print(tree_files)
+    
+    # Call seq-gen to distribute mutations
+    seqgen.file <- callSeqgen(seqgen.options, tree_files)
+    
+    # Delete tree files
+    unlink(c(tree_files, sum_stats_ms[['file']]))
+    seqgen.file
+  })
+  
   # Generate the summary statistics
-  sum.stats <- generateSumStats(seqgen.file, 1, parameters, dm)
-
-  # Return or remove all temp.files
-  if ('file' %in% dm.getSummaryStatistics(dm)) {
-    sum.stats[['file']] <- c(ms=sum_stats_ms[['file']],
-                             trees=tree_file,
-                             seqgen=seqgen.file)
-  } else {
-    unlink(c(sum_stats_ms[['file']], seqgen.file, tree_file))
-    sum.stats[['file']] <- NULL
-  }
-
-  sum.stats
+  generateSumStats(seqgen.files, 'seqgen', parameters, dm)
 }
 
 finalizeSeqgen <- function(dm) {
@@ -255,6 +260,3 @@ finalizeSeqgen <- function(dm) {
 createSimProgram("seq-gen", sg.features, sg.sum.stats,
                  seqgenSingleSimFunc, finalizeSeqgen, printSeqgenCommand,
                  priority=10)
-
-rm(sg.features, sg.sum.stats, seqgenSingleSimFunc, 
-   finalizeSeqgen, printSeqgenCommand)
