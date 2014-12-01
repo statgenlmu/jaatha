@@ -13,6 +13,12 @@ generateSumStats <- function(files, program, parameters, dm, seg_sites) {
                                      dm.getLociLength(dm),
                                      dm.getLociNumber(dm),
                                      dm.getLociTrioOptions(dm))
+    } else if (program == 'scrm') {
+      seg_sites <- files[['seg_sites']]
+      seg_sites <- lapply(seg_sites, function(x) {
+        attr(x, 'positions') <- as.numeric(colnames(x))
+        x
+      })
     } else {
       stop("Unknown program: ", program)
     }

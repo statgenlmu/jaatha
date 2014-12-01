@@ -24,7 +24,7 @@ scrm_simulate <- function(dm, parameters) {
   if ('file' %in% dm.getSummaryStatistics(dm)) {
     file <- getTempFile('scrm')
     sum_stats <- scrm(args, file)
-    return(generateSumStats(file, 0, parameters, dm))
+    return(generateSumStats(file, 'ms', parameters, dm))
   }
 
   sum_stats <- scrm(args)
@@ -37,5 +37,5 @@ scrm_finalize <- function(dm) {
 }
 
 createSimProgram("scrm", scrm_features, scrm_sum_stats,
-                  scrm_simulate, scrm_finalize, printMsCommand, 110)
+                  scrm_simulate, scrm_finalize, printMsCommand, 90)
 rm(scrm_features, scrm_sum_stats, scrm_simulate, scrm_finalize)

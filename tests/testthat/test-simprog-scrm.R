@@ -17,4 +17,5 @@ test_that("simulating files works", {
   expect_false(is.null(sum_stats$file))
   expect_true(is.character(sum_stats$file))
   expect_true(file.exists(sum_stats$file))
+  unlink(sum_stats$file)
 })
