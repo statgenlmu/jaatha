@@ -4,9 +4,6 @@
 \alias{jaatha-package}
 \title{Fast estimation of demographic parameters}
 \description{
-Fast estimation of demographic parameters
-}
-\details{
 Jaatha is a composite maximum likelihood method to estimate parameters
 of a speciation model of closely related biological species out of SNP
 data.
