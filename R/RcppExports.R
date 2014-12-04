@@ -17,8 +17,8 @@ parseTrees <- function(in_file, trio_opts, tempfile) {
     .Call('jaatha_parseTrees', PACKAGE = 'jaatha', in_file, trio_opts, tempfile)
 }
 
-calcPercentFpcViolation <- function(seg_sites, trio_opts = numeric(0)) {
-    .Call('jaatha_calcPercentFpcViolation', PACKAGE = 'jaatha', seg_sites, trio_opts)
+calcPercentFpcViolation <- function(seg_sites_list, locus_length) {
+    .Call('jaatha_calcPercentFpcViolation', PACKAGE = 'jaatha', seg_sites_list, locus_length)
 }
 
 #' Calculate the JSFS from a list of segregating sites statistics
