@@ -125,7 +125,7 @@ generateSeqgenOptions <- function(dm, parameters, locus, trio_opt = NA) {
   sapply(locus_lengths, function(locus_length) {
     par_envir <- createParameterEnv(dm, parameters, locus = locus, 
                                     locus_length = locus_length,
-                                    seed = generateSeeds(1))
+                                    seed = sampleSeed(1))
     paste(eval(parse(text=cmd), envir=par_envir), collapse=" ")
   })
 }

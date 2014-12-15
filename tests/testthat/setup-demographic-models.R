@@ -1,12 +1,12 @@
 # Theta-Tau Model 
 dm.tt        <- dm.createThetaTauModel(11:12, 10)
 sum.stats.tt <- dm.simSumStats(dm.tt, c(1, 5))
-jaatha.tt    <- Jaatha.initialize(dm.tt, jsfs=sum.stats.tt, cores = 2) 
+jaatha.tt    <- Jaatha.initialize(sum.stats.tt, dm.tt, cores = 2) 
 
 # Migration Model
 dm.mig        <- dm.addSymmetricMigration(dm.tt, 1, 5)
 sum.stats.mig <- dm.simSumStats(dm.mig, c(1, 1, 5))
-jaatha.mig    <- Jaatha.initialize(dm.mig, jsfs=sum.stats.mig, cores = 2) 
+jaatha.mig    <- Jaatha.initialize(sum.stats.mig, dm.mig, cores = 2) 
 
 # Groups
 dm.grp <- dm.tt
@@ -66,3 +66,4 @@ if (require('ape', quietly = TRUE)) {
   test_ape <- FALSE
   warning("Package ape not available. Skipping some tests.")
 }
+
