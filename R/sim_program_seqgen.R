@@ -8,16 +8,16 @@
 # --------------------------------------------------------------
 
 # list ms's features + FS related features
-sg.features    <- unique(c(getSimProgram('ms')$possible_features,
-                           getSimProgram('msms')$possible_features,
-                           'mutation.model', 'tstv.ratio', 
-                           'base.freq.A', 'base.freq.C', 'base.freq.G', 
-                           'base.freq.T',
-                           'gtr.rate.1', 'gtr.rate.2', 'gtr.rate.3',
-                           'gtr.rate.4','gtr.rate.5','gtr.rate.6',
-                           'gamma.categories', 'gamma.rate',
-                           'trio.1', 'trio.2', 'trio.3', 
-                           'trio.4', 'trio.5'))
+sg.features <- unique(c(getSimProgram('ms')$possible_features,
+                        getSimProgram('msms')$possible_features,
+                        'mutation.model', 'tstv.ratio', 
+                        'base.freq.A', 'base.freq.C', 'base.freq.G', 
+                        'base.freq.T',
+                        'gtr.rate.1', 'gtr.rate.2', 'gtr.rate.3',
+                        'gtr.rate.4','gtr.rate.5','gtr.rate.6',
+                        'gamma.categories', 'gamma.rate',
+                        'trio.1', 'trio.2', 'trio.3', 
+                        'trio.4', 'trio.5', 'outgroup'))
 
 sg.sum.stats <- c('jsfs', 'file', 'seg.sites', 'fpc', 'pmc')
 sg.mutation.models <- c('HKY', 'F84', 'GTR')
@@ -61,7 +61,7 @@ generateTreeModel <- function(dm) {
   dm <- dm.addSummaryStatistic(dm, "trees")
   dm <- dm.addSummaryStatistic(dm, "file")
   dm <- dm.setLociNumber(dm, 1)
-  return(dm)
+  dm
 }
 
 

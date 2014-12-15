@@ -1285,22 +1285,29 @@ dm.createThetaTauModel <- function(sample.sizes, loci.num, seq.length=1000) {
 #' An outgroup is required for a finite sites analysis.
 #'
 #' @param dm The demographic model to which we add the outgroup
-#' @param separation.time The time point at which the outgroup splits 
+#' @param separation_time The time point at which the outgroup splits 
 #'           from the ancestral population. This can be an absolute value
 #'           (e.g. 10) or relative to another time points (e.g. '5*t_split_1').
-#' 
+#' @param sample_size The number of individuals in the group
+#' @param anc_pop The ancestral population of the non-outgroup individuals. The
+#'          outgroup splits from this population at the separation_time.
 #' @return  The extended demographic model
 #' @export
-dm.addOutgroup <- function(dm, separation.time) {
-  sample.size <- 1 
+dm.addOutgroup <- function(dm, separation_time, sample_size = 1, anc_pop = 1) {
   pop <- max(na.omit(dm@features$pop.source)) + 1
-  dm <- addFeature(dm, "sample", as.character(sample.size), 
+  dm <- addFeature(dm, "sample", as.character(sample_size), 
                      pop.source=pop, par.new=FALSE, 
                      group=0, time.point='0')
-  dm.addSpeciationEvent(dm, in.population=1, 
-                        new.time.point=F, 
-                        time.point=separation.time) 
+  dm <- dm.addSpeciationEvent(dm, in.population=anc_pop, 
+                        new.time.point=F, time.point=separation_time)
+  dm <- addFeature(dm, "outgroup", as.character(sample_size), 
+                   pop.source = anc_pop, pop.sink = pop)
+  dm
 }
+
+dm.getOutgroupSize <- function(dm) {
+  as.integer(searchFeature(dm, 'outgroup')$parameter)
+} 
 
 
 #-------------------------------------------------------------------
