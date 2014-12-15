@@ -53,9 +53,7 @@ rm(border.transformation, border.mask)
 smooth.par.ranges <- matrix(c(2, 1, 7, 7), 2, 2)
 rownames(smooth.par.ranges) <- c('x', 'y')
 
-smooth.jaatha <- new("Jaatha", smooth.simfunc, 
-                     smooth.par.ranges, smooth.sum.stats, 123)
+smooth.jaatha <- new("Jaatha", smooth.simfunc, smooth.par.ranges, smooth.sum.stats)
 
-smooth.border.jaatha <- new("Jaatha", smooth.simfunc, smooth.par.ranges, 
-                            smooth.border.sum.stats, 123)
+smooth.border.jaatha <- new("Jaatha", smooth.simfunc, smooth.par.ranges, smooth.border.sum.stats)
 smooth.sim.data <- jaatha:::simulateWithinBlock(10, block.test, smooth.jaatha)

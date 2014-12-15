@@ -160,19 +160,11 @@ rm(init)
 #' @param data Your observed Joint Site Frequency Spectrum (JSFS). Jaatha uses
 #'        the JSFS as summary statistics.   
 #' @param folded If 'TRUE', Jaatha will assume that the JSFS is folded.
-#' @param seed An integer used as seed for both Jaatha and the simulation software
 #' @param cores The number of cores to use in parallel. If 0, it tries to
 #'              guess the number of available cores and use them all.
 #' @param scaling.factor You can use this option if you have a large dataset. If
 #'              so, Jaatha only simulates only a fraction 1/scaling.factor of the
 #'              dataset and interpolates the missing data.
-#' @param use.shm Logical. Many modern linux distributions have a shared memory
-#'              file system available under /dev/shm. Set this to TRUE to use it for
-#'              temporary files. Usually gives a huge performance boost.
-#'              Warning: This option will be removed in a future version of
-#'              jaatha. The cleaner way to achieve this is to move your complete
-#'              R-temp directory to the memory drive. This is explained on 
-#'              http://www.paulstaab.de/2013/11/r-shm .
 #' @param smoothing If set to true, Jaatha uses a different way to summaries the
 #'              JSFS. Instead of binning certain areas, and fitting a glm per
 #'              area, only one glm is fitted for the complete JSFS, and the
@@ -180,11 +172,6 @@ rm(init)
 #'              parameter. This feature is still experimental and not
 #'              recommended for productive use at the moment.  
 #' @return A S4-Object of type jaatha containing the settings
-#' @examples
-#' dm <- dm.createThetaTauModel(c(20,25), 100) 
-#' jsfs <- matrix(rpois(21*26, 5), 21, 26)
-#' jaatha <- Jaatha.initialize(dm, jsfs) 
-#' 
 #' @export
 Jaatha.initialize <- function(data, model, cores=1, scaling.factor=1,
                               folded=FALSE, smoothing=FALSE) {
