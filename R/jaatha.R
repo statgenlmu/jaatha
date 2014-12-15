@@ -24,11 +24,11 @@
 #' @keywords package
 #' @importFrom phyclust ms
 #' @importFrom scrm scrm
-#' @importFrom methods new 
-#' @importFrom methods representation 
+#' @importFrom methods new representation 
 #' @importFrom parallel mclapply
 #' @importFrom Rcpp evalCpp
 #' @importFrom reshape2 melt
+#' @importFrom checkmate qassert qtest assertClass
 #' @useDynLib jaatha
 NULL
 
