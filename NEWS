@@ -1,3 +1,10 @@
+jaatha 2.7.0.9001
+============
+
+* Use package `checkmate` for input validation
+
+
+
 jaatha 2.7.0.9000
 ============
 
