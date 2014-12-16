@@ -110,9 +110,9 @@ generateSeqgenOptions <- function(dm, parameters, locus, trio_opt = NA) {
   } else {
     cmd <- generateSeqgenOptionsCmd(dm)
   }
-  
+
   # Get the length of the loci we simulate
-  if (is.na(trio_opt) || length(trio_opt) == 0) {
+  if (any(is.na(trio_opt)) | length(trio_opt) == 0) {
     locus_lengths <- dm.getLociLength(dm)
   } else if (length(trio_opt) == 5) {
     locus_lengths <- trio_opt[c(1,3,5)]
