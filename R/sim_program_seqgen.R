@@ -135,6 +135,10 @@ generateSeqgenOptionsCmd <- function(dm) {
   base.freqs <- F
   gtr.rates <- F
   includes.model <- F
+  
+  if (!qtest(dm.getOutgroupSize(dm), 'I1')) {
+    stop("Finite Sites models need an outgroup.")
+  } 
 
   opts <- c('c(', paste('"', getJaathaVariable('seqgen.exe'), '"', sep=""), ",")
 
