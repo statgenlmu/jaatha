@@ -1,11 +1,13 @@
 # Theta-Tau Model 
 dm.tt        <- dm.createThetaTauModel(11:12, 10)
-sum.stats.tt <- dm.simSumStats(dm.tt, c(1, 5))
+sum.stats.tt <- dm.simSumStats(dm.addSummaryStatistic(dm.tt, 'seg.sites'), 
+                               c(1, 5))
 jaatha.tt    <- Jaatha.initialize(sum.stats.tt, dm.tt, cores = 2) 
 
 # Migration Model
 dm.mig        <- dm.addSymmetricMigration(dm.tt, 1, 5)
-sum.stats.mig <- dm.simSumStats(dm.mig, c(1, 1, 5))
+sum.stats.mig <- dm.simSumStats(dm.addSummaryStatistic(dm.mig,  'seg.sites'), 
+                                c(1, 1, 5))
 jaatha.mig    <- Jaatha.initialize(sum.stats.mig, dm.mig, cores = 2) 
 
 # Groups
@@ -67,3 +69,13 @@ if (require('ape', quietly = TRUE)) {
   warning("Package ape not available. Skipping some tests.")
 }
 
+# PopGenome Data
+output <- tempfile("output")
+sink(output)
+data_pg <- PopGenome::readData(system.file('example_fasta_files',  package='jaatha'), 
+                          progress_bar_switch = FALSE)
+data_pg <- PopGenome::set.outgroup(data_pg, c("Individual_Out-1", "Individual_Out-2"))
+data_pg <- PopGenome::set.populations(data_pg, list(paste0("Individual_1-", 1:5), 
+                                                    paste0("Individual_2-", 1:5)))
+sink(NULL)
+unlink(output)

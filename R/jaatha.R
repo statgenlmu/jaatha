@@ -174,7 +174,8 @@ rm(init)
 #' @return A S4-Object of type jaatha containing the settings
 #' @export
 Jaatha.initialize <- function(data, model, cores=1, scaling.factor=1,
-                              folded=FALSE, smoothing=FALSE) {
+                              folded=FALSE, smoothing=FALSE, 
+                              only_synonymous=FALSE) {
   
   checkType(model, c("dm", "s"))
   checkType(folded, c("bool", "single"))
@@ -189,6 +190,11 @@ Jaatha.initialize <- function(data, model, cores=1, scaling.factor=1,
     dm <- dm.addSummaryStatistic(dm, 'jsfs')
   }
   
+  # Convert the data into a list containing the seg.sites of the different groups
+  if ('GENOME' %in% is(data)) {
+    data <- convPopGenomeToSegSites(data, only_synonymous)
+  }
+  if (!is.list(data)) stop('`data` has an unexpected format.')
   
   # ------------------------------------------------------------
   # Create Summary Statistics for each group
@@ -205,12 +211,9 @@ Jaatha.initialize <- function(data, model, cores=1, scaling.factor=1,
       grp_name_ext <- paste0('.', group)
     }
     
-    if (is.list(data)) { 
-      jsfs.value <- data[[paste0('jsfs', grp_name_ext)]]
-      seg.sites <- data[[paste0('seg.sites', grp_name_ext)]]
-    } else {
-      jsfs.value <- data
-    }
+    seg.sites <- data[[paste0('seg.sites', grp_name_ext)]]
+    if (is.null(seg.sites)) stop('No seg.sites in `data` for group ', group)
+    jsfs.value <- calcJsfs(seg.sites, dm.getSampleSize(dm))
 
     # ------------------------------------------------------------
     # JSFS Summary Statistic

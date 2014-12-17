@@ -38,6 +38,7 @@ Collate:
     'find_best_par_in_block.R'
     'fit_glm.R'
     'helper_functions.R'
+    'import_popgenome.R'
     'initial_search.R'
     'jaatha.R'
     'normalize.R'

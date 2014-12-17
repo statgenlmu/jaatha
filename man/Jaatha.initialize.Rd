@@ -4,7 +4,7 @@
 \title{Initialization of a Jaatha estimation for population genetics}
 \usage{
 Jaatha.initialize(data, model, cores = 1, scaling.factor = 1,
-  folded = FALSE, smoothing = FALSE)
+  folded = FALSE, smoothing = FALSE, only_synonymous = FALSE)
 }
 \arguments{
 \item{data}{Your observed Joint Site Frequency Spectrum (JSFS). Jaatha uses
