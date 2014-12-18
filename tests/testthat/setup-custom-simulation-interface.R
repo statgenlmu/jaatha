@@ -11,8 +11,7 @@ csi.sum.stats <- list("poisson.vector"=list(method="poisson.independent",
                                             value=csi.obs$poisson.vector))
 csi.par.ranges <- matrix(c(0.1, 0.1, 10, 10), 2, 2)
 rownames(csi.par.ranges) <- c('x', 'y')
-jaatha.csi <- new("Jaatha", csi.sim.func, csi.par.ranges, csi.sum.stats, 
-                  123, cores = 2)
+jaatha.csi <- new("Jaatha", csi.sim.func, csi.par.ranges, csi.sum.stats, 2)
 sim.data.csi <- jaatha:::simulateWithinBlock(10, block.test, jaatha.csi)
 
 # A Smoothing Model
@@ -54,9 +53,7 @@ rm(border.transformation, border.mask)
 smooth.par.ranges <- matrix(c(2, 1, 7, 7), 2, 2)
 rownames(smooth.par.ranges) <- c('x', 'y')
 
-smooth.jaatha <- new("Jaatha", smooth.simfunc, 
-                     smooth.par.ranges, smooth.sum.stats, 123)
+smooth.jaatha <- new("Jaatha", smooth.simfunc, smooth.par.ranges, smooth.sum.stats)
 
-smooth.border.jaatha <- new("Jaatha", smooth.simfunc, smooth.par.ranges, 
-                            smooth.border.sum.stats, 123)
+smooth.border.jaatha <- new("Jaatha", smooth.simfunc, smooth.par.ranges, smooth.border.sum.stats)
 smooth.sim.data <- jaatha:::simulateWithinBlock(10, block.test, smooth.jaatha)

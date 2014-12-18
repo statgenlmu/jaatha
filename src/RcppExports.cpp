@@ -38,8 +38,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // parseSeqgenOutput
-List parseSeqgenOutput(const List file_names, const int sample_size, const int sequence_length, const int loci_number, const NumericVector trio_opts = NumericVector(0));
-RcppExport SEXP jaatha_parseSeqgenOutput(SEXP file_namesSEXP, SEXP sample_sizeSEXP, SEXP sequence_lengthSEXP, SEXP loci_numberSEXP, SEXP trio_optsSEXP) {
+List parseSeqgenOutput(const List file_names, const int sample_size, const int sequence_length, const int loci_number, const int outgroup_size = 1, const NumericVector trio_opts = NumericVector(0));
+RcppExport SEXP jaatha_parseSeqgenOutput(SEXP file_namesSEXP, SEXP sample_sizeSEXP, SEXP sequence_lengthSEXP, SEXP loci_numberSEXP, SEXP outgroup_sizeSEXP, SEXP trio_optsSEXP) {
 BEGIN_RCPP
     SEXP __sexp_result;
     {
@@ -48,8 +48,9 @@ BEGIN_RCPP
         Rcpp::traits::input_parameter< const int >::type sample_size(sample_sizeSEXP );
         Rcpp::traits::input_parameter< const int >::type sequence_length(sequence_lengthSEXP );
         Rcpp::traits::input_parameter< const int >::type loci_number(loci_numberSEXP );
+        Rcpp::traits::input_parameter< const int >::type outgroup_size(outgroup_sizeSEXP );
         Rcpp::traits::input_parameter< const NumericVector >::type trio_opts(trio_optsSEXP );
-        List __result = parseSeqgenOutput(file_names, sample_size, sequence_length, loci_number, trio_opts);
+        List __result = parseSeqgenOutput(file_names, sample_size, sequence_length, loci_number, outgroup_size, trio_opts);
         PROTECT(__sexp_result = Rcpp::wrap(__result));
     }
     UNPROTECT(1);

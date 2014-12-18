@@ -12,7 +12,8 @@ generateSumStats <- function(files, program, parameters, dm, seg_sites) {
                                      sum(dm.getSampleSize(dm)),
                                      dm.getLociLength(dm),
                                      dm.getLociNumber(dm),
-                                     dm.getLociTrioOptions(dm))
+                                     outgroup_size = dm.getOutgroupSize(dm),
+                                     trio_opts = dm.getLociTrioOptions(dm))
     } else if (program == 'scrm') {
       seg_sites <- files[['seg_sites']]
       seg_sites <- lapply(seg_sites, function(x) {
@@ -25,7 +26,8 @@ generateSumStats <- function(files, program, parameters, dm, seg_sites) {
   }
 
   # Add the parameters of the simulation
-  sum_stats <- list(pars=parameters)
+  sum_stats <- list()
+  if (!missing(parameters)) sum_stats[['pars']] <- parameters
 
   # Add seg_sites
   if ('seg.sites' %in% model_stats) {
@@ -48,11 +50,13 @@ generateSumStats <- function(files, program, parameters, dm, seg_sites) {
   }
   
   # Add files if needed
-  if ('file' %in% model_stats) {
-    sum_stats[['file']] <- files
-  } else {
-    unlink(unlist(files))
+  if (!missing(files)) {
+    if ('file' %in% model_stats) {
+      sum_stats[['file']] <- files
+    } else {
+      unlink(unlist(files))
+    }
   }
-  
+
   sum_stats
 }

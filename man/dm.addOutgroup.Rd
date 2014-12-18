@@ -3,14 +3,19 @@
 \alias{dm.addOutgroup}
 \title{Adds an outgroup to a demographic model}
 \usage{
-dm.addOutgroup(dm, separation.time)
+dm.addOutgroup(dm, separation_time, sample_size = 1, anc_pop = 1)
 }
 \arguments{
 \item{dm}{The demographic model to which we add the outgroup}
 
-\item{separation.time}{The time point at which the outgroup splits
-          from the ancestral population. This can be an absolute value
-          (e.g. 10) or relative to another time points (e.g. '5*t_split_1').}
+\item{separation_time}{The time point at which the outgroup splits
+from the ancestral population. This can be an absolute value
+(e.g. 10) or relative to another time points (e.g. '5*t_split_1').}
+
+\item{sample_size}{The number of individuals in the group}
+
+\item{anc_pop}{The ancestral population of the non-outgroup individuals. The
+outgroup splits from this population at the separation_time.}
 }
 \value{
 The extended demographic model
