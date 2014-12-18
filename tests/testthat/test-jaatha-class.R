@@ -116,7 +116,8 @@ test_that("Initialization of PMC statistic", {
 
 
 test_that("Jaatha.initialization.groups", {
-  sum.stats.grp <- dm.simSumStats(dm.grp, c(1, 5))
+  sum.stats.grp <- dm.simSumStats(dm.addSummaryStatistic(dm.grp, 'seg.sites'),
+                                  c(1, 5))
   jaatha.grp <- Jaatha.initialize(sum.stats.grp, dm.grp, 
                                   folded = FALSE, smoothing = FALSE)
   expect_true(is.list(jaatha.grp@sum.stats[["jsfs.1"]]))

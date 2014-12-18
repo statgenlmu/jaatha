@@ -192,6 +192,7 @@ Jaatha.initialize <- function(data, model, cores=1, scaling.factor=1,
   
   # Convert the data into a list containing the seg.sites of the different groups
   if ('GENOME' %in% is(data)) {
+    checkModelDataConsistency(data, dm)
     data <- convPopGenomeToSegSites(data, only_synonymous)
   }
   if (!is.list(data)) stop('`data` has an unexpected format.')
@@ -213,7 +214,7 @@ Jaatha.initialize <- function(data, model, cores=1, scaling.factor=1,
     
     seg.sites <- data[[paste0('seg.sites', grp_name_ext)]]
     if (is.null(seg.sites)) stop('No seg.sites in `data` for group ', group)
-    jsfs.value <- calcJsfs(seg.sites, dm.getSampleSize(dm))
+    jsfs.value <- calcJsfs(seg.sites, dm.getSampleSize(dm, group))
 
     # ------------------------------------------------------------
     # JSFS Summary Statistic
@@ -251,11 +252,7 @@ Jaatha.initialize <- function(data, model, cores=1, scaling.factor=1,
     # ------------------------------------------------------------
     # FPC Summary Statistic
     # ------------------------------------------------------------
-    if ('fpc' %in% dm.getSummaryStatistics(dm, group)) {
-      if (is.null(seg.sites)) {
-        stop("You need to provide 'seg.sites' to use the 'fpc' sum.stat")
-      }
-      
+    if ('fpc' %in% dm.getSummaryStatistics(dm, group)) {      
       dm <- calcFpcBreaks(dm, seg.sites, group = group)
       sum.stats[[paste0('fpc', grp_name_ext)]] <- 
         list(method='poisson.transformed', transformation=as.vector,
@@ -266,10 +263,6 @@ Jaatha.initialize <- function(data, model, cores=1, scaling.factor=1,
     # PMC Summary Statistic
     # ------------------------------------------------------------
     if ('pmc' %in% dm.getSummaryStatistics(dm, group)) {
-      if (is.null(seg.sites)) {
-        stop("You need to provide 'seg.sites' to use the 'pmc' sum.stat")
-      }
-        
       dm <- calcPmcBreaks(dm, seg.sites, group = group)
       sum.stats[[paste0('pmc', grp_name_ext)]] <- 
         list(method='poisson.transformed', transformation=as.vector,

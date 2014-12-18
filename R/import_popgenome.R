@@ -1,3 +1,10 @@
+checkModelDataConsistency <- function(data, model) {
+  if (dm.getOutgroupSize(model) != length(data@outgroup)) {
+    stop("Expecting an outgroup size of ", length(data@outgroup), 
+         " from data, but is ", dm.getOutgroupSize(model), " in model.")
+  }
+}
+
 convPopGenomeToSegSites <- function(data, only_synonymous=FALSE) {
   seg_sites_list <- lapply(1:length(data@n.valid.sites), function(i) {
     if (data@n.valid.sites[[i]] == 0) return(NULL)
@@ -21,7 +28,7 @@ convPopGenomeToSegSites <- function(data, only_synonymous=FALSE) {
     seg_sites
   })
   
-  list(seg.sites = seg_sites_list[!sapply(seg_sites, is.null)])
+  list(seg.sites = seg_sites_list[!sapply(seg_sites_list, is.null)])
 }
 
 dm.createModelFromPopGenome <- function(data, finite_sites = TRUE, 

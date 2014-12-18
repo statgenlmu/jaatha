@@ -1301,7 +1301,7 @@ dm.addOutgroup <- function(dm, separation_time, sample_size = 1, anc_pop = 1) {
   dm <- dm.addSpeciationEvent(dm, in.population=anc_pop, 
                         new.time.point=F, time.point=separation_time)
   dm <- addFeature(dm, "outgroup", as.character(sample_size), 
-                   pop.source = anc_pop, pop.sink = pop)
+                   pop.source = anc_pop, pop.sink = pop, par.new=FALSE)
   dm
 }
 
