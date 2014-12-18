@@ -1111,16 +1111,14 @@ dm.setMutationModel <- function(dm, mutation.model,
   checkType(gtr.rates, c("num"), F, F)
 
   if (! mutation.model %in% sg.mutation.models) 
-    stop("Allowed values: ", paste(sg.mutation.models, collapse=" "))
+    stop("Possible mutation models: ", paste(sg.mutation.models, collapse=" "))
   
-  mutation.model.nr <- which(mutation.model == sg.mutation.models)
-  dm <- addFeature(dm, "mutation.model", "mutation.model", 
-                   fixed.value=mutation.model.nr)
+  dm <- addFeature(dm, "mutation.model", mutation.model, par.new=FALSE)
 
   if ( !missing(tstv.ratio) ) {
     if (!mutation.model %in% c("HKY", "F84"))
       stop("This mutation model does not support a ts/tv ratio")
-    dm <- addFeature(dm, "tstv.ratio", "tstv.ratio", fixed.value=tstv.ratio)
+    dm <- addFeature(dm, "tstv.ratio", as.character(tstv.ratio), par.new=FALSE)
   }
 
   if ( !missing(base.frequencies) ) {
@@ -1129,10 +1127,10 @@ dm.setMutationModel <- function(dm, mutation.model,
     if (!mutation.model %in% c("HKY", "F84")) 
       stop("This mutation model does not support base frequencies")
 
-    dm <- addFeature(dm, "base.freq.A", "base.freq.A", fixed.value=base.frequencies[1])
-    dm <- addFeature(dm, "base.freq.C", "base.freq.C", fixed.value=base.frequencies[2])
-    dm <- addFeature(dm, "base.freq.G", "base.freq.G", fixed.value=base.frequencies[3])
-    dm <- addFeature(dm, "base.freq.T", "base.freq.T", fixed.value=base.frequencies[4])
+    dm <- addFeature(dm, "base.freq.A", as.character(base.frequencies[1]), par.new=FALSE)
+    dm <- addFeature(dm, "base.freq.C", as.character(base.frequencies[2]), par.new=FALSE)
+    dm <- addFeature(dm, "base.freq.G", as.character(base.frequencies[3]), par.new=FALSE)
+    dm <- addFeature(dm, "base.freq.T", as.character(base.frequencies[4]), par.new=FALSE)
   }
 
   if ( !missing(gtr.rates) ) {
@@ -1141,12 +1139,12 @@ dm.setMutationModel <- function(dm, mutation.model,
     if (!mutation.model %in% c("GTR")) 
       stop("You can specify gtr.rates only with the GTR model")
 
-    dm <- addFeature(dm, "gtr.rate.1", "gtr.rate.1", fixed.value=gtr.rates[1])
-    dm <- addFeature(dm, "gtr.rate.2", "gtr.rate.2", fixed.value=gtr.rates[2])
-    dm <- addFeature(dm, "gtr.rate.3", "gtr.rate.3", fixed.value=gtr.rates[3])
-    dm <- addFeature(dm, "gtr.rate.4", "gtr.rate.4", fixed.value=gtr.rates[4])
-    dm <- addFeature(dm, "gtr.rate.5", "gtr.rate.5", fixed.value=gtr.rates[5])
-    dm <- addFeature(dm, "gtr.rate.6", "gtr.rate.6", fixed.value=gtr.rates[6])
+    dm <- addFeature(dm, "gtr.rate.1", as.character(gtr.rates[1]), par.new=FALSE)
+    dm <- addFeature(dm, "gtr.rate.2", as.character(gtr.rates[2]), par.new=FALSE)
+    dm <- addFeature(dm, "gtr.rate.3", as.character(gtr.rates[3]), par.new=FALSE)
+    dm <- addFeature(dm, "gtr.rate.4", as.character(gtr.rates[4]), par.new=FALSE)
+    dm <- addFeature(dm, "gtr.rate.5", as.character(gtr.rates[5]), par.new=FALSE)
+    dm <- addFeature(dm, "gtr.rate.6", as.character(gtr.rates[6]), par.new=FALSE)
   }
 
   return(dm)

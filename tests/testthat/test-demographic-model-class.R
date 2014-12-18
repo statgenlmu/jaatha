@@ -298,7 +298,7 @@ test_that("set and get loci number works", {
 test_that("test.setMutationModel", {
   dm <- dm.createThetaTauModel(11:12, 100)
   dm <- dm.setMutationModel(dm, "HKY")
-  expect_true("mutation.model" %in% dm@parameters$name)
+  expect_true("mutation.model" %in% dm@features$type)
   expect_error(dm <- dm.setMutationModel(dm, "bla"))
 })
 
