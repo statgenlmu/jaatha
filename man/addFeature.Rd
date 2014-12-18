@@ -3,9 +3,9 @@
 \alias{addFeature}
 \title{Low level function for adding a new feature to a demographic Model}
 \usage{
-addFeature(dm, type, parameter = NA, lower.range = NA, upper.range = NA,
-  fixed.value = NA, par.new = T, pop.source = NA, pop.sink = NA,
-  time.point = NA, group = 0, variance = 0, zero.inflation = 0)
+addFeature(dm, type, parameter, lower.range = NA, upper.range = NA,
+  pop.source = NA, pop.sink = NA, time.point = NA, group = 0,
+  variance = 0, zero.inflation = 0)
 }
 \arguments{
 \item{dm}{The demographic model to which the feature will be added}
@@ -19,15 +19,6 @@ names.}
 \item{lower.range}{The lower boundary for the value of the parameter}
 
 \item{upper.range}{The upper boundary for the value of the parameter}
-
-\item{fixed.value}{If given, the parameter will be set to a fixed value. This
-is equivalent to seting lower.range equal to upper.range.}
-
-\item{par.new}{If 'TRUE' a new parameter will be created using the
-arguments 'lower.range' and 'upper.range' or
-'fixed.value'. It will be named 'parameter'.
-If 'FALSE' the argument 'parameter'
-will be evaluated instead.}
 
 \item{pop.source}{The source population if availible (think e.g. of migration)}
 

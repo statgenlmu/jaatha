@@ -2,7 +2,7 @@ context("One Parameter Model")
 
 test_that("test.oneParModel", {
     dm <- dm.createDemographicModel(5:6, 10)
-    dm <- dm.addSpeciationEvent(dm, fixed = 1)
+    dm <- dm.addSpeciationEvent(dm, time.point = '1')
     dm <- dm.addMutation(dm, 1, 5)
     ss <- dm.simSumStats(dm.addSummaryStatistic(dm, 'seg.sites'), 2.5)
     expect_true(sum(ss$jsfs) > 0)

@@ -141,6 +141,8 @@ generateSeqgenOptionsCmd <- function(dm) {
   } 
 
   opts <- c('c(', paste('"', getJaathaVariable('seqgen.exe'), '"', sep=""), ",")
+  base.freqs <- list()
+  gtr.rates <- list()
 
   for (i in 1:dim(dm@features)[1] ) {
     type <- as.character(dm@features[i,"type"])
@@ -148,21 +150,19 @@ generateSeqgenOptionsCmd <- function(dm) {
 
     if (type == "mutation.model") {
       includes.model <- T
-      model <- sg.mutation.models[dm@parameters[dm@parameters$name == "mutation.model", 
-                                                'lower.range']]
-      opts <- c(opts, paste('"-m', model, '"', sep=""), ",")
+      opts <- c(opts, paste('"-m', feat['parameter'], '"', sep=""), ",")
     }
 
     else if ( type %in% c('base.freq.A', 'base.freq.C', 
                           'base.freq.G', 'base.freq.T') )
-      base.freqs <- T
+      base.freqs[[type]] <- feat['parameter']
 
     else if ( type %in% c('gtr.rate.1', 'gtr.rate.2', 'gtr.rate.3',
                           'gtr.rate.4', 'gtr.rate.5', 'gtr.rate.6') )
-      gtr.rates <- T
+      gtr.rates[[type]] <- feat['parameter']
 
     else if (type == "tstv.ratio")
-      opts <- c(opts, '"-t"', ',', 'tstv.ratio', ',')
+      opts <- c(opts, '"-t"', ',', feat['parameter'], ',')
 
     else if (type == "gamma.rate")
       opts <- c(opts, '"-a"', ',', feat['parameter'], ',')
@@ -171,20 +171,20 @@ generateSeqgenOptionsCmd <- function(dm) {
       opts <- c(opts, '"-g"', ',', feat['parameter'], ',')
   }
 
-  if (base.freqs) {
-    opts <- c(opts, '"-f"', ',', 'base.freq.A',
-              ',', 'base.freq.C',
-              ',', 'base.freq.G',  
-              ',', 'base.freq.T', ',')
+  if (length(base.freqs) == 4) {
+    opts <- c(opts, '"-f"', ',', base.freqs[['base.freq.A']],
+              ',', base.freqs[['base.freq.C']],
+              ',', base.freqs[['base.freq.G']],  
+              ',', base.freqs[['base.freq.T']], ',')
   }
 
-  if (gtr.rates) {
-    opts <- c(opts, '"-r"', ',', 'gtr.rate.1',
-              ',', 'gtr.rate.2',
-              ',', 'gtr.rate.3',  
-              ',', 'gtr.rate.4',  
-              ',', 'gtr.rate.5',  
-              ',', 'gtr.rate.6', ',')
+  if (length(gtr.rates) == 6) {
+    opts <- c(opts, '"-r"', ',', gtr.rates[['gtr.rate.1']],
+              ',', gtr.rates[['gtr.rate.2']],
+              ',', gtr.rates[['gtr.rate.3']],  
+              ',', gtr.rates[['gtr.rate.4']],  
+              ',', gtr.rates[['gtr.rate.5']],  
+              ',', gtr.rates[['gtr.rate.6']], ',')
   }
   
   if (!includes.model) {

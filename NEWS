@@ -1,3 +1,9 @@
+jaatha 2.99.0.9003
+============
+
+* Remove 'fixed' parameters, as they can be easily replaced by expressions (#35).
+
+
 jaatha 2.99.0.9002
 ============
 

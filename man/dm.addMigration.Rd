@@ -3,8 +3,8 @@
 \alias{dm.addMigration}
 \title{Add migration/gene flow between two populations to a demographic model}
 \usage{
-dm.addMigration(dm, lower.range, upper.range, fixed.value, pop.from, pop.to,
-  time.start = "0", par.new = T, new.par.name = "M", parameter)
+dm.addMigration(dm, lower.range = NA, upper.range = NA, parameter = "M",
+  pop.from, pop.to, time.start = "0")
 }
 \arguments{
 \item{dm}{The demographic model to which recombination events should be added.}
@@ -13,24 +13,6 @@ dm.addMigration(dm, lower.range, upper.range, fixed.value, pop.from, pop.to,
 
 \item{upper.range}{Same as lower.range, but the largest possible value.}
 
-\item{fixed.value}{If specified, the migration rate will not be estimated,
-but assumed to have the given value.}
-
-\item{pop.from}{The population from which the individuals leave.}
-
-\item{pop.to}{The population to which the individuals move.}
-
-\item{time.start}{The time point at which the migration with this rate
-starts.}
-
-\item{par.new}{If 'TRUE' a new parameter will be created using the
-arguments 'lower.range' and 'upper.range' or
-'fixed.value'. It will be named 'new.par.name'.
-If 'FALSE' the argument 'parameter'
-will be evaluated instead.}
-
-\item{new.par.name}{The name for the new parameter.}
-
 \item{parameter}{Instead of creating a new parameter, you can also
 set the mutation rate to an expression based on existing
 parameters. For example setting this to "M" will use
@@ -38,6 +20,13 @@ an parameter with name M that you have previously
 created. You can also use R expression here, so "2*M"
 or "5*M+2*tau" (if tau is another parameter) will also
 work (also this does not make much sense).}
+
+\item{pop.from}{The population from which the individuals leave.}
+
+\item{pop.to}{The population to which the individuals move.}
+
+\item{time.start}{The time point at which the migration with this rate
+starts.}
 }
 \value{
 The demographic model with migration
@@ -70,9 +59,7 @@ dm <- dm.addMigration(dm, 0.01, 5, pop.from=1, pop.to=2, time.start="0")
 
 # Stepwise decreasing mutation
 dm <- dm.createThetaTauModel(c(25,25), 100)
-dm <- dm.addMigration(dm, 0.01, 5, pop.from=1, pop.to=2, new.par.name="M",
-                      time.start="0")
-dm <- dm.addMigration(dm, pop.from=1, pop.to=2, par.new=FALSE,
-                      parameter="0.5*M", time.start="0.5*tau")
+dm <- dm.addMigration(dm, 0.01, 5, pop.from=1, pop.to=2, parameter="M", time.start="0")
+dm <- dm.addMigration(dm, pop.from=1, pop.to=2, parameter="0.5*M", time.start="0.5*tau")
 }
 

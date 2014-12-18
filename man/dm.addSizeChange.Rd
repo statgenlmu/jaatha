@@ -4,8 +4,8 @@
 \title{Adds an instantaneous change of the population size of one
 population to a model.}
 \usage{
-dm.addSizeChange(dm, min.size.factor, max.size.factor, fixed.size.factor,
-  par.new = T, new.par.name = "q", parameter, population, at.time = "0")
+dm.addSizeChange(dm, min.size.factor, max.size.factor, parameter = "q",
+  population, at.time = "0")
 }
 \arguments{
 \item{dm}{The demographic model to which the size change should be added.}
@@ -14,17 +14,6 @@ dm.addSizeChange(dm, min.size.factor, max.size.factor, fixed.size.factor,
 used as the smallest possible value.}
 
 \item{max.size.factor}{Same as min.size.factor, but the largest possible value.}
-
-\item{fixed.size.factor}{If specified, the size factor not be estimated,
-but assumed to have the given value.}
-
-\item{par.new}{If 'TRUE' a new parameter will be created using the
-arguments 'min.size.factor' and 'max.size.factor' or
-'fixed.size.factor'. It will be named 'new.time.point.name'
-If 'FALSE' the argument 'parameter'
-will be evaluated instead.}
-
-\item{new.par.name}{Name for the new parameter.}
 
 \item{parameter}{Instead of creating a new parameter, you can also
 set the mutation rate to an expression based on existing

@@ -4,9 +4,8 @@
 \title{Adds an growth or decline of the population size of one
 population to a model.}
 \usage{
-dm.addGrowth(dm, min.growth.rate, max.growth.rate, fixed.growth.rate,
-  par.new = T, new.par.name = "alpha", parameter, population,
-  at.time = "0")
+dm.addGrowth(dm, min.growth.rate = NA, max.growth.rate = NA,
+  parameter = "alpha", population, at.time = "0")
 }
 \arguments{
 \item{dm}{The demographic model to which the size change should be added.}
@@ -15,17 +14,6 @@ dm.addGrowth(dm, min.growth.rate, max.growth.rate, fixed.growth.rate,
 used as the smallest possible value.}
 
 \item{max.growth.rate}{Same as min.growth.rate, but the largest possible value.}
-
-\item{fixed.growth.rate}{If specified, the growth rate will not be estimated,
-but assumed to have the given value.}
-
-\item{par.new}{If 'TRUE' a new parameter will be created using the
-arguments 'min.growth.rate' and 'max.growth.rate' or
-'fixed.growth.rate'. It will be named 'new.par.name'
-If 'FALSE' the argument 'parameter'
-will be evaluated instead.}
-
-\item{new.par.name}{Name for the new parameter.}
 
 \item{parameter}{Instead of creating a new parameter, you can also
 set the mutation rate to an expression based on existing
