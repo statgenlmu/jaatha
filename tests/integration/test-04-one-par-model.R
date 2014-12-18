@@ -4,7 +4,7 @@ test_that("test.oneParModel", {
     dm <- dm.createDemographicModel(5:6, 10)
     dm <- dm.addSpeciationEvent(dm, fixed = 1)
     dm <- dm.addMutation(dm, 1, 5)
-    ss <- dm.simSumStats(dm, 2.5)
+    ss <- dm.simSumStats(dm.addSummaryStatistic(dm, 'seg.sites'), 2.5)
     expect_true(sum(ss$jsfs) > 0)
     jaatha <- Jaatha.initialize(ss, dm)
     jaatha <- Jaatha.initialSearch(jaatha, 20, 2)
