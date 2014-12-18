@@ -18,7 +18,7 @@ convPopGenomeToSegSites <- function(data, only_synonymous=FALSE) {
     if (only_synonymous) {
       syn <- data@region.data@synonymous[[i]]
       syn[is.na(syn)] <- FALSE
-      seg_sites <- seg_sites[c(pop1, pop2, outgroup), syn]
+      seg_sites <- seg_sites[c(pop1, pop2, outgroup), syn, drop=FALSE]
     } else {
       seg_sites <- seg_sites[c(pop1, pop2, outgroup), ]
     }
