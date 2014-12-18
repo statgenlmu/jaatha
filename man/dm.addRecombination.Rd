@@ -3,8 +3,8 @@
 \alias{dm.addRecombination}
 \title{Adds recombination events to a demographic model}
 \usage{
-dm.addRecombination(dm, lower.range, upper.range, fixed.value, par.new = T,
-  new.par.name = "rho", parameter, group = 0, variance = 0)
+dm.addRecombination(dm, lower.range = NA, upper.range = NA,
+  parameter = "rho", group = 0, variance = 0)
 }
 \arguments{
 \item{dm}{The demographic model to which recombination events should be added.}
@@ -12,17 +12,6 @@ dm.addRecombination(dm, lower.range, upper.range, fixed.value, par.new = T,
 \item{lower.range}{If you want to estimate the recombination rate (see note}
 
 \item{upper.range}{Same as lower.range, but the largest possible value.}
-
-\item{fixed.value}{If specified, the mutation rate will not be estimated,
-but assumed to have the given value.}
-
-\item{par.new}{If 'TRUE' a new parameter will be created using the
-arguments 'lower.range' and 'upper.range' or
-'fixed.value'. It will be named 'new.par.name'.
-If 'FALSE' the argument 'parameter'
-will be evaluated instead.}
-
-\item{new.par.name}{The name for the new parameter.}
 
 \item{parameter}{Instead of creating a new parameter, you can also
 set the mutation rate to an expression based on existing
@@ -63,7 +52,7 @@ rates with Jaatha because it assumes unlinked loci.
 \examples{
 dm <- dm.createDemographicModel(c(25,25), 100)
 dm <- dm.addSpeciationEvent(dm, 0.01, 5)
-dm <- dm.addRecombination(dm, fixed=20)
+dm <- dm.addRecombination(dm, 20)
 dm <- dm.addMutation(dm, 1, 20)
 }
 

@@ -4,8 +4,8 @@
 \title{Allows the mutation rate on different sites within one locus to
 vary according to a Gamma Distribution.}
 \usage{
-dm.addMutationRateHeterogenity(dm, min.alpha, max.alpha, fixed.alpha,
-  par.new = T, new.par.name = "alpha", parameter, categories.number)
+dm.addMutationRateHeterogenity(dm, min.alpha, max.alpha, parameter = "alpha",
+  categories.number)
 }
 \arguments{
 \item{dm}{The demographic model to which the rate heterogeneity should be added.}
@@ -14,18 +14,6 @@ dm.addMutationRateHeterogenity(dm, min.alpha, max.alpha, fixed.alpha,
 used as the smallest possible value.}
 
 \item{max.alpha}{Same as min.growth.rate, but the largest possible value.}
-
-\item{fixed.alpha}{If specified, the growth rate will not be estimated,
-but assumed to have the given value.}
-
-\item{par.new}{If 'TRUE' a new parameter will be created using the
-arguments 'min.alpha' and 'max.alpha' or
-'fixed.alpha'. It will be named 'new.par.name'
-If 'FALSE' the argument 'parameter'
-will be evaluated instead.}
-
-\item{new.par.name}{Name for the new parameter.
-occurs. See \link{dm.addSpeciationEvent} for more information.}
 
 \item{parameter}{Instead of creating a new parameter, you can also
 set the mutation rate to an expression based on existing
@@ -67,6 +55,6 @@ with rate heterogeneity requires that 'seq-gen' is installed on your system.
 # A model with one smaller population
 dm <- dm.createThetaTauModel(c(20,37), 88)
 dm <- dm.setMutationModel(dm, "HKY")
-dm <- dm.addMutationRateHeterogenity(dm, 0.1, 5, new.par.name="alpha")
+dm <- dm.addMutationRateHeterogenity(dm, 0.1, 5, parameter="alpha")
 }
 

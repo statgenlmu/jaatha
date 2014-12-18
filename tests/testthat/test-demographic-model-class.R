@@ -6,7 +6,7 @@ test_that("addFeature works", {
   dm_tmp <- addFeature(dm_tmp, type = "split", parameter = "tau", lower.range = 1, 
                    upper.range = 10)
   expect_equal(nrow(dm_tmp@features), n.feat + 1)
-  dm_tmp <- addFeature(dm_tmp, "mutation", "theta", fixed.value = 5, 
+  dm_tmp <- addFeature(dm_tmp, "mutation", parameter = 5, 
                    pop.source = 1, pop.sink = 2, time.point = "t2", group = 3)
   expect_equal(nrow(dm_tmp@features), n.feat + 2)
   
@@ -53,18 +53,16 @@ test_that("addFeature works", {
 test_that("test.addParameter", {
   dm <- dm.createDemographicModel(11:12, 100)
   dm <- dm.addParameter(dm, "theta", 1, 5)
-  dm <- dm.addParameter(dm, "rho", fixed = 20)
-  expect_equal(c("theta", "rho"), dm@parameters$name)
-  expect_equal(c(F, T), dm@parameters$fixed)
-  expect_equal(c(1, 20), dm@parameters$lower.range)
-  expect_equal(c(5, 20), dm@parameters$upper.range)
+  expect_equal("theta", dm@parameters$name)
+  expect_equal(1, dm@parameters$lower.range)
+  expect_equal(5, dm@parameters$upper.range)
 })
 
 test_that("test.addPositiveSelection", {
   dm <- dm.addPositiveSelection(dm.tt, 1, 2, population = 1, 
                                 at.time = "2")
   expect_true("pos.selection" %in% dm@features$type)
-  dm <- dm.addPositiveSelection(dm.tt, fixed.strength = 1, 
+  dm <- dm.addPositiveSelection(dm.tt, parameter = 1, 
                                 population = 1, at.time = "2")
   expect_true("pos.selection" %in% dm@features$type)
   expect_error(dm.addPositiveSelection(dm.tt, 1, 2, at.time = "2"))
@@ -211,7 +209,7 @@ test_that("test.getThetaName", {
     expect_equal(getThetaName(dm.f81), "theta")
   }
   dm.test <- dm.createDemographicModel(11:12, 100)
-  dm.test <- dm.addMutation(dm.test, 1, 5, new.par.name = "abcd")
+  dm.test <- dm.addMutation(dm.test, 1, 5, parameter = "abcd")
   dm.test <- dm.addRecombination(dm.test, 1, 5)
   expect_equal(getThetaName(dm.test), "abcd")
 })
@@ -380,8 +378,8 @@ test_that("test.printGroupDM", {
 
 test_that("addMutation works", {
   dm_tmp <- dm.createDemographicModel(5:6, 10, 1000)
-  dm_tmp <- dm.addSpeciationEvent(dm_tmp, 0.01, 5, new.time.point.name="tau")  
-  dm_tmp <- dm.addRecombination(dm_tmp, fixed.value=2)
+  dm_tmp <- dm.addSpeciationEvent(dm_tmp, 0.01, 5, time.point="tau")  
+  dm_tmp <- dm.addRecombination(dm_tmp, parameter=2)
   dm_tmp2 <- dm.addMutation(dm_tmp, 1, 20)
   
   expect_equal(searchFeature(dm_tmp2, "mutation")$parameter, 'theta')
@@ -393,14 +391,14 @@ test_that("addMutation works", {
 
 test_that("addRecombination works", {
   dm_tmp <- dm.createDemographicModel(5:6, 10, 1000)
-  dm_tmp <- dm.addSpeciationEvent(dm_tmp, 0.01, 5, new.time.point.name="tau")  
-  dm_tmp <- dm.addRecombination(dm_tmp, fixed.value=2)
+  dm_tmp <- dm.addSpeciationEvent(dm_tmp, 0.01, 5, time.point="tau")  
+  dm_tmp <- dm.addRecombination(dm_tmp, parameter=2)
   dm_tmp <- dm.addMutation(dm_tmp, 1, 20)
   
-  expect_equal(searchFeature(dm_tmp, "recombination")$parameter, 'rho')
+  expect_equal(searchFeature(dm_tmp, "recombination")$parameter, '2')
   expect_equal(nrow(searchFeature(dm_tmp, "recombination")), 1)  
   
   dm_tmp <- dm.addRecombination(dm_tmp, 1, 20, variance = 20,
-                                new.par.name = 'rho2', group = 2)
+                                parameter = 'rho2', group = 2)
   expect_equal(nrow(searchFeature(dm_tmp, "recombination")), 2)
 })

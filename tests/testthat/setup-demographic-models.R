@@ -24,7 +24,7 @@ dm.fpc <- dm.createDemographicModel(c(15,20), 100, 1000)
 dm.fpc <- dm.addSpeciationEvent(dm.fpc, .1, 5)
 dm.fpc <- dm.addRecombination(dm.fpc, 1, 5)
 dm.fpc <- dm.addMutation(dm.fpc, 1, 10)
-dm.fpc <- dm.addSymmetricMigration(dm.fpc, fixed=.75)
+dm.fpc <- dm.addSymmetricMigration(dm.fpc, parameter=.75)
 seg.sites <- dm.simSumStats(dm.addSummaryStatistic(dm.fpc, 'seg.sites'), 
                             c(1, 2, 3))$seg.sites
 dm.fpc <- dm.addSummaryStatistic(dm.fpc, 'fpc')

@@ -3,8 +3,8 @@
 \alias{dm.addSpeciationEvent}
 \title{Adds a speciation event to a demographic model}
 \usage{
-dm.addSpeciationEvent(dm, min.time, max.time, fixed.time, in.population = 1,
-  new.time.point = T, new.time.point.name = NA, time.point = NA)
+dm.addSpeciationEvent(dm, min.time, max.time, time.point = paste0("t_split_",
+  in.population), in.population = 1)
 }
 \arguments{
 \item{dm}{The demographic model to which the split should be added.}
@@ -14,20 +14,6 @@ used as the smallest possible value.}
 
 \item{max.time}{Same as min.time, but the largest possible value.}
 
-\item{fixed.time}{If specified, the time.point will not be estimated,
-but assumed to have the given value.}
-
-\item{in.population}{The number of the population in which the spilt
-occurs. See above for more information.}
-
-\item{new.time.point}{If 'TRUE' a new parameter will be created using the
-arguments 'min.time' and 'max.time' or
-'fixed.time'. It will be named 'new.time.point.name'.
-If 'FALSE' the argument 'time.point'
-will be evaluated instead.}
-
-\item{new.time.point.name}{The name for the new time point.}
-
 \item{time.point}{Instead of creating a new parameter, you can also
 set the mutation rate to an expression based on existing
 parameters. For example setting this to "tau" will use
@@ -35,6 +21,9 @@ an parameter with name tau that you have previously
 created. You can also use R expression here, i.e. "2*tau"
 or "5*M+2*tau" (if M is another parameter) will also
 work (also this does not make much sense).}
+
+\item{in.population}{The number of the population in which the spilt
+occurs. See above for more information.}
 }
 \value{
 The demographic model with a split.
@@ -55,7 +44,7 @@ population has number "1".
 }
 \examples{
 dm <- dm.createDemographicModel(c(25,25), 100)
-dm <- dm.addSpeciationEvent(dm,0.01,5)
-dm <- dm.addMutation(dm,1,20)
+dm <- dm.addSpeciationEvent(dm, 0.01, 5)
+dm <- dm.addMutation(dm, 1, 20)
 }
 

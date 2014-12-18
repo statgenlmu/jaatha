@@ -79,7 +79,6 @@ test_that("Creation of parameter enviroment works", {
   par_envir <- createParameterEnv(dm.tt, c(1,5))
   expect_equal(par_envir[['tau']], 1)
   expect_equal(par_envir[['theta']], 5)
-  expect_equal(par_envir[['rho']], 20)
   
   par_envir <- createParameterEnv(dm.tt, c(1,5), locus = 17)
   expect_equal(par_envir[['locus']], 17)

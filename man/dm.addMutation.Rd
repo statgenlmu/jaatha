@@ -3,8 +3,8 @@
 \alias{dm.addMutation}
 \title{Adds mutations to a demographic model}
 \usage{
-dm.addMutation(dm, lower.range, upper.range, fixed.value, par.new = T,
-  new.par.name = "theta", parameter, group = 0, variance = 0)
+dm.addMutation(dm, lower.range = NA, upper.range = NA,
+  parameter = "theta", group = 0, variance = 0)
 }
 \arguments{
 \item{dm}{The demographic model to which mutations should be added}
@@ -14,17 +14,6 @@ will be used as the smallest possible value.}
 
 \item{upper.range}{If you want to estimate the mutation rate, this
 will be used as the largest possible value.}
-
-\item{fixed.value}{If specified, the mutation rate will not be
-estimated, but assumed to be fixed at the given value.}
-
-\item{par.new}{If 'TRUE' a new parameter will be created using the
-arguments 'lower.range' and 'upper.range' or
-'fixed.value'. It will be named 'new.par.name'.
-If 'FALSE' the argument 'parameter'
-will be evaluated instead.}
-
-\item{new.par.name}{The name for the new parameter.}
 
 \item{parameter}{Instead of creating a new parameter, you can also
 set the mutation rate to an expression based on existing
@@ -65,11 +54,11 @@ dm <- dm.addMutation(dm, 1, 20)
 # Create a new fixed parameter
 dm <- dm.createDemographicModel(c(25,25), 100)
 dm <- dm.addSpeciationEvent(dm, 0.01,5)
-dm <- dm.addMutation(dm, fixed.value=7)
+dm <- dm.addMutation(dm, parameter=7)
 
 # Use an existing parameter
 dm <- dm.createDemographicModel(c(25,25), 100)
 dm <- dm.addParameter(dm, "theta", 0.01, 5)
-dm <- dm.addMutation(dm, par.new=FALSE, parameter="2*log(theta)+1")
+dm <- dm.addMutation(dm, parameter="2*log(theta)+1")
 }
 
