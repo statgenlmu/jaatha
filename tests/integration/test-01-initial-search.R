@@ -68,7 +68,8 @@ test_that("test.initialSearch.seqgenAndMsms", {
   dm.selsq <- jaatha:::dm.addPositiveSelection(dm.hky, 100, 500, population = 1, 
                                                at.time = "0.1")
   dm.selsq <- jaatha:::dm.finalize(dm.selsq)
-  sum.stats <- dm.simSumStats(dm.selsq, c(1, 2, 255))
+  sum.stats <- dm.simSumStats(dm.addSummaryStatistic(dm.selsq, 'seg.sites'), 
+                              c(1, 2, 255))
   jaatha.selsq <- Jaatha.initialize(sum.stats, dm.selsq, cores = 2)
   jaatha.selsq <- Jaatha.initialSearch(jaatha.selsq, sim=10, blocks.per.par=1)
 })

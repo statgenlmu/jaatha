@@ -7,8 +7,8 @@ Jaatha.initialize(data, model, cores = 1, scaling.factor = 1,
   folded = FALSE, smoothing = FALSE, only_synonymous = FALSE)
 }
 \arguments{
-\item{data}{Your observed Joint Site Frequency Spectrum (JSFS). Jaatha uses
-the JSFS as summary statistics.}
+\item{data}{The observed data. Jaatha can use data imported with package
+\link{\pkg{PopGenome}}.}
 
 \item{model}{The demographic model to use}
 
@@ -27,6 +27,9 @@ area, only one glm is fitted for the complete JSFS, and the
 position of the different entries is treated as a model
 parameter. This feature is still experimental and not
 recommended for productive use at the moment.}
+
+\item{only_synonymous}{Only use synonymous SNP if set to \code{TRUE}. Requires
+to provided \code{data} as a PopGenome "GENOME" object.}
 }
 \value{
 A S4-Object of type jaatha containing the settings

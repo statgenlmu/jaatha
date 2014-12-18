@@ -157,8 +157,9 @@ rm(init)
 #' Jaatha and is the first step for each application of it.
 #'
 #' @param model The demographic model to use
-#' @param data Your observed Joint Site Frequency Spectrum (JSFS). Jaatha uses
-#'        the JSFS as summary statistics.   
+#' @param data  The observed data. Jaatha can use data imported with package 
+#'              \pkg{PopGenome}. Please refer the to the vignette 
+#'              "The Jaatha HowTo" for more information.
 #' @param folded If 'TRUE', Jaatha will assume that the JSFS is folded.
 #' @param cores The number of cores to use in parallel. If 0, it tries to
 #'              guess the number of available cores and use them all.
@@ -171,6 +172,8 @@ rm(init)
 #'              position of the different entries is treated as a model
 #'              parameter. This feature is still experimental and not
 #'              recommended for productive use at the moment.  
+#' @param only_synonymous Only use synonymous SNP if set to \code{TRUE}. Requires
+#'              to provided \code{data} as a PopGenome "GENOME" object.
 #' @return A S4-Object of type jaatha containing the settings
 #' @export
 Jaatha.initialize <- function(data, model, cores=1, scaling.factor=1,
