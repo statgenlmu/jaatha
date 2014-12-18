@@ -1,19 +1,19 @@
 jaatha 2.99.0.9002
 ============
 
-* Use package 'PopGenome' to import data
+* Use package 'PopGenome' to import data (#31, #34).
 
 
 jaatha 2.99.0.9001
 ============
 
-* Use package `checkmate` for input validation
+* Use package `checkmate` for input validation (#33)
 
 
 jaatha 2.99.0.9000
 ============
 
-* add support for using scrm.
+* add support for using scrm (#32).
 
 
 

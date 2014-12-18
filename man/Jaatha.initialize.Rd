@@ -8,7 +8,8 @@ Jaatha.initialize(data, model, cores = 1, scaling.factor = 1,
 }
 \arguments{
 \item{data}{The observed data. Jaatha can use data imported with package
-\link{\pkg{PopGenome}}.}
+\pkg{PopGenome}. Please refer the to the vignette
+"The Jaatha HowTo" for more information.}
 
 \item{model}{The demographic model to use}
 
