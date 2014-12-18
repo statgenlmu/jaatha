@@ -1,11 +1,16 @@
-jaatha 2.7.0.9001
+jaatha 2.99.0.9002
+============
+
+* Use package 'PopGenome' to import data
+
+
+jaatha 2.99.0.9001
 ============
 
 * Use package `checkmate` for input validation
 
 
-
-jaatha 2.7.0.9000
+jaatha 2.99.0.9000
 ============
 
 * add support for using scrm.
