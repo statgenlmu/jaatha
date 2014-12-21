@@ -5,10 +5,11 @@ checkModelDataConsistency <- function(data, model) {
   }
 }
 
+#' @importFrom PopGenome get.biallelic.matrix
 convPopGenomeToSegSites <- function(data, only_synonymous=FALSE) {
   seg_sites_list <- lapply(1:length(data@n.valid.sites), function(i) {
     if (data@n.valid.sites[[i]] == 0) return(NULL)
-    seg_sites <- data@region.data@biallelic.matrix[[i]]
+    seg_sites <- get.biallelic.matrix(data, i)
     
     # Sort individuals as Pop1, Pop2, Outgroup
     pop1 <- which(row.names(seg_sites) %in% data@populations[[1]])

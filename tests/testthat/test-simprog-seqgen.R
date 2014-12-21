@@ -147,6 +147,7 @@ test_that("Generation of PMC statistic works", {
 })
 
 test_that("Simulation with outgroup of multiple indiviudals works", {
+  if (!test_seqgen) skip('seq-gen not installed')
   dm <- dm.setMutationModel(dm.tt, "HKY")
   dm <- dm.addOutgroup(dm, separation_time = '2*tau', sample_size = 3)
   dm <- dm.addSummaryStatistic(dm, 'seg.sites')

@@ -25,6 +25,7 @@ test_that("PopGenome Model creation works", {
 })
 
 test_that("Initialization with PopGenome-Data works", {
+  if (!test_seqgen) skip('seq-gen not installed')
   dm_pg <- dm.createModelFromPopGenome(data_pg)
   dm_pg <- dm.addMutation(dm_pg, 1, 5)
   dm_pg <- dm.addSpeciationEvent(dm_pg, .1, .5)

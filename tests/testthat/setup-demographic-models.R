@@ -58,7 +58,6 @@ if (jaatha:::checkForMsms(FALSE, TRUE)) {
                                              at.time='tau/2')
   dm.sel <- dm.setLociNumber(dm.sel, 3)
 } else {
-  warning("Msms not found. Skipping tests.")
   test_msms <- FALSE
 }
 
@@ -66,7 +65,6 @@ if (require('ape', quietly = TRUE)) {
   test_ape <- TRUE
 } else {
   test_ape <- FALSE
-  warning("Package ape not available. Skipping some tests.")
 }
 
 # PopGenome Data

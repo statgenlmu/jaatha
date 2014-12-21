@@ -1,3 +1,9 @@
+jaatha 2.99.0.9006
+============
+
+* Fix a problem with 'PopGenome' data import (#31, #34).
+
+
 jaatha 2.99.0.9003
 ============
 
