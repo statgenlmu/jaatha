@@ -1,6 +1,6 @@
 context("FGC Summary Statistic")
 
-test_that("test.calcFpcBreaks", {
+test_that("Fpc Breaks calculation works", {
     dm = calcFpcBreaks(dm.fpc, seg.sites)
     expect_false(is.null(dm@options[["fpc.breaks.near"]]))
     expect_false(is.null(dm@options[["fpc.breaks.far"]]))
@@ -21,7 +21,6 @@ test_that("test.calcFpcBreaks", {
     
     dm.lt <- dm.useLociTrios(dm.fpc, c(200, 100, 400, 100, 200), group = 2)
     dm = calcFpcBreaks(dm.lt, seg.sites)
-    expect_true(is.null(dm@options[["fpc.breaks.between"]]))
     dm = calcFpcBreaks(dm.lt, seg.sites, group = 2)
     expect_false(is.null(dm@options[['group.2']][["fpc.breaks.between"]]))
 })
@@ -37,15 +36,16 @@ test_that("generateFpcStat works", {
   dm <- dm.createDemographicModel(c(3,3), 1)
   dm@options[["fpc.breaks.near"]] <- .5
   dm@options[["fpc.breaks.far"]] <- .5
+  dm@options[["fpc.breaks.between"]] <- .5
     
   fpc <- generateFpcStat(seg.sites, dm)
   expect_equal(sum(abs(fpc)), 1)
-  expect_equal(fpc[2, 2], 1)  
+  expect_equal(fpc[2, 2, 1], 1)  
   
   dm@options[["fpc.breaks.far"]] <- .9
   fpc <- generateFpcStat(seg.sites, dm)
   expect_equal(sum(abs(fpc)), 1)
-  expect_equal(fpc[2, 1], 1) 
+  expect_equal(fpc[2, 1, 1], 1) 
   
   dm@options[["fpc.breaks.far"]] <- c(.25, .85)
   seg.sites[[2]] <- matrix(c(1, 1, 0, 0, 0, 
@@ -55,44 +55,22 @@ test_that("generateFpcStat works", {
                              0, 0, 0, 0, 1, 
                              1, 0, 0, 0, 0), 6, byrow=TRUE)
   attr(seg.sites[[2]], "positions") <- c(0.1, 0.3, 0.5, 0.7, 0.9)
+  dm <- dm.setLociNumber(dm, 2)
   fpc <- generateFpcStat(seg.sites, dm)
   expect_equal(sum(abs(fpc)), 2)
-  expect_equal(fpc[2, 2], 1)
-  expect_equal(fpc[3, 2], 1)
+  expect_equal(fpc[2, 2, 1], 2)
 
   attr(seg.sites[[2]], "positions") <- c(0.1, 0.11, 0.12, 0.13, 0.14)
   fpc <- generateFpcStat(seg.sites, dm)
   expect_equal(sum(abs(fpc)), 2)
-  expect_equal(fpc[2, 2], 1)
-  expect_equal(fpc[2, 4], 1)
+  expect_equal(fpc[2, 2, 1], 1)
+  expect_equal(fpc[2, 3, 1], 1)
   
   seg.sites[[3]] <- matrix(0, 6, 0)
   attr(seg.sites[[3]], "positions") <- numeric()
+  dm <- dm.setLociNumber(dm, 3)  
   fpc <- generateFpcStat(seg.sites, dm)
   expect_equal(sum(abs(fpc)), 3)
-  expect_equal(fpc[3, 4], 1)
-  
-  seg.sites[[4]] <- seg.sites[[1]]
-  fpc <- generateFpcStat(seg.sites, dm)
-  expect_equal(sum(abs(fpc)), 4)
-  expect_equal(fpc[2, 2], 2)
-  
-  seg.sites <- list(matrix(c(1, 1, 0, 0, 0, 
-                             1, 0, 1, 0, 1, 
-                             1, 1, 1, 1, 0, 
-                             0, 1, 1, 0, 1, 
-                             0, 0, 0, 0, 1, 
-                             1, 0, 0, 0, 0), 6, byrow=TRUE))
-  attr(seg.sites[[1]], "positions") <- c(0.04, 0.09, 0.41, 0.44, 0.57)
-  
-  dm@options[["fpc.breaks.near"]] <- c(.5)
-  dm@options[["fpc.breaks.far"]] <- c(.5)
-  dm@options[["fpc.breaks.between"]] <- c(.5)
-  
-  dm <- dm.useLociTrios(dm, c(200, 100, 400, 100, 200))
-  fpc <- generateFpcStat(seg.sites, dm)
-  expect_equal(sum(abs(fpc)), 1)
-  expect_equal(dim(fpc), c(3,3,3))
 })
 
 test_that("calcPercentFpcViolation works", {

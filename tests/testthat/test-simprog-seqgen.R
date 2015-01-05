@@ -117,7 +117,7 @@ test_that("test.simulateFpcWithSeqgen", {
   seg.sites <- dm.simSumStats(dm.addSummaryStatistic(dm.hky, 'seg.sites'),
                               c(1, 5))$seg.sites
   dm.sgfpc <- dm.addSummaryStatistic(dm.hky, 'fpc')
-  dm.sgfpc <- jaatha:::calcFpcBreaks(dm.sgfpc, seg.sites, 3)
+  dm.sgfpc <- jaatha:::calcFpcBreaks(dm.sgfpc, seg.sites)
   sum.stats <- dm.simSumStats(dm.sgfpc, c(1, 5))
   expect_false(is.null(sum.stats$fpc))
   expect_equal(sum(sum.stats$fpc), 5)

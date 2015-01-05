@@ -501,6 +501,12 @@ dm.getLociLength <- function(dm, group=1) {
   as.integer(ll$parameter)
 }
 
+dm.getLociLengthMatrix <- function(dm, group=1) {
+  loci_length <- dm.getLociLength(dm, group)
+  if (length(loci_length) == 1) loci_length <- c(0, 0, loci_length, 0, 0)
+  matrix(loci_length, dm.getLociNumber(dm, group), 5, byrow = TRUE)
+}
+
 #--------------------------------------------------------------------
 # dm.addMutation()
 #--------------------------------------------------------------------
