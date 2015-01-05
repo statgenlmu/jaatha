@@ -7,7 +7,8 @@ using namespace Rcpp;
 
 NumericMatrix parseSeqgenSegSites(std::ifstream &output,
                                   const int individuals,
-                                  const int locus_length) {
+                                  const int locus_length,
+                                  const int outgroup_size) {
   
   std::string tmp;
   size_t seq_nr;
@@ -32,21 +33,29 @@ NumericMatrix parseSeqgenSegSites(std::ifstream &output,
   // Determine which positions are SNPs
   std::vector<double> positions;
   int derived_count;
+  int outgroup_count;
   
   for (int j=0; j<locus_length; ++j) {
+    // ignore SNPs with a polymorphic outgroup
+    outgroup_count = 0;
+    for (int i=individuals-outgroup_size; i<individuals-1; ++i) {
+      outgroup_count += (sequence.at(i).at(j) != sequence.at(individuals-1).at(j));
+    }
+    if (outgroup_count > 0) continue;
+    
     derived_count = 0;
-    for (int i=0; i<individuals-1; ++i) {
+    for (int i=0; i<individuals-outgroup_size; ++i) {
       derived_count += (sequence.at(i).at(j) != sequence.at(individuals-1).at(j));
     }
-    if (derived_count > 0 && derived_count < (individuals - 1)) {
+    if (derived_count > 0 && derived_count < (individuals - outgroup_size)) {
       positions.push_back(j);
     }
   }
   
-  NumericMatrix seg_sites(individuals-1, positions.size());
+  NumericMatrix seg_sites(individuals-outgroup_size, positions.size());
   
   if (positions.size() > 0) {
-    for (int i=0; i<individuals-1; ++i) {
+    for (int i=0; i<individuals-outgroup_size; ++i) {
       derived_count = 0;
       for (std::vector<double>::iterator it = positions.begin(); it != positions.end(); ++it) {
         seg_sites(i, derived_count) = (sequence[i][*it] != sequence[individuals-1][*it]);
@@ -114,6 +123,7 @@ List parseSeqgenOutput(const List file_names,
                        const int sample_size,
                        const int sequence_length,
                        const int loci_number,
+                       const int outgroup_size = 1,
                        const NumericVector trio_opts = NumericVector(0)) {
 
   std::string line_l, line_m, line_r;
@@ -136,7 +146,8 @@ List parseSeqgenOutput(const List file_names,
         if (line_m.substr(0, 1) == " ") {
           ++locus;
           seg_sites[locus] = parseSeqgenSegSites(output_m, sample_size, 
-                                                 sequence_length);
+                                                 sequence_length,
+                                                 outgroup_size);
         
         } else {
           stop(std::string("Unexpected line in seq-gen output: '") + line_m + "'");
@@ -164,9 +175,12 @@ List parseSeqgenOutput(const List file_names,
           if (line_r.substr(0, 1) != " ") stop("seq-gen outputs not in sync");
           ++locus;
           
-          NumericMatrix ss_l = parseSeqgenSegSites(output_l, sample_size, trio_opts(0));
-          NumericMatrix ss_m = parseSeqgenSegSites(output_m, sample_size, trio_opts(2));
-          NumericMatrix ss_r = parseSeqgenSegSites(output_r, sample_size, trio_opts(4));
+          NumericMatrix ss_l = parseSeqgenSegSites(output_l, sample_size, 
+                                                   trio_opts(0), outgroup_size);
+          NumericMatrix ss_m = parseSeqgenSegSites(output_m, sample_size, 
+                                                   trio_opts(2), outgroup_size);
+          NumericMatrix ss_r = parseSeqgenSegSites(output_r, sample_size, 
+                                                   trio_opts(4), outgroup_size);
                                                    
           seg_sites[locus] = cbindPos(ss_l, ss_m, ss_r);
           

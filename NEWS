@@ -1,3 +1,34 @@
+jaatha 2.99.0.9006
+============
+
+* Fix a problem with 'PopGenome' data import (#31, #34).
+
+
+jaatha 2.99.0.9003
+============
+
+* Remove 'fixed' parameters, as they can be easily replaced by expressions (#35).
+
+
+jaatha 2.99.0.9002
+============
+
+* Use package 'PopGenome' to import data (#31, #34).
+
+
+jaatha 2.99.0.9001
+============
+
+* Use package `checkmate` for input validation (#33)
+
+
+jaatha 2.99.0.9000
+============
+
+* add support for using scrm (#32).
+
+
+
 jaatha 2.7.0
 ============
 

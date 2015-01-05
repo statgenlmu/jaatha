@@ -1,12 +1,16 @@
-Jaatha's README
-===============
+Jaatha
+======
 
-Jaatha is a fast parameter estimation method primarily designed for Evolutionary
-Biology. The method is described in 
+Jaatha is a frequentistic, simulation-based parameter estimation method primarily designed 
+for Evolutionary Biology. The method is described in the publications
 
-> Mathew, L. A., Staab, P. R., Rose, L. E. and Metzler, D. (2013), 
+> L. Naduvilezhath, L.E. Rose and D. Metzler:
+> Jaatha: a fast composite-likelihood approach to estimate demographic 
+> parameters. Molecular Ecology 20(13):2709-23 (2011).
+
+> L.A. Mathew, P.R. Staab, L.E. Rose and D. Metzler:
 > [Why to account for finite sites in population genetic studies and 
-> how to do this with Jaatha 2.0][1]. Ecology and Evolution.
+> how to do this with Jaatha 2.0][1]. Ecology and Evolution (2013).
 
 Practical instructions for running Jaatha are provided in the 
 [The Jaatha HowTo][2]. Instructions how to use Jaatha with a non-standard 

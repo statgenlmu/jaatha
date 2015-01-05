@@ -13,7 +13,7 @@ possible.sum.stats <- getSimProgram('ms')$possible_sum_stats
 
 callMsms <- function(jar.path, ms.args, msms.args, subgroup) {
   out.file = getTempFile("msms")
-  seed <- generateSeeds(1)
+  seed <- sampleSeed(1)
 
   # Create the command
   cmd = paste("java -jar", jar.path, as.character(msms.args), 

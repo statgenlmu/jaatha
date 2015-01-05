@@ -18,7 +18,7 @@ runSimulations <- function(pars, cores, jaatha) {
   stopifnot(ncol(pars) == getParNumber(jaatha))
   stopifnot(all( 0-1e-5 <= pars & pars <= 1 + 1e-5 ))
   colnames(pars) <- getParNames(jaatha)
-  seeds <- generateSeeds(length(pars)+1)
+  seeds <- sampleSeed(length(pars)+1)
 
   sim.data <- mclapply(1:nrow(pars), runSimulation, pars=pars, 
                        seeds=seeds, jaatha=jaatha,

@@ -145,3 +145,13 @@ test_that("Generation of PMC statistic works", {
   expect_true(is.array(sum.stats[["pmc"]]))
   expect_equal(sum(sum.stats[["pmc"]]), dm.getLociNumber(dm.f81))
 })
+
+test_that("Simulation with outgroup of multiple indiviudals works", {
+  if (!test_seqgen) skip('seq-gen not installed')
+  dm <- dm.setMutationModel(dm.tt, "HKY")
+  dm <- dm.addOutgroup(dm, separation_time = '2*tau', sample_size = 3)
+  dm <- dm.addSummaryStatistic(dm, 'seg.sites')
+  sum_stats <- dm.simSumStats(dm, c(1,5))
+  expect_equal(nrow(sum_stats$seg.sites[[1]]), 23)
+  expect_that(sum(sum_stats$jsfs), is_more_than(0))
+})

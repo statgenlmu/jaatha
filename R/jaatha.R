@@ -4,9 +4,34 @@
 # helper functions 
 # 
 # Authors:  Lisha Mathew & Paul R. Staab
-# Date:     2013-09-04
 # Licence:  GPLv3 or later
 # --------------------------------------------------------------
+
+#' Fast estimation of demographic parameters
+#' 
+#' Jaatha is a composite maximum likelihood method to estimate parameters
+#' of a speciation model of closely related biological species out of SNP
+#' data.
+#' 
+#' @author
+#' Lisha Naduvilezhath \email{lisha (at) biologie.uni-muenchen.de},
+#' Paul R. Staab \email{staab (at) biologie.uni-muenchen.de} and 
+#' Dirk Metzler \email{metzler (at) biologie.uni-muenchen.de}
+#'
+#' Maintainer: Paul R. Staab \email{staab (at) biologie.uni-muenchen.de}
+#' @name jaatha-package
+#' @docType package
+#' @keywords package
+#' @importFrom phyclust ms
+#' @importFrom scrm scrm
+#' @importFrom methods new representation 
+#' @importFrom parallel mclapply
+#' @importFrom Rcpp evalCpp
+#' @importFrom reshape2 melt
+#' @importFrom checkmate qassert qtest assertClass
+#' @useDynLib jaatha
+NULL
+
 
 #' The "Jaatha" S4 class saves the basic parameters for a Jaatha estimation
 #' procedure
@@ -62,68 +87,55 @@ setClass("Jaatha",
 )
 
 ## constructor method for Jaatha object
-init <- function(.Object, sim.func, par.ranges, 
-                  sum.stats, seed, cores, use.shm = FALSE) {
-
+init <- function(.Object, sim_func, par_ranges, sum_stats, cores = 1) {
   # Check sim.func
-  checkType(sim.func, c("fun", "s"))
-  .Object@simFunc <- sim.func
+  qassert(sim_func, "f1")
+  .Object@simFunc <- sim_func
 
   # Check par.ranges
-  checkType(par.ranges, c("mat", "num"))
-  dim(par.ranges)[2] == 2 || stop("par.ranges must have two columns")
-  colnames(par.ranges) <- c("min", "max")
-  if (is.null(rownames(par.ranges))) 
-    rownames(par.ranges) <- as.character(1:nrow(par.ranges)) 
-  .Object@par.ranges <- par.ranges
+  qassert(par_ranges, "M+")
+  dim(par_ranges)[2] == 2 || stop("par.ranges must have two columns")
+  colnames(par_ranges) <- c("min", "max")
+  if (is.null(rownames(par_ranges))) 
+    rownames(par_ranges) <- as.character(1:nrow(par_ranges)) 
+  .Object@par.ranges <- par_ranges
 
   # Check sum.stats
-  is.list(sum.stats) || stop("sum.stats needs to be a list")
-  for (i in names(sum.stats)) {
-    checkType(sum.stats[[i]]$value, c("num"))
-    checkType(sum.stats[[i]]$method, c("char", "s"))
+  is.list(sum_stats) || stop("sum.stats needs to be a list")
+  for (i in names(sum_stats)) {
+    checkType(sum_stats[[i]]$value, c("num"))
+    checkType(sum_stats[[i]]$method, c("char", "s"))
 
-    if (sum.stats[[i]]$method == "poisson.independent") {
-      sum.stats[[i]]$transformation <- as.vector 
-      sum.stats[[i]]$value.transformed <- as.vector(sum.stats[[i]]$value)
+    if (sum_stats[[i]]$method == "poisson.independent") {
+      sum_stats[[i]]$transformation <- as.vector 
+      sum_stats[[i]]$value.transformed <- as.vector(sum_stats[[i]]$value)
     }
-    else if (sum.stats[[i]]$method == "poisson.transformed") {
-      checkType(sum.stats[[i]]$transformation, c("fun", "s"))
-      sum.stats[[i]]$value.transformed <- sum.stats[[i]]$transformation(sum.stats[[i]]$value)
+    else if (sum_stats[[i]]$method == "poisson.transformed") {
+      checkType(sum_stats[[i]]$transformation, c("fun", "s"))
+      sum_stats[[i]]$value.transformed <- sum_stats[[i]]$transformation(sum_stats[[i]]$value)
     }
-    else if (sum.stats[[i]]$method == "poisson.smoothing") {
-      checkType(sum.stats[[i]]$model, c("char", "s"))      
-      if (!is.null(sum.stats[[i]]$border.transformation)) {
-        stopifnot(!is.null(sum.stats[[i]]$border.mask))
-        sum.stats[[i]]$border.transformed <- 
-          sum.stats[[i]]$border.transformation(sum.stats[[i]]$value)
+    else if (sum_stats[[i]]$method == "poisson.smoothing") {
+      checkType(sum_stats[[i]]$model, c("char", "s"))      
+      if (!is.null(sum_stats[[i]]$border.transformation)) {
+        stopifnot(!is.null(sum_stats[[i]]$border.mask))
+        sum_stats[[i]]$border.transformed <- 
+          sum_stats[[i]]$border.transformation(sum_stats[[i]]$value)
       }
     }
     else {
-      stop("Unknown summary statistic type: ", sum.stats[[i]]$method)
+      stop("Unknown summary statistic type: ", sum_stats[[i]]$method)
     }
   }
-  .Object@sum.stats <- sum.stats
+  .Object@sum.stats <- sum_stats
 
-  # Check seed
+  # Sample seeds
   # Jaatha uses three seeds. The first is the "main seed" used to generate the
   # other two seeds if provided, the second is the seed for the initial search
   # and the refined search.
-  if (missing(seed) || length(seed) == 0) seed <- generateSeeds(3)
-  else if (length(seed) == 1) {
-    checkType(seed, "num")
-    set.seed(seed)
-    seed[2:3] <- generateSeeds(2)
-  }
-  else stop("Malformated argument: seed")
-  .Object@seeds <- seed
-
-  # Check use.shm
-  checkType(use.shm, c("bool", "s"))
-  .Object@use.shm <- use.shm
+  .Object@seeds <- sampleSeed(3)
 
   # Check cores 
-  if (missing(cores)) cores <- 1
+  qassert(cores, "R1")
   .Object <- setCores(.Object, cores)
 
   # Placeholders
@@ -144,60 +156,49 @@ rm(init)
 #' This function sets the basic parameters for an analysis with
 #' Jaatha and is the first step for each application of it.
 #'
-#' @param demographic.model The demographic model to use
-#' @param jsfs Your observed Joint Site Frequency Spectrum (JSFS). Jaatha uses
-#'        the JSFS as summary statistics.   
+#' @param model The demographic model to use
+#' @param data  The observed data. Jaatha can use data imported with package 
+#'              \pkg{PopGenome}. Please refer the to the vignette 
+#'              "The Jaatha HowTo" for more information.
 #' @param folded If 'TRUE', Jaatha will assume that the JSFS is folded.
-#' @param seed An integer used as seed for both Jaatha and the simulation software
 #' @param cores The number of cores to use in parallel. If 0, it tries to
 #'              guess the number of available cores and use them all.
 #' @param scaling.factor You can use this option if you have a large dataset. If
 #'              so, Jaatha only simulates only a fraction 1/scaling.factor of the
 #'              dataset and interpolates the missing data.
-#' @param use.shm Logical. Many modern linux distributions have a shared memory
-#'              file system available under /dev/shm. Set this to TRUE to use it for
-#'              temporary files. Usually gives a huge performance boost.
-#'              Warning: This option will be removed in a future version of
-#'              jaatha. The cleaner way to achieve this is to move your complete
-#'              R-temp directory to the memory drive. This is explained on 
-#'              http://www.paulstaab.de/2013/11/r-shm .
 #' @param smoothing If set to true, Jaatha uses a different way to summaries the
 #'              JSFS. Instead of binning certain areas, and fitting a glm per
 #'              area, only one glm is fitted for the complete JSFS, and the
 #'              position of the different entries is treated as a model
 #'              parameter. This feature is still experimental and not
 #'              recommended for productive use at the moment.  
+#' @param only_synonymous Only use synonymous SNP if set to \code{TRUE}. Requires
+#'              to provided \code{data} as a PopGenome "GENOME" object.
 #' @return A S4-Object of type jaatha containing the settings
-#' @examples
-#' dm <- dm.createThetaTauModel(c(20,25), 100) 
-#' jsfs <- matrix(rpois(21*26, 5), 21, 26)
-#' jaatha <- Jaatha.initialize(dm, jsfs) 
-#' 
 #' @export
-Jaatha.initialize <- function(demographic.model, jsfs,
-                              seed, cores=1, scaling.factor=1,
-                              use.shm=FALSE, folded=FALSE, 
-                              smoothing=FALSE) {
+Jaatha.initialize <- function(data, model, cores=1, scaling.factor=1,
+                              folded=FALSE, smoothing=FALSE, 
+                              only_synonymous=FALSE) {
   
-  checkType(demographic.model, c("dm", "s"))
+  checkType(model, c("dm", "s"))
   checkType(folded, c("bool", "single"))
   checkType(smoothing, c("bool", "single"))
   checkType(scaling.factor, c("num","single"))
   if (smoothing && folded) 
     stop("You can't use smoothing together with a folded JSFS")
   
-  if (missing(seed)) seed <- numeric()
-  
-  if (use.shm) warning("'use.shm' will be removed in a future version of Jaatha.
-                       Manually move your complete R-tmp to your memory disk
-                       instead. See http://www.paulstaab.de/2013/11/r-shm")
-  
-  dm <- demographic.model
+  dm <- model
   if (!'jsfs' %in% dm.getSummaryStatistics(dm)) {
     warning("JSFS is not a summary statistic of the model. Adding it.")
     dm <- dm.addSummaryStatistic(dm, 'jsfs')
   }
   
+  # Convert the data into a list containing the seg.sites of the different groups
+  if ('GENOME' %in% is(data)) {
+    checkModelDataConsistency(data, dm)
+    data <- convPopGenomeToSegSites(data, only_synonymous)
+  }
+  if (!is.list(data)) stop('`data` has an unexpected format.')
   
   # ------------------------------------------------------------
   # Create Summary Statistics for each group
@@ -214,12 +215,9 @@ Jaatha.initialize <- function(demographic.model, jsfs,
       grp_name_ext <- paste0('.', group)
     }
     
-    if (is.list(jsfs)) { 
-      jsfs.value <- jsfs[[paste0('jsfs', grp_name_ext)]]
-      seg.sites <- jsfs[[paste0('seg.sites', grp_name_ext)]]
-    } else {
-      jsfs.value <- jsfs
-    }
+    seg.sites <- data[[paste0('seg.sites', grp_name_ext)]]
+    if (is.null(seg.sites)) stop('No seg.sites in `data` for group ', group)
+    jsfs.value <- calcJsfs(seg.sites, dm.getSampleSize(dm, group))
 
     # ------------------------------------------------------------
     # JSFS Summary Statistic
@@ -257,11 +255,7 @@ Jaatha.initialize <- function(demographic.model, jsfs,
     # ------------------------------------------------------------
     # FPC Summary Statistic
     # ------------------------------------------------------------
-    if ('fpc' %in% dm.getSummaryStatistics(dm, group)) {
-      if (is.null(seg.sites)) {
-        stop("You need to provide 'seg.sites' to use the 'fpc' sum.stat")
-      }
-      
+    if ('fpc' %in% dm.getSummaryStatistics(dm, group)) {      
       dm <- calcFpcBreaks(dm, seg.sites, group = group)
       sum.stats[[paste0('fpc', grp_name_ext)]] <- 
         list(method='poisson.transformed', transformation=as.vector,
@@ -272,10 +266,6 @@ Jaatha.initialize <- function(demographic.model, jsfs,
     # PMC Summary Statistic
     # ------------------------------------------------------------
     if ('pmc' %in% dm.getSummaryStatistics(dm, group)) {
-      if (is.null(seg.sites)) {
-        stop("You need to provide 'seg.sites' to use the 'pmc' sum.stat")
-      }
-        
       dm <- calcPmcBreaks(dm, seg.sites, group = group)
       sum.stats[[paste0('pmc', grp_name_ext)]] <- 
         list(method='poisson.transformed', transformation=as.vector,
@@ -288,14 +278,12 @@ Jaatha.initialize <- function(demographic.model, jsfs,
   # Create the Jaatha object
   # ------------------------------------------------------------
   jaatha <- new("Jaatha", 
-                sim.func=function(sim.pars, jaatha) {
+                sim_func=function(sim.pars, jaatha) {
                   dm.simSumStats(jaatha@opts[['dm']], sim.pars)
                 },
-                par.ranges=as.matrix(dm.getParRanges(dm)),  
-                sum.stats=sum.stats,
-                seed=seed,
-                cores=cores,
-                use.shm=use.shm)
+                par_ranges=as.matrix(dm.getParRanges(dm)),  
+                sum_stats=sum.stats,
+                cores=cores)
 
   if (scaling.factor != 1) {
     dm <- scaleDemographicModel(dm, scaling.factor)
