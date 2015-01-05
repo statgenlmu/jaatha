@@ -1,3 +1,12 @@
+jaatha 2.99.0.9009
+============
+
+* Calculate more FPC statistics
+
+* Change the calculation of the FPC for the middle locus. Dimensions are now
+  percent near, percent far and fraction of polymorphic sites.
+
+
 jaatha 2.99.0.9008
 ============
 

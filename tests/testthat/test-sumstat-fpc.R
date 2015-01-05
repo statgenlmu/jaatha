@@ -1,6 +1,6 @@
 context("FGC Summary Statistic")
 
-test_that("test.calcFpcBreaks", {
+test_that("Fpc Breaks calculation works", {
     dm = calcFpcBreaks(dm.fpc, seg.sites)
     expect_false(is.null(dm@options[["fpc.breaks.near"]]))
     expect_false(is.null(dm@options[["fpc.breaks.far"]]))
@@ -21,7 +21,6 @@ test_that("test.calcFpcBreaks", {
     
     dm.lt <- dm.useLociTrios(dm.fpc, c(200, 100, 400, 100, 200), group = 2)
     dm = calcFpcBreaks(dm.lt, seg.sites)
-    expect_true(is.null(dm@options[["fpc.breaks.between"]]))
     dm = calcFpcBreaks(dm.lt, seg.sites, group = 2)
     expect_false(is.null(dm@options[['group.2']][["fpc.breaks.between"]]))
 })
@@ -37,15 +36,16 @@ test_that("generateFpcStat works", {
   dm <- dm.createDemographicModel(c(3,3), 1)
   dm@options[["fpc.breaks.near"]] <- .5
   dm@options[["fpc.breaks.far"]] <- .5
+  dm@options[["fpc.breaks.between"]] <- .5
     
   fpc <- generateFpcStat(seg.sites, dm)
   expect_equal(sum(abs(fpc)), 1)
-  expect_equal(fpc[2, 2], 1)  
+  expect_equal(fpc[2, 2, 1], 1)  
   
   dm@options[["fpc.breaks.far"]] <- .9
   fpc <- generateFpcStat(seg.sites, dm)
   expect_equal(sum(abs(fpc)), 1)
-  expect_equal(fpc[2, 1], 1) 
+  expect_equal(fpc[2, 1, 1], 1) 
   
   dm@options[["fpc.breaks.far"]] <- c(.25, .85)
   seg.sites[[2]] <- matrix(c(1, 1, 0, 0, 0, 
@@ -55,80 +55,104 @@ test_that("generateFpcStat works", {
                              0, 0, 0, 0, 1, 
                              1, 0, 0, 0, 0), 6, byrow=TRUE)
   attr(seg.sites[[2]], "positions") <- c(0.1, 0.3, 0.5, 0.7, 0.9)
+  dm <- dm.setLociNumber(dm, 2)
   fpc <- generateFpcStat(seg.sites, dm)
   expect_equal(sum(abs(fpc)), 2)
-  expect_equal(fpc[2, 2], 1)
-  expect_equal(fpc[3, 2], 1)
+  expect_equal(fpc[2, 2, 1], 2)
 
   attr(seg.sites[[2]], "positions") <- c(0.1, 0.11, 0.12, 0.13, 0.14)
   fpc <- generateFpcStat(seg.sites, dm)
   expect_equal(sum(abs(fpc)), 2)
-  expect_equal(fpc[2, 2], 1)
-  expect_equal(fpc[2, 4], 1)
+  expect_equal(fpc[2, 2, 1], 1)
+  expect_equal(fpc[2, 3, 1], 1)
   
   seg.sites[[3]] <- matrix(0, 6, 0)
   attr(seg.sites[[3]], "positions") <- numeric()
+  dm <- dm.setLociNumber(dm, 3)  
   fpc <- generateFpcStat(seg.sites, dm)
   expect_equal(sum(abs(fpc)), 3)
-  expect_equal(fpc[3, 4], 1)
-  
-  seg.sites[[4]] <- seg.sites[[1]]
-  fpc <- generateFpcStat(seg.sites, dm)
-  expect_equal(sum(abs(fpc)), 4)
-  expect_equal(fpc[2, 2], 2)
-  
-  seg.sites <- list(matrix(c(1, 1, 0, 0, 0, 
-                             1, 0, 1, 0, 1, 
-                             1, 1, 1, 1, 0, 
-                             0, 1, 1, 0, 1, 
-                             0, 0, 0, 0, 1, 
-                             1, 0, 0, 0, 0), 6, byrow=TRUE))
-  attr(seg.sites[[1]], "positions") <- c(0.04, 0.09, 0.41, 0.44, 0.57)
-  
-  dm@options[["fpc.breaks.near"]] <- c(.5)
-  dm@options[["fpc.breaks.far"]] <- c(.5)
-  dm@options[["fpc.breaks.between"]] <- c(.5)
-  
-  dm <- dm.useLociTrios(dm, c(200, 100, 400, 100, 200))
-  fpc <- generateFpcStat(seg.sites, dm)
-  expect_equal(sum(abs(fpc)), 1)
-  expect_equal(dim(fpc), c(3,3,3))
 })
 
 test_that("calcPercentFpcViolation works", {
-  snp.matrix <- matrix(c(1, 1, 0, 0, 0, 
-                         1, 0, 1, 0, 1, 
-                         1, 1, 1, 1, 0, 
-                         0, 1, 1, 0, 1, 
-                         0, 0, 0, 0, 1), 5)
+  seg_sites <- list(matrix(c(1, 1, 0, 0, 0, 
+                             1, 0, 1, 0, 1, 
+                             1, 1, 1, 1, 0, 
+                             0, 1, 1, 0, 1, 
+                             0, 0, 0, 0, 1), 5))
   
-  attr(snp.matrix, 'positions') <- c(0.1, 0.12, 0.5, 0.51, 0.61)
-  expect_equal(calcPercentFpcViolation(snp.matrix), c(0.5, 0.5))
+  attr(seg_sites[[1]], 'positions') <- c(0.1, 0.12, 0.5, 0.51, 0.61)
+  locus_length <- matrix(c(0, 0, 100, 0, 0), 1, 5)
+  fpc_violations <- calcPercentFpcViolation(seg_sites, locus_length)  
+  expect_equal(fpc_violations[1, ], c(mid_near=0.5, mid_far=0.5, outer=NaN, 
+                                      between=NaN, mid=0.5, perc_polym=0.05))
   
-  attr(snp.matrix, 'positions')[4:5] <- c(0.7, 0.75)
-  expect_equal(calcPercentFpcViolation(snp.matrix), c(1, 0.4))
+  seg_sites[[2]] <- seg_sites[[1]]
+  locus_length <- rbind(locus_length, matrix(c(0, 0, 50, 0, 0), 1, 5))
+  fpc_violations <- calcPercentFpcViolation(seg_sites, locus_length)
+  expect_equal(fpc_violations[1, ], c(mid_near=0.5, mid_far=0.5, outer=NaN, 
+                                      between=NaN, mid=0.5, perc_polym=0.05))
+  expect_equal(fpc_violations[2, ], c(mid_near=0.5, mid_far=0.5, outer=NaN, 
+                                      between=NaN, mid=0.5, perc_polym=0.10))
   
-  attr(snp.matrix, 'positions') <- 1:5/5
-  expect_equal(calcPercentFpcViolation(snp.matrix), c(NA, 0.5))
+  attr(seg_sites[[2]], 'positions')[4:5] <- c(0.7, 0.75)
+  fpc_violations <- calcPercentFpcViolation(seg_sites, locus_length)  
+  expect_equal(fpc_violations[2, ], c(mid_near=1, mid_far=0.4, outer=NaN, 
+                                      between=NaN, mid=0.5, perc_polym=0.10))
   
-  snp.matrix[1, ] <- 1
-  snp.matrix[-1, ] <- 0
-  expect_true(all(is.na(calcPercentFpcViolation(snp.matrix))))
+  attr(seg_sites[[1]], 'positions') <- 1:5/5
+  fpc_violations <- calcPercentFpcViolation(seg_sites, locus_length) 
+  expect_equal(fpc_violations[1, ], c(mid_near=NaN, mid_far=0.5, outer=NaN, 
+                                      between=NaN, mid=0.5, perc_polym=0.05))
   
-  snp.matrix <- matrix(0, 5, 0)
-  attr(snp.matrix, 'positions') <- numeric(0)
-  expect_true(all(is.na(calcPercentFpcViolation(snp.matrix))))
+  seg_sites[[2]][1, ] <- 1
+  seg_sites[[2]][-1, ] <- 0
+  fpc_violations <- calcPercentFpcViolation(seg_sites, locus_length)
+  expect_equal(fpc_violations[2, ], c(mid_near=NA, mid_far=NA, outer=NA, 
+                                      between=NA, mid=NA, perc_polym=0.10))
+
   
+  seg_sites[[3]] <- matrix(0, 5, 0)
+  attr(seg_sites[[3]], 'positions') <- numeric(0)
+  locus_length <- rbind(locus_length, c(0, 0, 50, 0, 0))
+  fpc_violations <- calcPercentFpcViolation(seg_sites, locus_length) 
+  expect_equal(fpc_violations[3, ], c(mid_near=NaN, mid_far=NaN, outer=NaN, 
+                                      between=NaN, mid=NaN, perc_polym=0))
+  
+
   # With locus-trios
-  snp.matrix <- matrix(c(1, 1, 0, 0, 0, 
-                         1, 0, 1, 0, 1, 
-                         1, 1, 1, 1, 0, 
-                         0, 1, 1, 0, 1, 
-                         0, 0, 0, 0, 1), 5)
-  attr(snp.matrix, 'positions') <- c(0.05, 0.09, 0.41, 0.50, 0.58)  
-  expect_equal(calcPercentFpcViolation(t(snp.matrix),
-                                       c(0.1, 0.2, 0.4, 0.2, 0.1)),
-               c(1, 1, 0.5))
+  seg_sites[[4]] <- matrix(c(1, 1, 0, 0, 0, 
+                             1, 0, 1, 0, 1, 
+                             1, 1, 1, 1, 0, 
+                             0, 1, 1, 0, 1, 
+                             0, 0, 0, 0, 1), 5)
+  attr(seg_sites[[4]], 'positions') <- c(0.15, 0.55, 0.05, 0.08, 0.30)
+  attr(seg_sites[[4]], 'locus') <- c(-1, -1, 0, 0, 0)
+  locus_length <- rbind(locus_length, c(10, 5, 6, 5, 10))
+  
+  fpc_violations <- calcPercentFpcViolation(seg_sites, locus_length) 
+  expect_equal(fpc_violations[4, ], c(mid_near=0, mid_far=NaN, outer=1, 
+                                      between=0.5, mid=0, perc_polym=0.5))
+  
+  attr(seg_sites[[4]], 'locus') <- c(0, 0, 1, 1, 1)
+  fpc_violations <- calcPercentFpcViolation(seg_sites, locus_length) 
+  expect_equal(fpc_violations[4, ], c(mid_near=NaN, mid_far=1, outer=0, 
+                                      between=0.5, mid=1, perc_polym=1/3))
+  
+  attr(seg_sites[[4]], 'locus') <- c(-1, -1, 0, 0, 1)
+  fpc_violations <- calcPercentFpcViolation(seg_sites, locus_length) 
+  expect_equal(fpc_violations[4, ], c(mid_near=0, mid_far=NaN, outer=1, 
+                                      between=0.5, mid=0, perc_polym=1/3))
+  
+  attr(seg_sites[[4]], 'locus') <- c(-1, -1, 0, 1, 1)
+  fpc_violations <- calcPercentFpcViolation(seg_sites, locus_length) 
+  expect_equal(fpc_violations[4, ], c(mid_near=NaN, mid_far=NaN, outer=1, 
+                                      between=0, mid=NaN, perc_polym=1/6)) 
+  
+  
+  attr(seg_sites[[4]], 'locus') <- c(-1, -1, -1, 1, 1)
+  fpc_violations <- calcPercentFpcViolation(seg_sites, locus_length) 
+  expect_equal(fpc_violations[4, ], c(mid_near=NaN, mid_far=NaN, outer=1/3, 
+                                      between=NaN, mid=NaN, perc_polym=0)) 
 })
 
 test_that("countClasses works", {
