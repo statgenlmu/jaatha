@@ -1,5 +1,5 @@
-Jaatha's README
-===============
+Jaatha
+======
 
 Jaatha is a frequentistic, simulation-based parameter estimation method primarily designed 
 for Evolutionary Biology. The method is described in the publications
