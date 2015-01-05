@@ -82,7 +82,8 @@ setClass("Jaatha",
       starting.positions = "list",
       likelihood.table = "matrix",
       conf.ints = "matrix",
-      route = "list"
+      route = "list",
+      scaling.factor = "numeric"
     ),
 )
 
@@ -144,6 +145,8 @@ init <- function(.Object, sim_func, par_ranges, sum_stats, cores = 1) {
   .Object@conf.ints <- matrix()
   .Object@likelihood.table <- matrix()
   .Object@starting.positions <- list()
+  
+  .Object@scaling.factor <- 1
 
   return (.Object)
 }
@@ -287,7 +290,7 @@ Jaatha.initialize <- function(data, model, cores=1, scaling.factor=1,
 
   if (scaling.factor != 1) {
     dm <- scaleDemographicModel(dm, scaling.factor)
-    jaatha@opts[['scaling.factor']] <- scaling.factor
+    jaatha@scaling.factor <- scaling.factor
   }
 
   jaatha@opts[['dm']] <- dm.finalize(dm)
@@ -431,3 +434,7 @@ printBestPar <- function(jaatha, block) {
 
 getParNumber <- function(jaatha) nrow(jaatha@par.ranges) 
 getParNames <- function(jaatha) rownames(jaatha@par.ranges) 
+
+getScalingFactor <- function(jaatha) {
+  jaatha@scaling.factor
+}

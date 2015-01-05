@@ -43,7 +43,7 @@ test_that("initialization works", {
   
   # scaling
   jaatha <- Jaatha.initialize(sum.stats.tt, dm.tt, scaling.factor = 17)
-  expect_equal(jaatha@opts[["scaling.factor"]], 17)
+  expect_equal(jaatha@scaling.factor, 17)
     
   # folded
   jaatha <- Jaatha.initialize(sum.stats.tt, dm.tt, folded = TRUE)

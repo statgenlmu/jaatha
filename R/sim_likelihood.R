@@ -26,6 +26,8 @@ simLikelihood <- function(jaatha, sim, pars) {
       simSS <- apply(values, 2, mean)
 
       simSS[simSS==0] <- 0.5
+      if (getScalingFactor(jaatha) != 1) simSS <- simSS * getScalingFactor(jaatha)
+      
       sum.stat.value <- sum.stats[[sum.stat]]$value.transformed
       log.cl <- log.cl + 
         sum(sum.stat.value * log(simSS) - simSS - calcLogFactorial(sum.stat.value)) 
