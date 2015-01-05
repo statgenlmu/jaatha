@@ -10,9 +10,11 @@
 #'              names are the name of the parameters.
 #' @param glm.fitted A list of the fitted GLMs, as produced by fitGLM().
 #' @param sum.stats The summary statistic description, as in jaatha's sum.stats
+#' @param scaling_factor The scaling factor used for the simulations
 #' slot.
 #' @return The estimated log-likelihood
-estimateLogLikelihood <- function(param, glm.fitted, sum.stats) {
+estimateLogLikelihood <- function(param, glm.fitted, sum.stats, 
+                                  scaling_factor = 1) {
   log.likelihood <- 0
 
   log.likelihood <- sum(sapply(seq(along=sum.stats), function(i) {
@@ -23,6 +25,9 @@ estimateLogLikelihood <- function(param, glm.fitted, sum.stats) {
       #if glm did not converge, take sum(SS[s]) or a small number like 0.5 
       loglambda[!sapply(glm.fitted[[name]], function(x) x$converged)] <- 0.5 
 
+      # Upscale predicted expectation value if we use scaling
+      if (scaling_factor != 1) loglambda <- loglambda + log(scaling_factor)
+      
       sum.stat.value <- sum.stats[[name]]$value.transformed
       return(sum(sum.stat.value * loglambda - exp(loglambda) - calcLogFactorial(sum.stat.value))) 
     }
@@ -40,6 +45,9 @@ estimateLogLikelihood <- function(param, glm.fitted, sum.stats) {
                             predict, newdata=data.frame(t(as.matrix(param))))
         loglambda[!sapply(glm.fitted[[name]]$border, function(x) x$converged)] <- 0.5 
 
+        # Upscale predicted expectation value if we use scaling
+        if (scaling_factor != 1) loglambda <- loglambda + log(scaling_factor)
+        
         sum.stat.value <- sum.stats[[name]]$border.transformed
         log.li <- log.li + sum(sum.stat.value * loglambda - 
                                exp(loglambda) - calcLogFactorial(sum.stat.value))

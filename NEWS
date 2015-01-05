@@ -1,3 +1,9 @@
+jaatha 2.99.0.9008
+============
+
+* Bugfix: Correct the scaling when `scaling.factor` was used (#37).
+
+
 jaatha 2.99.0.9006
 ============
 

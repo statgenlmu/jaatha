@@ -36,10 +36,18 @@ runSimulations <- function(pars, cores, jaatha) {
 }
 
 runSimulation <- function(i, pars, seeds, jaatha) {
-  set.seed(seeds[i]) 
+  # Set the seed & prepare parameters
+  set.seed(seeds[i])
   sim.pars <- denormalize(pars[i, ], jaatha)
+  
+  # Simulate
   sim.results <- jaatha@simFunc(sim.pars, jaatha)
+  
+  # Add the parameter values
   sim.results$pars <- sim.pars
   sim.results$pars.normal <- pars[i, ]
+  
   sim.results
 }
+
+

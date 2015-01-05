@@ -4,7 +4,7 @@
 \title{Functions that uses the fitted GLMs to estimate the parameters that have the
 highest likelihood.}
 \usage{
-findBestParInBlock(block, glm.fitted, sum.stats)
+findBestParInBlock(block, glm.fitted, sum.stats, scaling_factor = 1)
 }
 \arguments{
 \item{block}{The block we are in.}
@@ -12,6 +12,8 @@ findBestParInBlock(block, glm.fitted, sum.stats)
 \item{glm.fitted}{The fitted GlMs.}
 
 \item{sum.stats}{The observed summary statistics}
+
+\item{scaling_factor}{The scaling factor used for the simulations}
 }
 \value{
 A list with maximum likelihood parameter (est) and log-likelihood
