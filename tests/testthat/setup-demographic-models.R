@@ -12,9 +12,8 @@ jaatha.mig    <- Jaatha.initialize(sum.stats.mig, dm.mig, cores = 2)
 
 # Groups
 dm.grp <- dm.tt
-dm.grp <- dm.setLociLength(dm.grp, 100, 1) 
-dm.grp <- dm.setLociNumber(dm.grp, 15, 1) 
-dm.grp <- dm.setLociLength(dm.grp, 200, 2) 
+dm.grp <- dm.addLocus(dm.grp, 100, 15, 1)
+dm.grp <- dm.addLocus(dm.grp, 200, 10, 2)
 dm.grp <- dm.addSampleSize(dm.grp, 5:6, 3)
 sum.stats.grp <- dm.simSumStats(dm.addSummaryStatistic(dm.grp, 'seg.sites'), 
                                                        c(1, 3))
