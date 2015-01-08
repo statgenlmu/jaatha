@@ -36,17 +36,17 @@ test_that("test.finalizeSeqgen", {
   dm.f81 <- finalizeSeqgen(dm.f81)
   dm.gtr <- finalizeSeqgen(dm.gtr)
   expect_false(is.null(dm.hky@options[["seqgen.cmd"]]))
-  expect_false(is.null(dm.hky@options[["tree.model"]]))
+  #expect_false(is.null(dm.hky@options[["tree.model"]]))
   expect_false(is.null(dm.f81@options[["seqgen.cmd"]]))
-  expect_false(is.null(dm.f81@options[["tree.model"]]))
+  #expect_false(is.null(dm.f81@options[["tree.model"]]))
   expect_false(is.null(dm.gtr@options[["seqgen.cmd"]]))
-  expect_false(is.null(dm.gtr@options[["tree.model"]]))
+  #expect_false(is.null(dm.gtr@options[["tree.model"]]))
 })
 
 test_that("test.generateSeqgenOptions", {
   if (!test_seqgen) skip('seq-gen not installed')
   dm.hky@options$seqgen.cmd <- NULL
-  opts <- generateSeqgenOptions(dm.hky, c(1, 10), 1)
+  opts <- generateSeqgenOptions(dm.hky, c(1, 10), 1, c(0, 0, 10, 0, 0))
   opts <- strsplit(opts, " ")[[1]]
   expect_true("-l" %in% opts)
   expect_true("-p" %in% opts)
@@ -61,7 +61,7 @@ test_that("test.generateSeqgenOptions", {
 test_that("test.generateTreeModel", {
   if (!test_seqgen) skip('seq-gen not installed')
   for (dm in c(dm.hky, dm.f81, dm.gtr)) {
-    dm.ms <- dm.finalize(generateTreeModel(dm))
+    dm.ms <- dm.finalize(generateTreeModel(dm, dm.getLociLengthMatrix(dm)[1,]))
     sum.stats <- dm.simSumStats(dm.ms, c(1, 5))
     expect_false(is.null(sum.stats$file))
     expect_true(file.exists(sum.stats$file[[1]]))
@@ -102,7 +102,7 @@ test_that("test.seqgenWithMsms", {
                                       at.time = "0.1")
   dm.selsq <- dm.finalize(dm.selsq)
   expect_false(is.null(dm.selsq@options[["seqgen.cmd"]]))
-  expect_false(is.null(dm.selsq@options[["tree.model"]]))
+  #expect_false(is.null(dm.selsq@options[["tree.model"]]))
   set.seed(4444)
   sum.stats <- dm.simSumStats(dm.selsq, c(1, 5, 250))
   expect_false(is.null(sum.stats$jsfs))
@@ -125,8 +125,12 @@ test_that("test.simulateFpcWithSeqgen", {
 
 test_that("seq-gen can simulate trios", {
   if (!test_seqgen) skip('seq-gen not installed')
-  dm.lt <- dm.useLociTrios(dm.setLociLength(dm.f81, 50), c(10, 5, 20, 5, 10))
+  dm.lt <- dm.addLocusTrio(dm.f81, locus_length = c(10, 20, 10), 
+                           distance = c(5, 5), group = 1)
+  dm.lt <- dm.addLocusTrio(dm.lt, locus_length = c(20, 10, 15), 
+                           distance = c(7, 5), group = 1)
   dm.lt <- dm.addSummaryStatistic(dm.lt, 'seg.sites')
+  dm.lt <- dm.finalize(dm.lt)
   
   sum.stats <- dm.simSumStats(dm.lt, c(1, 10))
   expect_that(sum(sum.stats$jsfs), is_less_than(sum(sapply(sum.stats$seg.sites, ncol))))

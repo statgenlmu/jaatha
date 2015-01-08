@@ -16,8 +16,7 @@ sg.features <- unique(c(getSimProgram('ms')$possible_features,
                         'gtr.rate.1', 'gtr.rate.2', 'gtr.rate.3',
                         'gtr.rate.4','gtr.rate.5','gtr.rate.6',
                         'gamma.categories', 'gamma.rate',
-                        'trio.1', 'trio.2', 'trio.3', 
-                        'trio.4', 'trio.5', 'outgroup'))
+                        'locus_trios', 'outgroup'))
 
 sg.sum.stats <- c('jsfs', 'file', 'seg.sites', 'fpc', 'pmc')
 sg.mutation.models <- c('HKY', 'F84', 'GTR')
@@ -48,7 +47,7 @@ checkForSeqgen <- function(throw.error = TRUE, silent = FALSE) {
   return(FALSE)
 }
 
-generateTreeModel <- function(dm) {
+generateTreeModel <- function(dm, locus_length) {
   stopifnot(all(dm.getGroups(dm) == 1))
   if (any(msms.features %in% dm@features$type)) {
     tree.prog <- getSimProgram('msms')
@@ -60,8 +59,9 @@ generateTreeModel <- function(dm) {
   dm@sum.stats <- data.frame(name=c(), group=c())
   dm <- dm.addSummaryStatistic(dm, "trees")
   dm <- dm.addSummaryStatistic(dm, "file")
-  dm <- dm.setLociNumber(dm, 1)
-  dm
+  
+  dm@loci <- dm@loci[FALSE, ]
+  addLocus(dm, number = 1, length_m = sum(locus_length), group = 0)
 }
 
 
@@ -103,22 +103,18 @@ callSeqgen <- function(opts, ms_files) {
   })
 }
 
-generateSeqgenOptions <- function(dm, parameters, locus, trio_opt = NA) {
+generateSeqgenOptions <- function(dm, parameters, locus, locus_lengths) {
   # Generate the command template to execute or use the buffered one
   if ( !is.null( dm@options[['seqgen.cmd']] ) ) {
     cmd <- dm@options[['seqgen.cmd']]
   } else {
     cmd <- generateSeqgenOptionsCmd(dm)
   }
-
-  # Get the length of the loci we simulate
-  if (any(is.na(trio_opt)) | length(trio_opt) == 0) {
-    locus_lengths <- dm.getLociLength(dm)
-  } else if (length(trio_opt) == 5) {
-    locus_lengths <- trio_opt[c(1,3,5)]
+  
+  if (locus_lengths[1] == 0 & locus_lengths[5] == 0) {
+    locus_lengths <- locus_lengths[3]
   } else {
-    print(trio_opt)
-    stop('failed to parse trio options')
+    locus_lengths <- locus_lengths[c(1,3,5)]
   }
   
   # Fill the parameters in the template
@@ -223,21 +219,19 @@ seqgenSingleSimFunc <- function(dm, parameters) {
   checkForSeqgen()
   if (length(parameters) != dm.getNPar(dm)) 
     stop("Wrong number of parameters!")
-
-  # Use ms to simulate the ARG
-  tree.model <- dm@options[['tree.model']]
-  if (is.null(tree.model)) tree.model <- generateTreeModel(dm)
+  
+  locus_length <- dm.getLociLengthMatrix(dm)
   
   seqgen.files <- lapply(1:dm.getLociNumber(dm), function(locus) {
     # Generate options for seqgen
-    seqgen.options <- generateSeqgenOptions(dm, parameters, locus,
-                                            dm.getLociTrioOptions(dm))
+    tree.model <- generateTreeModel(dm, locus_length[locus,])
+    seqgen.options <- generateSeqgenOptions(dm, parameters, locus, locus_length[locus,])
     
     # Simulate the trees
     sum_stats_ms <- dm.simSumStats(tree.model, parameters)
     #print(sum_stats_ms[['file']])
     tree_files <- parseTrees(sum_stats_ms[['file']][[1]],
-                             dm.getLociTrioOptions(dm),
+                             locus_length[locus,],
                              getTempFile)
     #print(tree_files)
     
@@ -255,9 +249,8 @@ seqgenSingleSimFunc <- function(dm, parameters) {
 
 finalizeSeqgen <- function(dm) {
   checkForSeqgen()
-  dm@options[['tree.model']] <- dm.finalize(generateTreeModel(dm))
+  #dm@options[['tree.model']] <- dm.finalize(generateTreeModel(dm))
   dm@options[['seqgen.cmd']] <- generateSeqgenOptionsCmd(dm)
-  stopifnot(!is.null(dm@options[['tree.model']]))
   return(dm)
 }
 

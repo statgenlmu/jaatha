@@ -31,7 +31,7 @@ s2        CTTGACGGTA
 s3        GCAGACGGTA
 s4        GCTGATAATA", file = seqgen_file)
   
-  seg_sites <- parseSeqgenOutput(list(seqgen_file), 11, 10, 2)
+  seg_sites <- parseSeqgenOutput(list(seqgen_file), 11, dm.getLociLengthMatrix(dm_tmp), 2)
   expect_is(seg_sites, 'list')
   expect_equal(length(seg_sites), 2)
     
@@ -64,7 +64,7 @@ s4        GCTGATAATA", file = seqgen_file)
   expect_equal(seg_sites[[2]], seg_sites_2)
   
   # With outgroup of multiple individuals
-  seg_sites <- parseSeqgenOutput(list(seqgen_file), 11, 10, 2, outgroup_size = 3)
+  seg_sites <- parseSeqgenOutput(list(seqgen_file), 11, dm.getLociLengthMatrix(dm_tmp), 2, outgroup_size = 3)
   seg_sites_o1 <- seg_sites_1[1:8, 4, drop=FALSE]
   attr(seg_sites_o1, 'positions') <- attr(seg_sites_1, 'positions')[4]
   expect_equal(seg_sites[[1]], seg_sites_o1)
@@ -75,7 +75,9 @@ s4        GCTGATAATA", file = seqgen_file)
   
   # Muliple files
   seg_sites <- parseSeqgenOutput(list(seqgen_file, seqgen_file), 
-                                 sum(dm.getSampleSize(dm_tmp)), 10, 4)
+                                 sum(dm.getSampleSize(dm_tmp)), 
+                                 rbind(dm.getLociLengthMatrix(dm_tmp), 
+                                       dm.getLociLengthMatrix(dm_tmp)), 4)
   expect_is(seg_sites, 'list')
   expect_equal(length(seg_sites), 4)
   expect_equal(seg_sites[[1]], seg_sites_1)
@@ -83,8 +85,9 @@ s4        GCTGATAATA", file = seqgen_file)
   expect_equal(seg_sites[[3]], seg_sites_1)
   expect_equal(seg_sites[[4]], seg_sites_2)
   
+  
   seg_sites <- parseSeqgenOutput(list(c(seqgen_file, seqgen_file, seqgen_file)), 
-                                 11, 30, 2, trio_opts = rep(10, 5))
+                                 11, matrix(10, 2, 5, byrow = TRUE), 2)
   expect_equal(seg_sites[[1]][,1:7], seg_sites_1[,])
   expect_equal(seg_sites[[1]][,8:14], seg_sites_1[,])
   expect_equal(seg_sites[[1]][,15:21], seg_sites_1[,])
@@ -125,19 +128,19 @@ s3        GCAGACGGTA
 s4        GCTGATAATA", file = seqgen_file_2)
   
   seg_sites <- parseSeqgenOutput(list(c(seqgen_file_1, seqgen_file_1, seqgen_file_2)), 
-                                 11, 30, 1, trio_opts = rep(10, 5))
+                                 11, matrix(10, 2, 5, byrow = TRUE), 1)
   expect_equal(seg_sites[[1]][,], cbind(seg_sites_1, seg_sites_1, seg_sites_2))
   expect_equal(length(attr(seg_sites[[1]], 'locus')), ncol(seg_sites[[1]]))
   expect_equal(length(attr(seg_sites[[1]], 'positions')), ncol(seg_sites[[1]]))
 
   seg_sites <- parseSeqgenOutput(list(c(seqgen_file_1, seqgen_file_2, seqgen_file_2)), 
-                                 11, 30, 1, trio_opts = rep(10, 5))
+                                 11, matrix(10, 2, 5, byrow = TRUE), 1)
   expect_equal(seg_sites[[1]][,], cbind(seg_sites_1, seg_sites_2, seg_sites_2))
   expect_equal(length(attr(seg_sites[[1]], 'locus')), ncol(seg_sites[[1]]))
   expect_equal(length(attr(seg_sites[[1]], 'positions')), ncol(seg_sites[[1]]))
   
   seg_sites <- parseSeqgenOutput(list(c(seqgen_file_2, seqgen_file_1, seqgen_file_2)), 
-                                 11, 30, 1, trio_opts = rep(10, 5))
+                                 11, matrix(10, 2, 5, byrow = TRUE), 1)
   expect_equal(seg_sites[[1]][,], cbind(seg_sites_2, seg_sites_1, seg_sites_2))
   expect_equal(length(attr(seg_sites[[1]], 'locus')), ncol(seg_sites[[1]]))
   expect_equal(length(attr(seg_sites[[1]], 'positions')), ncol(seg_sites[[1]]))

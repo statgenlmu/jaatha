@@ -18,7 +18,8 @@ setClass("DemographicModel" ,
                         finiteSites="logical",
                         currentSimProg="character",
                         options="list",
-                        finalized='logical')
+                        finalized='logical',
+                        loci="data.frame")
          )
 
 
@@ -37,7 +38,19 @@ setClass("DemographicModel" ,
                                  pop.sink=numeric(),
                                  time.point=character(),
                                  group=numeric(),
-                                 stringsAsFactors=F )
+                                 stringsAsFactors=F,
+                                 loci=data.frame(group=numeric(),
+                                                 number=numeric(),  
+                                                 name=character(), 
+                                                 name_l=character(),
+                                                 name_r=character(),
+                                                 length_l=numeric(),
+                                                 length_il=numeric(),
+                                                 length_m=numeric(),
+                                                 length_ir=numeric(),
+                                                 length_r=numeric(),
+                                                 stringsAsFactors=F )
+                                  )
 
   .Object@parameters <- data.frame(parameter=character(),
                                    lower.range=numeric(),
@@ -45,9 +58,8 @@ setClass("DemographicModel" ,
                                    stringsAsFactors=F )  
 
   .Object <- dm.addSampleSize(.Object, sample.size)
-  .Object <- dm.setLociNumber(.Object, loci.number)
-  .Object <- dm.setLociLength(.Object, loci.length)
-    
+  .Object <- dm.addLocus(.Object, length = loci.length, number = loci.number)
+  
   .Object@finiteSites     <- finiteSites
   .Object@tsTvRatio       <- tsTvRatio
   .Object@options         <- list()
@@ -352,7 +364,7 @@ dm.finalize <- function(dm) {
   }
   
   dm@finalized = TRUE
-  return(dm)
+  dm
 }
 
 
@@ -425,54 +437,113 @@ dm.createDemographicModel <- function(sample.sizes, loci.num, seq.length=1000) {
 # Front end functions for adding features
 #---------------------------------------------------------------------------------
 
+
+
+# Low level function for adding a locus
+addLocus <- function(dm, group=0, number=1, 
+                     name='', name_l='', name_r='',
+                     length_l=0, length_il=0, length_m=0, 
+                     length_ir=0, length_r=0) {
+  if (number > 1 & any(dm@loci[dm@loci$group == group, 'number'] != 1)) {
+    stop("You can only have multiple loci in one group if 'number' is 1 for all")
+  }
+  
+  dm@loci <- rbind(dm@loci, data.frame(group=group,
+                                       number=number,  
+                                       name=name, 
+                                       name_l=name_l,
+                                       name_r=name_r,
+                                       length_l=length_l,
+                                       length_il=length_il,
+                                       length_m=length_m,
+                                       length_ir=length_ir,
+                                       length_r=length_r))
+  
+  invisible(dm)
+}
+
 #' Defines how many identical loci belong to a group of loci
 #'
 #' @param dm The Demographic Model
-#' @param loci.number The number of loci in the group
+#' @param number The number of loci to add to the group.
+#' @param length The average length of the loci or the acctual of the locus 
+#'               if just one is used.
 #' @param group The group for which we set the loci number
 #' @return The changed Demographic Model
 #' @export
-dm.setLociNumber <- function(dm, loci.number, group=0) {
+#' @examples
+#' dm <- dm.createDemographicModel(c(25,25), 100)
+#' dm <- dm.addLocus(dm, number = 200, length = 250, group = 1)
+dm.addLocus <- function(dm, length, number = 1, group=0) {
   checkType(dm, 'dm')
-  checkType(loci.number, 'num')
-  checkType(group, 'num')
-
-  feat <- dm@features
-  if (sum(feat$type=='loci.number' & feat$group==group) > 0) {
-    feat$parameter[feat$type=='loci.number' & feat$group==group] <-
-      as.character(loci.number)
-    dm@features <- feat
-  } else {
-    dm <- addFeature(dm, 'loci.number', loci.number, group=group)
-  }
-
-  dm
+  if (!is.numeric(number)) stop("'number' needs to be numeric")
+  if (!is.numeric(length)) stop("'length' needs to be numeric")
+  if (!is.numeric(group)) stop("'group' needs to be numeric")
+  
+  addLocus(dm, group=group, number=number, length_m=length)
 }
 
-
-#' Defines the sequence length of each loci in a group of loci
-#'
+#' Adds a trio of loci to a group
 #' @param dm The Demographic Model
-#' @param loci.length The length each loci in the given loci group
-#' @param group The group for which we set the loci number
-#' @return The changed Demographic Model
+#' @param locus_names A vector of 3 strings, giving the names for the loci.
+#'   The names are used for identifying the loci later (left, middle and right).
+#' @param locus_length An integer vector of length 3, giving the length of each 
+#'   of the three loci (left, middle and right).
+#' @param distance A vector of two, giving the distance between left and middle,
+#'   and middle an right locus, in basepairs. 
+#' @param group The group to which to add the trio
+#' @return The extended demographic model
 #' @export
-dm.setLociLength <- function(dm, loci.length, group=0) {
+#' @examples
+#' dm <- dm.createDemographicModel(c(25,25), 100)
+#' dm <- dm.addLocusTrio(dm, locus_names = c('Solyc00g00500.2',
+#'                                           'Solyc00g00520.1',
+#'                                           'Solyc00g00540.1'),
+#'                       locus_length=c(1250, 1017, 980), 
+#'                       distance=c(257, 814))
+dm.addLocusTrio <- function(dm, locus_names=c(left='', middle='', right=''), 
+                            locus_length=c(left=1000, middle=1000, right=1000), 
+                            distance=c(left_middle=500, middle_right=500),
+                            group=1) {
+  
   checkType(dm, 'dm')
-  checkType(loci.length, 'num')
-  checkType(group, 'num')
-
-  feat <- dm@features
-  if (sum(feat$type=='loci.length' & feat$group==group) > 0) {
-    feat$parameter[feat$type=='loci.length' & feat$group==group] <-
-      as.character(loci.length)
-    dm@features <- feat
-  } else {
-    dm <- addFeature(dm, 'loci.length', loci.length, group=group)
+  if (!is.character(locus_names)) stop("'name' needs to be numeric")
+  if (length(locus_names) != 3) stop("'name' needs to be a vector of three names")  
+  if (!is.numeric(locus_length)) stop("'locus_length' needs to be numeric")
+  if (length(locus_length) != 3) 
+    stop("'locus_length' needs to be a vector of three names")    
+  if (!is.numeric(group)) stop("'group' needs to be numeric")
+  
+  if (nrow(searchFeature(dm, 'locus_trios', group = group)) == 0) {
+    dm <- addFeature(dm, 'locus_trios', parameter = NA, group = group)
   }
+  
+  addLocus(dm, group=group, 
+           name_l = locus_names[1], 
+           name = locus_names[2], 
+           name_r = locus_names[3],
+           length_l=locus_length[1],
+           length_il=distance[1],
+           length_m=locus_length[2],
+           length_ir=distance[2],
+           length_r=locus_length[3])
+}
 
+# Legacy function for unit testing
+dm.setLociNumber <- function(dm, number, group = 0) {
+  if (sum(dm@loci$group == group) != 1) stop('More the one set of loci for this group')
+  dm@loci[dm@loci$group == group, 'number'] <- number
   dm
 }
+
+# Legacy function for unit testing
+dm.setLociLength <- function(dm, length, group = 0) {
+  if (sum(dm@loci$group == group) != 1) stop('More the one set of loci for this group')
+  dm@loci[dm@loci$group == group, 'length_m'] <- length
+  dm
+}
+
+
 
 #' Gets how many loci belong to a group of loci
 #'
@@ -481,8 +552,18 @@ dm.setLociLength <- function(dm, loci.length, group=0) {
 #'              the first group.
 #' @return The number of loci in the group
 #' @export
+#' @examples
+#' dm <- dm.createDemographicModel(c(25,25), 100)
+#' dm <- dm.addLocus(dm, number = 200, length = 250, group = 1)
+#' dm.getLociNumber(dm)
+#' dm.getLociNumber(dm, group = 0)
 dm.getLociNumber <- function(dm, group=1) {
-  as.integer(searchFeature(dm, type='loci.number', group=group)$parameter)
+  number <- dm@loci[dm@loci$group == group, 'number']
+  if (length(number) == 0) {
+    if (group > 0) number <- dm@loci[dm@loci$group == 0, 'number']
+    else stop("Failed to determine loci number")
+  }
+  as.integer(sum(number))
 }
 
 #' Gets how long the loci in a group are
@@ -491,20 +572,33 @@ dm.getLociNumber <- function(dm, group=1) {
 #' @param group The group for which we get the length of loci
 #' @return The length of the loci in the group
 #' @export
+#' @examples
+#' dm <- dm.createDemographicModel(c(25,25), 100)
+#' dm <- dm.addLocus(dm, number = 200, length = 250, group = 1)
+#' dm.getLociLength(dm)
+#' dm.getLociLength(dm, group = 0)
+#' dm.getLociLength(dm, group = 2)
 dm.getLociLength <- function(dm, group=1) {
-  # if we are using the locus trio, only return length of coding sequences
-  trio_opts <- dm.getLociTrioOptions(dm, group)
-  if (!any(is.na(trio_opts))) return(sum(trio_opts[c(T,F)]))
-  
-  # otherwise return the length of the complete locus
-  ll <- searchFeature(dm, type='loci.length', group=group)
-  as.integer(ll$parameter)
+  length <- dm@loci[dm@loci$group == group, c(6,8,10), drop = FALSE]
+  if (nrow(length) == 0) {
+    length <- dm@loci[dm@loci$group == 0, c(6,8,10), drop = FALSE]
+  }
+  if (nrow(length) == 0) stop("Failed to determine loci length")
+  as.integer(sum(length))
 }
 
 dm.getLociLengthMatrix <- function(dm, group=1) {
-  loci_length <- dm.getLociLength(dm, group)
-  if (length(loci_length) == 1) loci_length <- c(0, 0, loci_length, 0, 0)
-  matrix(loci_length, dm.getLociNumber(dm, group), 5, byrow = TRUE)
+  # Select the rows of the group
+  rows <- which(dm@loci$group == group)
+  if (sum(rows) == 0) rows <- which(dm@loci$group == 0)
+  
+  # Repeat the row if number > 1
+  if (length(rows) == 1) rows <- rep(rows, dm@loci$number[rows])
+  
+  # Return the matrix
+  llm <- dm@loci[rows, 6:10, drop = FALSE]
+  row.names(llm) <- NULL
+  as.matrix(llm)
 }
 
 #--------------------------------------------------------------------
@@ -1078,29 +1172,6 @@ dm.addMutationRateHeterogenity <-
   return(dm)
 }
 
-dm.useLociTrios <- function(dm, bases=c(250, 125, 250, 125, 250), group=0) {
-  if (sum(bases) != dm.getLociLength(dm, group))
-    stop("Bases do not sum up to locus length")
-  if (length(bases) != 5) 
-    stop("bases must consist of exactly 5 values.")
-  
-  bases <- as.character(bases)
-  dm <- addFeature(dm, "trio.1", bases[1], group=group)
-  dm <- addFeature(dm, "trio.2", bases[2], group=group)
-  dm <- addFeature(dm, "trio.3", bases[3], group=group)
-  dm <- addFeature(dm, "trio.4", bases[4], group=group)
-  dm <- addFeature(dm, "trio.5", bases[5], group=group)
-}
-
-dm.getLociTrioOptions <- function(dm, group=0, relative=FALSE) {
-  trio.opts <- rep(NA_real_, 5)
-  tryCatch(for (i in 1:5) {
-      trio.opts[i] <- searchFeature(dm, paste0('trio.', i), group=group)$parameter
-    }, error = function(e) { })
-  if (any(is.na(trio.opts))) return(NA)
-  if (relative) return(as.numeric(trio.opts) / dm.getLociLength(dm, group))
-  else as.numeric(trio.opts)
-}
 
 
 #-------------------------------------------------------------------
@@ -1226,7 +1297,10 @@ dm.simSumStats <- function(dm, parameters, sum.stats=c("all")) {
 
 
 generateGroupModel <- function(dm, group) {
-  if (all(dm@features$group == 0) && all(dm@sum.stats$group == 0)) return(dm)
+  if (all(dm@features$group == 0) & 
+      all(dm@sum.stats$group == 0) &
+      all(dm@loci$group == 0) ) return(dm)
+  
   if (!is.null(dm@options$grp.models[[as.character(group)]])) { 
     return(dm@options$grp.models[[as.character(group)]]) 
   }
@@ -1239,6 +1313,12 @@ generateGroupModel <- function(dm, group) {
   sum.stats <- unique(dm@sum.stats[dm@sum.stats$group %in% c(0, group), 'name'])
   dm@sum.stats <- data.frame(name=sum.stats, group=0)
   
+  # Loci
+  loci <- dm@loci[dm@loci$group == group, , drop=FALSE]
+  if (nrow(loci) > 0) dm@loci <- loci
+  else dm@loci <- dm@loci[dm@loci$group == 0, , drop=FALSE]
+  dm@loci$group <- 0
+  
   # Options
   group.name <- paste("group", group, sep='.')
   if (!is.null(dm@options[[group.name]])) {
@@ -1246,6 +1326,7 @@ generateGroupModel <- function(dm, group) {
       dm@options[[option]] <- dm@options[[group.name]][[option]]
     }
   }
+  
   dm
 }
 
@@ -1318,9 +1399,15 @@ searchFeature <- function(dm, type=NULL, parameter=NULL, pop.source=NULL,
 #' @return The groups in the model.
 #' @export
 dm.getGroups <- function(dm) {
-  if (all(c(dm@features$group == 0, dm@sum.stats$group == 0))) return(1)
+  if (all(c(dm@features$group == 0, 
+            dm@sum.stats$group == 0, 
+            dm@loci$group == 0))) return(1)
 
-  groups <- sort(unique(c(1, dm@features$group, dm@sum.stats$group)))
+  groups <- sort(unique(c(1, 
+                          dm@features$group, 
+                          dm@sum.stats$group, 
+                          dm@loci$group)))
+  
   return(groups[groups != 0])
 }
 
@@ -1331,12 +1418,12 @@ dm.getSummaryStatistics <- function(dm, group = 1) {
 
 
 scaleDemographicModel <- function(dm, scaling.factor) {
-  for (group in unique(dm@features$group)) {
+  for (group in unique(dm@loci$group)) {
     dm <- dm.setLociNumber(dm, 
                      round(dm.getLociNumber(dm, group) / scaling.factor),
                      group)
   }
-  return(dm)
+  dm
 }
 
 dm.addInterLocusVariation <- function(dm, group = 0) {

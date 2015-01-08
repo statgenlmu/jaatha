@@ -17,4 +17,10 @@ The number of loci in the group
 \description{
 Gets how many loci belong to a group of loci
 }
+\examples{
+dm <- dm.createDemographicModel(c(25,25), 100)
+dm <- dm.addLocus(dm, number = 200, length = 250, group = 1)
+dm.getLociNumber(dm)
+dm.getLociNumber(dm, group = 0)
+}
 

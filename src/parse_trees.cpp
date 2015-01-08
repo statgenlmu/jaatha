@@ -15,7 +15,7 @@ CharacterVector parseTrees(const std::string in_file,
     
   std::string line; 
   bool trio = false;
-  if (trio_opts.size() == 5) trio = true;
+  if (trio_opts(0) != 0 ||  trio_opts(4) != 0) trio = true;
   
   // Prepare a file for the first locus' tree
   std::vector<std::string> out_files;

@@ -8,12 +8,11 @@ generateSumStats <- function(files, program, parameters, dm, seg_sites) {
                                  dm.getSampleSize(dm), 
                                  dm.getLociNumber(dm))
     } else if (program == 'seqgen') {
-      seg_sites <- parseSeqgenOutput(files, 
+      seg_sites <- parseSeqgenOutput(files,
                                      sum(dm.getSampleSize(dm)),
-                                     dm.getLociLength(dm),
+                                     dm.getLociLengthMatrix(dm),
                                      dm.getLociNumber(dm),
-                                     outgroup_size = dm.getOutgroupSize(dm),
-                                     trio_opts = dm.getLociTrioOptions(dm))
+                                     outgroup_size = dm.getOutgroupSize(dm))
     } else if (program == 'scrm') {
       seg_sites <- files[['seg_sites']]
       seg_sites <- lapply(seg_sites, function(x) {

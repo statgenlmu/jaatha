@@ -16,4 +16,11 @@ The length of the loci in the group
 \description{
 Gets how long the loci in a group are
 }
+\examples{
+dm <- dm.createDemographicModel(c(25,25), 100)
+dm <- dm.addLocus(dm, number = 200, length = 250, group = 1)
+dm.getLociLength(dm)
+dm.getLociLength(dm, group = 0)
+dm.getLociLength(dm, group = 2)
+}
 

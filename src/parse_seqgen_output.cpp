@@ -92,7 +92,7 @@ NumericMatrix cbindPos(NumericMatrix ss_l,
     locus(col) = -1;
     positions(col) = positions_tmp(col);
   }
-          
+  
   int offset = ss_l.ncol();
   positions_tmp = getPositions(ss_m);
   for (int col = 0; col < ss_m.ncol(); ++col) {
@@ -104,7 +104,7 @@ NumericMatrix cbindPos(NumericMatrix ss_l,
   }
           
   offset = offset + ss_m.ncol();
-  positions_tmp = getPositions(ss_m);
+  positions_tmp = getPositions(ss_r);
   for (int col = 0; col < ss_r.ncol(); ++col) {
     for (int row = 0; row < sample_size; ++row) {
       ss(row, col + offset) = ss_r(row, col);
@@ -121,10 +121,9 @@ NumericMatrix cbindPos(NumericMatrix ss_l,
 // [[Rcpp::export]]
 List parseSeqgenOutput(const List file_names, 
                        const int sample_size,
-                       const int sequence_length,
+                       const NumericMatrix sequence_length,
                        const int loci_number,
-                       const int outgroup_size = 1,
-                       const NumericVector trio_opts = NumericVector(0)) {
+                       const int outgroup_size = 1) {
 
   std::string line_l, line_m, line_r;
 
@@ -146,7 +145,7 @@ List parseSeqgenOutput(const List file_names,
         if (line_m.substr(0, 1) == " ") {
           ++locus;
           seg_sites[locus] = parseSeqgenSegSites(output_m, sample_size, 
-                                                 sequence_length,
+                                                 sequence_length(i, 2),
                                                  outgroup_size);
         
         } else {
@@ -155,7 +154,6 @@ List parseSeqgenOutput(const List file_names,
       }
       
     } else if (file_name.size() == 3) {
-      if (trio_opts.length() != 5) stop("Trio opt and file number mismacht");
       std::ifstream output_l(as<std::string>(file_name(0)).c_str(), std::ifstream::in);
       std::ifstream output_m(as<std::string>(file_name(1)).c_str(), std::ifstream::in);
       std::ifstream output_r(as<std::string>(file_name(2)).c_str(), std::ifstream::in);
@@ -175,15 +173,15 @@ List parseSeqgenOutput(const List file_names,
           if (line_r.substr(0, 1) != " ") stop("seq-gen outputs not in sync");
           ++locus;
           
+          
           NumericMatrix ss_l = parseSeqgenSegSites(output_l, sample_size, 
-                                                   trio_opts(0), outgroup_size);
+                                                   sequence_length(i, 0), outgroup_size);
           NumericMatrix ss_m = parseSeqgenSegSites(output_m, sample_size, 
-                                                   trio_opts(2), outgroup_size);
+                                                   sequence_length(i, 2), outgroup_size);
           NumericMatrix ss_r = parseSeqgenSegSites(output_r, sample_size, 
-                                                   trio_opts(4), outgroup_size);
+                                                   sequence_length(i, 4), outgroup_size);
                                                    
           seg_sites[locus] = cbindPos(ss_l, ss_m, ss_r);
-          
         } else {
           stop("Unexpected line in seq-gen output.");
         }        
