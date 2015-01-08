@@ -534,9 +534,17 @@ dm.getLociLength <- function(dm, group=1) {
 }
 
 dm.getLociLengthMatrix <- function(dm, group=1) {
-  loci_length <- dm.getLociLength(dm, group)
-  if (length(loci_length) == 1) loci_length <- c(0, 0, loci_length, 0, 0)
-  matrix(loci_length, dm.getLociNumber(dm, group), 5, byrow = TRUE)
+  # Select the rows of the group
+  rows <- which(dm@loci$group == group)
+  if (sum(rows) == 0) rows <- which(dm@loci$group == 0)
+  
+  # Repeat the row if number > 1
+  if (length(rows) == 1) rows <- rep(rows, dm@loci$number[rows])
+  
+  # Return the matrix
+  llm <- dm@loci[rows, 6:10, drop = FALSE]
+  row.names(llm) <- NULL
+  as.matrix(llm)
 }
 
 #--------------------------------------------------------------------

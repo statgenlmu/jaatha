@@ -287,6 +287,24 @@ test_that("test.setMutationModel", {
   expect_error(dm <- dm.setMutationModel(dm, "bla"))
 })
 
+test_that('locus length matrix generations works', {
+  # Multiple loci with equal length
+  dimnames <- list(NULL,  c('length_l', 'length_il', 'length_m', 
+                            'length_ir', 'length_r') )
+  
+  expect_equal(dm.getLociLengthMatrix(dm.tt), 
+               matrix(c(0, 0, 1000, 0, 0), 10, 5,TRUE, dimnames))
+  
+  # Multiple loci with differnt length 
+  dm <- dm.addLocus(dm.tt, 21, 1, group = 2)
+  dm <- dm.addLocus(dm, 22, 1, group = 2)
+  dm <- dm.addLocus(dm, 23, 1, group = 2)
+  expect_equal(dm.getLociLengthMatrix(dm, group = 2),
+               matrix(c(0, 0, 21, 0, 0,
+                        0, 0, 22, 0, 0,
+                        0, 0, 23, 0, 0), 3, 5, TRUE, dimnames))
+})
+
 test_that("test.simSumStats", {
   expect_error(dm.simSumStats(1))
   expect_error(dm.simSumStats(dm.tt, 1))
