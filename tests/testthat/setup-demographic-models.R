@@ -38,8 +38,8 @@ if (jaatha:::checkForSeqgen(FALSE, TRUE)) {
   test_seqgen <- TRUE
   dm.sg <-  dm.addOutgroup(dm.tt, "2*tau")
   dm.hky <- dm.setMutationModel(dm.sg, "HKY", c(0.2, 0.2, 0.3, 0.3), 2)
-  dm.hky <- dm.setLociNumber(dm.hky, 5)
-  dm.hky <- dm.setLociLength(dm.hky, 15)
+  dm.hky <- jaatha:::dm.setLociNumber(dm.hky, 5)
+  dm.hky <- jaatha:::dm.setLociLength(dm.hky, 15)
   dm.hky@sum.stats <- data.frame()
   dm.hky <- dm.addSummaryStatistic(dm.hky, 'jsfs')
   dm.f81 <- dm.setMutationModel(dm.sg, "F84", c(0.3, 0.2, 0.3, 0.2), 2)
@@ -55,7 +55,7 @@ if (jaatha:::checkForMsms(FALSE, TRUE)) {
   # Selection Model
   dm.sel <- jaatha:::dm.addPositiveSelection(dm.mig, 1000, 2000, population=2,
                                              at.time='tau/2')
-  dm.sel <- dm.setLociNumber(dm.sel, 3)
+  dm.sel <- jaatha:::dm.setLociNumber(dm.sel, 3)
 } else {
   test_msms <- FALSE
 }

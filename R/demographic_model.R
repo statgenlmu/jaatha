@@ -497,6 +497,7 @@ dm.addLocusTrio <- function(dm, names, length, distance) {
 #' @param group The group for which we get the number of loci. Defaults to 
 #'              the first group.
 #' @return The number of loci in the group
+#' @export
 #' @examples
 #' dm <- dm.createDemographicModel(c(25,25), 100)
 #' dm <- dm.addLocus(dm, number = 200, length = 250, group = 1)
@@ -516,6 +517,7 @@ dm.getLociNumber <- function(dm, group=1) {
 #' @param dm The Demographic Model
 #' @param group The group for which we get the length of loci
 #' @return The length of the loci in the group
+#' @export
 #' @examples
 #' dm <- dm.createDemographicModel(c(25,25), 100)
 #' dm <- dm.addLocus(dm, number = 200, length = 250, group = 1)
@@ -1377,12 +1379,12 @@ dm.getSummaryStatistics <- function(dm, group = 1) {
 
 
 scaleDemographicModel <- function(dm, scaling.factor) {
-  for (group in unique(dm@features$group)) {
+  for (group in unique(dm@loci$group)) {
     dm <- dm.setLociNumber(dm, 
                      round(dm.getLociNumber(dm, group) / scaling.factor),
                      group)
   }
-  return(dm)
+  dm
 }
 
 dm.addInterLocusVariation <- function(dm, group = 0) {

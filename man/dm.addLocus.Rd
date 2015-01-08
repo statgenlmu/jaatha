@@ -3,15 +3,15 @@
 \alias{dm.addLocus}
 \title{Defines how many identical loci belong to a group of loci}
 \usage{
-dm.addLocus(dm, number, length, group = 0)
+dm.addLocus(dm, length, number = 1, group = 0)
 }
 \arguments{
 \item{dm}{The Demographic Model}
 
-\item{number}{The number of loci to add to the group.}
-
 \item{length}{The average length of the loci or the acctual of the locus
 if just one is used.}
+
+\item{number}{The number of loci to add to the group.}
 
 \item{group}{The group for which we set the loci number}
 }
