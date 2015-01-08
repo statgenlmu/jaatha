@@ -13,15 +13,14 @@ test_that("Fpc Breaks calculation works", {
     expect_false(is.null(dm@options[["group.2"]][["fpc.breaks.near"]]))
     expect_false(is.null(dm@options[["group.2"]][["fpc.breaks.far"]]))
     
-    dm.lt <- dm.useLociTrios(dm.fpc, c(200, 100, 400, 100, 200))
+    dm.lt <- dm.addLocusTrio(dm.fpc, locus_length = c(200, 400, 200),
+                             distance = c(100, 100), group = 2)
     dm = calcFpcBreaks(dm.lt, seg.sites)
     expect_false(is.null(dm@options[["fpc.breaks.near"]]))
     expect_false(is.null(dm@options[["fpc.breaks.far"]]))
     expect_false(is.null(dm@options[["fpc.breaks.between"]]))
     
-    dm.lt <- dm.useLociTrios(dm.fpc, c(200, 100, 400, 100, 200), group = 2)
-    dm = calcFpcBreaks(dm.lt, seg.sites)
-    dm = calcFpcBreaks(dm.lt, seg.sites, group = 2)
+    dm = calcFpcBreaks(dm.lt, list(seg.sites[[1]]), group = 2)
     expect_false(is.null(dm@options[['group.2']][["fpc.breaks.between"]]))
 })
 

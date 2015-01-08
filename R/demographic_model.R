@@ -48,8 +48,8 @@ setClass("DemographicModel" ,
                                                  length_il=numeric(),
                                                  length_m=numeric(),
                                                  length_ir=numeric(),
-                                                 length_r=numeric()
-                                                 )
+                                                 length_r=numeric(),
+                                                 stringsAsFactors=F )
                                   )
 
   .Object@parameters <- data.frame(parameter=character(),
@@ -437,6 +437,31 @@ dm.createDemographicModel <- function(sample.sizes, loci.num, seq.length=1000) {
 # Front end functions for adding features
 #---------------------------------------------------------------------------------
 
+
+
+# Low level function for adding a locus
+addLocus <- function(dm, group=0, number=1, 
+                     name='', name_l='', name_r='',
+                     length_l=0, length_il=0, length_m=0, 
+                     length_ir=0, length_r=0) {
+  if (number > 1 & any(dm@loci[dm@loci$group == group, 'number'] != 1)) {
+    stop("You can only have multiple loci in one group if 'number' is 1 for all")
+  }
+  
+  dm@loci <- rbind(dm@loci, data.frame(group=group,
+                                       number=number,  
+                                       name=name, 
+                                       name_l=name_l,
+                                       name_r=name_r,
+                                       length_l=length_l,
+                                       length_il=length_il,
+                                       length_m=length_m,
+                                       length_ir=length_ir,
+                                       length_r=length_r))
+  
+  invisible(dm)
+}
+
 #' Defines how many identical loci belong to a group of loci
 #'
 #' @param dm The Demographic Model
@@ -455,22 +480,53 @@ dm.addLocus <- function(dm, length, number = 1, group=0) {
   if (!is.numeric(length)) stop("'length' needs to be numeric")
   if (!is.numeric(group)) stop("'group' needs to be numeric")
   
-  if (number > 1 & any(dm@loci[dm@loci$group == group, 'number'] != 1)) {
-    stop("You can only have multiple loci in one group if 'number' is 1 for all")
+  addLocus(dm, group=group, number=number, length_m=length)
+}
+
+#' Adds a trio of loci to a group
+#' @param dm The Demographic Model
+#' @param locus_names A vector of 3 strings, giving the names for the loci.
+#'   The names are used for identifying the loci later (left, middle and right).
+#' @param locus_length An integer vector of length 3, giving the length of each 
+#'   of the three loci (left, middle and right).
+#' @param distance A vector of two, giving the distance between left and middle,
+#'   and middle an right locus, in basepairs. 
+#' @param group The group to which to add the trio
+#' @return The extended demographic model
+#' @export
+#' @examples
+#' dm <- dm.createDemographicModel(c(25,25), 100)
+#' dm <- dm.addLocusTrio(dm, locus_names = c('Solyc00g00500.2',
+#'                                           'Solyc00g00520.1',
+#'                                           'Solyc00g00540.1'),
+#'                       locus_length=c(1250, 1017, 980), 
+#'                       distance=c(257, 814))
+dm.addLocusTrio <- function(dm, locus_names=c(left='', middle='', right=''), 
+                            locus_length=c(left=1000, middle=1000, right=1000), 
+                            distance=c(left_middle=500, middle_right=500),
+                            group=1) {
+  
+  checkType(dm, 'dm')
+  if (!is.character(locus_names)) stop("'name' needs to be numeric")
+  if (length(locus_names) != 3) stop("'name' needs to be a vector of three names")  
+  if (!is.numeric(locus_length)) stop("'locus_length' needs to be numeric")
+  if (length(locus_length) != 3) 
+    stop("'locus_length' needs to be a vector of three names")    
+  if (!is.numeric(group)) stop("'group' needs to be numeric")
+  
+  if (nrow(searchFeature(dm, 'locus_trios', group = group)) == 0) {
+    dm <- addFeature(dm, 'locus_trios', parameter = NA, group = group)
   }
-    
-  dm@loci <- rbind(dm@loci, data.frame(group=group,
-                                       number=number,  
-                                       name='', 
-                                       name_l='',
-                                       name_r='',
-                                       length_l=0,
-                                       length_il=0,
-                                       length_m=length,
-                                       length_ir=0,
-                                       length_r=0))
-              
-  invisible(dm)
+  
+  addLocus(dm, group=group, 
+           name_l = locus_names[1], 
+           name = locus_names[2], 
+           name_r = locus_names[3],
+           length_l=locus_length[1],
+           length_il=distance[1],
+           length_m=locus_length[2],
+           length_ir=distance[2],
+           length_r=locus_length[3])
 }
 
 # Legacy function for unit testing
@@ -487,9 +543,7 @@ dm.setLociLength <- function(dm, length, group = 0) {
   dm
 }
 
-dm.addLocusTrio <- function(dm, names, length, distance) {
-  
-}
+
 
 #' Gets how many loci belong to a group of loci
 #'
@@ -1118,29 +1172,6 @@ dm.addMutationRateHeterogenity <-
   return(dm)
 }
 
-dm.useLociTrios <- function(dm, bases=c(250, 125, 250, 125, 250), group=0) {
-  if (sum(bases) != dm.getLociLength(dm, group))
-    stop("Bases do not sum up to locus length")
-  if (length(bases) != 5) 
-    stop("bases must consist of exactly 5 values.")
-  
-  bases <- as.character(bases)
-  dm <- addFeature(dm, "trio.1", bases[1], group=group)
-  dm <- addFeature(dm, "trio.2", bases[2], group=group)
-  dm <- addFeature(dm, "trio.3", bases[3], group=group)
-  dm <- addFeature(dm, "trio.4", bases[4], group=group)
-  dm <- addFeature(dm, "trio.5", bases[5], group=group)
-}
-
-dm.getLociTrioOptions <- function(dm, group=0, relative=FALSE) {
-  trio.opts <- rep(NA_real_, 5)
-  tryCatch(for (i in 1:5) {
-      trio.opts[i] <- searchFeature(dm, paste0('trio.', i), group=group)$parameter
-    }, error = function(e) { })
-  if (any(is.na(trio.opts))) return(NA)
-  if (relative) return(as.numeric(trio.opts) / dm.getLociLength(dm, group))
-  else as.numeric(trio.opts)
-}
 
 
 #-------------------------------------------------------------------

@@ -326,27 +326,11 @@ test_that("test.simSumStats", {
 
 test_that("Loci trios are added to model", {
   if (!test_seqgen) return()
-  dm.lt <- dm.useLociTrios(dm.hky, c(3, 2, 5, 1, 4))
-  expect_true("trio.1" %in% dm.lt@features$type)
-  expect_true("trio.2" %in% dm.lt@features$type)
-  expect_true("trio.3" %in% dm.lt@features$type)
-  expect_true("trio.4" %in% dm.lt@features$type)
-  expect_true("trio.5" %in% dm.lt@features$type)
-  expect_error(dm.useLociTrios(dm.hky, c(5, 5, 5, 1, 4)))
-  expect_error(dm.useLociTrios(dm.hky, c(5, 5, 5)))
-})
-
-test_that("getTrioOptions works", {
-  if (!test_seqgen) return()
-  dm.lt <- dm.useLociTrios(dm.setLociLength(dm.f81, 50), c(10, 5, 20, 5, 10))
+  dm.lt <- dm.addLocusTrio(dm.hky, locus_length =  c(3, 5, 7),
+                           distance = c(4, 6), group = 2)
   
-  expect_equal(dm.getLociTrioOptions(dm.lt), c(10, 5, 20, 5, 10))
-  expect_true(is.na(dm.getLociTrioOptions(dm.tt)))
-  
-  dm.lt <- dm.useLociTrios(dm.setLociLength(dm.f81, 50), c(10, 5, 20, 5, 10), 
-                           group=2)
-  expect_true(is.na(dm.getLociTrioOptions(dm.lt)))
-  expect_equal(dm.getLociTrioOptions(dm.lt, group=2), c(10, 5, 20, 5, 10))
+  expect_true(all(dm.getLociLengthMatrix(dm.lt, 2) == 3:7))
+  expect_true(nrow(searchFeature(dm.lt, 'locus_trios', group = 2)) > 0)
 })
 
 test_that("Adding and Getting inter locus variation works", {

@@ -9,8 +9,8 @@ parseMsOutput <- function(file_names, sample_size, loci_number) {
     .Call('jaatha_parseMsOutput', PACKAGE = 'jaatha', file_names, sample_size, loci_number)
 }
 
-parseSeqgenOutput <- function(file_names, sample_size, sequence_length, loci_number, outgroup_size = 1L, trio_opts = numeric(0)) {
-    .Call('jaatha_parseSeqgenOutput', PACKAGE = 'jaatha', file_names, sample_size, sequence_length, loci_number, outgroup_size, trio_opts)
+parseSeqgenOutput <- function(file_names, sample_size, sequence_length, loci_number, outgroup_size = 1L) {
+    .Call('jaatha_parseSeqgenOutput', PACKAGE = 'jaatha', file_names, sample_size, sequence_length, loci_number, outgroup_size)
 }
 
 parseTrees <- function(in_file, trio_opts, tempfile) {
