@@ -80,12 +80,6 @@ test_that("test.addSampleSize", {
                              group == 0)), 2)
   expect_equal(nrow(subset(dm@features, type == "sample" & 
                              time.point == "0")), 2)
-  dm <- dm.addSampleSize(dm, c(2, 5), group = 1)
-  expect_equal(sum(dm@features$type == "sample"), 4)
-  expect_equal(nrow(subset(dm@features, type == "sample" & 
-                             group == 0)), 2)
-  expect_equal(nrow(subset(dm@features, type == "sample" & 
-                             group == 1)), 2)
 })
 
 test_that("test.dm.addSummaryStatistics", {
@@ -193,13 +187,6 @@ test_that("test.getGroups", {
 test_that("test.getSampleSize", {
   dm.test <- dm.tt
   expect_equal(dm.getSampleSize(dm.test), c(11L, 12L))
-  dm.test <- dm.addSampleSize(dm.test, c(2, 5), group = 2)
-  expect_equal(dm.getSampleSize(dm.test, 0), c(11L, 12L))
-  expect_equal(dm.getSampleSize(dm.test, 1), c(11L, 12L))
-  expect_equal(dm.getSampleSize(dm.test, 2), c(2L, 5L))
-  expect_error(dm.getSampleSize(dm.test))
-  dm.test <- dm.addLocus(dm.test, 15, 10, group = 3)
-  expect_equal(dm.getSampleSize(dm.test, 3), c(11L, 12L))
 })
 
 test_that("test.getThetaName", {

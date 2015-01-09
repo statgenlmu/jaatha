@@ -211,7 +211,7 @@ Jaatha.initialize <- function(data, model, cores=1, scaling.factor=1,
   groups <- dm.getGroups(dm)
   
   for (group in groups) {
-    if (group == 1 & all(dm@features$group == 0)) {
+    if (length(groups) == 1) {
       grp_name_ext <- ''
       group <- 0
     } else {
@@ -220,7 +220,7 @@ Jaatha.initialize <- function(data, model, cores=1, scaling.factor=1,
     
     seg.sites <- data[[paste0('seg.sites', grp_name_ext)]]
     if (is.null(seg.sites)) stop('No seg.sites in `data` for group ', group)
-    jsfs.value <- calcJsfs(seg.sites, dm.getSampleSize(dm, group))
+    jsfs.value <- calcJsfs(seg.sites, dm.getSampleSize(dm))
 
     # ------------------------------------------------------------
     # JSFS Summary Statistic
@@ -233,7 +233,7 @@ Jaatha.initialize <- function(data, model, cores=1, scaling.factor=1,
     
       if (folded) sum.stats$jsfs$transformation <- summarizeFoldedJSFS
     } else {
-      sample.size <- dm.getSampleSize(dm, group)
+      sample.size <- dm.getSampleSize(dm)
       warning("Smoothing is experimental")
       model <- paste0("( X1 + I(X1^2) + X2 + I(X2^2) + log(X1) + log(",
                       sample.size[1]+2,
@@ -258,11 +258,14 @@ Jaatha.initialize <- function(data, model, cores=1, scaling.factor=1,
     # ------------------------------------------------------------
     # FPC Summary Statistic
     # ------------------------------------------------------------
-    if ('fpc' %in% dm.getSummaryStatistics(dm, group)) {      
-      dm <- calcFpcBreaks(dm, seg.sites, group = group)
-      sum.stats[[paste0('fpc', grp_name_ext)]] <- 
-        list(method='poisson.transformed', transformation=as.vector,
-             value=generateFpcStat(seg.sites, dm, group = group))
+    for (pop in 1:2) {
+      if ('fpc' %in% dm.getSummaryStatistics(dm, group, pop = pop)) {
+        dm <- calcFpcBreaks(dm, seg.sites, group = group, population = pop)
+        sum.stats[[paste0('fpc_pop', pop, grp_name_ext)]] <- 
+          list(method='poisson.transformed', transformation=as.vector,
+               value=generateFpcStat(seg.sites, dm, group = group, 
+                                     population = pop))
+      }
     }
 
     # ------------------------------------------------------------

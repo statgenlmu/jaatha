@@ -72,22 +72,29 @@ test_that("JSFS is added when not in model", {
 
 
 test_that("Initialization of FPC statistic", {
-  # Without groups
+  # Without groups and with one population
   jaatha.fpc <- Jaatha.initialize(sum.stats.fpc, dm.fpc)
-  expect_true(sum(jaatha.fpc@sum.stats[["fpc"]]$value) > 0)
-  expect_false(is.null(jaatha.fpc@opts$dm@options[["fpc.breaks.near"]]))
-  expect_false(is.null(jaatha.fpc@opts$dm@options[["fpc.breaks.far"]]))
+  expect_true(sum(jaatha.fpc@sum.stats[["fpc_pop1"]]$value) > 0)
+  expect_false(is.null(jaatha.fpc@opts$dm@options[["fpc_breaks_pop1"]]))
+  
+  # With two populations
+  dm_tmp <- dm.addSummaryStatistic(dm.fpc, 'fpc', population = 2)
+  jaatha.fpc <- Jaatha.initialize(sum.stats.fpc, dm_tmp)
+  expect_true(sum(jaatha.fpc@sum.stats[["fpc_pop1"]]$value) > 0)
+  expect_true(sum(jaatha.fpc@sum.stats[["fpc_pop2"]]$value) > 0)  
+  expect_false(is.null(jaatha.fpc@opts$dm@options[["fpc_breaks_pop1"]]))
+  expect_false(is.null(jaatha.fpc@opts$dm@options[["fpc_breaks_pop2"]]))  
   
   # With groups
-  dm.fpc <- dm.addSummaryStatistic(dm.grp, 'fpc')
-  jaatha.fpc <- Jaatha.initialize(sum.stats.grp, dm.fpc)
+  dm_tmp <- dm.addSummaryStatistic(dm.grp, 'fpc', population = 1)
+  jaatha.fpc <- Jaatha.initialize(sum.stats.grp, dm_tmp)
   expect_equal(length(jaatha.fpc@sum.stats), 6)
-  expect_false(is.null(jaatha.fpc@sum.stats$fpc.1))
-  expect_true(sum(jaatha.fpc@sum.stats[["fpc.1"]]$value) > 0)
-  expect_false(is.null(jaatha.fpc@sum.stats$fpc.2))
-  expect_true(sum(jaatha.fpc@sum.stats[["fpc.2"]]$value) > 0)
-  expect_false(is.null(jaatha.fpc@sum.stats$fpc.3))
-  expect_true(sum(jaatha.fpc@sum.stats[["fpc.3"]]$value) > 0)
+  expect_false(is.null(jaatha.fpc@sum.stats$fpc_pop1.1))
+  expect_true(sum(jaatha.fpc@sum.stats[["fpc_pop1.1"]]$value) > 0)
+  expect_false(is.null(jaatha.fpc@sum.stats$fpc_pop1.2))
+  expect_true(sum(jaatha.fpc@sum.stats[["fpc_pop1.2"]]$value) > 0)
+  expect_false(is.null(jaatha.fpc@sum.stats$fpc_pop1.3))
+  expect_true(sum(jaatha.fpc@sum.stats[["fpc_pop1.3"]]$value) > 0)
 })
 
 
@@ -96,14 +103,13 @@ test_that("Initialization of PMC statistic", {
   
   # Without groups
   jaatha.pmc <- Jaatha.initialize(sum.stats.fpc, dm.pmc)
-  expect_true(sum(jaatha.pmc@sum.stats[["fpc"]]$value) > 0)
   expect_true(sum(jaatha.pmc@sum.stats[["pmc"]]$value) > 0)
   expect_false(is.null(jaatha.pmc@opts$dm@options[["pmc_breaks_private"]]))
   expect_false(is.null(jaatha.pmc@opts$dm@options[["pmc_breaks_fixed"]]))  
   
   # With groups
-  dm.pmc <- dm.addSummaryStatistic(dm.grp, 'pmc', 1)
-  dm.pmc <- dm.addSummaryStatistic(dm.pmc, 'pmc', 3)
+  dm.pmc <- dm.addSummaryStatistic(dm.grp, 'pmc', group=1)
+  dm.pmc <- dm.addSummaryStatistic(dm.pmc, 'pmc', group=3)
   
   jaatha.pmc <- Jaatha.initialize(sum.stats.grp, dm.pmc)
   expect_equal(length(jaatha.pmc@sum.stats), 5)

@@ -17,10 +17,22 @@ int getType(size_t snp_1, size_t snp_2,
   return 2;
 }
 
+bool is_singleton(const NumericMatrix seg_sites,
+                  const IntegerVector individuals,
+                  const size_t snp) {
+                    
+  size_t mut_count = 0;
+  for (int i = 0; i < individuals.size(); ++i) {
+    mut_count += seg_sites(individuals(i)-1, snp);
+  }
+  
+  return(mut_count == 1);
+}
 
 
 // [[Rcpp::export]]
-NumericMatrix calcPercentFpcViolation(const List seg_sites_list, 
+NumericMatrix calcPercentFpcViolation(const List seg_sites_list,
+                                      const IntegerVector individuals,
                                       const NumericMatrix locus_length) {
                                 
   size_t loci_number = seg_sites_list.size();
@@ -50,11 +62,11 @@ NumericMatrix calcPercentFpcViolation(const List seg_sites_list,
     // Look at all pairs of SNPs
     for (int i = 0; i < seg_sites.ncol(); ++i) {
       // Ignore singletons
-      if (sum(seg_sites(_,i)) == 1) continue;
+      if (is_singleton(seg_sites, individuals, i)) continue;
       
       for (int j = i + 1; j < seg_sites.ncol(); ++j) {
         // Ignore singletons
-        if (sum(seg_sites(_,j)) == 1) continue;
+        if (is_singleton(seg_sites, individuals, j)) continue;
         // Ignore SNP pairs between outer loci
         if (std::abs(trio_locus(i) - trio_locus(j)) == 2) continue;
         
@@ -65,8 +77,8 @@ NumericMatrix calcPercentFpcViolation(const List seg_sites_list,
         type = getType(i, j, positions, trio_locus);
 
         // Count combinations
-        for (int k = 0; k < seg_sites.nrow(); ++k) {
-          combinations[2*seg_sites(k,i) + seg_sites(k,j)] = true;
+        for (int k = 0; k < individuals.size(); ++k) {
+          combinations[2*seg_sites(individuals(k)-1, i) + seg_sites(individuals(k)-1, j)] = true;
         }
       
         // If we have all combinations

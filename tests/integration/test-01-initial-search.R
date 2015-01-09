@@ -40,10 +40,9 @@ test_that("test.initialSearch.fpc", {
 
 test_that("test.initialSearch.fpc_groups", {
   set.seed(1234)
-  dm <- dm.addSampleSize(dm.fpc, 11:12, group = 2)
-  dm <- dm.addSampleSize(dm, 5:6, group = 3)
-  sum.stats <- dm.simSumStats(dm.addSummaryStatistic(dm, "seg.sites"), 
-                              c(1, 2, 5))
+  dm <- dm.addLocus(dm.fpc, 50, 5, group = 2)
+  dm <- dm.addLocus(dm.fpc, 60, 6, group = 3)
+  sum.stats <- dm.simSumStats(dm.addSummaryStatistic(dm, "seg.sites"), c(1, 2, 5))
   jaatha.fpc <- Jaatha.initialize(sum.stats, dm)
   jaatha.fpc <- Jaatha.initialSearch(jaatha.fpc, sim = 10, blocks.per.par = 1)
 })

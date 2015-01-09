@@ -28,27 +28,35 @@ generateSumStats <- function(files, program, parameters, dm, seg_sites) {
   sum_stats <- list()
   if (!missing(parameters)) sum_stats[['pars']] <- parameters
 
-  # Add seg_sites
-  if ('seg.sites' %in% model_stats) {
-    sum_stats[['seg.sites']] <- seg_sites
+  for (i in 1:nrow(dm@sum.stats)) {
+    stat <- dm@sum.stats[i, ]
+    
+    # Add seg_sites
+    if (stat$name == 'seg.sites') {
+      sum_stats[['seg.sites']] <- seg_sites
+    }
+    
+    # Add JSFS
+    else if (stat$name == 'jsfs') {
+      sum_stats[['jsfs']] <- calcJsfs(seg_sites, dm.getSampleSize(dm))
+    }
+    
+    # Add fpc statistic if needed
+    else if (stat$name == 'fpc') {
+      sum_stats[[paste0('fpc_pop', stat$population)]] <- 
+        generateFpcStat(seg_sites, dm, stat$population)
+    }
+  
+    # Add pmc statistic if needed
+    else if (stat$name == 'pmc') {
+      sum_stats[['pmc']] <- createPolymClasses(seg_sites, dm)
+    }
+  
+    else if (stat$name == 'file' | stat$name == 'trees') { }
+    else stop('Unknown summary statistik:', stat$name)
   }
   
-  # Add JSFS
-  if ('jsfs' %in% model_stats) {
-    sum_stats[['jsfs']] <- calcJsfs(seg_sites, dm.getSampleSize(dm))
-  }
-  
-  # Add pmc statistic if needed
-  if ('pmc' %in% model_stats) {
-    sum_stats[['pmc']] <- createPolymClasses(seg_sites, dm)
-  }
-  
-  # Add fpc statistic if needed
-  if ('fpc' %in% model_stats) {
-    sum_stats[['fpc']] <- generateFpcStat(seg_sites, dm)
-  }
-  
-  # Add files if needed
+  # Add files if needed, or delete otherwise
   if (!missing(files)) {
     if ('file' %in% model_stats) {
       sum_stats[['file']] <- files

@@ -12,7 +12,7 @@ createPolymClasses <- function(seg_sites, dm, group = 0) {
     stop("Missing classes breaks for calculating Polym. statistic.")
   
   # Calculate percent of SNPs that a private and fixed polym
-  percent <- sapply(seg_sites, classifyPolym, dm.getSampleSize(dm, group))
+  percent <- sapply(seg_sites, classifyPolym, dm.getSampleSize(dm))
   
   # Classify the loci accordingly
   locus_class <- matrix(1, nrow(percent), ncol(percent))
@@ -28,7 +28,7 @@ createPolymClasses <- function(seg_sites, dm, group = 0) {
 }
 
 calcPmcBreaks <- function(dm, seg_sites, number=2, group=0) {
-  percent <- sapply(seg_sites, classifyPolym, dm.getSampleSize(dm, group))
+  percent <- sapply(seg_sites, classifyPolym, dm.getSampleSize(dm))
   probs <- seq(0, 1, length.out = number + 2)[-c(1, number+2)]
   
   if (group == 0) {
