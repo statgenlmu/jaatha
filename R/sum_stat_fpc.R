@@ -1,22 +1,24 @@
-calcFpcBreaks <- function(dm, seg.sites, props=c(.2, .5), group=0) {
+calcFpcBreaks <- function(dm, seg.sites, population, props=c(.2, .5), group=0) {
   if (any(props > 1)) stop('props greater then one')
     
   fpc.percent <- calcPercentFpcViolation(seg.sites, 
+                                         getIndOfPop(dm, population),
                                          dm.getLociLengthMatrix(dm, group))
     
+  key <- paste0('fpc_breaks_pop', population)
+  breaks <- list(near=calcBreaks(fpc.percent[, 1], props),
+                 far=calcBreaks(fpc.percent[, 2], props),
+                 mut=calcBreaks(fpc.percent[, 6], props))
+  
   if (group == 0) {
     # Options for the default group are directly in options
-    dm@options[['fpc.breaks.near']] <- calcBreaks(fpc.percent[, 1], props)
-    dm@options[['fpc.breaks.far']] <- calcBreaks(fpc.percent[, 2], props)
-    dm@options[['fpc.breaks.between']] <- calcBreaks(fpc.percent[, 6], props)
+    dm@options[[key]] <- breaks
   } else {
     # Options for other groups go into a group vector and are copied to the 
     # options vector once the model for the individual groups are created.
     group.name <- paste("group", group, sep='.')
     if(is.null(dm@options[[group.name]])) dm@options[[group.name]] <- list()
-    dm@options[[group.name]][['fpc.breaks.near']] <- calcBreaks(fpc.percent[, 1], props)
-    dm@options[[group.name]][['fpc.breaks.far']] <- calcBreaks(fpc.percent[, 2], props)
-    dm@options[[group.name]][['fpc.breaks.between']] <- calcBreaks(fpc.percent[, 6], props)
+    dm@options[[group.name]][[key]] <- breaks
   }
   
   dm
@@ -28,22 +30,25 @@ calcBreaks <- function(values, props) {
   breaks
 }
 
-generateFpcStat <- function(seg_sites, dm, group = 0) {
+generateFpcStat <- function(seg_sites, dm, population, group = 0) {
   # Get breaks between classes for each dimension
+  
+  key <- paste0('fpc_breaks_pop', population)
   if (group == 0) {
-    breaks_near <- dm@options[['fpc.breaks.near']]
-    breaks_far <- dm@options[['fpc.breaks.far']]
-    breaks_betw <- dm@options[['fpc.breaks.between']]
+    breaks_near <- dm@options[[key]]$near
+    breaks_far <- dm@options[[key]]$far
+    breaks_betw <- dm@options[[key]]$mut
   } else {
     group.name <- paste("group", group, sep='.')
-    breaks_near <- dm@options[[group.name]][['fpc.breaks.near']]
-    breaks_far <- dm@options[[group.name]][['fpc.breaks.far']]
-    breaks_betw <- dm@options[[group.name]][['fpc.breaks.between']]
+    breaks_near <- dm@options[[group.name]][[key]]$near
+    breaks_far <- dm@options[[group.name]][[key]]$far
+    breaks_betw <- dm@options[[group.name]][[key]]$mut
   }
   if (is.null(breaks_near) || is.null(breaks_far)) 
     stop("Missing classes breaks for calculating fpc statistic.")
   
   percent <- calcPercentFpcViolation(seg_sites, 
+                                     getIndOfPop(dm, population),
                                      dm.getLociLengthMatrix(dm, group))
   
   # Classify the loci accordingly

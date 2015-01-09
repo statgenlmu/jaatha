@@ -3,12 +3,15 @@
 \alias{dm.addSummaryStatistic}
 \title{Adds a summary statistic to the model.}
 \usage{
-dm.addSummaryStatistic(dm, sum.stat, group = 0)
+dm.addSummaryStatistic(dm, sum.stat, population = 0, group = 0)
 }
 \arguments{
 \item{dm}{The demographic model to which a summary statistic should be added.}
 
 \item{sum.stat}{The summary statistic to add. Use the names mentioned above.}
+
+\item{population}{The population for which the summary statistic is calculated.
+Currently only used for 'fpc' statistics.}
 
 \item{group}{If given, the summary statistic is only calculated for a
 given group of loci.}

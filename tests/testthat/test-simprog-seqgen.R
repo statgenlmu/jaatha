@@ -116,8 +116,8 @@ test_that("test.simulateFpcWithSeqgen", {
   if (!test_seqgen) skip('seq-gen not installed')
   seg.sites <- dm.simSumStats(dm.addSummaryStatistic(dm.hky, 'seg.sites'),
                               c(1, 5))$seg.sites
-  dm.sgfpc <- dm.addSummaryStatistic(dm.hky, 'fpc')
-  dm.sgfpc <- jaatha:::calcFpcBreaks(dm.sgfpc, seg.sites)
+  dm.sgfpc <- dm.addSummaryStatistic(dm.hky, 'fpc', population = 1)
+  dm.sgfpc <- jaatha:::calcFpcBreaks(dm.sgfpc, seg.sites, population = 1)
   sum.stats <- dm.simSumStats(dm.sgfpc, c(1, 5))
   expect_false(is.null(sum.stats$fpc))
   expect_equal(sum(sum.stats$fpc), 5)

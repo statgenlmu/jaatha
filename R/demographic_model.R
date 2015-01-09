@@ -252,18 +252,28 @@ addFeature <- function(dm, type, parameter,
 #' @param sum.stat The summary statistic to add. Use the names mentioned above.
 #' @param group If given, the summary statistic is only calculated for a 
 #'        given group of loci.
+#' @param population The population for which the summary statistic is calculated.
+#'   Currently only used for 'fpc' statistics.
 #' @return The model with a summary statistic added.
 #' @export
 #' @examples
 #' dm <- dm.createThetaTauModel(c(15, 20), 100)
 #' dm <- dm.addSummaryStatistic(dm, 'seg.sites')
 #' str(dm.simSumStats(dm, c(1, 5)))
-dm.addSummaryStatistic <- function(dm, sum.stat, group = 0) {
+dm.addSummaryStatistic <- function(dm, sum.stat, population = 0, group = 0) {
   checkType(dm, "dm")
   checkType(sum.stat, "char")
 
+  if (sum.stat == 'fpc' & population == 0) {
+    dm <- dm.addSummaryStatistic(dm, 'fpc', 1, group)
+    dm <- dm.addSummaryStatistic(dm, 'fpc', 2, group)
+    return(dm)
+  }
+  
   # Add the summary statistic
-  dm@sum.stats = rbind(dm@sum.stats, data.frame(name=sum.stat, group=group))
+  dm@sum.stats = rbind(dm@sum.stats, data.frame(name=sum.stat, 
+                                                population = population, 
+                                                group=group))
   dm@finalized = FALSE
   
   # Check if there is any simulation program supporting this summary statistic
@@ -394,7 +404,7 @@ getThetaName <- function(dm){
 }
 
 resetSumStats <- function(dm) {
-  dm@sum.stats <- data.frame(name=character(), group=numeric())
+  dm@sum.stats <- dm@sum.stats[FALSE, ]
   dm
 }
 
@@ -670,24 +680,20 @@ dm.addMutation <- function(dm, lower.range=NA, upper.range=NA,
 #' 
 #' @param dm  The demographic model to which recombination events should be added.
 #' @param sample.size A vector with sample sizes for each population. 
-#' @param group The group of loci with this sample size. 
 #' @return The demographic model with the sample
 #' @export
 #'
-dm.addSampleSize <- function(dm, sample.size, group=0) {
+dm.addSampleSize <- function(dm, sample.size) {
   checkType(sample.size, "num")
   for (smpl.nr in seq(along=sample.size)) {
     dm <- addFeature(dm, "sample", sample.size[smpl.nr], 
-                     pop.source=smpl.nr, group=group, time.point='0')
+                     pop.source=smpl.nr, group=0, time.point='0')
   }
   return(dm)
 }
 
 
-dm.getSampleSize <- function(dm, group.nr=NULL) {
-  if (!is.null(group.nr)) {
-    dm <- generateGroupModel(dm, group.nr)
-  }
+dm.getSampleSize <- function(dm) {
   feat.samples <- searchFeature(dm, type="sample")
   stopifnot(nrow(feat.samples) > 0)
 
@@ -1310,8 +1316,8 @@ generateGroupModel <- function(dm, group) {
   dm@features$group <- 0
   
   # Sum.Stats
-  sum.stats <- unique(dm@sum.stats[dm@sum.stats$group %in% c(0, group), 'name'])
-  dm@sum.stats <- data.frame(name=sum.stats, group=0)
+  dm@sum.stats <- dm@sum.stats[dm@sum.stats$group %in% c(0, group), ]
+  dm@sum.stats$group <- 0
   
   # Loci
   loci <- dm@loci[dm@loci$group == group, , drop=FALSE]
@@ -1412,9 +1418,11 @@ dm.getGroups <- function(dm) {
 }
 
 
-dm.getSummaryStatistics <- function(dm, group = 1) {
-  unique(dm@sum.stats[dm@sum.stats$group %in% c(0,group),'name'])
-} 
+dm.getSummaryStatistics <- function(dm, group = 1, pop) {
+  rows <- dm@sum.stats$group %in% c(0,group)
+  if (!missing(pop)) rows <- rows & dm@sum.stats$population == pop
+  unique(dm@sum.stats[rows, 'name'])
+}
 
 
 scaleDemographicModel <- function(dm, scaling.factor) {
@@ -1434,4 +1442,11 @@ dm.addInterLocusVariation <- function(dm, group = 0) {
 
 dm.hasInterLocusVariation <- function(dm, group = 0) {
   nrow(searchFeature(dm, 'inter_locus_variation', group = group)) > 0
+}
+
+getIndOfPop <- function(dm, population) {
+  sasi <- dm.getSampleSize(dm)
+  if (population == 1) return(1:sasi[1])
+  else if (population == 2) return(1:sasi[2]+sasi[1])
+  else stop("Invalid population")
 }
