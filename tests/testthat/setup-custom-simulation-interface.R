@@ -2,16 +2,14 @@
 block.test <- new("Block")
 block.test@border <- matrix(c(0, 0, 0.1, 0.1), 2, 2) 
 
-
 csi.sim.func <- function(x, jaatha) {
-  list(poisson.vector=c(rpois(3, x[1]), rpois(3, x[2])))
+  list(data=c(rpois(3, x[1]), rpois(3, x[2])))
 }
 csi.obs <- csi.sim.func(c(2:3))
-csi.sum.stats <- list("poisson.vector"=list(method="poisson.independent",
-                                            value=csi.obs$poisson.vector))
+csi.sum.stat <- R6::R6Class("Stat_PoiInd", inherit = Stat_Base)$new(csi.obs)
 csi.par.ranges <- matrix(c(0.1, 0.1, 10, 10), 2, 2)
 rownames(csi.par.ranges) <- c('x', 'y')
-jaatha.csi <- new("Jaatha", csi.sim.func, csi.par.ranges, csi.sum.stats, 2)
+jaatha.csi <- new("Jaatha", csi.sim.func, csi.par.ranges, list(csi=csi.sum.stat), 2)
 sim.data.csi <- jaatha:::simulateWithinBlock(10, block.test, jaatha.csi)
 
 # A Smoothing Model

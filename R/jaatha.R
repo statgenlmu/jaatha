@@ -103,30 +103,11 @@ init <- function(.Object, sim_func, par_ranges, sum_stats, cores = 1) {
 
   # Check sum.stats
   is.list(sum_stats) || stop("sum.stats needs to be a list")
-  for (i in names(sum_stats)) {
-    checkType(sum_stats[[i]]$value, c("num"))
-    checkType(sum_stats[[i]]$method, c("char", "s"))
-
-    if (sum_stats[[i]]$method == "poisson.independent") {
-      sum_stats[[i]]$transformation <- as.vector 
-      sum_stats[[i]]$value.transformed <- as.vector(sum_stats[[i]]$value)
+  sapply(sum_stats, function(x) {
+    if (!any(class(x) %in% c("Stat_PoiInd", "Stat_PoiSmooth"))) {
+      stop("Unknown summary statistic of type ", class(x))
     }
-    else if (sum_stats[[i]]$method == "poisson.transformed") {
-      checkType(sum_stats[[i]]$transformation, c("fun", "s"))
-      sum_stats[[i]]$value.transformed <- sum_stats[[i]]$transformation(sum_stats[[i]]$value)
-    }
-    else if (sum_stats[[i]]$method == "poisson.smoothing") {
-      checkType(sum_stats[[i]]$model, c("char", "s"))      
-      if (!is.null(sum_stats[[i]]$border.transformation)) {
-        stopifnot(!is.null(sum_stats[[i]]$border.mask))
-        sum_stats[[i]]$border.transformed <- 
-          sum_stats[[i]]$border.transformation(sum_stats[[i]]$value)
-      }
-    }
-    else {
-      stop("Unknown summary statistic type: ", sum_stats[[i]]$method)
-    }
-  }
+  })
   .Object@sum.stats <- sum_stats
 
   # Sample seeds
@@ -264,7 +245,7 @@ Jaatha.initialize <- function(data, model, cores=1, scaling.factor=1,
     if (use_fpc) {
       # TODO: Assert that dm contains 'seg.sites' statistic
       for (pop in 1:2) {
-        if (pop in fpc_populations) {
+        if (pop %in% fpc_populations) {
           sum.stats[[paste0('fpc_pop', pop, grp_name_ext)]] <- 
             Stat_FPC$new(seg.sites, dm, population = pop, group = group)
         }

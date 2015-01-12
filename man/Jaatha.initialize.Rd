@@ -4,7 +4,8 @@
 \title{Initialization of a Jaatha estimation for population genetics}
 \usage{
 Jaatha.initialize(data, model, cores = 1, scaling.factor = 1,
-  folded = FALSE, smoothing = FALSE, only_synonymous = FALSE)
+  folded = FALSE, smoothing = FALSE, only_synonymous = FALSE,
+  use_fpc = FALSE, fpc_populations = 1:2)
 }
 \arguments{
 \item{data}{The observed data. Jaatha can use data imported with package

@@ -1,65 +1,49 @@
 # --------------------------------------------------------------
 # Functions to fit GLMs to learn how the summary statistics depend
 # on the parameters.
-# 
-# Authors:  Paul R. Staab & Lisha Mathew
-# Date:     2013-11-14
-# Licence:  GPLv3 or later
 # --------------------------------------------------------------
+
+fitGlm <- function(sum_stat, sim_data, ...) UseMethod("fitGlm")
+fitGlm.default <- function(sum_stat, ...) stop('Unkown Summary Statistic')
 
 #' Fits a Generalized Linear Model within a block.  
 #'
 #' The model describes how the summary statistics depend on the parameters.
 #' 
-#' @param sim.data Simulation data in this block.
+#' @param sim_data Simulation data in this block.
 #' @param jaatha A Jaatha Object.
-#' @param weighting Potentially weights for the simulations.
 #' @return A list containing a list of fitted GLMs for each summary
 #' statistic.
-fitGlm <- function(sim.data, jaatha, weighting=NULL){ 
-  glm.fitted <- list()
+fitGlm.Jaatha <- function(jaatha, sim_data) { 
+  glm_fitted <- list()
   for (i in seq(along = jaatha@sum.stats)) {
-    name <- names(jaatha@sum.stats)[i] 
-    if (jaatha@sum.stats[[i]]$method %in% c("poisson.transformed",
-                                            "poisson.independent")) {
-      glm.fitted[[name]] <- fitGlmPoiTransformed(sim.data, name, 
-                                      jaatha@sum.stats[[i]]$transformation, 
-                                      weighting, jaatha)
-
-      stopifnot(length(glm.fitted[[name]]) == 
-                length(jaatha@sum.stats[[name]]$value.transformed))
-    }
-    else if (jaatha@sum.stats[[i]]$method == "poisson.smoothing") {
-      glm.fitted[[name]] <- fitPoiSmoothed(sim.data, name, weighting, jaatha)
-    } 
-    else stop("method not found")
+    name <- names(jaatha@sum.stats)[i]
+    glm_fitted[[name]] <- fitGlm(sum_stat, sim_data)
   }
-  return(glm.fitted)
+  glm_fitted
 }
 
-#' Fits a GLM for a summary statistics of type "poisson.transformed" and
-#' "poisson.independent"
+
+#' Fits a GLM for a summary statistics of type "poisson.independent"
 #'
-#' @param sim.data Results from simulations
-#' @param sum.stat Name of the summary statistics
-#' @param transformation Transformation function to apply to the data
-#' @param weighting Potentially weights for the simulations.
-#' @param jaatha A Jaatha Object.
+#' @param sim_data Results from simulations
+#' @param sum_stat Name of the summary statistics
 #' @return A list of fitted GLMs, one for each function
-fitGlmPoiTransformed <- function(sim.data, sum.stat, transformation, weighting, jaatha) {
-  stopifnot(!is.null(sum.stat))
-
-  stats.sim <- t(sapply(sim.data, 
-                        function(x) c(x$pars.normal, transformation(x[[sum.stat]])))) 
-  stats.names <- paste("S", 1:(ncol(stats.sim)-length(getParNames(jaatha))), sep="")
-  colnames(stats.sim) <- c(getParNames(jaatha), stats.names)
-
-  formulas <- paste0(stats.names, "~", paste(getParNames(jaatha) ,collapse= "+"))
-  glms <- lapply(formulas, glm, data=data.frame(stats.sim), family=poisson,
+fitGlm.Stat_PoiInd <- function(sum_stat, sim_data) { 
+  stat_sim <- t(sapply(sim_data, 
+                       function(data) c(data$pars.normal, sum_stat$transform(data))))
+  
+  par_names <- names(sim_data[[1]]$pars)
+  stat_names <- paste("S", 1:(ncol(stats_sim)-length(par_names)), sep="")
+  colnames(stat_sim) <- c(par_names, stat_names)
+  
+  formulas <- paste0(stat_names, "~", paste(par_names ,collapse= "+"))
+  glms <- lapply(formulas, glm, data=data.frame(stat_sim), family=poisson,
                  model = FALSE, x = FALSE, y = FALSE, control = list(maxit = 200))
   sapply(glms, function(x){if (!x$converged) stop('GLM did not converge')})
   glms
 }
+
 
 #' Fits a GLM for a summary statistics of type "poisson.smoothed"
 #'
