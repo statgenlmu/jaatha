@@ -181,7 +181,8 @@ rm(init)
 #' @export
 Jaatha.initialize <- function(data, model, cores=1, scaling.factor=1,
                               folded=FALSE, smoothing=FALSE, 
-                              only_synonymous=FALSE) {
+                              only_synonymous=FALSE, use_fpc=FALSE,
+                              fpc_populations=1:2) {
   
   checkType(model, c("dm", "s"))
   checkType(folded, c("bool", "single"))
@@ -227,9 +228,10 @@ Jaatha.initialize <- function(data, model, cores=1, scaling.factor=1,
     # ------------------------------------------------------------
     if (!smoothing) {
       sum.stats[[paste0('jsfs', grp_name_ext)]] <- 
-        list(method="poisson.transformed",
-             transformation=summarizeJSFS,
-             value=jsfs.value)
+        list(method = "poisson.transformed",
+             transformation = summarizeJSFS,
+             value = jsfs.value,
+             data = paste0('jsfs', grp_name_ext))
     
       if (folded) sum.stats$jsfs$transformation <- summarizeFoldedJSFS
     } else {
@@ -252,31 +254,33 @@ Jaatha.initialize <- function(data, model, cores=1, scaling.factor=1,
              model=model,
              value=jsfs.value,
              border.mask=border.mask,
-             border.transformation=summarizeJsfsBorder)
+             border.transformation=summarizeJsfsBorder,
+             data=paste0('jsfs', grp_name_ext))
     }
 
     # ------------------------------------------------------------
     # FPC Summary Statistic
     # ------------------------------------------------------------
-    for (pop in 1:2) {
-      if ('fpc' %in% dm.getSummaryStatistics(dm, group, pop = pop)) {
-        dm <- calcFpcBreaks(dm, seg.sites, group = group, population = pop)
-        sum.stats[[paste0('fpc_pop', pop, grp_name_ext)]] <- 
-          list(method='poisson.transformed', transformation=as.vector,
-               value=generateFpcStat(seg.sites, dm, group = group, 
-                                     population = pop))
+    if (use_fpc) {
+      # TODO: Assert that dm contains 'seg.sites' statistic
+      for (pop in 1:2) {
+        if (pop in fpc_populations) {
+          sum.stats[[paste0('fpc_pop', pop, grp_name_ext)]] <- 
+            Stat_FPC$new(seg.sites, dm, population = pop, group = group)
+        }
       }
     }
 
     # ------------------------------------------------------------
     # PMC Summary Statistic
     # ------------------------------------------------------------
-    if ('pmc' %in% dm.getSummaryStatistics(dm, group)) {
-      dm <- calcPmcBreaks(dm, seg.sites, group = group)
-      sum.stats[[paste0('pmc', grp_name_ext)]] <- 
-        list(method='poisson.transformed', transformation=as.vector,
-             value=createPolymClasses(seg.sites, dm, group = group))
-    }
+    #if ('pmc' %in% dm.getSummaryStatistics(dm, group)) {
+    #  dm <- calcPmcBreaks(dm, seg.sites, group = group)
+    #  sum.stats[[paste0('pmc', grp_name_ext)]] <- 
+    #    list(method='poisson.transformed', transformation=as.vector,
+    #         value=createPolymClasses(seg.sites, dm, group = group),
+    #         data = paste0('seg.sites', grp_name_ext))
+    #}
   }
 
 

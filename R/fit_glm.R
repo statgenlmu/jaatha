@@ -52,7 +52,7 @@ fitGlmPoiTransformed <- function(sim.data, sum.stat, transformation, weighting, 
   stats.sim <- t(sapply(sim.data, 
                         function(x) c(x$pars.normal, transformation(x[[sum.stat]])))) 
   stats.names <- paste("S", 1:(ncol(stats.sim)-length(getParNames(jaatha))), sep="")
-  colnames(stats.sim) <- c(getParNames(jaatha), stats.names) 
+  colnames(stats.sim) <- c(getParNames(jaatha), stats.names)
 
   formulas <- paste0(stats.names, "~", paste(getParNames(jaatha) ,collapse= "+"))
   glms <- lapply(formulas, glm, data=data.frame(stats.sim), family=poisson,

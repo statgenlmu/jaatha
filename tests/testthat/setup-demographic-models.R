@@ -16,20 +16,7 @@ dm.grp <- dm.addLocus(dm.grp, 100, 15, 1)
 dm.grp <- dm.addLocus(dm.grp, 200, 10, 2)
 dm.grp <- dm.addLocus(dm.grp, 50, 5, 3)
 sum.stats.grp <- dm.simSumStats(dm.addSummaryStatistic(dm.grp, 'seg.sites'), 
-                                                       c(1, 3))
-
-# fpc model
-dm.fpc <- dm.createDemographicModel(c(15,20), 100, 1000)
-dm.fpc <- dm.addSpeciationEvent(dm.fpc, .1, 5)
-dm.fpc <- dm.addRecombination(dm.fpc, 1, 5)
-dm.fpc <- dm.addMutation(dm.fpc, 1, 10)
-dm.fpc <- dm.addSymmetricMigration(dm.fpc, parameter=.75)
-seg.sites <- dm.simSumStats(dm.addSummaryStatistic(dm.fpc, 'seg.sites'), 
-                            c(1, 2, 3))$seg.sites
-dm.fpc <- dm.addSummaryStatistic(dm.fpc, 'fpc', population = 1)
-dm.fpc <- jaatha:::calcFpcBreaks(dm.fpc, seg.sites, population = 1)
-sum.stats.fpc <- dm.simSumStats(dm.addSummaryStatistic(dm.fpc, 'seg.sites'), 
-                                c(1, 2, 3))
+                                c(1, 3))
 
 
 

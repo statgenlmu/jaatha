@@ -23,6 +23,7 @@ Imports:
     reshape2 (>= 1.4),
     checkmate (>= 1.5.0),
     PopGenome (>= 2.1.0),
+    R6 (>= 2.0.1),
     parallel
 Suggests:
     ape (>= 2.7),
@@ -52,6 +53,7 @@ Collate:
     'sim_program_scrm.R'
     'sim_program_seqgen.R'
     'simulate_within_block.R'
+    'sum_stat_classes.R'
     'sum_stat_fpc.R'
     'sum_stat_generate.R'
     'sum_stat_jsfs.R'
