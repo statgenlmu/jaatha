@@ -4,7 +4,7 @@
 # --------------------------------------------------------------
 
 fitGlm <- function(sum_stat, sim_data, ...) UseMethod("fitGlm")
-fitGlm.default <- function(sum_stat, ...) stop('Unkown Summary Statistic')
+fitGlm.default <- function(sum_stat, sim_data...) stop('Unkown Summary Statistic')
 
 #' Fits a Generalized Linear Model within a block.  
 #'
@@ -18,7 +18,7 @@ fitGlm.Jaatha <- function(jaatha, sim_data) {
   glm_fitted <- list()
   for (i in seq(along = jaatha@sum.stats)) {
     name <- names(jaatha@sum.stats)[i]
-    glm_fitted[[name]] <- fitGlm(sum_stat, sim_data)
+    glm_fitted[[name]] <- fitGlm(jaatha@sum.stats[[i]], sim_data)
   }
   glm_fitted
 }
@@ -34,7 +34,7 @@ fitGlm.Stat_PoiInd <- function(sum_stat, sim_data) {
                        function(data) c(data$pars.normal, sum_stat$transform(data))))
   
   par_names <- names(sim_data[[1]]$pars)
-  stat_names <- paste("S", 1:(ncol(stats_sim)-length(par_names)), sep="")
+  stat_names <- paste("S", 1:(ncol(stat_sim)-length(par_names)), sep="")
   colnames(stat_sim) <- c(par_names, stat_names)
   
   formulas <- paste0(stat_names, "~", paste(par_names ,collapse= "+"))

@@ -56,7 +56,7 @@ Jaatha.initialSearch <- function(jaatha, sim=200, blocks.per.par=2, rerun=FALSE)
     for (j in 1:5) {
       sim.data = c(sim.data, simulateWithinBlock(sim, firstBlocks[[i]], jaatha))
       tryCatch({
-        suppressWarnings( glms.fitted <- fitGlm(jaatha, sim.data) )
+        suppressWarnings(glms.fitted <- fitGlm(jaatha, sim.data))
         break
       }, error = function(e) {
         if (j < 5) .print("Failed to fit the GLM. Retrying with more simulations...")

@@ -48,8 +48,8 @@ summarizeJSFS <- function(jsfs){
 }
 
 
-summarizeJsfsBorder <- function(jsfs) {
-  if (is.list(jsfs)) jsfs <- jsfs$jsfs 
+summarizeJsfsBorder <- function(sim_data) {
+  jsfs <- sim_data$jsfs
   n <- nrow(jsfs)
   m <- ncol(jsfs)
   c(sum(jsfs[1,2:3]),
@@ -67,8 +67,8 @@ summarizeJsfsBorder <- function(jsfs) {
 }
 
 
-summarizeFoldedJSFS <- function(jsfs) {
-  if (is.list(jsfs)) jsfs <- jsfs$jsfs 
+summarizeFoldedJSFS <- function(sim_data) {
+  jsfs <- sim_data$jsfs 
   n <- nrow(jsfs)
   m <- ncol(jsfs)
 
@@ -92,3 +92,24 @@ summarizeFoldedJSFS <- function(jsfs) {
 
   return(sumstats)
 }
+
+Stat_JSFS <- R6Class('Stat_PoiInd', 
+  inherit = Stat_Base,
+  public = list(
+    initialize = function(seg_sites, dm) {
+      private$data = self$transform(list(jsfs=calcJsfs(seg_sites, dm.getSampleSize(dm))))
+    },
+    transform = summarizeJSFS
+  )
+)
+
+Stat_JSFS_folded <- R6Class('Stat_PoiInd', 
+  inherit = Stat_Base,
+  public = list(
+    initialize = function(seg_sites, dm) {
+       private$data = self$transform(list(jsfs=calcJsfs(seg_sites, dm.getSampleSize(dm))))
+    },
+  transform = summarizeFoldedJSFS
+  )
+)
+  

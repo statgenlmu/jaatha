@@ -202,19 +202,15 @@ Jaatha.initialize <- function(data, model, cores=1, scaling.factor=1,
     
     seg.sites <- data[[paste0('seg.sites', grp_name_ext)]]
     if (is.null(seg.sites)) stop('No seg.sites in `data` for group ', group)
-    jsfs.value <- calcJsfs(seg.sites, dm.getSampleSize(dm))
 
     # ------------------------------------------------------------
     # JSFS Summary Statistic
     # ------------------------------------------------------------
     if (!smoothing) {
-      sum.stats[[paste0('jsfs', grp_name_ext)]] <- 
-        list(method = "poisson.transformed",
-             transformation = summarizeJSFS,
-             value = jsfs.value,
-             data = paste0('jsfs', grp_name_ext))
-    
-      if (folded) sum.stats$jsfs$transformation <- summarizeFoldedJSFS
+      if (folded) sum.stats[[paste0('jsfs', grp_name_ext)]] <- 
+        Stat_JSFS_folded$new(seg.sites, dm)
+      else sum.stats[[paste0('jsfs', grp_name_ext)]] <- 
+        Stat_JSFS$new(seg.sites, dm)
     } else {
       sample.size <- dm.getSampleSize(dm)
       warning("Smoothing is experimental")
