@@ -6,17 +6,15 @@ Stat_FPC <- R6Class('Stat_PoiInd', inherit = Stat_Base,
       private$group = group
       private$individuals = getIndOfPop(dm, population)
       private$llm = dm.getLociLengthMatrix(dm, group)
-      
-      # Calculate Breaks
-      if (any(props > 1)) stop('props greater then one')
+      if (any(break_props > 1)) stop('props greater then one')
       
       fpc.percent <- calcPercentFpcViolation(seg_sites, 
                                              private$individuals, 
                                              private$llm)
       
-      private$breaks = list(near=calcBreaks(fpc.percent[, 1], props),
-                            far=calcBreaks(fpc.percent[, 2], props),
-                            mut=calcBreaks(fpc.percent[, 6], props))
+      private$breaks = list(near=calcBreaks(fpc.percent[, 1], break_props),
+                            far=calcBreaks(fpc.percent[, 2], break_props),
+                            mut=calcBreaks(fpc.percent[, 6], break_props))
       
       # Calculate observed values
       private$data = self$transform(list(seg.sites = seg_sites))
@@ -29,7 +27,6 @@ Stat_FPC <- R6Class('Stat_PoiInd', inherit = Stat_Base,
       percent <- percent[!(is.nan(percent[,1]) | is.nan(percent[,2]) ), , 
                          drop = FALSE ]
       
-      print(percent)
       # Classify the loci accordingly
       locus_class <- matrix(1, nrow(percent), 3)
       
