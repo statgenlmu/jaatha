@@ -27,7 +27,6 @@
 #' @importFrom methods new representation 
 #' @importFrom parallel mclapply
 #' @importFrom Rcpp evalCpp
-#' @importFrom reshape2 melt
 #' @importFrom checkmate qassert qtest assertClass
 #' @useDynLib jaatha
 NULL
@@ -212,6 +211,7 @@ Jaatha.initialize <- function(data, model, cores=1, scaling.factor=1,
       else sum.stats[[paste0('jsfs', grp_name_ext)]] <- 
         Stat_JSFS$new(seg.sites, dm)
     } else {
+      if (folded) stop("You can't use both smoothing and a folded JSFS")
       sample.size <- dm.getSampleSize(dm)
       warning("Smoothing is experimental")
       model <- paste0("( X1 + I(X1^2) + X2 + I(X2^2) + log(X1) + log(",

@@ -93,6 +93,7 @@ summarizeFoldedJSFS <- function(sim_data) {
   return(sumstats)
 }
 
+# Binning
 Stat_JSFS <- R6Class('Stat_PoiInd', 
   inherit = Stat_Base,
   public = list(
@@ -103,13 +104,47 @@ Stat_JSFS <- R6Class('Stat_PoiInd',
   )
 )
 
+# Binning + Folded JSFS
 Stat_JSFS_folded <- R6Class('Stat_PoiInd', 
   inherit = Stat_Base,
   public = list(
     initialize = function(seg_sites, dm) {
-       private$data = self$transform(list(jsfs=calcJsfs(seg_sites, dm.getSampleSize(dm))))
+       private$data = self$transform(list(jsfs=calcJsfs(seg_sites, 
+                                                        dm.getSampleSize(dm))))
     },
   transform = summarizeFoldedJSFS
   )
 )
+
+# Smoothing
+Stat_JSFS_smooth <- R6Class('Stat_PoiSmooth',
+  inherit = Stat_Base,
+  private = list(
+      model = NA,
+      border_mask = NA,
+      border_stat = NA
+  ),
+  public = list(
+    initialize = function(seg_sites, dm) {
+      sample_size <- dm.getSampleSize(dm)
+      jsfs = calcJsfs(seg_sites, sample_size)
+      private$model <- paste0("( X1 + I(X1^2) + X2 + I(X2^2) + log(X1) + log(",
+                              sample.size[1]+2,
+                              "-X1) + log(X2) + log(",
+                              sample.size[2]+2,
+                              "-X2) )^2")
+      
+      private$border_mask <- jsfs.value
+      private$border_mask[, ] <- 0
+      private$border_mask[c(1, nrow(jsfs.value)), ] <- 1
+      private$border_mask[ ,c(1, ncol(jsfs.value))] <- 1
+      private$border_mask <- as.logical(border.mask)
+      
+      private$data = self$transform(list(jsfs=jsfs))
+    },
+    transformation = function(sim_data) sim_data$jsfs,
+    get_border_mask = function() private$border_mask
+  )
+)
+
   

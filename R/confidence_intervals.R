@@ -134,15 +134,11 @@ rerunAnalysis <- function(idx, jaatha, seeds, sum.stats=NULL, log.folder) {
 }
 
 
-convertSimDataToSumStats <- function(sim.data, sum.stats) {
-  for (sum.stat in names(sum.stats)) {
-    sum.stats[[sum.stat]]$value <- sim.data[[sum.stat]]
-    if(!is.null(sum.stats[[sum.stat]]$transformation)) {
-      sum.stats[[sum.stat]]$value.transformed <-
-        sum.stats[[sum.stat]]$transformation(sum.stats[[sum.stat]]$value) 
-    }
+convertSimDataToSumStats <- function(sim_data, sum_stats) {
+  for (sum_stat in names(sum_stats)) {
+    sum_stats[[sum_stat]]$set_data(sim_data)
   }
-  return(sum.stats)
+  sum_stats
 }
 
 

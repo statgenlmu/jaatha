@@ -19,18 +19,6 @@ simLikelihood <- function(jaatha, sim, pars) {
   sum(sapply(jaatha@sum.stats, simLogLLH, sim_data, getScalingFactor(jaatha)))
 }
 
-#     else if (sum.stats[[sum.stat]]$method == "poisson.smoothing") {
-#       sum.stat.value <- as.vector(sum.stats[[sum.stat]]$value)
-#       sim.mean <- apply(sapply(sim.data, function(x) as.vector(x[[sum.stat]])), 1, mean)
-#       if (any(sim.mean == 0)) warning("Warning: A summary statistic was always 0,
-#                                       likelihood will be inaccurate. Try
-#                                       increasing sim.final") 
-#       sim.mean[sim.mean == 0] <- .5
-#       log.cl <- log.cl + 
-#         sum(sum.stat.value * log(sim.mean) - sim.mean - calcLogFactorial(sum.stat.value)) 
-#     }
-
-
 simLogLLH <- function(sum_stat, ...) UseMethod("simLogLLH")
 simLogLLH.default <- function(sum_stat, ...) stop('Unkown Summary Statistic')
 
@@ -43,6 +31,21 @@ simLogLLH.Stat_PoiInd <- function(sum_stat, sim_data, scaling_factor = 1) {
   if (scaling_factor != 1) simSS <- simSS * scaling_factor
   
   sum(sum_stat$get_data() * log(simSS) - simSS - calcLogFactorial(sum_stat$get_data())) 
+}
+
+simLogLLH.Stat_PoiSmooth <- function(sum_stat, sim_data, scaling_factor = 1) {
+  sim_results <- sapply(sim_data,
+                        function(x) sum_stat$transform(x)$sum.stat)
+  sim_mean <- apply(sim_results, 1, mean)
+  
+  if (any(sim_mean == 0)) {
+    warning(paste("A summary statistic was always 0, likelihood will",
+                  "be inaccurate. Try increasing sim.final"))
+    sim_mean[sim.mean == 0] <- .5
+  }
+  
+  obs <- sum_stat$get_data()$sum.stat
+  sum(obs * log(sim_mean) - sim_mean - calcLogFactorial(obs)) 
 }
 
 calcLogFactorial <- function(k) {
