@@ -61,20 +61,6 @@ test_that("msmsSimFunc works with inter-locus variation", {
   expect_equal(sum_stats$jsfs, sum_stats2$jsfs)
 })
 
-test_that("Generation of PMC statistic works", {
-  if (!test_msms) skip('msms not installed')
-  set.seed(941)
-  dm.sel <- dm.addSummaryStatistic(dm.sel, "pmc")
-  dm.sel@options[['pmc_breaks_private']] <- .5
-  dm.sel@options[['pmc_breaks_fixed']] <- .5
-  sum.stats <- msmsSimFunc(dm.sel, c(0.1, 2, 2, 500))
-  expect_equal(length(sum.stats), 3)
-  expect_false(is.null(sum.stats$pars))
-  expect_false(is.null(sum.stats$pmc))
-  expect_true(is.array(sum.stats[["pmc"]]))
-  expect_equal(sum(sum.stats[["pmc"]]), dm.getLociNumber(dm.sel))
-})
-
 test_that("Creation of parameter enviroment works", {
   par_envir <- createParameterEnv(dm.tt, c(1,5))
   expect_equal(par_envir[['tau']], 1)

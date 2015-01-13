@@ -10,7 +10,7 @@ possible.features  <- c("sample", "loci.number", "loci.length",
                         "mutation", "migration", "split",
                         "recombination", "size.change", "growth",
                         "inter_locus_variation")
-possible.sum.stats <- c("jsfs", "fpc", "trees", "seg.sites", "pmc", "file")
+possible.sum.stats <- c("jsfs", "trees", "seg.sites", "file")
 
 
 # This function generates an string that contains an R command for generating
