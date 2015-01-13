@@ -124,8 +124,6 @@ test_that("test.dm.getSummaryStatistic", {
   expect_equal(length(dm.getSummaryStatistics(dm.grp, 1)),  1)
   expect_true(dm.getSummaryStatistics(dm.grp, 2) == "jsfs")
   expect_equal(length(dm.getSummaryStatistics(dm.grp, 2)), 1)
-  expect_true(all(c("jsfs", "fpc") %in% dm.getSummaryStatistics(dm.fpc)))
-  expect_equal(length(dm.getSummaryStatistics(dm.fpc)), 2)
 })
 
 test_that("test.generateGroupModel", {
@@ -191,7 +189,6 @@ test_that("test.getSampleSize", {
 
 test_that("test.getThetaName", {
   expect_equal(getThetaName(dm.tt), "theta")
-  expect_equal(getThetaName(dm.fpc), "theta")
   if (test_seqgen) {
     expect_equal(getThetaName(dm.hky), "theta")
     expect_equal(getThetaName(dm.f81), "theta")
