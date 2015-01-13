@@ -32,19 +32,17 @@ test_that("test.initialSearch.folded", {
 })
 
 test_that("test.initialSearch.fpc", {
-  jaatha <- Jaatha.initialize(sum.stats.fpc, dm.fpc, cores = 2)
+  jaatha <- Jaatha.initialize(sum.stats.mig, dm.mig, cores=2, use_fpc=TRUE)
   jaatha <- Jaatha.initialSearch(jaatha, sim = 20, blocks.per.par = 1)
   pStartPoints <- Jaatha.getStartingPoints(jaatha)
   expect_equal(nrow(pStartPoints), 1)
 })
 
 test_that("test.initialSearch.fpc_groups", {
-  set.seed(1234)
-  dm <- dm.addLocus(dm.fpc, 50, 5, group = 2)
-  dm <- dm.addLocus(dm.fpc, 60, 6, group = 3)
-  sum.stats <- dm.simSumStats(dm.addSummaryStatistic(dm, "seg.sites"), c(1, 2, 5))
-  jaatha.fpc <- Jaatha.initialize(sum.stats, dm)
-  jaatha.fpc <- Jaatha.initialSearch(jaatha.fpc, sim = 10, blocks.per.par = 1)
+  jaatha <- Jaatha.initialize(sum.stats.grp, dm.grp, cores=2, use_fpc=TRUE)
+  jaatha <- Jaatha.initialSearch(jaatha, sim = 10, blocks.per.par = 1)
+  pStartPoints <- Jaatha.getStartingPoints(jaatha)
+  expect_equal(nrow(pStartPoints), 1)
 })
 
 test_that("test.initialSearch.normal", {

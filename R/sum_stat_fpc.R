@@ -20,6 +20,7 @@ Stat_FPC <- R6Class('Stat_PoiInd', inherit = Stat_Base,
       private$data = self$transform(list(seg.sites = seg_sites))
     },
     generate = function(seg_sites, breaks = private$breaks) {
+      stopifnot(!is.null(seg_sites))
       percent <- calcPercentFpcViolation(seg_sites,
                                          private$individuals, 
                                          private$llm)

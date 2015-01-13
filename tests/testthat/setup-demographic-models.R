@@ -7,7 +7,7 @@ jaatha.tt    <- Jaatha.initialize(sum.stats.tt, dm.tt, cores = 2)
 # Migration Model
 dm.mig        <- dm.addSymmetricMigration(dm.tt, 1, 5)
 sum.stats.mig <- dm.simSumStats(dm.addSummaryStatistic(dm.mig, 'seg.sites'), 
-                                c(1, 1, 5))
+                                c(.3, 1, 5))
 jaatha.mig    <- Jaatha.initialize(sum.stats.mig, dm.mig, cores = 2) 
 
 # Groups

@@ -230,6 +230,10 @@ Jaatha.initialize <- function(data, model, cores=1, scaling.factor=1,
     # FPC Summary Statistic
     # ------------------------------------------------------------
     if (use_fpc) {
+      if (!'seg.sites' %in% dm.getSummaryStatistics(dm)) {
+        dm <- dm.addSummaryStatistic(dm, 'seg.sites', group = 0)
+      }
+      
       # TODO: Assert that dm contains 'seg.sites' statistic
       for (pop in 1:2) {
         if (pop %in% fpc_populations) {

@@ -58,6 +58,10 @@ test_that("JSFS is added when not in model", {
   expect_equal(dm.getSummaryStatistics(j@opts[['dm']]), as.factor(c('jsfs')))
 })
 
+test_that("seg.sites are added when not in model", {
+  j <- Jaatha.initialize(sum.stats.tt, dm.tt, use_fpc = TRUE)
+  expect_true('seg.sites' %in% dm.getSummaryStatistics(j@opts[['dm']]))
+})
 
 test_that("PG initialization with groups works", {
   jaatha.grp <- Jaatha.initialize(sum.stats.grp, dm.grp)
