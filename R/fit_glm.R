@@ -49,7 +49,6 @@ fitGlm.Stat_PoiInd <- function(sum_stat, sim_data) {
 #'
 #' @param sim_data Results from simulations
 #' @param sum_stat Name of the summary statistics
-#' @param jaatha A Jaatha Object.
 #' @return A list with one fitted GLM
 fitGlm.Stat_PoiSmooth <- function(sum_stat, sim_data) {
   par_names <- names(sim_data[[1]]$pars)
@@ -78,37 +77,4 @@ fitGlm.Stat_PoiSmooth <- function(sum_stat, sim_data) {
     glms <- list(smooth=smooth_glm)
   #}
   glms
-}
-
-
-#' Converts simulation results into a data frame that is usable for fitting a
-#' glm.
-#'
-#' Currently only works with nx2 matix summary statistics.
-#' 
-#' @param sim.data Results from simulations
-#' @param sum.stat Name of the summary statistics which should get converted
-#' @param mask Boolean vector of positions to exclude in the data.frame
-#' @return The summary statistics as data.frame 
-#' @importFrom reshape2 melt
-convertSimResultsToDataFrame <- function(sim_data, sum_stat, mask=NULL) {
-  #do.call(rbind, lapply(sim_data, function(sim_result) {
-
-  dim_names <- lapply(dim(sim_data), function(x) 1:x)
-  names(dim_names) <- paste0('X', 1:length(dim(sim_data)))
-  dimnames(sim_data) <- dim_names
-  sum_stat_df <- melt(data, value.name = 'sum.stat')
-
-  # Add the corsponding parameters
-  #if (!is.null(sim_result$pars.normal)) {
-  #  pars <- matrix(sim_result$pars.normal, nrow(sum_stat_df),
-  #                 length(sim_result$pars.normal), byrow=TRUE)
-  #  colnames(pars) <- names(sim_result$pars.normal)
-  #  sum_stat_df <- data.frame(pars, sum_stat_df)
-  #}
-
-  # Remove masked values (if any)
-  if (!is.null(mask)) sum_stat_df <- sum_stat_df[!mask, ]
-  sum_stat_df
-  #}))
 }

@@ -155,6 +155,14 @@ rm(init)
 #'              position of the different entries is treated as a model
 #'              parameter. This feature is still experimental and not
 #'              recommended for productive use at the moment.  
+#' @param use_fpc Additionally to the JSFS, also use the four point condition
+#'        (FPC) summary statistc. The FPC statistic is sensitive for 
+#'        recombination and selection, so consider adding it if your model has
+#'        either or both.
+#' @param fpc_populations the populations within which the FPC statistic is
+#'        calculated if \code{use_fpc = TRUE}. Recommended settings are both
+#'        population unless the model has directional selection one population. 
+#'        In that case, only use this population. 
 #' @param only_synonymous Only use synonymous SNP if set to \code{TRUE}. Requires
 #'              to provided \code{data} as a PopGenome "GENOME" object.
 #' @return A S4-Object of type jaatha containing the settings
@@ -212,27 +220,10 @@ Jaatha.initialize <- function(data, model, cores=1, scaling.factor=1,
         Stat_JSFS$new(seg.sites, dm)
     } else {
       if (folded) stop("You can't use both smoothing and a folded JSFS")
-      sample.size <- dm.getSampleSize(dm)
-      warning("Smoothing is experimental")
-      model <- paste0("( X1 + I(X1^2) + X2 + I(X2^2) + log(X1) + log(",
-                      sample.size[1]+2,
-                      "-X1) + log(X2) + log(",
-                      sample.size[2]+2,
-                      "-X2) )^2")
-  
-      border.mask <- jsfs.value
-      border.mask[, ] <- 0
-      border.mask[c(1, nrow(jsfs.value)), ] <- 1
-      border.mask[ ,c(1, ncol(jsfs.value))] <- 1
-      border.mask <- as.logical(border.mask)
-  
       sum.stats[[paste0('jsfs', grp_name_ext)]] <- 
-        list(method="poisson.smoothing",
-             model=model,
-             value=jsfs.value,
-             border.mask=border.mask,
-             border.transformation=summarizeJsfsBorder,
-             data=paste0('jsfs', grp_name_ext))
+        Stat_JSFS_smooth$new(seg.sites, dm)
+      sum.stats[[paste0('jsfs_border', grp_name_ext)]] <- 
+        Stat_JSFS_border$new(seg.sites, dm)
     }
 
     # ------------------------------------------------------------

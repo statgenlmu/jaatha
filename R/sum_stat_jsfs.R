@@ -118,33 +118,42 @@ Stat_JSFS_folded <- R6Class('Stat_PoiInd',
 
 # Smoothing
 Stat_JSFS_smooth <- R6Class('Stat_PoiSmooth',
-  inherit = Stat_Base,
+  inherit = Stat_PoiSmooth,
   private = list(
       model = NA,
-      border_mask = NA,
-      border_stat = NA
+      rows = NA,
+      cols = NA
   ),
   public = list(
     initialize = function(seg_sites, dm) {
       sample_size <- dm.getSampleSize(dm)
       jsfs = calcJsfs(seg_sites, sample_size)
       private$model <- paste0("( X1 + I(X1^2) + X2 + I(X2^2) + log(X1) + log(",
-                              sample.size[1]+2,
+                              sample_size[1]+1,
                               "-X1) + log(X2) + log(",
-                              sample.size[2]+2,
+                              sample_size[2]+1,
                               "-X2) )^2")
       
-      private$border_mask <- jsfs.value
-      private$border_mask[, ] <- 0
-      private$border_mask[c(1, nrow(jsfs.value)), ] <- 1
-      private$border_mask[ ,c(1, ncol(jsfs.value))] <- 1
-      private$border_mask <- as.logical(border.mask)
+      private$rows <- 2:sample_size[1]
+      private$cols <- 2:sample_size[2]
       
-      private$data = self$transform(list(jsfs=jsfs))
+      self$set_data(list(jsfs=jsfs))
+      if (all(self$get_data()$sum.stat == 0)) 
+        stop("Inner JSFS used for smoothing only consists of 0s")
     },
-    transformation = function(sim_data) sim_data$jsfs,
-    get_border_mask = function() private$border_mask
+    transform = function(sim_data) {
+      private$to_data_frame(sim_data$jsfs[private$rows, private$cols])
+    }
   )
 )
 
+Stat_JSFS_border <- R6Class('Stat_PoiInd', 
+  inherit = Stat_Base,
+  public = list(
+    initialize = function(seg_sites, dm) {
+      private$data = self$transform(list(jsfs=calcJsfs(seg_sites, dm.getSampleSize(dm))))
+     },
+     transform = summarizeJsfsBorder
+  )
+)
   

@@ -6,17 +6,17 @@ jaatha.tt    <- Jaatha.initialize(sum.stats.tt, dm.tt, cores = 2)
 
 # Migration Model
 dm.mig        <- dm.addSymmetricMigration(dm.tt, 1, 5)
-sum.stats.mig <- dm.simSumStats(dm.addSummaryStatistic(dm.mig,  'seg.sites'), 
+sum.stats.mig <- dm.simSumStats(dm.addSummaryStatistic(dm.mig, 'seg.sites'), 
                                 c(1, 1, 5))
 jaatha.mig    <- Jaatha.initialize(sum.stats.mig, dm.mig, cores = 2) 
 
 # Groups
-dm.grp <- dm.tt
+dm.grp <- dm.mig
 dm.grp <- dm.addLocus(dm.grp, 100, 15, 1)
 dm.grp <- dm.addLocus(dm.grp, 200, 10, 2)
 dm.grp <- dm.addLocus(dm.grp, 50, 5, 3)
 sum.stats.grp <- dm.simSumStats(dm.addSummaryStatistic(dm.grp, 'seg.sites'), 
-                                c(1, 3))
+                                c(1, 1, 3))
 
 
 

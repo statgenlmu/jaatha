@@ -1,12 +1,12 @@
 # A Block
 block.test <- new("Block")
-block.test@border <- matrix(c(0, 0, 0.1, 0.1), 2, 2) 
+block.test@border <- matrix(c(0.4, 0.4, 0.6, 0.6), 2, 2) 
 
 csi.sim.func <- function(x, jaatha) {
   list(data=c(rpois(3, x[1]), rpois(3, x[2])))
 }
 csi.obs <- csi.sim.func(c(2:3))
-csi.sum.stat <- R6::R6Class("Stat_PoiInd", inherit = Stat_Base)$new(csi.obs)
+csi.sum.stat <- R6::R6Class("Stat_PoiInd", inherit = jaatha:::Stat_Base)$new(csi.obs)
 csi.par.ranges <- matrix(c(0.1, 0.1, 10, 10), 2, 2)
 rownames(csi.par.ranges) <- c('x', 'y')
 jaatha.csi <- new("Jaatha", csi.sim.func, csi.par.ranges, list(csi=csi.sum.stat), 2)
@@ -27,7 +27,7 @@ smooth_simfunc <- function(x, jaatha) {
 }
 
 smooth_obs <- smooth_simfunc(c(3, 4))
-smooth_stat <- Stat_PoiSmooth$new(smooth_obs$data, "(X1^2)*(X2^2)+log(X1)*log(X2)")
+smooth_stat <- jaatha:::Stat_PoiSmooth$new(smooth_obs$data, "(X1^2)*(X2^2)+log(X1)*log(X2)")
   
 smooth_par_ranges <- matrix(c(2, 1, 7, 7), 2, 2)
 rownames(smooth_par_ranges) <- c('x', 'y')

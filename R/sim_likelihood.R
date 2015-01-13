@@ -1,22 +1,13 @@
-# --------------------------------------------------------------
-# calc_likelihood.R
-# A function to calculate the likelihood of specific parsameter 
-# combinations using simulations. 
-# 
-# Authors:  Paul R. Staab & Lisha Mathew 
-# Date:     2013-11-28
-# Licence:  GPLv3 or later
-# --------------------------------------------------------------
-
-## Funtion to calculate the likelihood based on simulations with the
-## given parameters.  Order of parameters should be the same as needed
-## for the simulate-function (in Simulator.R).
 simLikelihood <- function(jaatha, sim, pars) {
   sim_pars <- matrix(pars, sim, length(pars), byrow=TRUE)
   sim_data <- runSimulations(sim_pars, jaatha@cores, jaatha)
 
-  # Average the values of each summary statistic
-  sum(sapply(jaatha@sum.stats, simLogLLH, sim_data, getScalingFactor(jaatha)))
+  llh <- 0
+  for (sum_stat in jaatha@sum.stats) {
+    # sapply + S3 dispatch case unit tests to fails => use 'for' here
+    llh <- llh + simLogLLH(sum_stat, sim_data, getScalingFactor(jaatha))
+  }
+  llh
 }
 
 simLogLLH <- function(sum_stat, ...) UseMethod("simLogLLH")
@@ -41,7 +32,7 @@ simLogLLH.Stat_PoiSmooth <- function(sum_stat, sim_data, scaling_factor = 1) {
   if (any(sim_mean == 0)) {
     warning(paste("A summary statistic was always 0, likelihood will",
                   "be inaccurate. Try increasing sim.final"))
-    sim_mean[sim.mean == 0] <- .5
+    sim_mean[sim_mean == 0] <- .5
   }
   
   obs <- sum_stat$get_data()$sum.stat

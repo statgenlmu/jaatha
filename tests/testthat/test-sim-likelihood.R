@@ -1,7 +1,7 @@
 context("Final Likelihood estimation")
 
 test_that("direct simulation of likelihoods works", {
-    lh1 <- simLikelihood(jaatha.csi, 10, c(0.5, 0.5))
+    lh1 <- simLikelihood(jaatha.csi, 20, c(0.5, 0.5))
     expect_true(is.numeric(lh1))
     expect_true(lh1 != 0)
     

@@ -298,7 +298,8 @@ test_that("test.simSumStats", {
   expect_true(is.list(sum.stats))
   expect_false(is.null(sum.stats$jsfs))
   expect_true(sum(sum.stats$jsfs) > 0)
-  sum.stats <- dm.simSumStats(dm.grp, c(1, 5), "jsfs")
+  
+  sum.stats <- sum.stats.grp
   expect_false(is.null(sum.stats))
   expect_false(is.null(sum.stats$jsfs.1))
   expect_true(sum(sum.stats$jsfs.1) > 0)

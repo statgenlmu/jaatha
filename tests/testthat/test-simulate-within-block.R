@@ -9,8 +9,8 @@ test_that("test.runSimulatinos", {
         expect_true(all(denormalize(pars.test[i, ], jaatha.csi) == 
             sum.stats1[[i]]$pars))
         expect_true(all(pars.test[i, ] == sum.stats1[[i]]$pars.normal))
-        expect_false(is.null(sum.stats1[[i]]$poisson.vector))
-        expect_true(sum(sum.stats1[[i]]$poisson.vector) > 0)
+        expect_false(is.null(sum.stats1[[i]]$data))
+        expect_true(sum(sum.stats1[[i]]$data) > 0)
     }
 })
 

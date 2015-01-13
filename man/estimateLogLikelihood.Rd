@@ -3,15 +3,15 @@
 \alias{estimateLogLikelihood}
 \title{Estimates the likelihood for a parameter combination}
 \usage{
-estimateLogLikelihood(param, glm.fitted, sum.stats, scaling_factor = 1)
+estimateLogLikelihood(param, glm_fitted, sum_stats, scaling_factor = 1)
 }
 \arguments{
 \item{param}{The parameter combination. Must be a named vector where the
 names are the name of the parameters.}
 
-\item{glm.fitted}{A list of the fitted GLMs, as produced by fitGLM().}
+\item{glm_fitted}{A list of the fitted GLMs, as produced by fitGLM().}
 
-\item{sum.stats}{The summary statistic description, as in jaatha's sum.stats}
+\item{sum_stats}{The summary statistic description, as in jaatha's sum.stats}
 
 \item{scaling_factor}{The scaling factor used for the simulations
 slot.}

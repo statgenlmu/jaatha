@@ -18,12 +18,7 @@ Stat_PoiSmooth <- R6Class("Stat_PoiSmooth", inherit = Stat_Base,
   public = list(
     get_model = function() private$model,
     transform = function(sim_data) {
-      data <- sim_data$data
-      # Convert to data.frame
-      dim_names <- lapply(dim(data), function(x) 1:x)
-      names(dim_names) <- paste0('X', 1:length(dim(data)))
-      dimnames(data) <- dim_names
-      melt(data, value.name = 'sum.stat')
+      private$to_data_frame(sim_data$data)
     },
     initialize = function(data, model) {
       private$data = self$transform(list(data=data))
@@ -31,6 +26,12 @@ Stat_PoiSmooth <- R6Class("Stat_PoiSmooth", inherit = Stat_Base,
     }
   ),
   private = list(
-    model = ""
+    model = "",
+    to_data_frame = function(data) {
+      dim_names <- lapply(dim(data), function(x) 1:x)
+      names(dim_names) <- paste0('X', 1:length(dim(data)))
+      dimnames(data) <- dim_names
+      melt(data, value.name = 'sum.stat')
+    }
   )
 )
