@@ -63,8 +63,7 @@ Jaatha.confidenceIntervals <- function(jaatha, conf.level=0.95,
   set.seed(seeds[length(seeds)])
   sim.pars <- matrix(est.pars, replicas, getParNumber(jaatha), byrow=TRUE)
   sim.data <- runSimulations(sim.pars, cores, jaatha) 
-  sum.stats <- lapply(sim.data, convertSimDataToSumStats, 
-                      sum.stats=jaatha@sum.stats)
+  sum.stats <- lapply(sim.data, convertSimDataToSumStats, jaatha@sum.stats)
 
   .print("Conducting Bootstrap Runs...")
   bs.results <- mclapply(subset, rerunAnalysis, 
