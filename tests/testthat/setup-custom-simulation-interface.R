@@ -3,9 +3,9 @@ block.test <- new("Block")
 block.test@border <- matrix(c(0.4, 0.4, 0.6, 0.6), 2, 2) 
 
 csi.sim.func <- function(x, jaatha) {
-  list(data=c(rpois(3, x[1]), rpois(3, x[2])))
+  list(data=c(rpois(5, x[1]), rpois(5, x[2])))
 }
-csi.obs <- csi.sim.func(c(2:3))
+csi.obs <- csi.sim.func(c(3,5))
 csi.sum.stat <- R6::R6Class("Stat_PoiInd", inherit = jaatha:::Stat_Base)$new(csi.obs)
 csi.par.ranges <- matrix(c(0.1, 0.1, 10, 10), 2, 2)
 rownames(csi.par.ranges) <- c('x', 'y')
