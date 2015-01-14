@@ -1,44 +1,39 @@
 context("FGC Summary Statistic")
 
 test_that("Fpc Breaks calculation works", {
-    dm = calcFpcBreaks(dm.fpc, seg.sites, population = 1)
-    expect_false(is.null(dm@options[["fpc_breaks_pop1"]]))
-    expect_false(is.null(dm@options[["fpc_breaks_pop1"]]$near))
-    expect_false(is.null(dm@options[["fpc_breaks_pop1"]]$far))
-    expect_false(is.null(dm@options[["fpc_breaks_pop1"]]$mut))
-    
-    dm = calcFpcBreaks(dm.fpc, seg.sites, group = 1, population = 1)
-    expect_false(is.null(dm@options[["group.1"]][["fpc_breaks_pop1"]]))
-    expect_false(is.null(dm@options[["group.1"]][["fpc_breaks_pop1"]]$near))
-    expect_false(is.null(dm@options[["group.1"]][["fpc_breaks_pop1"]]$far))
-    expect_false(is.null(dm@options[["group.1"]][["fpc_breaks_pop1"]]$mut))
-    
-    dm = calcFpcBreaks(dm, seg.sites, group = 2, population = 1)
-    expect_false(is.null(dm@options[["group.1"]][["fpc_breaks_pop1"]]))
-    expect_false(is.null(dm@options[["group.2"]][["fpc_breaks_pop1"]]))
-    expect_false(is.null(dm@options[["group.2"]][["fpc_breaks_pop1"]]$near))
-    expect_false(is.null(dm@options[["group.2"]][["fpc_breaks_pop1"]]$far))
-    expect_false(is.null(dm@options[["group.2"]][["fpc_breaks_pop1"]]$mut))
-    
-    dm = calcFpcBreaks(dm.fpc, seg.sites, group = 2, population = 2)
-    expect_true(is.null(dm@options[["group.1"]][["fpc_breaks_pop2"]]))
-    expect_false(is.null(dm@options[["group.2"]][["fpc_breaks_pop2"]]))
-    expect_false(is.null(dm@options[["group.2"]][["fpc_breaks_pop2"]]$near))
-    expect_false(is.null(dm@options[["group.2"]][["fpc_breaks_pop2"]]$far))
-    expect_false(is.null(dm@options[["group.2"]][["fpc_breaks_pop2"]]$mut))    
-    
-    #dm.lt <- dm.addLocusTrio(dm.fpc, locus_length = c(200, 400, 200),
-    #                         distance = c(100, 100), group = 2)
-    #dm = calcFpcBreaks(dm.lt, seg.sites)
-    #expect_false(is.null(dm@options[["fpc.breaks.near"]]))
-    #expect_false(is.null(dm@options[["fpc.breaks.far"]]))
-    #expect_false(is.null(dm@options[["fpc.breaks.between"]]))
-    
-    #dm = calcFpcBreaks(dm.lt, list(seg.sites[[1]]), group = 2)
-    #expect_false(is.null(dm@options[['group.2']][["fpc.breaks.between"]]))
+  fpc = Stat_FPC$new(sum.stats.tt$seg.sites, dm.tt, population = 1, group = 0)
+  expect_false(is.null(fpc$get_breaks()))
+  expect_false(is.null(fpc$get_breaks()$near))
+  expect_false(is.null(fpc$get_breaks()$far))
+  expect_false(is.null(fpc$get_breaks()$mut))
+  rm(fpc)
+  
+  fpc = Stat_FPC$new(sum.stats.tt$seg.sites, dm.tt, population = 2, group = 0)
+  expect_false(is.null(fpc$get_breaks()))
+  expect_false(is.null(fpc$get_breaks()$near))
+  expect_false(is.null(fpc$get_breaks()$far))
+  expect_false(is.null(fpc$get_breaks()$mut))
+  rm(fpc)
+  
+  fpc = Stat_FPC$new(sum.stats.grp$seg.sites.1, dm.grp, 
+                     population = 1, group = 1)
+  expect_false(is.null(fpc$get_breaks()))
+  expect_false(is.null(fpc$get_breaks()$near))
+  expect_false(is.null(fpc$get_breaks()$far))
+  expect_false(is.null(fpc$get_breaks()$mut))
+  rm(fpc)  
+  
+  fpc = Stat_FPC$new(sum.stats.grp$seg.sites.2, dm.grp, 
+                     population = 2, group = 2)
+  expect_false(is.null(fpc$get_breaks()))
+  expect_false(is.null(fpc$get_breaks()$near))
+  expect_false(is.null(fpc$get_breaks()$far))
+  expect_false(is.null(fpc$get_breaks()$mut))
+  rm(fpc)
 })
 
 test_that("generateFpcStat works", {
+  # One Locus
   seg.sites <- list(matrix(c(1, 1, 0, 0, 0, 
                              1, 0, 1, 0, 1, 
                              1, 1, 1, 1, 0, 
@@ -47,18 +42,23 @@ test_that("generateFpcStat works", {
                              1, 0, 0, 0, 0), 6, byrow=TRUE))
   attr(seg.sites[[1]], "positions") <- c(0.1, 0.12, 0.5, 0.51, 0.61)
   dm <- dm.createDemographicModel(c(6,0), 1)
-  dm@options[["fpc_breaks_pop1"]] <- list(near=.5, far=.5, between=.5)
-    
-  fpc <- generateFpcStat(seg.sites, dm, population = 1)
-  expect_equal(sum(abs(fpc)), 1)
-  expect_equal(fpc[2, 2, 1], 1)  
+  fpc = Stat_FPC$new(seg.sites, dm, population = 1) 
   
-  dm@options[["fpc_breaks_pop1"]]$far <- .9
-  fpc <- generateFpcStat(seg.sites, dm, population = 1)
-  expect_equal(sum(abs(fpc)), 1)
-  expect_equal(fpc[2, 1, 1], 1) 
+  breaks = fpc$generate(seg.sites, breaks = list(near=.5, far=.5, mut=.5))  
+  expect_equal(sum(abs(breaks)), 1)
+  expect_equal(breaks[2, 2, 1], 1)  
   
-  dm@options[["fpc_breaks_pop1"]]$far <- c(.25, .85)
+  breaks = fpc$generate(seg.sites, breaks = list(near=.5, far=.9, mut=.5))  
+  expect_equal(sum(abs(breaks)), 1)
+  expect_equal(breaks[2, 1, 1], 1)
+  
+  # Check that NaNs are ignored
+  attr(seg.sites[[1]], "positions") <- c(0.1, 0.3, 0.5, 0.7, 0.9)
+  stat = fpc$generate(seg.sites, breaks = list(near=.5, far=.9, mut=.5))  
+  expect_equal(sum(abs(stat)), 0) 
+  
+  # Two Loci
+  attr(seg.sites[[1]], "positions") <- c(0.1, 0.12, 0.5, 0.51, 0.61)
   seg.sites[[2]] <- matrix(c(1, 1, 0, 0, 0, 
                              1, 0, 1, 0, 1, 
                              1, 1, 1, 1, 0, 
@@ -67,21 +67,34 @@ test_that("generateFpcStat works", {
                              1, 0, 0, 0, 0), 6, byrow=TRUE)
   attr(seg.sites[[2]], "positions") <- c(0.1, 0.3, 0.5, 0.7, 0.9)
   dm <- dm.setLociNumber(dm, 2)
-  fpc <- generateFpcStat(seg.sites, dm, population = 1)
-  expect_equal(sum(abs(fpc)), 2)
-  expect_equal(fpc[2, 2, 1], 2)
+  fpc = Stat_FPC$new(seg.sites, dm, population = 1) 
+  
+  stat = fpc$generate(seg.sites, breaks = list(near=.5, far=c(.25, .85), mut=.5))  
+  expect_equal(sum(abs(stat)), 1)
+  expect_equal(stat[2, 2, 1], 1)
 
   attr(seg.sites[[2]], "positions") <- c(0.1, 0.11, 0.12, 0.13, 0.14)
-  fpc <- generateFpcStat(seg.sites, dm, population = 1)
-  expect_equal(sum(abs(fpc)), 2)
-  expect_equal(fpc[2, 2, 1], 1)
-  expect_equal(fpc[2, 3, 1], 1)
+  stat = fpc$generate(seg.sites, breaks = list(near=.5, far=c(.25, .85), mut=.5))  
+  expect_equal(sum(abs(stat)), 1)
+  expect_equal(stat[2, 2, 1], 1)
+
+  attr(seg.sites[[2]], "positions") <- c(0.1, 0.11, 0.12, 0.6, 0.7)
+  stat = fpc$generate(seg.sites, breaks = list(near=.5, far=c(.25, .85), mut=.5))  
+  expect_equal(sum(abs(stat)), 2)
+  expect_equal(stat[2, 2, 1], 2)
+  
+  attr(seg.sites[[2]], "positions") <- c(0.1, 0.11, 0.12, 0.6, 0.7)
+  stat = fpc$generate(seg.sites, breaks = list(near=.5, far=c(.25, .7), mut=.001))  
+  expect_equal(sum(abs(stat)), 2)
+  expect_equal(stat[2, 2, 2], 1) 
+  expect_equal(stat[2, 3, 2], 1)   
   
   seg.sites[[3]] <- matrix(0, 6, 0)
   attr(seg.sites[[3]], "positions") <- numeric()
   dm <- dm.setLociNumber(dm, 3)  
-  fpc <- generateFpcStat(seg.sites, dm, population = 1)
-  expect_equal(sum(abs(fpc)), 3)
+  fpc = Stat_FPC$new(seg.sites, dm, population = 1) 
+  stat = fpc$generate(seg.sites, breaks = list(near=.5, far=c(.25, .7), mut=.001))
+  expect_equal(sum(abs(stat)), 2)
 })
 
 test_that("calcPercentFpcViolation works", {
@@ -113,6 +126,10 @@ test_that("calcPercentFpcViolation works", {
   attr(seg_sites[[1]], 'positions') <- 1:5/5
   fpc_violations <- calcPercentFpcViolation(seg_sites, 1:5, locus_length) 
   expect_equal(fpc_violations[1, ], c(mid_near=NaN, mid_far=0.5, outer=NaN, 
+                                      between=NaN, mid=0.5, perc_polym=0.05))
+  attr(seg_sites[[1]], 'positions') <- 1:5/50
+  fpc_violations <- calcPercentFpcViolation(seg_sites, 1:5, locus_length) 
+  expect_equal(fpc_violations[1, ], c(mid_near=0.5, mid_far=NaN, outer=NaN, 
                                       between=NaN, mid=0.5, perc_polym=0.05))
   
   seg_sites[[2]][1, ] <- 1
@@ -187,4 +204,15 @@ test_that("countClasses works", {
                    c(1, 1, 1, 2, 1, 2))
   expect_equal(countClasses(classes, c(2,2,2)), 
                array(c(2, 1, 1, 0, 0, 1, 1, 0), c(2,2,2)))
+})
+
+test_that('Stat_FPC works with groups', {
+  jsfs = Stat_FPC$new(sum.stats.tt$seg.sites, dm.tt, 1)
+  expect_that(sum(jsfs$get_data()), is_more_than(0))
+  expect_equal(jsfs$transform(sum.stats.tt), jsfs$get_data())
+  
+  # With groups
+  jsfs = Stat_FPC$new(sum.stats.grp$seg.sites.2, dm.grp, 1, group = 2)
+  expect_that(sum(jsfs$get_data()), is_more_than(0))
+  expect_equal(jsfs$transform(sum.stats.grp), jsfs$get_data())
 })

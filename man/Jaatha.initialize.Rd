@@ -4,7 +4,8 @@
 \title{Initialization of a Jaatha estimation for population genetics}
 \usage{
 Jaatha.initialize(data, model, cores = 1, scaling.factor = 1,
-  folded = FALSE, smoothing = FALSE, only_synonymous = FALSE)
+  folded = FALSE, smoothing = FALSE, only_synonymous = FALSE,
+  use_fpc = FALSE, fpc_populations = 1:2)
 }
 \arguments{
 \item{data}{The observed data. Jaatha can use data imported with package
@@ -31,6 +32,16 @@ recommended for productive use at the moment.}
 
 \item{only_synonymous}{Only use synonymous SNP if set to \code{TRUE}. Requires
 to provided \code{data} as a PopGenome "GENOME" object.}
+
+\item{use_fpc}{Additionally to the JSFS, also use the four point condition
+(FPC) summary statistc. The FPC statistic is sensitive for
+recombination and selection, so consider adding it if your model has
+either or both.}
+
+\item{fpc_populations}{the populations within which the FPC statistic is
+calculated if \code{use_fpc = TRUE}. Recommended settings are both
+population unless the model has directional selection one population.
+In that case, only use this population.}
 }
 \value{
 A S4-Object of type jaatha containing the settings

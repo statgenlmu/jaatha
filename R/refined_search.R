@@ -135,7 +135,7 @@ refinedSearchSingleBlock <- function(jaatha, start.point, sim, sim.final,
                                           sim.data, step.current)
       tryCatch({
         # Fit the GLM
-        glm.fitted <- fitGlm(sim.saved, jaatha)
+        glm.fitted <- fitGlm(jaatha, sim.saved)
         break
       }, error = function(e) {
         if (j < 5) .print("Failed to fit the GLM. Retrying with more simulations...")

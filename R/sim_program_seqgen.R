@@ -18,7 +18,7 @@ sg.features <- unique(c(getSimProgram('ms')$possible_features,
                         'gamma.categories', 'gamma.rate',
                         'locus_trios', 'outgroup'))
 
-sg.sum.stats <- c('jsfs', 'file', 'seg.sites', 'fpc', 'pmc')
+sg.sum.stats <- c('jsfs', 'file', 'seg.sites')
 sg.mutation.models <- c('HKY', 'F84', 'GTR')
 
 checkForSeqgen <- function(throw.error = TRUE, silent = FALSE) {

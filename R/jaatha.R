@@ -27,7 +27,6 @@
 #' @importFrom methods new representation 
 #' @importFrom parallel mclapply
 #' @importFrom Rcpp evalCpp
-#' @importFrom reshape2 melt
 #' @importFrom checkmate qassert qtest assertClass
 #' @useDynLib jaatha
 NULL
@@ -103,30 +102,11 @@ init <- function(.Object, sim_func, par_ranges, sum_stats, cores = 1) {
 
   # Check sum.stats
   is.list(sum_stats) || stop("sum.stats needs to be a list")
-  for (i in names(sum_stats)) {
-    checkType(sum_stats[[i]]$value, c("num"))
-    checkType(sum_stats[[i]]$method, c("char", "s"))
-
-    if (sum_stats[[i]]$method == "poisson.independent") {
-      sum_stats[[i]]$transformation <- as.vector 
-      sum_stats[[i]]$value.transformed <- as.vector(sum_stats[[i]]$value)
+  sapply(sum_stats, function(x) {
+    if (!any(class(x) %in% c("Stat_PoiInd", "Stat_PoiSmooth"))) {
+      stop("Unknown summary statistic of type ", class(x))
     }
-    else if (sum_stats[[i]]$method == "poisson.transformed") {
-      checkType(sum_stats[[i]]$transformation, c("fun", "s"))
-      sum_stats[[i]]$value.transformed <- sum_stats[[i]]$transformation(sum_stats[[i]]$value)
-    }
-    else if (sum_stats[[i]]$method == "poisson.smoothing") {
-      checkType(sum_stats[[i]]$model, c("char", "s"))      
-      if (!is.null(sum_stats[[i]]$border.transformation)) {
-        stopifnot(!is.null(sum_stats[[i]]$border.mask))
-        sum_stats[[i]]$border.transformed <- 
-          sum_stats[[i]]$border.transformation(sum_stats[[i]]$value)
-      }
-    }
-    else {
-      stop("Unknown summary statistic type: ", sum_stats[[i]]$method)
-    }
-  }
+  })
   .Object@sum.stats <- sum_stats
 
   # Sample seeds
@@ -175,13 +155,22 @@ rm(init)
 #'              position of the different entries is treated as a model
 #'              parameter. This feature is still experimental and not
 #'              recommended for productive use at the moment.  
+#' @param use_fpc Additionally to the JSFS, also use the four point condition
+#'        (FPC) summary statistc. The FPC statistic is sensitive for 
+#'        recombination and selection, so consider adding it if your model has
+#'        either or both.
+#' @param fpc_populations the populations within which the FPC statistic is
+#'        calculated if \code{use_fpc = TRUE}. Recommended settings are both
+#'        population unless the model has directional selection one population. 
+#'        In that case, only use this population. 
 #' @param only_synonymous Only use synonymous SNP if set to \code{TRUE}. Requires
 #'              to provided \code{data} as a PopGenome "GENOME" object.
 #' @return A S4-Object of type jaatha containing the settings
 #' @export
 Jaatha.initialize <- function(data, model, cores=1, scaling.factor=1,
                               folded=FALSE, smoothing=FALSE, 
-                              only_synonymous=FALSE) {
+                              only_synonymous=FALSE, use_fpc=FALSE,
+                              fpc_populations=1:2) {
   
   checkType(model, c("dm", "s"))
   checkType(folded, c("bool", "single"))
@@ -220,63 +209,50 @@ Jaatha.initialize <- function(data, model, cores=1, scaling.factor=1,
     
     seg.sites <- data[[paste0('seg.sites', grp_name_ext)]]
     if (is.null(seg.sites)) stop('No seg.sites in `data` for group ', group)
-    jsfs.value <- calcJsfs(seg.sites, dm.getSampleSize(dm))
 
     # ------------------------------------------------------------
     # JSFS Summary Statistic
     # ------------------------------------------------------------
     if (!smoothing) {
-      sum.stats[[paste0('jsfs', grp_name_ext)]] <- 
-        list(method="poisson.transformed",
-             transformation=summarizeJSFS,
-             value=jsfs.value)
-    
-      if (folded) sum.stats$jsfs$transformation <- summarizeFoldedJSFS
+      if (folded) sum.stats[[paste0('jsfs', grp_name_ext)]] <- 
+        Stat_JSFS_folded$new(seg.sites, dm, group)
+      else sum.stats[[paste0('jsfs', grp_name_ext)]] <- 
+        Stat_JSFS$new(seg.sites, dm, group)
     } else {
-      sample.size <- dm.getSampleSize(dm)
-      warning("Smoothing is experimental")
-      model <- paste0("( X1 + I(X1^2) + X2 + I(X2^2) + log(X1) + log(",
-                      sample.size[1]+2,
-                      "-X1) + log(X2) + log(",
-                      sample.size[2]+2,
-                      "-X2) )^2")
-  
-      border.mask <- jsfs.value
-      border.mask[, ] <- 0
-      border.mask[c(1, nrow(jsfs.value)), ] <- 1
-      border.mask[ ,c(1, ncol(jsfs.value))] <- 1
-      border.mask <- as.logical(border.mask)
-  
+      if (folded) stop("You can't use both smoothing and a folded JSFS")
       sum.stats[[paste0('jsfs', grp_name_ext)]] <- 
-        list(method="poisson.smoothing",
-             model=model,
-             value=jsfs.value,
-             border.mask=border.mask,
-             border.transformation=summarizeJsfsBorder)
+        Stat_JSFS_smooth$new(seg.sites, dm, group)
+      sum.stats[[paste0('jsfs_border', grp_name_ext)]] <- 
+        Stat_JSFS_border$new(seg.sites, dm, group)
     }
 
     # ------------------------------------------------------------
     # FPC Summary Statistic
     # ------------------------------------------------------------
-    for (pop in 1:2) {
-      if ('fpc' %in% dm.getSummaryStatistics(dm, group, pop = pop)) {
-        dm <- calcFpcBreaks(dm, seg.sites, group = group, population = pop)
-        sum.stats[[paste0('fpc_pop', pop, grp_name_ext)]] <- 
-          list(method='poisson.transformed', transformation=as.vector,
-               value=generateFpcStat(seg.sites, dm, group = group, 
-                                     population = pop))
+    if (use_fpc) {
+      if (!'seg.sites' %in% dm.getSummaryStatistics(dm)) {
+        dm <- dm.addSummaryStatistic(dm, 'seg.sites', group = 0)
+      }
+      
+      # TODO: Assert that dm contains 'seg.sites' statistic
+      for (pop in 1:2) {
+        if (pop %in% fpc_populations) {
+          sum.stats[[paste0('fpc_pop', pop, grp_name_ext)]] <- 
+            Stat_FPC$new(seg.sites, dm, population = pop, group = group)
+        }
       }
     }
 
     # ------------------------------------------------------------
     # PMC Summary Statistic
     # ------------------------------------------------------------
-    if ('pmc' %in% dm.getSummaryStatistics(dm, group)) {
-      dm <- calcPmcBreaks(dm, seg.sites, group = group)
-      sum.stats[[paste0('pmc', grp_name_ext)]] <- 
-        list(method='poisson.transformed', transformation=as.vector,
-             value=createPolymClasses(seg.sites, dm, group = group))
-    }
+    #if ('pmc' %in% dm.getSummaryStatistics(dm, group)) {
+    #  dm <- calcPmcBreaks(dm, seg.sites, group = group)
+    #  sum.stats[[paste0('pmc', grp_name_ext)]] <- 
+    #    list(method='poisson.transformed', transformation=as.vector,
+    #         value=createPolymClasses(seg.sites, dm, group = group),
+    #         data = paste0('seg.sites', grp_name_ext))
+    #}
   }
 
 

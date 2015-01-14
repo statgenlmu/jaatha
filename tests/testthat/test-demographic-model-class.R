@@ -97,7 +97,7 @@ test_that("test.dm.addSummaryStatistics", {
   dm <- dm.addSummaryStatistic(dm, "file", group = 2)
   expect_equal(length(dm.getSummaryStatistics(dm, group = 1)), 2)
   expect_equal(length(dm.getSummaryStatistics(dm, group = 2)), 3)
-  dm <- dm.addSummaryStatistic(dm, "fpc", group = 1)
+  dm <- dm.addSummaryStatistic(dm, "trees", group = 1)
   expect_equal(length(dm.getSummaryStatistics(dm, group = 1)), 3)
   expect_equal(length(dm.getSummaryStatistics(dm, group = 2)), 3)
   expect_error(dm.addSummaryStatistic(dm, "no.existing.sumstat"))
@@ -124,8 +124,6 @@ test_that("test.dm.getSummaryStatistic", {
   expect_equal(length(dm.getSummaryStatistics(dm.grp, 1)),  1)
   expect_true(dm.getSummaryStatistics(dm.grp, 2) == "jsfs")
   expect_equal(length(dm.getSummaryStatistics(dm.grp, 2)), 1)
-  expect_true(all(c("jsfs", "fpc") %in% dm.getSummaryStatistics(dm.fpc)))
-  expect_equal(length(dm.getSummaryStatistics(dm.fpc)), 2)
 })
 
 test_that("test.generateGroupModel", {
@@ -191,7 +189,6 @@ test_that("test.getSampleSize", {
 
 test_that("test.getThetaName", {
   expect_equal(getThetaName(dm.tt), "theta")
-  expect_equal(getThetaName(dm.fpc), "theta")
   if (test_seqgen) {
     expect_equal(getThetaName(dm.hky), "theta")
     expect_equal(getThetaName(dm.f81), "theta")
@@ -301,7 +298,8 @@ test_that("test.simSumStats", {
   expect_true(is.list(sum.stats))
   expect_false(is.null(sum.stats$jsfs))
   expect_true(sum(sum.stats$jsfs) > 0)
-  sum.stats <- dm.simSumStats(dm.grp, c(1, 5), "jsfs")
+  
+  sum.stats <- sum.stats.grp
   expect_false(is.null(sum.stats))
   expect_false(is.null(sum.stats$jsfs.1))
   expect_true(sum(sum.stats$jsfs.1) > 0)

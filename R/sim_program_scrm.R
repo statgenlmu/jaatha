@@ -9,7 +9,7 @@ scrm_features  <- c("sample", "loci.number", "loci.length",
                     "mutation", "migration", "split",
                     "recombination", "size.change", "growth")
 
-scrm_sum_stats <- c("jsfs", "fpc", "seg.sites", "file", "pmc", "trees")
+scrm_sum_stats <- c("jsfs", "seg.sites", "file", "trees")
 
 scrm_simulate <- function(dm, parameters) {
   checkType(dm, "dm")

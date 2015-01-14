@@ -21,7 +21,7 @@ findBestParInBlock <- function(block, glm.fitted, sum.stats, scaling_factor=1) {
   ##describes 'boarder'% of values that will be excluded
   ##on either side of the block in optimization
   best.value <- optim(block.middle, estimateLogLikelihood, 
-                      glm.fitted=glm.fitted, sum.stats=sum.stats,
+                      glm_fitted=glm.fitted, sum_stats=sum.stats,
                       scaling_factor=scaling_factor,
                       lower=block@border[ ,1,drop=FALSE], 
                       upper=block@border[,2,drop=FALSE],

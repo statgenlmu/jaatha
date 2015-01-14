@@ -40,18 +40,7 @@ generateSumStats <- function(files, program, parameters, dm, seg_sites) {
     else if (stat$name == 'jsfs') {
       sum_stats[['jsfs']] <- calcJsfs(seg_sites, dm.getSampleSize(dm))
     }
-    
-    # Add fpc statistic if needed
-    else if (stat$name == 'fpc') {
-      sum_stats[[paste0('fpc_pop', stat$population)]] <- 
-        generateFpcStat(seg_sites, dm, stat$population)
-    }
-  
-    # Add pmc statistic if needed
-    else if (stat$name == 'pmc') {
-      sum_stats[['pmc']] <- createPolymClasses(seg_sites, dm)
-    }
-  
+      
     else if (stat$name == 'file' | stat$name == 'trees') { }
     else stop('Unknown summary statistik:', stat$name)
   }

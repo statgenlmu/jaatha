@@ -1,3 +1,5 @@
+set.seed(10121416)
+
 # Theta-Tau Model 
 dm.tt        <- dm.createThetaTauModel(11:12, 10)
 sum.stats.tt <- dm.simSumStats(dm.addSummaryStatistic(dm.tt, 'seg.sites'), 
@@ -6,30 +8,17 @@ jaatha.tt    <- Jaatha.initialize(sum.stats.tt, dm.tt, cores = 2)
 
 # Migration Model
 dm.mig        <- dm.addSymmetricMigration(dm.tt, 1, 5)
-sum.stats.mig <- dm.simSumStats(dm.addSummaryStatistic(dm.mig,  'seg.sites'), 
-                                c(1, 1, 5))
+sum.stats.mig <- dm.simSumStats(dm.addSummaryStatistic(dm.mig, 'seg.sites'), 
+                                c(.3, 1, 5))
 jaatha.mig    <- Jaatha.initialize(sum.stats.mig, dm.mig, cores = 2) 
 
 # Groups
-dm.grp <- dm.tt
+dm.grp <- dm.mig
 dm.grp <- dm.addLocus(dm.grp, 100, 15, 1)
 dm.grp <- dm.addLocus(dm.grp, 200, 10, 2)
 dm.grp <- dm.addLocus(dm.grp, 50, 5, 3)
 sum.stats.grp <- dm.simSumStats(dm.addSummaryStatistic(dm.grp, 'seg.sites'), 
-                                                       c(1, 3))
-
-# fpc model
-dm.fpc <- dm.createDemographicModel(c(15,20), 100, 1000)
-dm.fpc <- dm.addSpeciationEvent(dm.fpc, .1, 5)
-dm.fpc <- dm.addRecombination(dm.fpc, 1, 5)
-dm.fpc <- dm.addMutation(dm.fpc, 1, 10)
-dm.fpc <- dm.addSymmetricMigration(dm.fpc, parameter=.75)
-seg.sites <- dm.simSumStats(dm.addSummaryStatistic(dm.fpc, 'seg.sites'), 
-                            c(1, 2, 3))$seg.sites
-dm.fpc <- dm.addSummaryStatistic(dm.fpc, 'fpc', population = 1)
-dm.fpc <- jaatha:::calcFpcBreaks(dm.fpc, seg.sites, population = 1)
-sum.stats.fpc <- dm.simSumStats(dm.addSummaryStatistic(dm.fpc, 'seg.sites'), 
-                                c(1, 2, 3))
+                                c(1, 1, 3))
 
 
 

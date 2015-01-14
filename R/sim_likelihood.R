@@ -1,52 +1,43 @@
-# --------------------------------------------------------------
-# calc_likelihood.R
-# A function to calculate the likelihood of specific parsameter 
-# combinations using simulations. 
-# 
-# Authors:  Paul R. Staab & Lisha Mathew 
-# Date:     2013-11-28
-# Licence:  GPLv3 or later
-# --------------------------------------------------------------
-
-## Funtion to calculate the likelihood based on simulations with the
-## given parameters.  Order of parameters should be the same as needed
-## for the simulate-function (in Simulator.R).
 simLikelihood <- function(jaatha, sim, pars) {
-  sim.pars <- matrix(pars, sim, length(pars), byrow=TRUE)
-  sim.data <- runSimulations(sim.pars, jaatha@cores, jaatha)
+  sim_pars <- matrix(pars, sim, length(pars), byrow=TRUE)
+  sim_data <- runSimulations(sim_pars, jaatha@cores, jaatha)
 
-  # Average the values of each summary statistic
-  log.cl <- 0
-
-  sum.stats <- jaatha@sum.stats
-  for (sum.stat in names(sum.stats)) {
-    if (sum.stats[[sum.stat]]$method %in% c("poisson.transformed", "poisson.independent")) {
-      values <- t(sapply(sim.data, 
-                         function(x) sum.stats[[sum.stat]]$transformation(x[[sum.stat]]))) 
-      simSS <- apply(values, 2, mean)
-
-      simSS[simSS==0] <- 0.5
-      if (getScalingFactor(jaatha) != 1) simSS <- simSS * getScalingFactor(jaatha)
-      
-      sum.stat.value <- sum.stats[[sum.stat]]$value.transformed
-      log.cl <- log.cl + 
-        sum(sum.stat.value * log(simSS) - simSS - calcLogFactorial(sum.stat.value)) 
-    }
-    else if (sum.stats[[sum.stat]]$method == "poisson.smoothing") {
-      sum.stat.value <- as.vector(sum.stats[[sum.stat]]$value)
-      sim.mean <- apply(sapply(sim.data, function(x) as.vector(x[[sum.stat]])), 1, mean)
-      if (any(sim.mean == 0)) warning("Warning: A summary statistic was always 0,
-                                      likelihood will be inaccurate. Try
-                                      increasing sim.final") 
-      sim.mean[sim.mean == 0] <- .5
-      log.cl <- log.cl + 
-        sum(sum.stat.value * log(sim.mean) - sim.mean - calcLogFactorial(sum.stat.value)) 
-    }
-    else stop("Unsupported SumStat method")
+  llh <- 0
+  for (sum_stat in jaatha@sum.stats) {
+    # sapply + S3 dispatch case unit tests to fails => use 'for' here
+    llh <- llh + simLogLLH(sum_stat, sim_data, getScalingFactor(jaatha))
   }
-  return(log.cl)
+  llh
 }
 
+simLogLLH <- function(sum_stat, ...) UseMethod("simLogLLH")
+simLogLLH.default <- function(sum_stat, ...) stop('Unkown Summary Statistic')
+
+simLogLLH.Stat_PoiInd <- function(sum_stat, sim_data, scaling_factor = 1) {
+  values <- t(sapply(sim_data,
+                     function(x) sum_stat$transform(x))) 
+  simSS <- apply(values, 2, mean)
+  
+  simSS[simSS==0] <- 0.5
+  if (scaling_factor != 1) simSS <- simSS * scaling_factor
+  
+  sum(sum_stat$get_data() * log(simSS) - simSS - calcLogFactorial(sum_stat$get_data())) 
+}
+
+simLogLLH.Stat_PoiSmooth <- function(sum_stat, sim_data, scaling_factor = 1) {
+  sim_results <- sapply(sim_data,
+                        function(x) sum_stat$transform(x)$sum.stat)
+  sim_mean <- apply(sim_results, 1, mean)
+  
+  if (any(sim_mean == 0)) {
+    warning(paste("A summary statistic was always 0, likelihood will",
+                  "be inaccurate. Try increasing sim.final"))
+    sim_mean[sim_mean == 0] <- .5
+  }
+  
+  obs <- sum_stat$get_data()$sum.stat
+  sum(obs * log(sim_mean) - sim_mean - calcLogFactorial(obs)) 
+}
 
 calcLogFactorial <- function(k) {
   if (!isJaathaVariable("logfacs")) setJaathaVariable("logfacs", c(0)) 

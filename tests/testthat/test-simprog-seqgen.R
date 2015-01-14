@@ -112,17 +112,6 @@ test_that("test.seqgenWithMsms", {
   expect_equal(sum.stats2, sum.stats)
 })
 
-test_that("test.simulateFpcWithSeqgen", {
-  if (!test_seqgen) skip('seq-gen not installed')
-  seg.sites <- dm.simSumStats(dm.addSummaryStatistic(dm.hky, 'seg.sites'),
-                              c(1, 5))$seg.sites
-  dm.sgfpc <- dm.addSummaryStatistic(dm.hky, 'fpc', population = 1)
-  dm.sgfpc <- jaatha:::calcFpcBreaks(dm.sgfpc, seg.sites, population = 1)
-  sum.stats <- dm.simSumStats(dm.sgfpc, c(1, 5))
-  expect_false(is.null(sum.stats$fpc))
-  expect_equal(sum(sum.stats$fpc), 5)
-})
-
 test_that("seq-gen can simulate trios", {
   if (!test_seqgen) skip('seq-gen not installed')
   dm.lt <- dm.addLocusTrio(dm.f81, locus_length = c(10, 20, 10), 
@@ -134,20 +123,6 @@ test_that("seq-gen can simulate trios", {
   
   sum.stats <- dm.simSumStats(dm.lt, c(1, 10))
   expect_that(sum(sum.stats$jsfs), is_less_than(sum(sapply(sum.stats$seg.sites, ncol))))
-})
-
-test_that("Generation of PMC statistic works", {
-  if (!test_seqgen) skip('seq-gen not installed')
-  set.seed(941)
-  dm.f81 <- dm.addSummaryStatistic(dm.f81, "pmc")
-  dm.f81@options[['pmc_breaks_private']] <- .5
-  dm.f81@options[['pmc_breaks_fixed']] <- .5
-  sum.stats <- dm.simSumStats(dm.f81, c(1, 10))
-  expect_equal(length(sum.stats), 3)
-  expect_false(is.null(sum.stats$pars))
-  expect_false(is.null(sum.stats$pmc))
-  expect_true(is.array(sum.stats[["pmc"]]))
-  expect_equal(sum(sum.stats[["pmc"]]), dm.getLociNumber(dm.f81))
 })
 
 test_that("Simulation with outgroup of multiple indiviudals works", {
