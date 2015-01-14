@@ -18,8 +18,7 @@
 # @examples
 # jsfs <- matrix(rpois(26*26,5),26,26)
 # summarizeJSFS(jsfs = jsfs)
-summarizeJSFS <- function(jsfs){
-  if (is.list(jsfs)) jsfs <- jsfs$jsfs 
+summarizeJSFS <- function(jsfs) {
   n <- nrow(jsfs)
   m <- ncol(jsfs)
   c(sum(jsfs[1,2:3]),
@@ -48,8 +47,7 @@ summarizeJSFS <- function(jsfs){
 }
 
 
-summarizeJsfsBorder <- function(sim_data) {
-  jsfs <- sim_data$jsfs
+summarizeJsfsBorder <- function(jsfs) {
   n <- nrow(jsfs)
   m <- ncol(jsfs)
   c(sum(jsfs[1,2:3]),
@@ -67,8 +65,7 @@ summarizeJsfsBorder <- function(sim_data) {
 }
 
 
-summarizeFoldedJSFS <- function(sim_data) {
-  jsfs <- sim_data$jsfs 
+summarizeFoldedJSFS <- function(jsfs) {
   n <- nrow(jsfs)
   m <- ncol(jsfs)
 
@@ -97,22 +94,29 @@ summarizeFoldedJSFS <- function(sim_data) {
 Stat_JSFS <- R6Class('Stat_PoiInd', 
   inherit = Stat_Base,
   public = list(
-    initialize = function(seg_sites, dm) {
+    initialize = function(seg_sites, dm, group=0) {
       private$data = self$transform(list(jsfs=calcJsfs(seg_sites, dm.getSampleSize(dm))))
+      if (group > 0) private$jsfs_name = paste0('jsfs.', group)
     },
-    transform = summarizeJSFS
+    transform = function(sim_data) summarizeJSFS(sim_data[[private$jsfs_name]])
+  ),
+  private = list(
+    jsfs_name = 'jsfs'
   )
 )
 
 # Binning + Folded JSFS
 Stat_JSFS_folded <- R6Class('Stat_PoiInd', 
-  inherit = Stat_Base,
+  inherit = Stat_JSFS,
   public = list(
-    initialize = function(seg_sites, dm) {
-       private$data = self$transform(list(jsfs=calcJsfs(seg_sites, 
-                                                        dm.getSampleSize(dm))))
-    },
-  transform = summarizeFoldedJSFS
+    transform = function(sim_data) summarizeFoldedJSFS(sim_data[[private$jsfs_name]])
+  )
+)
+
+Stat_JSFS_border <- R6Class('Stat_PoiInd', 
+  inherit = Stat_JSFS,
+  public = list(
+    transform = function(sim_data) summarizeFoldedJSFS(sim_data[[private$jsfs_name]])
   )
 )
 
@@ -122,10 +126,11 @@ Stat_JSFS_smooth <- R6Class('Stat_PoiSmooth',
   private = list(
       model = NA,
       rows = NA,
-      cols = NA
+      cols = NA,
+      jsfs_name = 'jsfs'
   ),
   public = list(
-    initialize = function(seg_sites, dm) {
+    initialize = function(seg_sites, dm, group=0) {
       sample_size <- dm.getSampleSize(dm)
       jsfs = calcJsfs(seg_sites, sample_size)
       private$model <- paste0("( X1 + I(X1^2) + X2 + I(X2^2) + log(X1) + log(",
@@ -140,20 +145,14 @@ Stat_JSFS_smooth <- R6Class('Stat_PoiSmooth',
       self$set_data(list(jsfs=jsfs))
       if (all(self$get_data()$sum.stat == 0)) 
         stop("Inner JSFS used for smoothing only consists of 0s")
+      
+      if (group > 0) private$jsfs_name = paste0('jsfs.', group)
     },
     transform = function(sim_data) {
-      private$to_data_frame(sim_data$jsfs[private$rows, private$cols])
+      private$to_data_frame(sim_data[[private$jsfs_name]][private$rows, 
+                                                          private$cols])
     }
   )
 )
 
-Stat_JSFS_border <- R6Class('Stat_PoiInd', 
-  inherit = Stat_Base,
-  public = list(
-    initialize = function(seg_sites, dm) {
-      private$data = self$transform(list(jsfs=calcJsfs(seg_sites, dm.getSampleSize(dm))))
-     },
-     transform = summarizeJsfsBorder
-  )
-)
-  
+
