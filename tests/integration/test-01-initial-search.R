@@ -26,7 +26,7 @@ test_that("CSI complete run", {
 
 test_that("test.initialSearch.folded", {
   jaatha <- Jaatha.initialize(sum.stats.tt, dm.tt, folded = TRUE)
-  jaatha <- Jaatha.initialSearch(jaatha, sim = 50, blocks.per.par = 1)
+  jaatha <- Jaatha.initialSearch(jaatha, sim = 20, blocks.per.par = 1)
   pStartPoints <- Jaatha.getStartingPoints(jaatha)
   expect_equal(nrow(pStartPoints), 1)
 })

@@ -1,8 +1,8 @@
 context("Confidence Intervals")
 
 test_that("Calculation of Confidence Intervals", {
-  jaatha <- Jaatha.initialSearch(jaatha.csi, 40, 3)
-  jaatha <- Jaatha.refinedSearch(jaatha, 1, 20, max.steps=10)
+  jaatha <- Jaatha.initialSearch(jaatha.csi, 10, 2)
+  jaatha <- Jaatha.refinedSearch(jaatha, 1, 10, max.steps=10)
   jaatha <- Jaatha.confidenceIntervals(jaatha, 0.95, 20, 2)
   estimates <- t(Jaatha.getLikelihoods(jaatha)[1, -(1:2), drop = FALSE])
   conf.ints <- jaatha@conf.ints
