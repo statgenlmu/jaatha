@@ -1,3 +1,5 @@
+set.seed(111222555)
+
 # A Block
 block.test <- new("Block")
 block.test@border <- matrix(c(0.4, 0.4, 0.6, 0.6), 2, 2) 

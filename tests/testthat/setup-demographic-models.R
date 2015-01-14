@@ -1,3 +1,5 @@
+set.seed(10121416)
+
 # Theta-Tau Model 
 dm.tt        <- dm.createThetaTauModel(11:12, 10)
 sum.stats.tt <- dm.simSumStats(dm.addSummaryStatistic(dm.tt, 'seg.sites'), 
