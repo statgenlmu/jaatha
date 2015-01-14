@@ -215,15 +215,15 @@ Jaatha.initialize <- function(data, model, cores=1, scaling.factor=1,
     # ------------------------------------------------------------
     if (!smoothing) {
       if (folded) sum.stats[[paste0('jsfs', grp_name_ext)]] <- 
-        Stat_JSFS_folded$new(seg.sites, dm)
+        Stat_JSFS_folded$new(seg.sites, dm, group)
       else sum.stats[[paste0('jsfs', grp_name_ext)]] <- 
-        Stat_JSFS$new(seg.sites, dm)
+        Stat_JSFS$new(seg.sites, dm, group)
     } else {
       if (folded) stop("You can't use both smoothing and a folded JSFS")
       sum.stats[[paste0('jsfs', grp_name_ext)]] <- 
-        Stat_JSFS_smooth$new(seg.sites, dm)
+        Stat_JSFS_smooth$new(seg.sites, dm, group)
       sum.stats[[paste0('jsfs_border', grp_name_ext)]] <- 
-        Stat_JSFS_border$new(seg.sites, dm)
+        Stat_JSFS_border$new(seg.sites, dm, group)
     }
 
     # ------------------------------------------------------------

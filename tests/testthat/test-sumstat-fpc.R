@@ -205,3 +205,14 @@ test_that("countClasses works", {
   expect_equal(countClasses(classes, c(2,2,2)), 
                array(c(2, 1, 1, 0, 0, 1, 1, 0), c(2,2,2)))
 })
+
+test_that('Stat_FPC works with groups', {
+  jsfs = Stat_FPC$new(sum.stats.tt$seg.sites, dm.tt, 1)
+  expect_that(sum(jsfs$get_data()), is_more_than(0))
+  expect_equal(jsfs$transform(sum.stats.tt), jsfs$get_data())
+  
+  # With groups
+  jsfs = Stat_FPC$new(sum.stats.grp$seg.sites.2, dm.grp, 1, group = 2)
+  expect_that(sum(jsfs$get_data()), is_more_than(0))
+  expect_equal(jsfs$transform(sum.stats.grp), jsfs$get_data())
+})

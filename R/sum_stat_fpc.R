@@ -3,7 +3,7 @@ Stat_FPC <- R6Class('Stat_PoiInd', inherit = Stat_Base,
   public = list(
     initialize = function(seg_sites, dm, population, group = 0,
                           break_props = c(.2, .5)) {
-      private$group = group
+
       private$individuals = getIndOfPop(dm, population)
       private$llm = dm.getLociLengthMatrix(dm, group)
       if (any(break_props > 1)) stop('props greater then one')
@@ -18,6 +18,7 @@ Stat_FPC <- R6Class('Stat_PoiInd', inherit = Stat_Base,
       
       # Calculate observed values
       private$data = self$transform(list(seg.sites = seg_sites))
+      if (group > 0) private$seg_sites_name = paste0('seg.sites.', group)
     },
     generate = function(seg_sites, breaks = private$breaks) {
       stopifnot(!is.null(seg_sites))
@@ -49,12 +50,12 @@ Stat_FPC <- R6Class('Stat_PoiInd', inherit = Stat_Base,
       countClasses(t(locus_class), dims)
     },
     transform = function(sim_data) {
-      as.vector(self$generate(sim_data$seg.sites))
+      as.vector(self$generate(sim_data[[private$seg_sites_name]]))
     },
     get_breaks = function() private$breaks
   ),
   private = list(
-    group = NA,
+    seg_sites_name = 'seg.sites',
     individuals = NA,
     llm = NA,
     breaks = NA)
