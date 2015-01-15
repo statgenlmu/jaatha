@@ -1,5 +1,5 @@
 #' @importFrom R6 R6Class
-Stat_FPC <- R6Class('Stat_PoiInd', inherit = Stat_Base,
+Stat_FPC <- R6Class('Stat_FPC', inherit = Stat_PoiInd,
   public = list(
     initialize = function(seg_sites, dm, population, group = 0,
                           break_probs = c(.2, .5)) {

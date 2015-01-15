@@ -11,7 +11,7 @@ Stat_Base <- R6Class("Stat_Base",
   )
 )
 
-#Stat_PoiInd <- R6Class("Stat_PoiInd", inherit = Stat_Base)
+Stat_PoiInd <- R6Class("Stat_PoiInd", inherit = Stat_Base)
 
 #' @importFrom reshape2 melt
 Stat_PoiSmooth <- R6Class("Stat_PoiSmooth", inherit = Stat_Base,
