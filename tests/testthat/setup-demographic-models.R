@@ -65,3 +65,14 @@ data_pg <- PopGenome::set.populations(data_pg, list(paste0("Individual_1-", 1:5)
                                                     paste0("Individual_2-", 1:5)))
 sink(NULL)
 unlink(output)
+
+dm_trios <- dm.addLocusTrio(dm.hky, locus_length = rep(1000, 3), 
+                            distance = c(7502, 9050), group = 2)
+dm_trios <- dm.addLocusTrio(dm_trios, locus_length = rep(950, 3), 
+                            distance = c(17502, 10050), group = 2)
+dm_trios <- dm.addLocusTrio(dm_trios, locus_length = rep(1050, 3), 
+                            distance = c(7502, 15050), group = 2)
+dm_trios <- dm.addLocusTrio(dm_trios, locus_length = rep(1060, 3), 
+                            distance = c(502, 15050), group = 2)
+dm_trios <- dm.addLocusTrio(dm_trios, locus_length = rep(600, 3), 
+                            distance = c(6502, 35050), group = 2)

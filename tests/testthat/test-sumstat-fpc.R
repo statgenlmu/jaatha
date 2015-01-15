@@ -216,3 +216,15 @@ test_that('Stat_FPC works with groups', {
   expect_that(sum(jsfs$get_data()), is_more_than(0))
   expect_equal(jsfs$transform(sum.stats.grp), jsfs$get_data())
 })
+
+test_that('Distance based classification of trios works', {
+  expect_equal(classifyTriosByDistance(dm.tt),
+               list(both_near=numeric(), one_one=numeric(), both_far=numeric()))
+  expect_equal(classifyTriosByDistance(dm_trios),
+               list(both_near=numeric(), one_one=numeric(), both_far=numeric()))
+  expect_equal(classifyTriosByDistance(dm_trios, 2),
+               list(both_near=1, one_one=3, both_far=2))
+  expect_equal(classifyTriosByDistance(dm_trios, 2, 
+                                       near=c(5e2, 1e3), far=c(1e3, 1e5)),
+               list(both_near=numeric(), one_one=4, both_far=(1:5)[-4]))
+})
