@@ -2,19 +2,19 @@
 Stat_FPC <- R6Class('Stat_PoiInd', inherit = Stat_Base,
   public = list(
     initialize = function(seg_sites, dm, population, group = 0,
-                          break_props = c(.2, .5)) {
+                          break_probs = c(.2, .5)) {
 
       private$individuals = getIndOfPop(dm, population)
       private$llm = dm.getLociLengthMatrix(dm, group)
-      if (any(break_props > 1)) stop('props greater then one')
+      if (any(break_probs > 1)) stop('probs greater then one')
       
       fpc.percent <- calcPercentFpcViolation(seg_sites, 
                                              private$individuals, 
                                              private$llm)
       
-      private$breaks = list(near=calcBreaks(fpc.percent[, 1], break_props),
-                            far=calcBreaks(fpc.percent[, 2], break_props),
-                            mut=calcBreaks(fpc.percent[, 6], break_props))
+      private$breaks = list(near=calcBreaks(fpc.percent[, 1], break_probs),
+                            far=calcBreaks(fpc.percent[, 2], break_probs),
+                            mut=calcBreaks(fpc.percent[, 6], break_probs))
       
       # Calculate observed values
       private$data = self$transform(list(seg.sites = seg_sites))
@@ -112,7 +112,7 @@ countClasses <- function(classes, dimension) {
 #' @return A list with entries 'both_near', 'one_one' and 'both_far', which
 #'   are vectors of the indexes of the loci that fall into the corresponding
 #'   class.
-#' @author Paul Staab  
+#' @author Paul Staab
 classifyTriosByDistance <- function(dm, group = 0, 
                                     near=c(5e3, 1e4), far=c(1e4, 2e4)) {
   
