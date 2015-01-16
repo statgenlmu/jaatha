@@ -218,13 +218,19 @@ test_that('Stat_FPC works with groups', {
 })
 
 test_that('Distance based classification of trios works', {
-  expect_equal(classifyTriosByDistance(dm.tt),
+  expect_equal(classifyTriosByDistance(dm.getLociLengthMatrix(dm.tt)),
                list(both_near=numeric(), one_one=numeric(), both_far=numeric()))
-  expect_equal(classifyTriosByDistance(dm_trios),
+  expect_equal(classifyTriosByDistance(dm.getLociLengthMatrix(dm_trios)),
                list(both_near=numeric(), one_one=numeric(), both_far=numeric()))
-  expect_equal(classifyTriosByDistance(dm_trios, 2),
+  expect_equal(classifyTriosByDistance(dm.getLociLengthMatrix(dm_trios, 2)),
                list(both_near=1, one_one=3, both_far=2))
-  expect_equal(classifyTriosByDistance(dm_trios, 2, 
+  expect_equal(classifyTriosByDistance(dm.getLociLengthMatrix(dm_trios, 2), 
                                        near=c(5e2, 1e3), far=c(1e3, 1e5)),
                list(both_near=numeric(), one_one=4, both_far=(1:5)[-4]))
+  
+  # Test with only locus
+  dm <- dm.createDemographicModel(c(6,0), 1)
+  llm <- dm.getLociLengthMatrix(dm)
+  expect_equal(classifyTriosByDistance(llm),
+               list(both_near=numeric(), one_one=numeric(), both_far=numeric()))
 })

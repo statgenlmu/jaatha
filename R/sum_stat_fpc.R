@@ -103,8 +103,8 @@ countClasses <- function(classes, dimension) {
 #' or 'both far'. Trio for which at least one distance is to short for 'near' 
 #' or to large for 'far' are ignored.
 #' 
-#' @param dm The demographic model from which the locus trios are taken.
-#' @param group The group of loci that is classified
+#' @param llm The Locus Length matrix as produced by 
+#'   \code{\link{dm.getLociLengthMatrix}}
 #' @param near A vector of length two, giving the boundaries for the 'near' 
 #'   class.
 #' @param far A vector of length two, giving the boundaries for the 'far' 
@@ -113,14 +113,15 @@ countClasses <- function(classes, dimension) {
 #'   are vectors of the indexes of the loci that fall into the corresponding
 #'   class.
 #' @author Paul Staab
-classifyTriosByDistance <- function(dm, group = 0, 
-                                    near=c(5e3, 1e4), far=c(1e4, 2e4)) {
+classifyTriosByDistance <- function(llm, near=c(5e3, 1e4), far=c(1e4, 2e4)) {
+  stopifnot(is.matrix(llm))
+  is_near <- llm[ ,c(2,4), drop = FALSE] >= near[1] & 
+             llm[ ,c(2,4), drop = FALSE] < near[2]
+  is_far <- llm[ ,c(2,4), drop = FALSE] >= far[1] & 
+            llm[ ,c(2,4), drop = FALSE] < far[2]
   
-  llm <- dm.getLociLengthMatrix(dm, group)
-  is_near <- llm[ ,c(2,4)] >= near[1] &  llm[ ,c(2,4)] < near[2]
-  is_far <- llm[ ,c(2,4)] >= far[1] &  llm[ ,c(2,4)] < far[2]
-  
-  list(both_near=which(is_near[,1] & is_near[,2]),
-       one_one=which((is_near[,1] & is_far[,2]) | (is_far[,1] & is_near[,2])),
-       both_far=which(is_far[,1] & is_far[,2]))
+  list(both_near=which(is_near[,1, drop = FALSE] & is_near[,2, drop = FALSE]),
+       one_one=which((is_near[,1, drop = FALSE] & is_far[,2, drop = FALSE]) | 
+                     (is_far[,1, drop = FALSE] & is_near[,2, drop = FALSE])),
+       both_far=which(is_far[,1, drop = FALSE] & is_far[,2, drop = FALSE]))
 }
