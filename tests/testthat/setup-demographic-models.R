@@ -76,3 +76,5 @@ dm_trios <- dm.addLocusTrio(dm_trios, locus_length = rep(1060, 3),
                             distance = c(502, 15050), group = 2)
 dm_trios <- dm.addLocusTrio(dm_trios, locus_length = rep(600, 3), 
                             distance = c(6502, 35050), group = 2)
+trios_sum_stats <- dm.simSumStats(dm.addSummaryStatistic(dm_trios, 'seg.sites'), 
+                                  c(1, 5))

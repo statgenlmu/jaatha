@@ -8,49 +8,35 @@ Stat_FPC <- R6Class('Stat_FPC', inherit = Stat_PoiInd,
       private$llm = dm.getLociLengthMatrix(dm, group)
       if (any(break_probs > 1)) stop('probs greater then one')
       
-      fpc.percent <- calcPercentFpcViolation(seg_sites, 
+      # Setup the cube for the middle locus
+      fpc_percent <- calcPercentFpcViolation(seg_sites, 
                                              private$individuals, 
                                              private$llm)
       
-      private$breaks = list(near=calcBreaks(fpc.percent[, 1], break_probs),
-                            far=calcBreaks(fpc.percent[, 2], break_probs),
-                            mut=calcBreaks(fpc.percent[, 6], break_probs))
+      private$breaks = lapply(1:ncol(fpc_percent), function(i) {
+        calcBreaks(fpc_percent[, i], break_probs)
+      })
+      names(private$breaks) <- colnames(fpc_percent)
+      
+      # Setup cubes for trio loci if available
+      private$trio_classes = classifyTriosByDistance(private$llm)
       
       # Calculate observed values
       private$data = self$transform(list(seg.sites = seg_sites))
       if (group > 0) private$seg_sites_name = paste0('seg.sites.', group)
     },
-    generate = function(seg_sites, breaks = private$breaks) {
-      stopifnot(!is.null(seg_sites))
-      percent <- calcPercentFpcViolation(seg_sites,
-                                         private$individuals, 
-                                         private$llm)
-      
-      percent <- percent[!(is.nan(percent[,1]) | is.nan(percent[,2]) ), , 
-                         drop = FALSE ]
-      
-      # Classify the loci accordingly
-      locus_class <- matrix(1, nrow(percent), 3)
-      
-      for (brk in breaks$near) {
-        locus_class[,1] <- locus_class[,1] + (percent[,1] > brk)
-      }
-      for (brk in breaks$far) {
-        locus_class[,2] <- locus_class[,2] + (percent[,2] > brk)
-      }
-      for (brk in breaks$mut) {
-        locus_class[,3] <- locus_class[,3] + (percent[,6] > brk)
-      }
-      
-      # Count the occurance of each class in a matrix
-      dims <- c(length(private$breaks$near) + 1, 
-                length(private$breaks$far) + 1, 
-                length(private$breaks$mut) + 1)
-      
-      countClasses(t(locus_class), dims)
-    },
     transform = function(sim_data) {
-      as.vector(self$generate(sim_data[[private$seg_sites_name]]))
+      fpc <- calcPercentFpcViolation(sim_data[[private$seg_sites_name]],
+                                     private$individuals, 
+                                     private$llm)
+      
+      central_cube <- generateLociCube(fpc, private$breaks, c(1,2,6))
+      outer_cubes <- lapply(private$trio_classes, function(loci) {
+        if (length(loci) == 0) return(NULL)
+        generateLociCube(fpc, private$breaks, 4:5, loci)
+      })
+      
+      c(central=central_cube, unlist(outer_cubes))
     },
     get_breaks = function() private$breaks
   ),
@@ -58,8 +44,10 @@ Stat_FPC <- R6Class('Stat_FPC', inherit = Stat_PoiInd,
     seg_sites_name = 'seg.sites',
     individuals = NA,
     llm = NA,
-    breaks = NA)
+    breaks = NA,
+    trio_classes = NA)
 )
+
 
 calcBreaks <- function(values, props) {
   breaks <- unique(quantile(values, props, na.rm=TRUE))
@@ -67,30 +55,31 @@ calcBreaks <- function(values, props) {
   breaks
 }
 
-countClasses <- function(classes, dimension) {
-  stopifnot(nrow(classes) == length(dimension))
-  stat <- array(0, dim = dimension)
-  if(ncol(classes) == 0) return(stat)
+
+generateLociCube = function(stat, breaks, cols, rows) {
+  stopifnot(ncol(stat) == length(breaks))
+  stopifnot(all(cols <= ncol(stat)))
   
-  # Replace NA's with the last value
-  for (r in 1:nrow(classes)) {
-    classes[r, is.na(classes[r,])] <- dimension[r]
+  # Select rows & remove loci with NaN statistics
+  if (missing(rows)) rows <- rep(TRUE, nrow(stat))
+  else rows <- 1:nrow(stat) %in% rows
+  rows <- rows & apply(!is.nan(stat[ ,cols, drop=FALSE]), 1, all)
+  stat <- stat[rows, cols, drop=FALSE]
+  breaks <- breaks[cols]
+  
+  # Classify the loci accordingly to their statistics
+  locus_class <- matrix(1, nrow(stat), ncol(stat))
+  for (i in 1:ncol(stat)) {
+    for (brk in breaks[[i]]) {
+      locus_class[,i] <- locus_class[,i] + (stat[,i] > brk)
+    }
   }
   
-  # Count occurences of classes
-  if (nrow(classes) == 2) {
-    for (r in 1:ncol(classes)) {
-      stat[classes[1, r], classes[2, r]] <- 
-        stat[classes[1, r], classes[2, r]] + 1
-    }
-  } else if (nrow(classes) == 3) {
-    for (r in 1:ncol(classes)) {
-      stat[classes[1, r], classes[2, r], classes[3, r]] <- 
-        stat[classes[1, r], classes[2, r], classes[3, r]] + 1
-    }
-  } else stop("This function can only create 2 and 3-dim. arrays")
-  
-  stat
+  # Count the classes and return as vector
+  dims <- sapply(breaks, length) + 1
+  factors <- cumprod(c(1, dims[-length(dims)]))
+  classes_int <- apply(locus_class, 1, function(x) sum((x-1)*factors)+1)
+  tabulate(classes_int, nbins = prod(dims))
 }
 
 #' A function that cassifies locus trios by the distance between the loci
