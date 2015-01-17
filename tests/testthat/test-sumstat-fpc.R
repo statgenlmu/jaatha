@@ -173,6 +173,7 @@ test_that("calcPercentFpcViolation works", {
 
 
 test_that('Distance based classification of trios works', {
+  if (!test_seqgen) skip('seq-gen not installed')
   expect_equal(classifyTriosByDistance(dm.getLociLengthMatrix(dm.tt)),
                list(both_near=numeric(), one_one=numeric(), both_far=numeric()))
   expect_equal(classifyTriosByDistance(dm.getLociLengthMatrix(dm_trios)),
@@ -192,6 +193,7 @@ test_that('Distance based classification of trios works', {
 
 
 test_that('Stat_FPC works with groups', {
+  if (!test_seqgen) skip('seq-gen not installed')
   fpc = Stat_FPC$new(sum.stats.tt$seg.sites, dm.tt, 1)
   expect_that(sum(fpc$get_data()), is_more_than(0))
   expect_that(sum(fpc$get_data()), is_less_than(dm.getLociNumber(dm.tt)+1))

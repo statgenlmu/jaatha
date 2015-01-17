@@ -34,6 +34,19 @@ if (jaatha:::checkForSeqgen(FALSE, TRUE)) {
   dm.f81 <- dm.setMutationModel(dm.sg, "F84", c(0.3, 0.2, 0.3, 0.2), 2)
   dm.gtr <- dm.setMutationModel(dm.sg, "GTR", 
                                 gtr.rates=c(0.2, 0.2, 0.1, 0.1, 0.1, 0.2))
+  
+  dm_trios <- dm.addLocusTrio(dm.hky, locus_length = rep(1000, 3), 
+                              distance = c(7502, 9050), group = 2)
+  dm_trios <- dm.addLocusTrio(dm_trios, locus_length = rep(950, 3), 
+                              distance = c(17502, 10050), group = 2)
+  dm_trios <- dm.addLocusTrio(dm_trios, locus_length = rep(1050, 3), 
+                              distance = c(7502, 15050), group = 2)
+  dm_trios <- dm.addLocusTrio(dm_trios, locus_length = rep(1060, 3), 
+                              distance = c(502, 15050), group = 2)
+  dm_trios <- dm.addLocusTrio(dm_trios, locus_length = rep(600, 3), 
+                              distance = c(6502, 35050), group = 2)
+  trios_sum_stats <- dm.simSumStats(dm.addSummaryStatistic(dm_trios, 'seg.sites'), 
+                                    c(1, 5))
 } else {
   test_seqgen <- FALSE
 }
@@ -66,15 +79,3 @@ data_pg <- PopGenome::set.populations(data_pg, list(paste0("Individual_1-", 1:5)
 sink(NULL)
 unlink(output)
 
-dm_trios <- dm.addLocusTrio(dm.hky, locus_length = rep(1000, 3), 
-                            distance = c(7502, 9050), group = 2)
-dm_trios <- dm.addLocusTrio(dm_trios, locus_length = rep(950, 3), 
-                            distance = c(17502, 10050), group = 2)
-dm_trios <- dm.addLocusTrio(dm_trios, locus_length = rep(1050, 3), 
-                            distance = c(7502, 15050), group = 2)
-dm_trios <- dm.addLocusTrio(dm_trios, locus_length = rep(1060, 3), 
-                            distance = c(502, 15050), group = 2)
-dm_trios <- dm.addLocusTrio(dm_trios, locus_length = rep(600, 3), 
-                            distance = c(6502, 35050), group = 2)
-trios_sum_stats <- dm.simSumStats(dm.addSummaryStatistic(dm_trios, 'seg.sites'), 
-                                  c(1, 5))

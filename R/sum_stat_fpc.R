@@ -93,7 +93,7 @@ generateLociCube = function(stat, breaks, cols, rows) {
 #' or to large for 'far' are ignored.
 #' 
 #' @param llm The Locus Length matrix as produced by 
-#'   \code{\link{dm.getLociLengthMatrix}}
+#'   \code{dm.getLociLengthMatrix}
 #' @param near A vector of length two, giving the boundaries for the 'near' 
 #'   class.
 #' @param far A vector of length two, giving the boundaries for the 'far' 
