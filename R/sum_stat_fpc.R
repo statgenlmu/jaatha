@@ -1,56 +1,42 @@
 #' @importFrom R6 R6Class
-Stat_FPC <- R6Class('Stat_PoiInd', inherit = Stat_Base,
+Stat_FPC <- R6Class('Stat_FPC', inherit = Stat_PoiInd,
   public = list(
     initialize = function(seg_sites, dm, population, group = 0,
-                          break_props = c(.2, .5)) {
+                          break_probs = c(.2, .5)) {
 
       private$individuals = getIndOfPop(dm, population)
       private$llm = dm.getLociLengthMatrix(dm, group)
-      if (any(break_props > 1)) stop('props greater then one')
+      if (any(break_probs > 1)) stop('probs greater then one')
       
-      fpc.percent <- calcPercentFpcViolation(seg_sites, 
+      # Setup the cube for the middle locus
+      fpc_percent <- calcPercentFpcViolation(seg_sites, 
                                              private$individuals, 
                                              private$llm)
       
-      private$breaks = list(near=calcBreaks(fpc.percent[, 1], break_props),
-                            far=calcBreaks(fpc.percent[, 2], break_props),
-                            mut=calcBreaks(fpc.percent[, 6], break_props))
+      private$breaks = lapply(1:ncol(fpc_percent), function(i) {
+        calcBreaks(fpc_percent[, i], break_probs)
+      })
+      names(private$breaks) <- colnames(fpc_percent)
+      
+      # Setup cubes for trio loci if available
+      private$trio_classes = classifyTriosByDistance(private$llm)
       
       # Calculate observed values
       private$data = self$transform(list(seg.sites = seg_sites))
       if (group > 0) private$seg_sites_name = paste0('seg.sites.', group)
     },
-    generate = function(seg_sites, breaks = private$breaks) {
-      stopifnot(!is.null(seg_sites))
-      percent <- calcPercentFpcViolation(seg_sites,
-                                         private$individuals, 
-                                         private$llm)
-      
-      percent <- percent[!(is.nan(percent[,1]) | is.nan(percent[,2]) ), , 
-                         drop = FALSE ]
-      
-      # Classify the loci accordingly
-      locus_class <- matrix(1, nrow(percent), 3)
-      
-      for (brk in breaks$near) {
-        locus_class[,1] <- locus_class[,1] + (percent[,1] > brk)
-      }
-      for (brk in breaks$far) {
-        locus_class[,2] <- locus_class[,2] + (percent[,2] > brk)
-      }
-      for (brk in breaks$mut) {
-        locus_class[,3] <- locus_class[,3] + (percent[,6] > brk)
-      }
-      
-      # Count the occurance of each class in a matrix
-      dims <- c(length(private$breaks$near) + 1, 
-                length(private$breaks$far) + 1, 
-                length(private$breaks$mut) + 1)
-      
-      countClasses(t(locus_class), dims)
-    },
     transform = function(sim_data) {
-      as.vector(self$generate(sim_data[[private$seg_sites_name]]))
+      fpc <- calcPercentFpcViolation(sim_data[[private$seg_sites_name]],
+                                     private$individuals, 
+                                     private$llm)
+      
+      central_cube <- generateLociCube(fpc, private$breaks, c(1,2,6))
+      outer_cubes <- lapply(private$trio_classes, function(loci) {
+        if (length(loci) == 0) return(NULL)
+        generateLociCube(fpc, private$breaks, 4:5, loci)
+      })
+      
+      c(central=central_cube, unlist(outer_cubes))
     },
     get_breaks = function() private$breaks
   ),
@@ -58,8 +44,10 @@ Stat_FPC <- R6Class('Stat_PoiInd', inherit = Stat_Base,
     seg_sites_name = 'seg.sites',
     individuals = NA,
     llm = NA,
-    breaks = NA)
+    breaks = NA,
+    trio_classes = NA)
 )
+
 
 calcBreaks <- function(values, props) {
   breaks <- unique(quantile(values, props, na.rm=TRUE))
@@ -67,28 +55,62 @@ calcBreaks <- function(values, props) {
   breaks
 }
 
-countClasses <- function(classes, dimension) {
-  stopifnot(nrow(classes) == length(dimension))
-  stat <- array(0, dim = dimension)
-  if(ncol(classes) == 0) return(stat)
+
+generateLociCube = function(stat, breaks, cols, rows) {
+  stopifnot(ncol(stat) == length(breaks))
+  stopifnot(all(cols <= ncol(stat)))
   
-  # Replace NA's with the last value
-  for (r in 1:nrow(classes)) {
-    classes[r, is.na(classes[r,])] <- dimension[r]
+  # Select rows & remove loci with NaN statistics
+  if (missing(rows)) rows <- rep(TRUE, nrow(stat))
+  else rows <- 1:nrow(stat) %in% rows
+  rows <- rows & apply(!is.nan(stat[ ,cols, drop=FALSE]), 1, all)
+  stat <- stat[rows, cols, drop=FALSE]
+  breaks <- breaks[cols]
+  
+  # Classify the loci accordingly to their statistics
+  locus_class <- matrix(1, nrow(stat), ncol(stat))
+  for (i in 1:ncol(stat)) {
+    for (brk in breaks[[i]]) {
+      locus_class[,i] <- locus_class[,i] + (stat[,i] > brk)
+    }
   }
   
-  # Count occurences of classes
-  if (nrow(classes) == 2) {
-    for (r in 1:ncol(classes)) {
-      stat[classes[1, r], classes[2, r]] <- 
-        stat[classes[1, r], classes[2, r]] + 1
-    }
-  } else if (nrow(classes) == 3) {
-    for (r in 1:ncol(classes)) {
-      stat[classes[1, r], classes[2, r], classes[3, r]] <- 
-        stat[classes[1, r], classes[2, r], classes[3, r]] + 1
-    }
-  } else stop("This function can only create 2 and 3-dim. arrays")
+  # Count the classes and return as vector
+  dims <- sapply(breaks, length) + 1
+  factors <- cumprod(c(1, dims[-length(dims)]))
+  classes_int <- apply(locus_class, 1, function(x) sum((x-1)*factors)+1)
+  tabulate(classes_int, nbins = prod(dims))
+}
+
+#' A function that cassifies locus trios by the distance between the loci
+#' 
+#' Each pair of loci in a trio can be either 'near' together 
+#' (low distance between) or more 'far' appart (somewhat larger distance), 
+#' where the distances corresponding to 'near' and 'far' can be defined as
+#' function arguments. The function returns trios for with the left to middle 
+#' and middle to right comparisons is either 'both near', one near, one far' 
+#' or 'both far'. Trio for which at least one distance is to short for 'near' 
+#' or to large for 'far' are ignored.
+#' 
+#' @param llm The Locus Length matrix as produced by 
+#'   \code{dm.getLociLengthMatrix}
+#' @param near A vector of length two, giving the boundaries for the 'near' 
+#'   class.
+#' @param far A vector of length two, giving the boundaries for the 'far' 
+#'   class.
+#' @return A list with entries 'both_near', 'one_one' and 'both_far', which
+#'   are vectors of the indexes of the loci that fall into the corresponding
+#'   class.
+#' @author Paul Staab
+classifyTriosByDistance <- function(llm, near=c(5e3, 1e4), far=c(1e4, 2e4)) {
+  stopifnot(is.matrix(llm))
+  is_near <- llm[ ,c(2,4), drop = FALSE] >= near[1] & 
+             llm[ ,c(2,4), drop = FALSE] < near[2]
+  is_far <- llm[ ,c(2,4), drop = FALSE] >= far[1] & 
+            llm[ ,c(2,4), drop = FALSE] < far[2]
   
-  stat
+  list(both_near=which(is_near[,1, drop = FALSE] & is_near[,2, drop = FALSE]),
+       one_one=which((is_near[,1, drop = FALSE] & is_far[,2, drop = FALSE]) | 
+                     (is_far[,1, drop = FALSE] & is_near[,2, drop = FALSE])),
+       both_far=which(is_far[,1, drop = FALSE] & is_far[,2, drop = FALSE]))
 }

@@ -3,98 +3,77 @@ context("FGC Summary Statistic")
 test_that("Fpc Breaks calculation works", {
   fpc = Stat_FPC$new(sum.stats.tt$seg.sites, dm.tt, population = 1, group = 0)
   expect_false(is.null(fpc$get_breaks()))
-  expect_false(is.null(fpc$get_breaks()$near))
-  expect_false(is.null(fpc$get_breaks()$far))
-  expect_false(is.null(fpc$get_breaks()$mut))
+  expect_false(is.null(fpc$get_breaks()$mid_near))
+  expect_false(is.null(fpc$get_breaks()$mid_far))
+  expect_false(is.null(fpc$get_breaks()$perc_polym))
   rm(fpc)
   
   fpc = Stat_FPC$new(sum.stats.tt$seg.sites, dm.tt, population = 2, group = 0)
   expect_false(is.null(fpc$get_breaks()))
-  expect_false(is.null(fpc$get_breaks()$near))
-  expect_false(is.null(fpc$get_breaks()$far))
-  expect_false(is.null(fpc$get_breaks()$mut))
+  expect_false(is.null(fpc$get_breaks()$mid_near))
+  expect_false(is.null(fpc$get_breaks()$mid_far))
+  expect_false(is.null(fpc$get_breaks()$perc_polym))
   rm(fpc)
   
   fpc = Stat_FPC$new(sum.stats.grp$seg.sites.1, dm.grp, 
                      population = 1, group = 1)
   expect_false(is.null(fpc$get_breaks()))
-  expect_false(is.null(fpc$get_breaks()$near))
-  expect_false(is.null(fpc$get_breaks()$far))
-  expect_false(is.null(fpc$get_breaks()$mut))
+  expect_false(is.null(fpc$get_breaks()$mid_near))
+  expect_false(is.null(fpc$get_breaks()$mid_far))
+  expect_false(is.null(fpc$get_breaks()$perc_polym))
   rm(fpc)  
   
   fpc = Stat_FPC$new(sum.stats.grp$seg.sites.2, dm.grp, 
                      population = 2, group = 2)
   expect_false(is.null(fpc$get_breaks()))
-  expect_false(is.null(fpc$get_breaks()$near))
-  expect_false(is.null(fpc$get_breaks()$far))
-  expect_false(is.null(fpc$get_breaks()$mut))
+  expect_false(is.null(fpc$get_breaks()$mid_near))
+  expect_false(is.null(fpc$get_breaks()$mid_far))
+  expect_false(is.null(fpc$get_breaks()$perc_polym))
   rm(fpc)
 })
 
-test_that("generateFpcStat works", {
-  # One Locus
-  seg.sites <- list(matrix(c(1, 1, 0, 0, 0, 
-                             1, 0, 1, 0, 1, 
-                             1, 1, 1, 1, 0, 
-                             0, 1, 1, 0, 1, 
-                             0, 0, 0, 0, 1, 
-                             1, 0, 0, 0, 0), 6, byrow=TRUE))
-  attr(seg.sites[[1]], "positions") <- c(0.1, 0.12, 0.5, 0.51, 0.61)
-  dm <- dm.createDemographicModel(c(6,0), 1)
-  fpc = Stat_FPC$new(seg.sites, dm, population = 1) 
-  
-  breaks = fpc$generate(seg.sites, breaks = list(near=.5, far=.5, mut=.5))  
-  expect_equal(sum(abs(breaks)), 1)
-  expect_equal(breaks[2, 2, 1], 1)  
-  
-  breaks = fpc$generate(seg.sites, breaks = list(near=.5, far=.9, mut=.5))  
-  expect_equal(sum(abs(breaks)), 1)
-  expect_equal(breaks[2, 1, 1], 1)
+test_that("generateLociCube works", {
+  stat = cbind(1:6, 1:6, 1:6)
+  breaks = list(1:2+.5, 3.5, c(1,3,5)+.5)
+  cube = array(generateLociCube(stat, breaks, 1:3), c(3,2,4))
+  expect_equal(sum(cube), 6)
+  expect_equal(cube[1, 1, 1], 1)
+  expect_equal(cube[2, 1, 2], 1)
+  expect_equal(cube[3, 1, 2], 1)
+  expect_equal(cube[3, 2, 3], 2)
+  expect_equal(cube[3, 2, 4], 1)
   
   # Check that NaNs are ignored
-  attr(seg.sites[[1]], "positions") <- c(0.1, 0.3, 0.5, 0.7, 0.9)
-  stat = fpc$generate(seg.sites, breaks = list(near=.5, far=.9, mut=.5))  
-  expect_equal(sum(abs(stat)), 0) 
+  stat[3,1] = NaN
+  stat[4,2] = NaN 
+  cube = array(generateLociCube(stat, breaks, 1:3), c(3,2,4))
+  expect_equal(sum(cube), 4)
+  expect_equal(cube[1, 1, 1], 1)
+  expect_equal(cube[2, 1, 2], 1)
+  expect_equal(cube[3, 2, 3], 1)
+  expect_equal(cube[3, 2, 4], 1)
   
-  # Two Loci
-  attr(seg.sites[[1]], "positions") <- c(0.1, 0.12, 0.5, 0.51, 0.61)
-  seg.sites[[2]] <- matrix(c(1, 1, 0, 0, 0, 
-                             1, 0, 1, 0, 1, 
-                             1, 1, 1, 1, 0, 
-                             0, 1, 1, 0, 1, 
-                             0, 0, 0, 0, 1, 
-                             1, 0, 0, 0, 0), 6, byrow=TRUE)
-  attr(seg.sites[[2]], "positions") <- c(0.1, 0.3, 0.5, 0.7, 0.9)
-  dm <- dm.setLociNumber(dm, 2)
-  fpc = Stat_FPC$new(seg.sites, dm, population = 1) 
+  # No valid loci
+  stat[,1] = NaN
+  cube = array(generateLociCube(stat, breaks, 1:3), c(3,2,4))
+  expect_equal(sum(cube), 0)
   
-  stat = fpc$generate(seg.sites, breaks = list(near=.5, far=c(.25, .85), mut=.5))  
-  expect_equal(sum(abs(stat)), 1)
-  expect_equal(stat[2, 2, 1], 1)
-
-  attr(seg.sites[[2]], "positions") <- c(0.1, 0.11, 0.12, 0.13, 0.14)
-  stat = fpc$generate(seg.sites, breaks = list(near=.5, far=c(.25, .85), mut=.5))  
-  expect_equal(sum(abs(stat)), 1)
-  expect_equal(stat[2, 2, 1], 1)
-
-  attr(seg.sites[[2]], "positions") <- c(0.1, 0.11, 0.12, 0.6, 0.7)
-  stat = fpc$generate(seg.sites, breaks = list(near=.5, far=c(.25, .85), mut=.5))  
-  expect_equal(sum(abs(stat)), 2)
-  expect_equal(stat[2, 2, 1], 2)
+  # Rows work
+  stat = cbind(1:6, 1:6, 1:6)
+  cube = array(generateLociCube(stat, breaks, 1:3, rows=1:4), c(3,2,4))
+  expect_equal(sum(cube), 4)
+  expect_equal(cube[1, 1, 1], 1)
+  expect_equal(cube[2, 1, 2], 1)
+  expect_equal(cube[3, 1, 2], 1)
+  expect_equal(cube[3, 2, 3], 1)
   
-  attr(seg.sites[[2]], "positions") <- c(0.1, 0.11, 0.12, 0.6, 0.7)
-  stat = fpc$generate(seg.sites, breaks = list(near=.5, far=c(.25, .7), mut=.001))  
-  expect_equal(sum(abs(stat)), 2)
-  expect_equal(stat[2, 2, 2], 1) 
-  expect_equal(stat[2, 3, 2], 1)   
-  
-  seg.sites[[3]] <- matrix(0, 6, 0)
-  attr(seg.sites[[3]], "positions") <- numeric()
-  dm <- dm.setLociNumber(dm, 3)  
-  fpc = Stat_FPC$new(seg.sites, dm, population = 1) 
-  stat = fpc$generate(seg.sites, breaks = list(near=.5, far=c(.25, .7), mut=.001))
-  expect_equal(sum(abs(stat)), 2)
+  # 2D
+  cube = array(generateLociCube(stat, breaks, 1:2, rows=1:4), c(3,2))
+  expect_equal(sum(cube), 4)
+  expect_equal(cube[1, 1], 1)
+  expect_equal(cube[2, 1], 1)
+  expect_equal(cube[3, 1], 1)
+  expect_equal(cube[3, 2], 1)
 })
 
 test_that("calcPercentFpcViolation works", {
@@ -192,27 +171,43 @@ test_that("calcPercentFpcViolation works", {
                                       between=NaN, mid=NaN, perc_polym=0)) 
 })
 
-test_that("countClasses works", {
-  classes <- rbind(c(1, 1, 2, 2, NA, NA),
-                   c(1, 2, 1, NA, NA, NA))
-  dimension <- c(3, 3)
-  expect_equal(countClasses(classes, dimension), 
-               array(c(1, 1, 0, 1, 0, 0, 0, 1, 2), c(3,3)))
+
+test_that('Distance based classification of trios works', {
+  if (!test_seqgen) skip('seq-gen not installed')
+  expect_equal(classifyTriosByDistance(dm.getLociLengthMatrix(dm.tt)),
+               list(both_near=numeric(), one_one=numeric(), both_far=numeric()))
+  expect_equal(classifyTriosByDistance(dm.getLociLengthMatrix(dm_trios)),
+               list(both_near=numeric(), one_one=numeric(), both_far=numeric()))
+  expect_equal(classifyTriosByDistance(dm.getLociLengthMatrix(dm_trios, 2)),
+               list(both_near=1, one_one=3, both_far=2))
+  expect_equal(classifyTriosByDistance(dm.getLociLengthMatrix(dm_trios, 2), 
+                                       near=c(5e2, 1e3), far=c(1e3, 1e5)),
+               list(both_near=numeric(), one_one=4, both_far=(1:5)[-4]))
   
-  classes <- rbind(c(1, 1, 1, 1, 2, 2),
-                   c(1, 1, 2, 2, 1, 1),
-                   c(1, 1, 1, 2, 1, 2))
-  expect_equal(countClasses(classes, c(2,2,2)), 
-               array(c(2, 1, 1, 0, 0, 1, 1, 0), c(2,2,2)))
+  # Test with only locus
+  dm <- dm.createDemographicModel(c(6,0), 1)
+  llm <- dm.getLociLengthMatrix(dm)
+  expect_equal(classifyTriosByDistance(llm),
+               list(both_near=numeric(), one_one=numeric(), both_far=numeric()))
 })
 
+
 test_that('Stat_FPC works with groups', {
-  jsfs = Stat_FPC$new(sum.stats.tt$seg.sites, dm.tt, 1)
-  expect_that(sum(jsfs$get_data()), is_more_than(0))
-  expect_equal(jsfs$transform(sum.stats.tt), jsfs$get_data())
+  if (!test_seqgen) skip('seq-gen not installed')
+  fpc = Stat_FPC$new(sum.stats.tt$seg.sites, dm.tt, 1)
+  expect_that(sum(fpc$get_data()), is_more_than(0))
+  expect_that(sum(fpc$get_data()), is_less_than(dm.getLociNumber(dm.tt)+1))
+  expect_equal(fpc$transform(sum.stats.tt), fpc$get_data())
   
   # With groups
-  jsfs = Stat_FPC$new(sum.stats.grp$seg.sites.2, dm.grp, 1, group = 2)
-  expect_that(sum(jsfs$get_data()), is_more_than(0))
-  expect_equal(jsfs$transform(sum.stats.grp), jsfs$get_data())
+  fpc = Stat_FPC$new(sum.stats.grp$seg.sites.2, dm.grp, 1, group = 2)
+  expect_that(sum(fpc$get_data()), is_more_than(0))
+  expect_that(sum(fpc$get_data()), is_less_than(dm.getLociNumber(dm.grp, 2)+1))
+  expect_equal(fpc$transform(sum.stats.grp), fpc$get_data())
+  
+  # With trios
+  fpc = Stat_FPC$new(trios_sum_stats$seg.sites.2, dm_trios, 1, group = 2) 
+  expect_that(sum(fpc$get_data()), is_more_than(0))
+  expect_equal(fpc$transform(trios_sum_stats), fpc$get_data())
 })
+
