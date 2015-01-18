@@ -8,7 +8,7 @@ classifyTriosByDistance(llm, near = c(5000, 10000), far = c(10000, 20000))
 }
 \arguments{
 \item{llm}{The Locus Length matrix as produced by
-\code{\link{dm.getLociLengthMatrix}}}
+\code{dm.getLociLengthMatrix}}
 
 \item{near}{A vector of length two, giving the boundaries for the 'near'
 class.}
