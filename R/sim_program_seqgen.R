@@ -56,7 +56,7 @@ generateTreeModel <- function(dm, locus_length) {
   }
   
   dm@features <- dm@features[dm@features$type %in% tree.prog$possible_features, ]
-  dm@sum.stats <- data.frame(name=c(), group=c())
+  dm <- resetSumStats(dm)
   dm <- dm.addSummaryStatistic(dm, "trees")
   dm <- dm.addSummaryStatistic(dm, "file")
   
