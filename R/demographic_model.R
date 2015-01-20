@@ -399,8 +399,17 @@ dm.getParRanges <- function(dm){
   par.ranges
 }
 
-getThetaName <- function(dm){
-  searchFeature(dm, "mutation")$parameter[1]
+getThetaName <- function(dm, outer=FALSE, group=0) {
+  if (outer) {
+    feat <- searchFeature(dm, "mutation_outer", group=group)
+    if (nrow(feat) == 0) {
+      feat <- searchFeature(dm, "mutation", group=group)
+    }
+  }  else {
+    feat <- searchFeature(dm, "mutation", group=group)
+  }
+  if (nrow(feat) != 1) stop("Failed to determine mutation rate")
+  feat[1, 'parameter']
 }
 
 resetSumStats <- function(dm) {
@@ -1449,4 +1458,18 @@ getIndOfPop <- function(dm, population) {
   if (population == 1) return(1:sasi[1])
   else if (population == 2) return(1:sasi[2]+sasi[1])
   else stop("Invalid population")
+}
+
+#' Set the mutation rates for trios
+#' @inheritParams dm.addMutation
+#' @param middle_rate The mutation rate used for the middle locus
+#' @param outer_rate The mutation rate for the two outer loci
+#' @export
+dm.setTrioMutationRates <- function(dm, middle_rate, outer_rate, group = 0) {
+  dm <- addFeature(dm, 'mutation', parameter = middle_rate, group = group)
+  dm <- addFeature(dm, 'mutation_outer', parameter = outer_rate, group = group)
+}
+
+dm.hasTrios <- function(dm, group=0) {
+  sum(dm.getLociLengthMatrix(dm, group)[,-3]) > 0
 }
