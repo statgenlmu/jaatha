@@ -16,7 +16,8 @@ sg.features <- unique(c(getSimProgram('ms')$possible_features,
                         'gtr.rate.1', 'gtr.rate.2', 'gtr.rate.3',
                         'gtr.rate.4','gtr.rate.5','gtr.rate.6',
                         'gamma.categories', 'gamma.rate',
-                        'locus_trios', 'outgroup'))
+                        'locus_trios', 'outgroup',
+                        'mutation_outer'))
 
 sg.sum.stats <- c('jsfs', 'file', 'seg.sites')
 sg.mutation.models <- c('HKY', 'F84', 'GTR')
@@ -118,11 +119,11 @@ generateSeqgenOptions <- function(dm, parameters, locus, locus_lengths) {
   }
   
   # Fill the parameters in the template
-  sapply(locus_lengths, function(locus_length) {
+  sapply(seq(along = locus_lengths), function(i) {
     par_envir <- createParameterEnv(dm, parameters, locus = locus, 
-                                    locus_length = locus_length,
+                                    locus_length = locus_lengths[i],
                                     seed = sampleSeed(1))
-    paste(eval(parse(text=cmd), envir=par_envir), collapse=" ")
+    paste(eval(parse(text=cmd[[i]]), envir=par_envir), collapse=" ")
   })
 }
 
@@ -135,64 +136,69 @@ generateSeqgenOptionsCmd <- function(dm) {
   if (!qtest(dm.getOutgroupSize(dm), 'I1')) {
     stop("Finite Sites models need an outgroup.")
   } 
-
-  opts <- c('c(', paste('"', getJaathaVariable('seqgen.exe'), '"', sep=""), ",")
-  base.freqs <- list()
-  gtr.rates <- list()
-
-  for (i in 1:dim(dm@features)[1] ) {
-    type <- as.character(dm@features[i,"type"])
-    feat <- unlist(dm@features[i, ])
-
-    if (type == "mutation.model") {
-      includes.model <- T
-      opts <- c(opts, paste('"-m', feat['parameter'], '"', sep=""), ",")
-    }
-
-    else if ( type %in% c('base.freq.A', 'base.freq.C', 
-                          'base.freq.G', 'base.freq.T') )
-      base.freqs[[type]] <- feat['parameter']
-
-    else if ( type %in% c('gtr.rate.1', 'gtr.rate.2', 'gtr.rate.3',
-                          'gtr.rate.4', 'gtr.rate.5', 'gtr.rate.6') )
-      gtr.rates[[type]] <- feat['parameter']
-
-    else if (type == "tstv.ratio")
-      opts <- c(opts, '"-t"', ',', feat['parameter'], ',')
-
-    else if (type == "gamma.rate")
-      opts <- c(opts, '"-a"', ',', feat['parameter'], ',')
-
-    else if (type == "gamma.categories")
-      opts <- c(opts, '"-g"', ',', feat['parameter'], ',')
-  }
-
-  if (length(base.freqs) == 4) {
-    opts <- c(opts, '"-f"', ',', base.freqs[['base.freq.A']],
-              ',', base.freqs[['base.freq.C']],
-              ',', base.freqs[['base.freq.G']],  
-              ',', base.freqs[['base.freq.T']], ',')
-  }
-
-  if (length(gtr.rates) == 6) {
-    opts <- c(opts, '"-r"', ',', gtr.rates[['gtr.rate.1']],
-              ',', gtr.rates[['gtr.rate.2']],
-              ',', gtr.rates[['gtr.rate.3']],  
-              ',', gtr.rates[['gtr.rate.4']],  
-              ',', gtr.rates[['gtr.rate.5']],  
-              ',', gtr.rates[['gtr.rate.6']], ',')
-  }
   
-  if (!includes.model) {
-    stop("You must specify a finite sites mutation model for this demographic model")
-  }
+  if (!dm.hasTrios(dm)) is_outer <- FALSE
+  else is_outer <- c(TRUE, FALSE, TRUE)
 
-  opts <- c(opts, '"-l"', ',', 'locus_length', ',')
-  opts <- c(opts, '"-s"', ',', paste(getThetaName(dm), ' / locus_length'), ',')
-  opts <- c(opts, '"-p"', ',', 'locus_length + 1', ',')
-  opts <- c(opts, '"-z"', ',', 'seed', ',')
-  opts <- c(opts, '"-q"', ')')
-  return(opts)
+  lapply(is_outer, function(outer) {
+    opts <- c('c(', paste('"', getJaathaVariable('seqgen.exe'), '"', sep=""), ",")
+    base.freqs <- list()
+    gtr.rates <- list()
+    
+    for (i in 1:dim(dm@features)[1] ) {
+      type <- as.character(dm@features[i,"type"])
+      feat <- unlist(dm@features[i, ])
+      
+      if (type == "mutation.model") {
+        includes.model <- T
+        opts <- c(opts, paste('"-m', feat['parameter'], '"', sep=""), ",")
+      }
+      
+      else if ( type %in% c('base.freq.A', 'base.freq.C', 
+                            'base.freq.G', 'base.freq.T') )
+        base.freqs[[type]] <- feat['parameter']
+      
+      else if ( type %in% c('gtr.rate.1', 'gtr.rate.2', 'gtr.rate.3',
+                            'gtr.rate.4', 'gtr.rate.5', 'gtr.rate.6') )
+        gtr.rates[[type]] <- feat['parameter']
+      
+      else if (type == "tstv.ratio")
+        opts <- c(opts, '"-t"', ',', feat['parameter'], ',')
+      
+      else if (type == "gamma.rate")
+        opts <- c(opts, '"-a"', ',', feat['parameter'], ',')
+      
+      else if (type == "gamma.categories")
+        opts <- c(opts, '"-g"', ',', feat['parameter'], ',')
+    }
+    
+    if (length(base.freqs) == 4) {
+      opts <- c(opts, '"-f"', ',', base.freqs[['base.freq.A']],
+                ',', base.freqs[['base.freq.C']],
+                ',', base.freqs[['base.freq.G']],  
+                ',', base.freqs[['base.freq.T']], ',')
+    }
+    
+    if (length(gtr.rates) == 6) {
+      opts <- c(opts, '"-r"', ',', gtr.rates[['gtr.rate.1']],
+                ',', gtr.rates[['gtr.rate.2']],
+                ',', gtr.rates[['gtr.rate.3']],  
+                ',', gtr.rates[['gtr.rate.4']],  
+                ',', gtr.rates[['gtr.rate.5']],  
+                ',', gtr.rates[['gtr.rate.6']], ',')
+    }
+    
+    if (!includes.model) {
+      stop("You must specify a finite sites mutation model for this demographic model")
+    }
+    
+    opts <- c(opts, '"-l"', ',', 'locus_length', ',')
+    opts <- c(opts, '"-s"', ',', paste(getThetaName(dm, outer), ' / locus_length'), ',')
+    opts <- c(opts, '"-p"', ',', 'locus_length + 1', ',')
+    opts <- c(opts, '"-z"', ',', 'seed', ',')
+    opts <- c(opts, '"-q"', ')')
+    opts
+  })
 }
 
 printSeqgenCommand <- function(dm) {

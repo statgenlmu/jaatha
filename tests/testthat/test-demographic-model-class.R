@@ -376,3 +376,11 @@ test_that("addRecombination works", {
                                 parameter = 'rho2', group = 2)
   expect_equal(nrow(searchFeature(dm_tmp, "recombination")), 2)
 })
+
+test_that('setTrioMutationsRates works', {
+  dm <- dm.setTrioMutationRates(dm_trios, '17', 'theta', group=2)
+  expect_equal(nrow(searchFeature(dm, 'mutation', group=2)), 1)
+  expect_equal(searchFeature(dm, 'mutation', group=2)$parameter, "17")
+  expect_equal(nrow(searchFeature(dm, 'mutation_outer', group=2)), 1)
+  expect_equal(searchFeature(dm, 'mutation_outer', group=2)$parameter, "theta")
+})

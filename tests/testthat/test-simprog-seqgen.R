@@ -134,3 +134,50 @@ test_that("Simulation with outgroup of multiple indiviudals works", {
   expect_equal(nrow(sum_stats$seg.sites[[1]]), 23)
   expect_that(sum(sum_stats$jsfs), is_more_than(0))
 })
+
+test_that("Simulation of trios with unequal mutation rates works", {
+  if (!test_seqgen) skip('seq-gen not installed')
+  if (!isJaathaVariable('seqgen.exe')) setJaathaVariable('seqgen.exe', 'seq-gen')
+  dm <- dm.setTrioMutationRates(dm_trios, '17', 'theta', group=2)
+  expect_equal(getThetaName(dm, outer = FALSE, group = 2), '17')
+  expect_equal(getThetaName(dm, outer = TRUE, group = 2), 'theta')
+  expect_equal(getThetaName(dm, outer = FALSE, group = 1), 'theta')
+  
+  expect_equal(getThetaName(dm_trios, outer = FALSE, group = 2), 'theta')
+  expect_equal(getThetaName(dm_trios, outer = TRUE, group = 2), 'theta')
+  
+  
+  # generateSeqgenOptionsCmd
+  dm <- dm.setTrioMutationRates(dm_trios, 'BLUB', 'BLA', group=2)
+  grp_mdl <- generateGroupModel(dm, 2)
+  cmd <- lapply(generateSeqgenOptionsCmd(grp_mdl), paste0, collapse = "")
+  expect_equal(length(cmd), 3)
+  expect_equal(grep("BLUB", cmd[[2]]), 1)
+  expect_equal(grep("theta", cmd[[2]]), integer(0))
+  expect_equal(grep("BLA", cmd[[1]]), 1)
+  expect_equal(grep("BLA", cmd[[3]]), 1)
+  expect_equal(grep("theta", cmd[[1]]), integer(0))
+  expect_equal(grep("theta", cmd[[3]]), integer(0))
+  
+  # generateSeqgenOptions
+  dm <- dm.setTrioMutationRates(dm_trios, '1', '2', group=2)
+  grp_mdl <- generateGroupModel(dm, 2)
+  ll <- dm.getLociLengthMatrix(grp_mdl)[1,]
+  cmds <- generateSeqgenOptions(grp_mdl, c(1, 5), locus = 1, 
+                                locus_lengths = ll)
+  expect_equal(grep(as.character(2/ll[1]), cmds[[1]]), 1)
+  expect_equal(grep(as.character(1/ll[3]), cmds[[2]]), 1)
+  expect_equal(grep(as.character(2/ll[5]), cmds[[3]]), 1)
+  
+  ll <- dm.getLociLengthMatrix(grp_mdl)[2,]
+  cmds <- generateSeqgenOptions(grp_mdl, c(1, 5), locus = 2, 
+                                locus_lengths = ll)
+  expect_equal(grep(as.character(2/ll[1]), cmds[[1]]), 1)
+  expect_equal(grep(as.character(1/ll[3]), cmds[[2]]), 1)
+  expect_equal(grep(as.character(2/ll[5]), cmds[[3]]), 1)
+  
+  # dm.simSumStats
+  grp_mdl <- dm.addSummaryStatistic(grp_mdl, 'seg.sites')
+  ss <- dm.simSumStats(grp_mdl, c(1,5))
+  expect_false(is.null(ss$seg.sites))
+})
