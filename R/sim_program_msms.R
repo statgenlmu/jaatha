@@ -7,7 +7,7 @@
 # Licence:  GPLv3 or later
 # --------------------------------------------------------------
 
-msms.features <- c("pos.selection")
+msms.features <- c("pos.selection", "bal.selection")
 possible.features  <- c(getSimProgram('ms')$possible_features, msms.features)
 possible.sum.stats <- getSimProgram('ms')$possible_sum_stats
 
@@ -68,8 +68,19 @@ generateMsmsOptionsCommand <- function(dm) {
       cmd <- c(cmd, paste0('"', paste(start.freq, collapse=' '), '"'), ',')
       
       cmd <- c(cmd, '"-N 10000"', ',') 
-      cmd <- c(cmd, '"-SAA"', ',', paste0("2*", feat['parameter']), ',',  '"-SAa"', ',',
-               feat['parameter'], ',') 
+      cmd <- c(cmd, '"-SA"', ',', feat['parameter'], ',') 
+      cmd <- c(cmd, '"-Sp 0.5"', ',', '"-SForceKeep"', ',')
+      cmd <- c(cmd, '"-threads 1"', ',')
+    }
+    
+    else if (type == "bal.selection") {
+      cmd <- c(cmd, '"-SI"', ',', feat['time.point'], ',', length(dm.getSampleSize(dm)), ',')
+      start.freq <- rep(0, length(dm.getSampleSize(dm)))
+      start.freq[ as.integer(feat['pop.source']) ] <- 0.0005
+      cmd <- c(cmd, paste0('"', paste(start.freq, collapse=' '), '"'), ',')
+      
+      cmd <- c(cmd, '"-N 10000"', ',') 
+      cmd <- c(cmd, '"-SAA 0"', ',',  '"-SAa"', ',', feat['parameter'], ',') 
       cmd <- c(cmd, '"-Sp 0.5"', ',', '"-SForceKeep"', ',')
       cmd <- c(cmd, '"-threads 1"', ',')
     }
