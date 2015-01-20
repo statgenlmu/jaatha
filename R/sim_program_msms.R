@@ -68,6 +68,11 @@ generateMsmsOptionsCommand <- function(dm) {
       cmd <- c(cmd, paste0('"', paste(start.freq, collapse=' '), '"'), ',')
       
       cmd <- c(cmd, '"-N 10000"', ',') 
+      cmd <- c(cmd, '"-SA"', ',', feat['parameter'], ',') 
+      cmd <- c(cmd, '"-Sp 0.5"', ',', '"-SForceKeep"', ',')
+      cmd <- c(cmd, '"-threads 1"', ',')
+    }
+    
       cmd <- c(cmd, '"-SAA"', ',', paste0("2*", feat['parameter']), ',',  '"-SAa"', ',',
                feat['parameter'], ',') 
       cmd <- c(cmd, '"-Sp 0.5"', ',', '"-SForceKeep"', ',')

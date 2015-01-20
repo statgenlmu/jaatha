@@ -1247,10 +1247,16 @@ dm.getOutgroupSize <- function(dm) {
 } 
 
 
-#-------------------------------------------------------------------
-# dm.addPositiveSelection
-#-------------------------------------------------------------------
-# This function is highly experimental. Don't use it yet.
+#' Adds positiv selection to a model
+#' 
+#' @inheritParams dm.addMutation
+#' @param min.strength Minimal strength of selection
+#' @param max.strength Maximal strength of selection
+#' @param fraction.neutral Optionally, a fraction of the loci in the group can
+#'   be neutral.
+#' @param population The populaton in which the allele is selected.
+#' @param at.time The time at which the selection starts.
+#' @export
 dm.addPositiveSelection <- function(dm, min.strength=NA, max.strength=NA,
                          parameter='s', variance = 0, fraction.neutral = 0,
                          population, at.time, group=0) {

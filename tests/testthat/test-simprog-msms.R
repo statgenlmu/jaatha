@@ -22,8 +22,7 @@ test_that("test.generateMsmsOptionsCommand", {
   opts <- generateMsmsOptionsCommand(dm)
   s <- 5
   expect_true("-SI" %in% eval(parse(text = opts)))
-  expect_true("-SAA" %in% eval(parse(text = opts)))
-  expect_true("-SAa" %in% eval(parse(text = opts)))
+  expect_true("-SA" %in% eval(parse(text = opts)))
 })
 
 test_that("test.msmsPrint", {
