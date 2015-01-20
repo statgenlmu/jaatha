@@ -53,7 +53,8 @@ generateMsOptionsCommand <- function(dm) {
       }
 
     else if (type %in% c("sample", "loci.number", "loci.length", 
-                         "pos.selection", "inter_locus_variation")) {}
+                         "pos.selection", "bal.selection",
+                         "inter_locus_variation")) {}
     else stop("Unknown feature:", type)
   }
 

@@ -1,3 +1,9 @@
+jaatha 2.99.0.9015
+============
+
+* Add support for balancing selection.
+
+
 jaatha 2.99.0.9014
 ============
 
@@ -8,25 +14,25 @@ jaatha 2.99.0.9014
 jaatha 2.99.0.9012
 ============
 
-* Create an R6 based class system for Jaatha's summary statistics
+* Create an R6 based class system for Jaatha's summary statistics.
 
 
 jaatha 2.99.0.9011
 ============
 
-* FPC statistic is now only calculated inside populations
+* FPC statistic is now only calculated inside populations.
 
 
 jaatha 2.99.0.9010
 ============
 
-* Allow to use loci with different length with seq-gen
+* Allow to use loci with different length with seq-gen.
 
 
 jaatha 2.99.0.9009
 ============
 
-* Calculate more FPC statistics
+* Calculate more FPC statistics.
 
 * Change the calculation of the FPC for the middle locus. Dimensions are now
   percent near, percent far and fraction of polymorphic sites.
