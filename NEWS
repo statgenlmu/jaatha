@@ -1,3 +1,10 @@
+jaatha 2.99.0.9016
+============
+
+* Increases memory efficiency by saving only the transformed values for summary
+  statisics.
+
+
 jaatha 2.99.0.9015
 ============
 
