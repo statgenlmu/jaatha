@@ -183,5 +183,6 @@ printOptionsCmd <- function(cmd) {
   cmd <- gsub('"', " ", cmd)  
 }
 
+#' @include dm_sim_program.R
 createSimProgram("msms", possible.features, possible.sum.stats,
                  msmsSimFunc, finalizeMsms, printMsmsCommand, priority=40)
