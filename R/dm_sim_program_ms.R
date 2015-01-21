@@ -135,5 +135,6 @@ finalizeMs <- function(dm) {
   return(dm)
 }
 
+#' @include dm_sim_program.R
 createSimProgram("ms", possible.features, possible.sum.stats, 
                  msSingleSimFunc, finalizeMs, printMsCommand, 100)
