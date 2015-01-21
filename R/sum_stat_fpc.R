@@ -22,8 +22,11 @@ Stat_FPC <- R6Class('Stat_FPC', inherit = Stat_PoiInd,
       private$trio_classes = classifyTriosByDistance(private$llm)
       
       # Calculate observed values
-      private$data = self$transform(list(seg.sites = seg_sites))
-      if (group > 0) private$seg_sites_name = paste0('seg.sites.', group)
+      private$seg_sites_name <- getStatName('seg.sites', group)
+      fake_sim_data <- list()
+      fake_sim_data[[private$seg_sites_name]] <- seg_sites
+
+      super$initialize(fake_sim_data, getStatName('fpc', group, population))
     },
     transform = function(sim_data) {
       fpc <- calcPercentFpcViolation(sim_data[[private$seg_sites_name]],

@@ -38,16 +38,21 @@ runSimulations <- function(pars, cores, jaatha) {
 runSimulation <- function(i, pars, seeds, jaatha) {
   # Set the seed & prepare parameters
   set.seed(seeds[i])
-  sim.pars <- denormalize(pars[i, ], jaatha)
+  sim_pars <- denormalize(pars[i, ], jaatha)
   
   # Simulate
-  sim.results <- jaatha@simFunc(sim.pars, jaatha)
+  sim_results <- jaatha@simFunc(sim_pars, jaatha)
+  
+  # Calculate Summary Statistics
+  sim_sum_stats <- lapply(jaatha@sum.stats, function(sum_stat) {
+    sum_stat$transform(sim_results)
+  })
   
   # Add the parameter values
-  sim.results$pars <- sim.pars
-  sim.results$pars.normal <- pars[i, ]
+  sim_sum_stats$pars <- sim_pars
+  sim_sum_stats$pars.normal <- pars[i, ]
   
-  sim.results
+  sim_sum_stats
 }
 
 

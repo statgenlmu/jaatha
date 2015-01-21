@@ -6,8 +6,7 @@
 \usage{
 Jaatha.refinedSearch(jaatha, best.start.pos = 2,
   sim = length(getParNames(jaatha)) * 25, sim.final = min(sim, 100),
-  epsilon = NULL, half.block.size = 0.025, weight = NULL,
-  max.steps = 200, rerun = FALSE)
+  half.block.size = 0.025, max.steps = 200, rerun = FALSE)
 }
 \arguments{
 \item{jaatha}{The Jaatha settings (create with \code{\link{Jaatha.initialize}})}
@@ -21,13 +20,7 @@ search starting from each of this points.}
 \item{sim.final}{The number of simulations that are performed after the search to estimate the
 composite log likelihood. If not specified, the value of \code{sim} will be used}
 
-\item{epsilon}{Obsolete. Has no effect anymore and will be remove on next
-major release.}
-
 \item{half.block.size}{The size of the new block that is created around a new maximum.}
-
-\item{weight}{Obsolete. Has no effect anymore and will be remove on next
-major release.}
 
 \item{max.steps}{The search will stop at this number of steps if not stopped
 before (see \code{epsilon}).}

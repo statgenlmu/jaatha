@@ -13,9 +13,9 @@ test_that("fitGlm works for PoiSmooth", {
   glms.fitted.smooth <- fitGlm(smooth_jaatha, smooth_sim_data)
   expect_true(is.list(glms.fitted.smooth))
   expect_equal(1, length(glms.fitted.smooth))
-  expect_true(is.list(glms.fitted.smooth$mat))
-  expect_equal(1, length(glms.fitted.smooth$mat))
-  expect_true("glm" %in% is(glms.fitted.smooth$mat[[1]]))
+  expect_true(is.list(glms.fitted.smooth$csi))
+  expect_equal(1, length(glms.fitted.smooth$csi))
+  expect_true("glm" %in% is(glms.fitted.smooth$csi[[1]]))
 })
 
 test_that("fitGlm works", {
@@ -25,20 +25,3 @@ test_that("fitGlm works", {
   expect_false(is.null(glm_fit$csi))
   expect_that(glm_fit$csi, is_a('list'))
 })
-
-# test_that("test.fitGlm.Smoothing", {
-#   glm.fitted <- fitGlm(smooth.sim.data, smooth.jaatha)
-#   expect_true(is.list(glm.fitted$mat))
-#   expect_equal(1, length(glm.fitted$mat))
-#   expect_true("glm" %in% is(glm.fitted$mat[[1]]))
-# })
-# 
-# test_that("test.fitGlm.Smoothing.border", {
-#   glm.fitted <- fitGlm(smooth.sim.data, smooth.border.jaatha)
-#   expect_true(is.list(glm.fitted$mat))
-#   expect_equal(2, length(glm.fitted$mat))
-#   expect_true("glm" %in% is(glm.fitted$mat[["smooth"]]))
-#   expect_true(is.list(glm.fitted$mat$border))
-#   expect_equal(40, length(glm.fitted$mat$border))
-# })
-
