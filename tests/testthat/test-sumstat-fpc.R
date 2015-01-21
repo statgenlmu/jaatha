@@ -167,7 +167,7 @@ test_that("calcPercentFpcViolation works", {
                                       between=NaN, mid=NaN, perc_polym=0)) 
   
   fpc_violations <- calcPercentFpcViolation(seg_sites, 1:4, locus_length) 
-  expect_equal(fpc_violations[4, ], c(mid_near=NaN, mid_far=NaN, outer=0.25, 
+  expect_equal(fpc_violations[4, ], c(mid_near=NaN, mid_far=NaN, outer=1/3, 
                                       between=NaN, mid=NaN, perc_polym=0)) 
 })
 

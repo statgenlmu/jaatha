@@ -28,7 +28,7 @@ inline bool is_singleton(const NumericMatrix seg_sites,
     mut_count += seg_sites(individuals[i]-1, snp);
   }
   
-  return(mut_count == 1);
+  return(mut_count <= 1);
 }
 
 
