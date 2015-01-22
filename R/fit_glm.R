@@ -18,7 +18,7 @@ fitGlm.Jaatha <- function(jaatha, sim_data) {
   glm_fitted <- list()
   for (i in seq(along = jaatha@sum.stats)) {
     name <- names(jaatha@sum.stats)[i]
-    glm_fitted[[name]] <- fitGlm(jaatha@sum.stats[[i]], sim_data)
+    glm_fitted[[name]] <- fitGlm(jaatha@sum.stats[[name]], sim_data)
   }
   glm_fitted
 }
@@ -31,7 +31,7 @@ fitGlm.Jaatha <- function(jaatha, sim_data) {
 #' @return A list of fitted GLMs, one for each function
 fitGlm.Stat_PoiInd <- function(sum_stat, sim_data) { 
   stat_sim <- t(sapply(sim_data, 
-                       function(data) c(data$pars.normal, sum_stat$transform(data))))
+                       function(data) c(data$pars.normal, data[[sum_stat$get_name()]])))
   
   par_names <- names(sim_data[[1]]$pars)
   stat_names <- paste("S", 1:(ncol(stat_sim)-length(par_names)), sep="")
@@ -60,7 +60,7 @@ fitGlm.Stat_PoiSmooth <- function(sum_stat, sim_data) {
     pars <- matrix(sim_result$pars.normal, 1,
                    length(sim_result$pars.normal), byrow=TRUE)
     colnames(pars) <- names(sim_result$pars.normal)
-    data.frame(pars,  sum_stat$transform(sim_result))
+    data.frame(pars, sim_result[[sum_stat$get_name()]])
   }))
 
   smooth_glm  <- glm(model, data=sim_data_df, family=poisson("log"), 
@@ -68,13 +68,5 @@ fitGlm.Stat_PoiSmooth <- function(sum_stat, sim_data) {
                      control = list(maxit = 200))
   if (!smooth_glm$converged) stop('GLM did not converge')
   
-  #if (!is.null(jaatha@sum.stats[[sum.stat]]$border.transformation)) {
-  #  glms <- list(smooth=smooth.glm,
-  #               border=fitGlmPoiTransformed(sim.data, sum.stat,
-  #                      jaatha@sum.stats[[sum.stat]]$border.transformation,
-  #                      weighting, jaatha))
-  #} else { 
-    glms <- list(smooth=smooth_glm)
-  #}
-  glms
+  list(smooth=smooth_glm)
 }

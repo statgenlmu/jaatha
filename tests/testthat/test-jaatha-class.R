@@ -33,17 +33,15 @@ test_that("PG initialization works", {
   jaatha <- Jaatha.initialize(sum.stats.tt, dm.tt, folded = TRUE)
   
   # smoothing
-  suppressWarnings(
-    jaatha <- Jaatha.initialize(sum.stats.mig, dm.mig, smoothing = TRUE)
-  )
+  jaatha <- Jaatha.initialize(sum.stats.mig, dm.mig, smoothing = TRUE)
   expect_equal(length(jaatha@sum.stats), 2)
   expect_that(jaatha@sum.stats$jsfs$get_data(), is_a('data.frame'))
   expect_equal(colnames(jaatha@sum.stats$jsfs$get_data()), c('X1', 'X2', 'sum.stat'))
   expect_that(sum(jaatha@sum.stats$jsfs$get_data()), is_more_than(0))
   expect_that(jaatha@sum.stats$jsfs$get_model(), is_a('character'))
   
-  expect_that(jaatha@sum.stats$jsfs_border, is_a('Stat_PoiInd'))
-  expect_that(sum(jaatha@sum.stats$jsfs_border$get_data()), is_more_than(0))
+  expect_that(jaatha@sum.stats$border_jsfs, is_a('Stat_PoiInd'))
+  expect_that(sum(jaatha@sum.stats$border_jsfs$get_data()), is_more_than(0))
   
   expect_error(Jaatha.initialize(dm.tt, sum.stats.tt, 
                                  folded = TRUE,  smoothing = TRUE))
@@ -58,22 +56,17 @@ test_that("JSFS is added when not in model", {
   expect_equal(dm.getSummaryStatistics(j@opts[['dm']]), as.factor(c('jsfs')))
 })
 
-test_that("seg.sites are added when not in model", {
-  j <- Jaatha.initialize(sum.stats.tt, dm.tt, use_fpc = TRUE)
-  expect_true('seg.sites' %in% dm.getSummaryStatistics(j@opts[['dm']]))
-})
-
 test_that("PG initialization with groups works", {
   jaatha.grp <- Jaatha.initialize(sum.stats.grp, dm.grp)
   for (i in 1:3) {
-    name <- paste0('jsfs.', i)
+    name <- getStatName('jsfs', i)
     expect_that(jaatha.grp@sum.stats[[name]], is_a('Stat_PoiInd'))
     expect_that(sum(jaatha.grp@sum.stats[[name]]$get_data()), is_more_than(0))
   }
     
   jaatha.grp <- Jaatha.initialize(sum.stats.grp, dm.grp, smoothing = TRUE)
   for (i in 1:3) {
-    name <- paste0('jsfs.', i)
+    name <- getStatName('jsfs', i)
     expect_that(jaatha.grp@sum.stats[[name]], is_a('Stat_PoiSmooth'))
     expect_that(sum(jaatha.grp@sum.stats[[name]]$get_data()), is_more_than(0))
   }
@@ -84,7 +77,7 @@ test_that("PG initialization with FPC statistic", {
   # Without groups
   jaatha.fpc <- Jaatha.initialize(sum.stats.tt, dm.tt, use_fpc = TRUE)
   for (pop in 1:2) {
-    fpc_stat <- jaatha.fpc@sum.stats[[paste0("fpc_pop", pop)]]
+    fpc_stat <- jaatha.fpc@sum.stats[[getStatName('fpc',0,pop)]]
     expect_false(is.null(fpc_stat))
     expect_that(sum(fpc_stat$get_data()), is_more_than(0))
     expect_that(sum(fpc_stat$get_data()), is_less_than(dm.getLociNumber(dm.tt)+1))
@@ -92,8 +85,8 @@ test_that("PG initialization with FPC statistic", {
   
   jaatha.fpc <- Jaatha.initialize(sum.stats.tt, dm.tt, 
                                   use_fpc = TRUE, fpc_populations = 1)
-  expect_false(is.null(jaatha.fpc@sum.stats[["fpc_pop1"]]))
-  expect_true(is.null(jaatha.fpc@sum.stats[["fpc_pop2"]]))  
+  expect_false(is.null(jaatha.fpc@sum.stats[[getStatName('fpc',0,1)]]))
+  expect_true(is.null(jaatha.fpc@sum.stats[[getStatName('fpc',0,2)]]))  
   
   jaatha.fpc <- Jaatha.initialize(sum.stats.tt, dm.tt,
                                   use_fpc = TRUE, fpc_populations = 2)
@@ -102,9 +95,17 @@ test_that("PG initialization with FPC statistic", {
   
   # With groups
   jaatha.fpc <- Jaatha.initialize(sum.stats.grp, dm.grp, use_fpc = TRUE)
-  expect_false(is.null(jaatha.fpc@sum.stats[["fpc_pop1.1"]]))
-  expect_false(is.null(jaatha.fpc@sum.stats[["fpc_pop1.2"]]))
-  expect_false(is.null(jaatha.fpc@sum.stats[["fpc_pop1.3"]]))
+  expect_false(is.null(jaatha.fpc@sum.stats[[getStatName('fpc',1,1)]]))
+  expect_false(is.null(jaatha.fpc@sum.stats[[getStatName('fpc',1,2)]]))
+  expect_false(is.null(jaatha.fpc@sum.stats[[getStatName('fpc',2,1)]]))
+  expect_false(is.null(jaatha.fpc@sum.stats[[getStatName('fpc',2,2)]]))
+  expect_false(is.null(jaatha.fpc@sum.stats[[getStatName('fpc',3,1)]]))
+  expect_false(is.null(jaatha.fpc@sum.stats[[getStatName('fpc',3,2)]]))
+})
+
+test_that("seg.sites are added when not in model", {
+  j <- Jaatha.initialize(sum.stats.tt, dm.tt, use_fpc = TRUE)
+  expect_true('seg.sites' %in% dm.getSummaryStatistics(j@opts[['dm']]))
 })
 
 

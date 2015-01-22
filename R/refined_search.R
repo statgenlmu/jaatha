@@ -22,11 +22,7 @@
 #' @param sim The number of simulations that are performed in each step
 #' @param sim.final The number of simulations that are performed after the search to estimate the 
 #'        composite log likelihood. If not specified, the value of \code{sim} will be used
-#' @param epsilon Obsolete. Has no effect anymore and will be remove on next
-#'        major release.
 #' @param half.block.size The size of the new block that is created around a new maximum.
-#' @param weight Obsolete. Has no effect anymore and will be remove on next
-#'        major release.
 #' @param max.steps The search will stop at this number of steps if not stopped
 #'        before (see \code{epsilon}).
 #' @param rerun You can repeat a previously done refined search in Jaatha.
@@ -38,11 +34,8 @@
 #' @export
 Jaatha.refinedSearch <- function(jaatha, best.start.pos=2,
                                  sim=length(getParNames(jaatha))*25,
-                                 sim.final=min(sim, 100), epsilon=NULL, half.block.size=.025,
-                                 weight=NULL, max.steps=200, rerun=FALSE) {
-
-  if (!is.null(epsilon)) warning('Parameter "epsilon" is obsolete and will be removed soon.')
-  if (!is.null(weight)) warning('Parameter "weight" is obsolete and will be removed soon.')
+                                 sim.final=min(sim, 100), half.block.size=.025,
+                                 max.steps=200, rerun=FALSE) {
 
   if (rerun) {
     if( is.null(jaatha@calls[['refined.search']]) ) 

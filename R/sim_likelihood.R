@@ -14,8 +14,7 @@ simLogLLH <- function(sum_stat, ...) UseMethod("simLogLLH")
 simLogLLH.default <- function(sum_stat, ...) stop('Unkown Summary Statistic')
 
 simLogLLH.Stat_PoiInd <- function(sum_stat, sim_data, scaling_factor = 1) {
-  values <- t(sapply(sim_data,
-                     function(x) sum_stat$transform(x))) 
+  values <- t(sapply(sim_data,  function(data) data[[sum_stat$get_name()]])) 
   simSS <- apply(values, 2, mean)
   
   simSS[simSS==0] <- 0.5
@@ -25,8 +24,7 @@ simLogLLH.Stat_PoiInd <- function(sum_stat, sim_data, scaling_factor = 1) {
 }
 
 simLogLLH.Stat_PoiSmooth <- function(sum_stat, sim_data, scaling_factor = 1) {
-  sim_results <- sapply(sim_data,
-                        function(x) sum_stat$transform(x)$sum.stat)
+  sim_results <- sapply(sim_data, function(x) x[[sum_stat$get_name()]]$sum.stat)
   sim_mean <- apply(sim_results, 1, mean)
   
   if (any(sim_mean == 0)) {

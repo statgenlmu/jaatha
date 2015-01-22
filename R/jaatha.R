@@ -100,14 +100,20 @@ init <- function(.Object, sim_func, par_ranges, sum_stats, cores = 1) {
     rownames(par_ranges) <- as.character(1:nrow(par_ranges)) 
   .Object@par.ranges <- par_ranges
 
-  # Check sum.stats
+  # Add sum.stats
   is.list(sum_stats) || stop("sum.stats needs to be a list")
-  sapply(sum_stats, function(x) {
-    if (!any(class(x) %in% c("Stat_PoiInd", "Stat_PoiSmooth"))) {
-      stop("Unknown summary statistic of type ", class(x))
+  .Object@sum.stats <- list()
+  for (sum_stat in sum_stats) {
+    if (!any(class(sum_stat) %in% c("Stat_PoiInd", "Stat_PoiSmooth")))
+      stop("Unknown summary statistic of type ", class(sum_stat))
+    
+    if (sum_stat$get_name() %in% names(.Object@sum.stats)) {
+      stop('There is already a summary statistic with name ', 
+           sum_stat$get_name())
     }
-  })
-  .Object@sum.stats <- sum_stats
+
+    .Object@sum.stats[[sum_stat$get_name()]] <- sum_stat
+  }
 
   # Sample seeds
   # Jaatha uses three seeds. The first is the "main seed" used to generate the
@@ -416,4 +422,10 @@ getParNames <- function(jaatha) rownames(jaatha@par.ranges)
 
 getScalingFactor <- function(jaatha) {
   jaatha@scaling.factor
+}
+
+getStatName <- function(stat, group, pop) {
+  if (!missing(pop)) stat <- paste0(stat, '_pop', pop)
+  if (group > 0) stat <- paste0(stat, '.', group)
+  stat
 }
