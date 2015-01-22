@@ -28,7 +28,8 @@ inline bool is_singleton(const NumericMatrix seg_sites,
     mut_count += seg_sites(individuals[i]-1, snp);
   }
   
-  return(mut_count <= 1);
+  //return(mut_count <= 1);
+  return(mut_count <= 1 || mut_count >= n_ind-1);
 }
 
 
@@ -52,6 +53,10 @@ NumericMatrix calcPercentFpcViolation(const List seg_sites_list,
   std::vector<bool> combinations(4);
   NumericMatrix seg_sites;
   NumericVector positions, trio_locus;
+  std::vector<size_t> snps;
+  snps.reserve(1000);
+  size_t n_snps, idx_i, idx_j;
+  double sample_prob;
   
   for (size_t locus = 0; locus < loci_number; ++locus) {
     // Reset variables
@@ -61,33 +66,42 @@ NumericMatrix calcPercentFpcViolation(const List seg_sites_list,
     seg_sites = as<NumericMatrix>(seg_sites_list[locus]);
     positions = getPositions(seg_sites);
     trio_locus = getTrioLocus(seg_sites);
-
+    
+    // Filter SNPs which are non-polymorpic or singletons in the population
+    n_snps = seg_sites.ncol();
+    for (size_t i = 0; i < n_snps; ++i) {
+      if (!is_singleton(seg_sites, individuals, n_ind, i)) snps.push_back(i);
+    }
+    n_snps = snps.size();
+    
+    // If we have more than 1250 good pairs, sample approximately 1000 
+    sample_prob = 1000.0 / (0.5 * n_snps * (n_snps - 1));
+    
     // Look at all pairs of SNPs
-    for (int i = 0; i < seg_sites.ncol(); ++i) {
-      // Ignore singletons
-      if (is_singleton(seg_sites, individuals, n_ind, i)) continue;
-      
-      for (int j = i + 1; j < seg_sites.ncol(); ++j) {
-        // Ignore SNP pairs between outer loci
-        if (std::abs(trio_locus[i] - trio_locus[j]) == 2) continue;
+    for (size_t i = 1; i < n_snps; ++i) {      
+      for (size_t j = 0; j < i; ++j) {
+        if (sample_prob < 0.75 && runif(1)[0] > sample_prob) continue;
+        idx_i = snps[i];
+        idx_j = snps[j];
         
-        // Ignore singletons
-        if (is_singleton(seg_sites, individuals, n_ind, j)) continue;
+        // Ignore SNP pairs between outer loci
+        if (std::abs(trio_locus[idx_i] - trio_locus[idx_j]) == 2) continue;
 
         // Get the type of the SNP pair
-        type = getType(i, j, positions, trio_locus);
+        type = getType(idx_i, idx_j, positions, trio_locus);
         
         // Reset combination counter
         std::fill(combinations.begin(), combinations.end(), false);
 
         // Count combinations
         for (int k = 0; k < n_ind; ++k) {
-          combinations[2*seg_sites(individuals[k]-1, i) + 
-                         seg_sites(individuals[k]-1, j)] = true;
+          combinations[2*seg_sites(individuals[k]-1, idx_i) + 
+                         seg_sites(individuals[k]-1, idx_j)] = true;
         }
       
         // If we have all combinations
-        if (combinations[0] && combinations[1] && combinations[2] && combinations[3]) {
+        if (combinations[0] && combinations[1] && 
+            combinations[2] && combinations[3]) {
           ++violations(locus, type);
         }
 
@@ -105,6 +119,9 @@ NumericMatrix calcPercentFpcViolation(const List seg_sites_list,
     
     // Calculate SNPs per basepair for middle locus
     violations(locus, 5) = sum(trio_locus == 0) / locus_length(locus, 2);
+    
+    // Clean Up
+    snps.clear();
   }
   
   return violations;
