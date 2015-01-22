@@ -12,7 +12,7 @@
 # dm <- dm.createThetaTauModel(c(20,25), 50000)
 # sim_data <- dm.simSumStats(dm.addSummaryStatistic(dm, 'seg.sites'), c(.1,10))
 # llm <- dm.getLociLengthMatrix(dm)
-# save(llm, sim_data, file='test_data.Rda')
+# save(llm, sim_data, file='misc//test_data.Rda')
 
 load('test_data.Rda')
 jaatha:::calcPercentFpcViolation(sim_data$seg.sites, 1:20, llm)
