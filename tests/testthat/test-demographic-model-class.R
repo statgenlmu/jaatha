@@ -202,7 +202,7 @@ test_that("test.getThetaName", {
 test_that("test.parInRange", {
   checkParInRange(dm.tt, c(1, 5))
   checkParInRange(dm.tt, c(2, 7))
-  checkParInRange(dm.tt, c(2.1, 7.7))
+  checkParInRange(dm.tt, c(0.5, 7.7))
   expect_error(checkParInRange(dm.tt, c(0, 5)))
   expect_error(checkParInRange(dm.tt, c(0, -1)))
   expect_error(checkParInRange(dm.tt, c(10, 1)))
@@ -213,7 +213,8 @@ test_that("test.parInRange", {
 })
 
 test_that("test.scaleDemographicModel", {
-  dm <- dm.addLocus(dm.tt, 10, 25, group = 1)
+  dm <- dm.createDemographicModel(11:12, 10)
+  dm <- dm.addLocus(dm, 10, 25, group = 1)
   dm <- dm.addLocus(dm, 15, 25, group = 2)
   dm <- scaleDemographicModel(dm, 5)
   expect_equal(dm.getLociNumber(dm, 0), 2L)
@@ -265,7 +266,7 @@ test_that("set and get loci number works", {
 })
 
 test_that("test.setMutationModel", {
-  dm <- dm.createThetaTauModel(11:12, 100)
+  dm <- dm.createDemographicModel(11:12, 100)
   dm <- dm.setMutationModel(dm, "HKY")
   expect_true("mutation.model" %in% dm@features$type)
   expect_error(dm <- dm.setMutationModel(dm, "bla"))
@@ -277,7 +278,7 @@ test_that('locus length matrix generations works', {
                             'length_ir', 'length_r') )
   
   expect_equal(dm.getLociLengthMatrix(dm.tt), 
-               matrix(c(0, 0, 1000, 0, 0), 10, 5,TRUE, dimnames))
+               matrix(c(0, 0, 100, 0, 0), 5, 5, TRUE, dimnames))
   
   # Multiple loci with differnt length 
   dm <- dm.addLocus(dm.tt, 21, 1, group = 2)
@@ -352,7 +353,7 @@ test_that("test.printGroupDM", {
 
 test_that("addMutation works", {
   dm_tmp <- dm.createDemographicModel(5:6, 10, 1000)
-  dm_tmp <- dm.addSpeciationEvent(dm_tmp, 0.01, 5, time.point="tau")  
+  dm_tmp <- dm.addSpeciationEvent(dm_tmp, 0.01, 5, "tau", 1, 2)  
   dm_tmp <- dm.addRecombination(dm_tmp, parameter=2)
   dm_tmp2 <- dm.addMutation(dm_tmp, 1, 20)
   
@@ -365,7 +366,7 @@ test_that("addMutation works", {
 
 test_that("addRecombination works", {
   dm_tmp <- dm.createDemographicModel(5:6, 10, 1000)
-  dm_tmp <- dm.addSpeciationEvent(dm_tmp, 0.01, 5, time.point="tau")  
+  dm_tmp <- dm.addSpeciationEvent(dm_tmp, 0.01, 5, "tau", 1, 2)  
   dm_tmp <- dm.addRecombination(dm_tmp, parameter=2)
   dm_tmp <- dm.addMutation(dm_tmp, 1, 20)
   
@@ -383,4 +384,25 @@ test_that('setTrioMutationsRates works', {
   expect_equal(searchFeature(dm, 'mutation', group=2)$parameter, "17")
   expect_equal(nrow(searchFeature(dm, 'mutation_outer', group=2)), 1)
   expect_equal(searchFeature(dm, 'mutation_outer', group=2)$parameter, "theta")
+})
+
+test_that('adding Migration works', {
+  dm <- dm.createDemographicModel(10:11, 100)
+  dm <- dm.addSymmetricMigration(dm, 1, 5)
+  dm <- dm.finalize(dm)
+  expect_that(nrow(searchFeature(dm, 'migration')), is_equivalent_to(2))
+  expect_equal(grep('M', paste(dm@options$ms.cmd, collapse=' ')), 1)
+  
+  dm <- dm.createDemographicModel(10:11, 100)
+  dm <- dm.addMigration(dm, 1, 5, pop.from = 1, pop.to = 2)
+  dm <- dm.finalize(dm)
+  expect_that(nrow(searchFeature(dm, 'migration')), is_equivalent_to(1))
+  expect_equal(grep('M', paste(dm@options$ms.cmd, collapse=' ')), 1)
+})
+
+test_that('getting the available Populations works', {
+  dm <- dm.createDemographicModel(10:11, 100)
+  expect_equal(getPopulations(dm), 1:2)
+  expect_equal(getPopulations(dm.tt), 1:2)
+  expect_equal(getPopulations(dm.hky), 1:3)
 })

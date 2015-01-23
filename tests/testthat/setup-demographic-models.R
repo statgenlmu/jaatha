@@ -1,16 +1,23 @@
 set.seed(10121416)
 
 # Theta-Tau Model 
-dm.tt        <- dm.createThetaTauModel(11:12, 10)
+dm.tt        <- dm.createDemographicModel(11:12, 5, 100)
+dm.tt        <- dm.addSpeciationEvent(dm.tt, .1, 2, 'tau', 1, 2)
+dm.tt        <- dm.addRecombination(dm.tt, parameter = .5)
+dm.tt        <- dm.addMutation(dm.tt, 1, 10)
 sum.stats.tt <- dm.simSumStats(dm.addSummaryStatistic(dm.tt, 'seg.sites'), 
                                c(1, 5))
 jaatha.tt    <- Jaatha.initialize(sum.stats.tt, dm.tt, cores = 2) 
 
 # Migration Model
-dm.mig        <- dm.addSymmetricMigration(dm.tt, 1, 5)
+dm.mig        <- dm.createDemographicModel(11:12, 5)
+dm.mig        <- dm.addSymmetricMigration(dm.mig, .1, 5)
+dm.mig        <- dm.addSpeciationEvent(dm.mig, .1, 2, 'tau', 1, 2)
+dm.mig        <- dm.addMutation(dm.mig, 1, 10)
+dm.mig        <- dm.addRecombination(dm.mig, parameter = .5)
 sum.stats.mig <- dm.simSumStats(dm.addSummaryStatistic(dm.mig, 'seg.sites'), 
                                 c(.3, 1, 5))
-jaatha.mig    <- Jaatha.initialize(sum.stats.mig, dm.mig, cores = 2) 
+jaatha.mig    <- Jaatha.initialize(sum.stats.mig, dm.mig, cores = 2)
 
 # Groups
 dm.grp <- dm.mig
@@ -21,7 +28,6 @@ sum.stats.grp <- dm.simSumStats(dm.addSummaryStatistic(dm.grp, 'seg.sites'),
                                 c(1, 1, 3))
 
 
-
 # Finite Sites Models
 if (jaatha:::checkForSeqgen(FALSE, TRUE)) {
   test_seqgen <- TRUE
@@ -29,7 +35,7 @@ if (jaatha:::checkForSeqgen(FALSE, TRUE)) {
   dm.hky <- dm.setMutationModel(dm.sg, "HKY", c(0.2, 0.2, 0.3, 0.3), 2)
   dm.hky <- jaatha:::dm.setLociNumber(dm.hky, 5)
   dm.hky <- jaatha:::dm.setLociLength(dm.hky, 15)
-  dm.hky@sum.stats <- data.frame()
+  dm.hky <- jaatha:::resetSumStats(dm.hky)
   dm.hky <- dm.addSummaryStatistic(dm.hky, 'jsfs')
   dm.f81 <- dm.setMutationModel(dm.sg, "F84", c(0.3, 0.2, 0.3, 0.2), 2)
   dm.gtr <- dm.setMutationModel(dm.sg, "GTR", 

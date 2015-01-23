@@ -36,17 +36,14 @@ test_that("test.finalizeSeqgen", {
   dm.f81 <- finalizeSeqgen(dm.f81)
   dm.gtr <- finalizeSeqgen(dm.gtr)
   expect_false(is.null(dm.hky@options[["seqgen.cmd"]]))
-  #expect_false(is.null(dm.hky@options[["tree.model"]]))
   expect_false(is.null(dm.f81@options[["seqgen.cmd"]]))
-  #expect_false(is.null(dm.f81@options[["tree.model"]]))
   expect_false(is.null(dm.gtr@options[["seqgen.cmd"]]))
-  #expect_false(is.null(dm.gtr@options[["tree.model"]]))
 })
 
 test_that("test.generateSeqgenOptions", {
   if (!test_seqgen) skip('seq-gen not installed')
   dm.hky@options$seqgen.cmd <- NULL
-  opts <- generateSeqgenOptions(dm.hky, c(1, 10), 1, c(0, 0, 10, 0, 0))
+  opts <- generateSeqgenOptions(dm.hky, c(1, 10), 1, c(0, 0, 10, 0, 0), 1)
   opts <- strsplit(opts, " ")[[1]]
   expect_true("-l" %in% opts)
   expect_true("-p" %in% opts)
@@ -82,7 +79,6 @@ test_that("test.seqgenMutationParameterNotLast", {
 test_that("test.seqgenSingleSimFunc", {
   if (!test_seqgen) skip('seq-gen not installed')
   seqgenSingleSimFunc = getSimProgram("seq-gen")$sim_func
-  invisible(expect_error(seqgenSingleSimFunc(dm.tt, c(1, 10))))
   
   set.seed(100)
   sum.stats <- seqgenSingleSimFunc(dm.hky, c(1, 10))
@@ -164,14 +160,14 @@ test_that("Simulation of trios with unequal mutation rates works", {
   grp_mdl <- generateGroupModel(dm, 2)
   ll <- dm.getLociLengthMatrix(grp_mdl)[1,]
   cmds <- generateSeqgenOptions(grp_mdl, c(1, 5), locus = 1, 
-                                locus_lengths = ll)
+                                locus_lengths = ll, 1)
   expect_equal(grep(as.character(2/ll[1]), cmds[[1]]), 1)
   expect_equal(grep(as.character(1/ll[3]), cmds[[2]]), 1)
   expect_equal(grep(as.character(2/ll[5]), cmds[[3]]), 1)
   
   ll <- dm.getLociLengthMatrix(grp_mdl)[2,]
   cmds <- generateSeqgenOptions(grp_mdl, c(1, 5), locus = 2, 
-                                locus_lengths = ll)
+                                locus_lengths = ll, 1)
   expect_equal(grep(as.character(2/ll[1]), cmds[[1]]), 1)
   expect_equal(grep(as.character(1/ll[3]), cmds[[2]]), 1)
   expect_equal(grep(as.character(2/ll[5]), cmds[[3]]), 1)

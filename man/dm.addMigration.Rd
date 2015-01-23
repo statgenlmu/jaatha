@@ -55,11 +55,11 @@ speciation event in which the population is created.
 }
 \examples{
 # Constant asymmetric migration
-dm <- dm.createThetaTauModel(c(25,25), 100)
+dm <- dm.createDemographicModel(c(25,25), 100)
 dm <- dm.addMigration(dm, 0.01, 5, pop.from=1, pop.to=2, time.start="0")
 
 # Stepwise decreasing mutation
-dm <- dm.createThetaTauModel(c(25,25), 100)
+dm <- dm.createDemographicModel(c(25,25), 100)
 dm <- dm.addMigration(dm, 0.01, 5, pop.from=1, pop.to=2, parameter="M", time.start="0")
 dm <- dm.addMigration(dm, pop.from=1, pop.to=2, parameter="0.5*M", time.start="0.5*tau")
 }

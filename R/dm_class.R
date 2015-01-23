@@ -136,7 +136,7 @@ rm(.show)
 #' @return The original model extended with the new parameter.
 #' @export
 #' @examples
-#' dm <- dm.createThetaTauModel(c(15,23), 100)
+#' dm <- dm.createDemographicModel(c(15,23), 100)
 #' dm <- dm.addParameter(dm, "mig", 0.1, 5)
 #' dm <- dm.addMigration(dm, parameter="mig", pop.from=1, pop.to=2)
 #' dm <- dm.addMigration(dm, parameter="2*mig", pop.from=2, pop.to=1)
@@ -257,9 +257,8 @@ addFeature <- function(dm, type, parameter,
 #' @return The model with a summary statistic added.
 #' @export
 #' @examples
-#' dm <- dm.createThetaTauModel(c(15, 20), 100)
+#' dm <- dm.createDemographicModel(c(15, 20), 100)
 #' dm <- dm.addSummaryStatistic(dm, 'seg.sites')
-#' str(dm.simSumStats(dm, c(1, 5)))
 dm.addSummaryStatistic <- function(dm, sum.stat, population = 0, group = 0) {
   checkType(dm, "dm")
   checkType(sum.stat, "char")
@@ -318,10 +317,7 @@ appendToParameters <- function(dm, name, lower.range, upper.range) {
 
 # Gets the availible populations
 getPopulations <- function(dm){
-  # Every population other than the ancestral (=0) should be listed
-  # the pop.sink field of its speciation event.
-  populations <- c(1, dm@features$pop.sink)
-  populations <- unique(populations[!is.na(populations)])
+  unique(searchFeature(dm, 'sample')$pop.source)
 }
 
 # Checks if a vector of parameters is within the ranges of the model
@@ -442,7 +438,7 @@ resetSumStats <- function(dm) {
 #'
 #' @examples
 #' dm <- dm.createDemographicModel(sample.sizes=c(25,25), loci.num=100)
-#' dm <- dm.addSpeciationEvent(dm,0.01,5)
+#' dm <- dm.addSpeciationEvent(dm, 0.01, 5, 'tau', 1, 2)
 #' dm <- dm.addMutation(dm,1,20)
 #' dm
 dm.createDemographicModel <- function(sample.sizes, loci.num, seq.length=1000) {
@@ -659,12 +655,12 @@ dm.getLociLengthMatrix <- function(dm, group=1) {
 #' @examples
 #' # Create a new parameter
 #' dm <- dm.createDemographicModel(c(25,25), 100)
-#' dm <- dm.addSpeciationEvent(dm, 0.01, 5)
+#' dm <- dm.addSpeciationEvent(dm, 0.01, 5, 'tau', 1, 2)
 #' dm <- dm.addMutation(dm, 1, 20)
 #'
 #' # Create a new fixed parameter
 #' dm <- dm.createDemographicModel(c(25,25), 100)
-#' dm <- dm.addSpeciationEvent(dm, 0.01,5)
+#' dm <- dm.addSpeciationEvent(dm, 0.01, 5, 'tau', 1, 2)
 #' dm <- dm.addMutation(dm, parameter=7)
 #'
 #' # Use an existing parameter
@@ -759,7 +755,7 @@ dm.getSampleSize <- function(dm) {
 #'
 #' @examples
 #' dm <- dm.createDemographicModel(c(25,25), 100)
-#' dm <- dm.addSpeciationEvent(dm, 0.01, 5)
+#' dm <- dm.addSpeciationEvent(dm, 0.01, 5, 'tau', 1, 2)
 #' dm <- dm.addRecombination(dm, 20)
 #' dm <- dm.addMutation(dm, 1, 20)
 dm.addRecombination <- function(dm, lower.range=NA, upper.range=NA, 
@@ -817,11 +813,11 @@ dm.addRecombination <- function(dm, lower.range=NA, upper.range=NA,
 #'
 #' @examples
 #' # Constant asymmetric migration
-#' dm <- dm.createThetaTauModel(c(25,25), 100)
+#' dm <- dm.createDemographicModel(c(25,25), 100)
 #' dm <- dm.addMigration(dm, 0.01, 5, pop.from=1, pop.to=2, time.start="0")
 #'
 #' # Stepwise decreasing mutation
-#' dm <- dm.createThetaTauModel(c(25,25), 100)
+#' dm <- dm.createDemographicModel(c(25,25), 100)
 #' dm <- dm.addMigration(dm, 0.01, 5, pop.from=1, pop.to=2, parameter="M", time.start="0")
 #' dm <- dm.addMigration(dm, pop.from=1, pop.to=2, parameter="0.5*M", time.start="0.5*tau")
 dm.addMigration <- function(dm, lower.range=NA, upper.range=NA, parameter="M",
@@ -862,7 +858,7 @@ dm.addMigration <- function(dm, lower.range=NA, upper.range=NA, parameter="M",
 #' @export
 #'
 #' @examples
-#' dm <- dm.createThetaTauModel(c(25,25), 100)
+#' dm <- dm.createDemographicModel(c(25,25), 100)
 #' dm <- dm.addSymmetricMigration(dm, 0.01, 5, time.start="0.5*tau")
 dm.addSymmetricMigration <- function(dm, lower.range, upper.range, 
                                      parameter="M", time.start="0") {
@@ -897,16 +893,13 @@ dm.addSymmetricMigration <- function(dm, lower.range, upper.range,
 #' Time in measured in Number of 4N0 generations in the past,
 #' where N0 is the size of population 1 at time 0.
 #'
-#' The command will print the number of the new population, which will
-#' be the number of previously existing populations plus one. The first
-#' population has number "1".
-#'
 #' @param dm  The demographic model to which the split should be added.
 #' @param min.time  If you want to estimate the time point, this will be 
 #'            used as the smallest possible value.
 #' @param max.time  Same as min.time, but the largest possible value.
-#' @param in.population The number of the population in which the spilt
+#' @param in.pop The population in which the spilt
 #'            occurs. See above for more information.
+#' @param to.pop The newly created population.
 #' @param time.point  Instead of creating a new parameter, you can also
 #'            set the mutation rate to an expression based on existing
 #'            parameters. For example setting this to "tau" will use
@@ -918,30 +911,36 @@ dm.addSymmetricMigration <- function(dm, lower.range, upper.range,
 #' @export
 #' @examples
 #' dm <- dm.createDemographicModel(c(25,25), 100)
-#' dm <- dm.addSpeciationEvent(dm, 0.01, 5)
+#' dm <- dm.addSpeciationEvent(dm, 0.01, 5, 'tau', 1, 2)
 #' dm <- dm.addMutation(dm, 1, 20)
+#' dm
+#' 
+#' dm <- dm.createDemographicModel(c(25,25), 100)
+#' dm <- dm.addSymmetricMigration(dm, .1, 2)
+#' dm <- dm.addSpeciationEvent(dm, 0.01, 5, 'tau', 1, 2)
+#' dm <- dm.addMutation(dm, 1, 20)
+#' dm
 dm.addSpeciationEvent <- function(dm, min.time, max.time, 
-                                  time.point=paste0("t_split_", in.population), 
-                                  in.population=1) {
+                                  time.point="tau", 
+                                  in.pop, to.pop) {
 
-  checkType(dm,                  c("dm",  "s"),  T, F)
-  checkType(in.population,       c("num", "s"),  T, F)
-  checkType(min.time,            c("num", "s"),  F, F)
-  checkType(max.time,            c("num", "s"),  F, F)
-  checkType(time.point,          c("char", "s"),  F, T)
+  checkType(dm,         c("dm",  "s"),  T, F)
+  checkType(in.pop,     c("num", "s"),  T, F)
+  checkType(to.pop,     c("num", "s"),  T, F)
+  checkType(min.time,   c("num", "s"),  F, F)
+  checkType(max.time,   c("num", "s"),  F, F)
+  checkType(time.point, c("char", "s"),  F, T)
   
   # in.population valid?
   populations <- getPopulations(dm)
-  if (!in.population %in% populations) 
-    stop("Population", in.population, "not known")
+  if (!all(c(in.pop, to.pop) %in% populations)) 
+    stop("Error finding one of the populations")
 
   # time.points
   if (!missing(min.time)) dm <- dm.addParameter(dm, time.point, min.time, max.time)
 
-  new.pop <- max(populations) + 1
-
   addFeature(dm, "split", parameter=NA,
-             pop.source=in.population, pop.sink=new.pop,
+             pop.source=in.pop, pop.sink=to.pop,
              time.point=time.point)
 }
 
@@ -980,7 +979,7 @@ dm.addSpeciationEvent <- function(dm, min.time, max.time,
 #' @export
 #' @examples
 #' # A model with one smaller population
-#' dm <- dm.createThetaTauModel(c(20,37), 88)
+#' dm <- dm.createDemographicModel(c(20,37), 88)
 #' dm <- dm.addSizeChange(dm, 0.1, 1, population=2, at.time="0")
 dm.addSizeChange <- function(dm, min.size.factor, max.size.factor,
                              parameter="q",
@@ -1033,7 +1032,7 @@ dm.addSizeChange <- function(dm, min.size.factor, max.size.factor,
 #' @export
 #' @examples
 #' # A model with one smaller population
-#' dm <- dm.createThetaTauModel(c(20,37), 88)
+#' dm <- dm.createDemographicModel(c(20,37), 88)
 #' dm <- dm.addGrowth(dm, 0.1, 2, population=2, at.time="0")
 dm.addGrowth <- function(dm, min.growth.rate=NA, max.growth.rate=NA, 
                          parameter="alpha", population, at.time="0") {
@@ -1074,7 +1073,7 @@ dm.addGrowth <- function(dm, min.growth.rate=NA, max.growth.rate=NA,
 #' @return    The demographic model with the new mutation model.
 #' @export
 #' @examples
-#' dm <- dm.createThetaTauModel(10:11, 10, 100)
+#' dm <- dm.createDemographicModel(10:11, 10, 100)
 #' dm <- dm.addOutgroup(dm, "2*tau")
 #' dm.hky <- dm.setMutationModel(dm, "HKY", c(0.2, 0.2, 0.3, 0.3), 2)
 #' dm.f81 <- dm.setMutationModel(dm, "F84", c(0.3, 0.2, 0.3, 0.2), 2)
@@ -1172,7 +1171,7 @@ dm.setMutationModel <- function(dm, mutation.model,
 #' @export
 #' @examples
 #' # A model with one smaller population
-#' dm <- dm.createThetaTauModel(c(20,37), 88)
+#' dm <- dm.createDemographicModel(c(20,37), 88)
 #' dm <- dm.setMutationModel(dm, "HKY")
 #' dm <- dm.addMutationRateHeterogenity(dm, 0.1, 5, parameter="alpha")
 dm.addMutationRateHeterogenity <- 
@@ -1187,30 +1186,6 @@ dm.addMutationRateHeterogenity <-
   return(dm)
 }
 
-
-
-#-------------------------------------------------------------------
-# dm.createThetaTauModel
-#-------------------------------------------------------------------
-#' Creates a standard "Theta/Tau" demopraphic model.
-#' 
-#' @param sample.sizes   A numeric vector with the sample sizes of the two pop.sources.
-#' @param loci.num       The number of Loci to simulate.
-#' @param seq.length     For recombination, each locus is assumed to be of this
-#'                       length
-#' @return               A Theta/Tau Model
-#' @export
-#'
-#' @examples
-#' dm <- dm.createThetaTauModel(c(20,25), 100)
-#' dm
-dm.createThetaTauModel <- function(sample.sizes, loci.num, seq.length=1000) {
-  dm <- dm.createDemographicModel(sample.sizes, loci.num, seq.length)
-  dm <- dm.addSpeciationEvent(dm, 0.01, 5, time.point = "tau")
-  dm <- dm.addRecombination(dm, parameter=5)
-  dm <- dm.addMutation(dm, 1, 20)
-  dm
-}
 
 
 #-------------------------------------------------------------------
@@ -1235,7 +1210,7 @@ dm.addOutgroup <- function(dm, separation_time, sample_size = 1, anc_pop = 1) {
   pop <- max(na.omit(dm@features$pop.source)) + 1
   dm <- addFeature(dm, "sample", as.character(sample_size), 
                      pop.source=pop, group=0, time.point='0')
-  dm <- dm.addSpeciationEvent(dm, in.population=anc_pop, 
+  dm <- dm.addSpeciationEvent(dm, in.pop=anc_pop, to.pop=pop,
                               time.point=separation_time)
   dm <- addFeature(dm, "outgroup",sample_size, 
                    pop.source = anc_pop, pop.sink = pop)
@@ -1314,7 +1289,7 @@ dm.addBalancingSelection <- function(dm, min.strength=NA, max.strength=NA,
 #'
 #' @examples
 #' dm <- dm.createDemographicModel(c(25,25), 100)
-#' dm <- dm.addSpeciationEvent(dm,0.01,5)
+#' dm <- dm.addSpeciationEvent(dm, 0.01, 5, 'tau', 1, 2)
 #' dm <- dm.addMutation(dm,1,20)
 #' dm.simSumStats(dm,c(1,10))
 dm.simSumStats <- function(dm, parameters, sum.stats=c("all")) {

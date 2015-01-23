@@ -1,8 +1,17 @@
+jaatha 2.99.0.9017
+============
+
+* Fix a bug when symmetric migration was not added to a model in some 
+  cirumstances (#48).
+* Removed the dm.createThetaTauModel function.
+
+
 jaatha 2.99.0.9016
 ============
 
-* Increases memory efficiency by saving only the transformed values for summary
+* Increase memory efficiency by saving only the transformed values for summary
   statisics.
+* Speed-up the calculation of the fpc statistic
 
 
 jaatha 2.99.0.9015

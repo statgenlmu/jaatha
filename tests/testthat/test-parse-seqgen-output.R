@@ -1,7 +1,7 @@
 context("parsing seq-gen output")
 
 test_that("parseSeqgenOutput works with a single file", {
-  dm_tmp <- dm.createThetaTauModel(c(4,6), 2, 10)
+  dm_tmp <- dm.createDemographicModel(c(4,6), 2, 10)
   dm_tmp <- dm.addOutgroup(dm_tmp, "2*tau")
   dm_tmp <- dm.setMutationModel(dm_tmp, "HKY")
 

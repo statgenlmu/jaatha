@@ -37,7 +37,7 @@ The HKY and F84 models use the the arguments 'base.frequencies' and
 'tstv.ratio'. The GTR model uses 'gtr.rates'.
 }
 \examples{
-dm <- dm.createThetaTauModel(10:11, 10, 100)
+dm <- dm.createDemographicModel(10:11, 10, 100)
 dm <- dm.addOutgroup(dm, "2*tau")
 dm.hky <- dm.setMutationModel(dm, "HKY", c(0.2, 0.2, 0.3, 0.3), 2)
 dm.f81 <- dm.setMutationModel(dm, "F84", c(0.3, 0.2, 0.3, 0.2), 2)

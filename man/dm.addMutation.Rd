@@ -49,12 +49,12 @@ time of sampling and mu is the neutral mutation rate for an entire locus.
 \examples{
 # Create a new parameter
 dm <- dm.createDemographicModel(c(25,25), 100)
-dm <- dm.addSpeciationEvent(dm, 0.01, 5)
+dm <- dm.addSpeciationEvent(dm, 0.01, 5, 'tau', 1, 2)
 dm <- dm.addMutation(dm, 1, 20)
 
 # Create a new fixed parameter
 dm <- dm.createDemographicModel(c(25,25), 100)
-dm <- dm.addSpeciationEvent(dm, 0.01,5)
+dm <- dm.addSpeciationEvent(dm, 0.01, 5, 'tau', 1, 2)
 dm <- dm.addMutation(dm, parameter=7)
 
 # Use an existing parameter

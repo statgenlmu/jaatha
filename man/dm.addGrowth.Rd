@@ -49,7 +49,7 @@ then use the \link{dm.addSizeChange} function.
 }
 \examples{
 # A model with one smaller population
-dm <- dm.createThetaTauModel(c(20,37), 88)
+dm <- dm.createDemographicModel(c(20,37), 88)
 dm <- dm.addGrowth(dm, 0.1, 2, population=2, at.time="0")
 }
 

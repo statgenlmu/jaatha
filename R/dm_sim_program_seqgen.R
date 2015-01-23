@@ -62,7 +62,8 @@ generateTreeModel <- function(dm, locus_length) {
   dm <- dm.addSummaryStatistic(dm, "file")
   
   dm@loci <- dm@loci[FALSE, ]
-  addLocus(dm, number = 1, length_m = sum(locus_length), group = 0)
+  dm <- addLocus(dm, number = 1, length_m = sum(locus_length), group = 0)
+  dm.finalize(dm)
 }
 
 
@@ -104,7 +105,8 @@ callSeqgen <- function(opts, ms_files) {
   })
 }
 
-generateSeqgenOptions <- function(dm, parameters, locus, locus_lengths) {
+generateSeqgenOptions <- function(dm, parameters, locus, 
+                                  locus_lengths, seeds) {
   # Generate the command template to execute or use the buffered one
   if ( !is.null( dm@options[['seqgen.cmd']] ) ) {
     cmd <- dm@options[['seqgen.cmd']]
@@ -122,7 +124,7 @@ generateSeqgenOptions <- function(dm, parameters, locus, locus_lengths) {
   sapply(seq(along = locus_lengths), function(i) {
     par_envir <- createParameterEnv(dm, parameters, locus = locus, 
                                     locus_length = locus_lengths[i],
-                                    seed = sampleSeed(1))
+                                    seed = seeds[i])
     paste(eval(parse(text=cmd[[i]]), envir=par_envir), collapse=" ")
   })
 }
@@ -202,21 +204,22 @@ generateSeqgenOptionsCmd <- function(dm) {
 }
 
 printSeqgenCommand <- function(dm) {
-  if (is.null(dm@options[['tree.model']])) dm <- dm.finalize(dm)
-  tree.model <- dm@options[['tree.model']]
+  tree.model <- generateTreeModel(dm, dm.getLociLengthMatrix(dm)[1,3])
   getSimProgram(tree.model@currentSimProg)$print_cmd_func(tree.model)
-  cmd <- generateSeqgenOptionsCmd(dm)
-
-  cmd <- cmd[cmd != ","]
-  cmd <- cmd[-c(1, length(cmd))]
-
-  cmd <- paste(cmd, collapse=" ")
-
-  cmd <- gsub(",", " ", cmd)
-  cmd <- gsub('\"', "", cmd)
-  cmd <- gsub('"', " ", cmd)
-
-  .print(cmd)
+  
+  cmds <- generateSeqgenOptionsCmd(dm)
+  for (cmd in cmds) {
+    cmd <- cmd[cmd != ","]
+    cmd <- cmd[-c(1, length(cmd))]
+    
+    cmd <- paste(cmd, collapse=" ")
+    
+    cmd <- gsub(",", " ", cmd)
+    cmd <- gsub('\"', "", cmd)
+    cmd <- gsub('"', " ", cmd)
+    
+    .print(cmd)
+  }
 }
 
 seqgenSingleSimFunc <- function(dm, parameters) {
@@ -231,17 +234,17 @@ seqgenSingleSimFunc <- function(dm, parameters) {
   seqgen.files <- lapply(1:dm.getLociNumber(dm), function(locus) {
     # Generate options for seqgen
     tree.model <- generateTreeModel(dm, locus_length[locus,])
-    seqgen.options <- generateSeqgenOptions(dm, parameters, locus, locus_length[locus,])
-    
+
     # Simulate the trees
     sum_stats_ms <- dm.simSumStats(tree.model, parameters)
-    #print(sum_stats_ms[['file']])
     tree_files <- parseTrees(sum_stats_ms[['file']][[1]],
                              locus_length[locus,],
                              getTempFile)
-    #print(tree_files)
     
     # Call seq-gen to distribute mutations
+    seqgen.options <- generateSeqgenOptions(dm, parameters, locus, 
+                                            locus_length[locus,],
+                                            sampleSeed(length(tree_files)))
     seqgen.file <- callSeqgen(seqgen.options, tree_files)
     
     # Delete tree files
@@ -255,7 +258,6 @@ seqgenSingleSimFunc <- function(dm, parameters) {
 
 finalizeSeqgen <- function(dm) {
   checkForSeqgen()
-  #dm@options[['tree.model']] <- dm.finalize(generateTreeModel(dm))
   dm@options[['seqgen.cmd']] <- generateSeqgenOptionsCmd(dm)
   return(dm)
 }

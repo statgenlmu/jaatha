@@ -24,6 +24,12 @@ test_that("CSI complete run", {
   expect_equal(jaatha2@likelihood.table, jaatha@likelihood.table)
 })
 
+test_that("test.initialSearch.normal", {
+  jaatha <- Jaatha.initialSearch(jaatha.tt, sim = 10, blocks.per.par = 1)
+  pStartPoints <- Jaatha.getStartingPoints(jaatha)
+  expect_equal(nrow(pStartPoints), 1)
+})
+
 test_that("test.initialSearch.folded", {
   jaatha <- Jaatha.initialize(sum.stats.tt, dm.tt, folded = TRUE)
   jaatha <- Jaatha.initialSearch(jaatha, sim = 20, blocks.per.par = 1)
@@ -45,34 +51,8 @@ test_that("test.initialSearch.fpc_groups", {
   expect_equal(nrow(pStartPoints), 1)
 })
 
-test_that("test.initialSearch.normal", {
-  jaatha <- Jaatha.initialSearch(jaatha.tt, sim = 10, blocks.per.par = 1)
-  pStartPoints <- Jaatha.getStartingPoints(jaatha)
-  expect_equal(nrow(pStartPoints), 1)
-})
-
-test_that("test.initialSearch.seqgen", {
-  dm.sq <- dm.setMutationModel(dm.tt, "HKY", c(0.2, 0.2, 0.2, 0.4), 0.5)
-  dm.sq <- dm.addOutgroup(dm.sq, separation_time = '2*tau', sample_size = 2)
-  jaatha <- Jaatha.initialize(sum.stats.tt, dm.sq, cores = 2)
-  jaatha <- Jaatha.initialSearch(jaatha, sim = 10, blocks.per.par = 1)
-  pStartPoints <- Jaatha.getStartingPoints(jaatha)
-  expect_equal(nrow(pStartPoints), 1)
-})
-
-test_that("test.initialSearch.seqgenAndMsms", {
-  set.seed(333)
-  dm.selsq <- jaatha:::dm.addPositiveSelection(dm.hky, 100, 500, population = 1, 
-                                               at.time = "0.1")
-  dm.selsq <- jaatha:::dm.finalize(dm.selsq)
-  sum.stats <- dm.simSumStats(dm.addSummaryStatistic(dm.selsq, 'seg.sites'), 
-                              c(1, 2, 255))
-  jaatha.selsq <- Jaatha.initialize(sum.stats, dm.selsq, cores = 2)
-  jaatha.selsq <- Jaatha.initialSearch(jaatha.selsq, sim=10, blocks.per.par=1)
-})
-
 test_that("test.initialSearch.smoothing", {
-  jaatha <- Jaatha.initialize(sum.stats.tt, dm.tt, smoothing=TRUE, cores=2)
-  jaatha <- Jaatha.initialSearch(jaatha, sim = 50, blocks.per.par = 1)
-  pStartPoints <- Jaatha.getStartingPoints(jaatha)
+#   jaatha <- Jaatha.initialize(sum.stats.mig, dm.mig, smoothing=TRUE, cores=2)
+#   jaatha <- Jaatha.initialSearch(jaatha, sim = 50, blocks.per.par = 1)
+#   pStartPoints <- Jaatha.getStartingPoints(jaatha)
 })
