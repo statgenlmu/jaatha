@@ -3,7 +3,7 @@ context("Scaling")
 test_that("Scaling produces resonable results", {
   dm <- dm.createDemographicModel(5:6, 200)
   dm <- dm.addMutation(dm, 1, 10)
-  dm <- dm.addSpeciationEvent(dm, time.point = ".5")
+  dm <- dm.addSpeciationEvent(dm, time.point = ".5", in.pop = 1, to.pop = 2)
   sum_stats <- dm.simSumStats(dm.addSummaryStatistic(dm, 'seg.sites'), c(2))
   
   jaatha <- Jaatha.initialize(sum_stats, dm, scaling.factor = 20)

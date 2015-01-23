@@ -4,8 +4,8 @@
 \alias{dm.addSpeciationEvent}
 \title{Adds a speciation event to a demographic model}
 \usage{
-dm.addSpeciationEvent(dm, min.time, max.time, time.point = paste0("t_split_",
-  in.population), in.population = 1)
+dm.addSpeciationEvent(dm, min.time, max.time, time.point = "tau", in.pop,
+  to.pop)
 }
 \arguments{
 \item{dm}{The demographic model to which the split should be added.}
@@ -23,8 +23,10 @@ created. You can also use R expression here, i.e. "2*tau"
 or "5*M+2*tau" (if M is another parameter) will also
 work (also this does not make much sense).}
 
-\item{in.population}{The number of the population in which the spilt
+\item{in.pop}{The population in which the spilt
 occurs. See above for more information.}
+
+\item{to.pop}{The newly created population.}
 }
 \value{
 The demographic model with a split.
@@ -38,14 +40,17 @@ generated time points.
 \details{
 Time in measured in Number of 4N0 generations in the past,
 where N0 is the size of population 1 at time 0.
-
-The command will print the number of the new population, which will
-be the number of previously existing populations plus one. The first
-population has number "1".
 }
 \examples{
 dm <- dm.createDemographicModel(c(25,25), 100)
-dm <- dm.addSpeciationEvent(dm, 0.01, 5)
+dm <- dm.addSpeciationEvent(dm, 0.01, 5, 'tau', 1, 2)
 dm <- dm.addMutation(dm, 1, 20)
+dm
+
+dm <- dm.createDemographicModel(c(25,25), 100)
+dm <- dm.addSymmetricMigration(dm, .1, 2)
+dm <- dm.addSpeciationEvent(dm, 0.01, 5, 'tau', 1, 2)
+dm <- dm.addMutation(dm, 1, 20)
+dm
 }
 

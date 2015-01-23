@@ -34,7 +34,7 @@ rate. Please look at the documentation for \link{dm.addMigration} for
 detailed information about migration.
 }
 \examples{
-dm <- dm.createThetaTauModel(c(25,25), 100)
+dm <- dm.createDemographicModel(c(25,25), 100)
 dm <- dm.addSymmetricMigration(dm, 0.01, 5, time.start="0.5*tau")
 }
 

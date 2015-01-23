@@ -28,7 +28,7 @@ test_that("Initialization with PopGenome-Data works", {
   if (!test_seqgen) skip('seq-gen not installed')
   dm_pg <- dm.createModelFromPopGenome(data_pg)
   dm_pg <- dm.addMutation(dm_pg, 1, 5)
-  dm_pg <- dm.addSpeciationEvent(dm_pg, .1, .5)
+  dm_pg <- dm.addSpeciationEvent(dm_pg, .1, .5, 'tau', 1, 2)
   
   # Outgroup is missing
   expect_error(jaatha <- Jaatha.initialize(data_pg, dm_pg))

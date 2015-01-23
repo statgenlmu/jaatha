@@ -27,7 +27,7 @@ test_that("PG initialization works", {
   # scaling
   jaatha <- Jaatha.initialize(sum.stats.tt, dm.tt, scaling.factor = 5)
   expect_equal(jaatha@scaling.factor, 5)
-  expect_equal(dm.getLociNumber(jaatha@opts[['dm']]), 2)
+  expect_equal(dm.getLociNumber(jaatha@opts[['dm']]), 1L)
     
   # folded
   jaatha <- Jaatha.initialize(sum.stats.tt, dm.tt, folded = TRUE)

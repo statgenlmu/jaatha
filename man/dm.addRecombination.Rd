@@ -52,7 +52,7 @@ rates with Jaatha because it assumes unlinked loci.
 }
 \examples{
 dm <- dm.createDemographicModel(c(25,25), 100)
-dm <- dm.addSpeciationEvent(dm, 0.01, 5)
+dm <- dm.addSpeciationEvent(dm, 0.01, 5, 'tau', 1, 2)
 dm <- dm.addRecombination(dm, 20)
 dm <- dm.addMutation(dm, 1, 20)
 }

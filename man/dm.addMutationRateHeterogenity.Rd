@@ -54,7 +54,7 @@ with rate heterogeneity requires that 'seq-gen' is installed on your system.
 }
 \examples{
 # A model with one smaller population
-dm <- dm.createThetaTauModel(c(20,37), 88)
+dm <- dm.createDemographicModel(c(20,37), 88)
 dm <- dm.setMutationModel(dm, "HKY")
 dm <- dm.addMutationRateHeterogenity(dm, 0.1, 5, parameter="alpha")
 }
