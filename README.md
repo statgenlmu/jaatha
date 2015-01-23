@@ -26,6 +26,7 @@ Installation
 ## Stable Version from CRAN:
 
 [![Build Status](https://travis-ci.org/paulstaab/jaatha.png?branch=master)](https://travis-ci.org/paulstaab/jaatha)
+[![Coverage Status](https://coveralls.io/repos/paulstaab/jaatha/badge.svg?branch=master)](https://coveralls.io/r/paulstaab/jaatha)
 
 To install the current stable version of jaatha from CRAN, simply type
 
@@ -38,6 +39,7 @@ in R.
 ## Development Version from GitHub  
 
 [![Build Status](https://travis-ci.org/paulstaab/jaatha.png?branch=develop)](https://travis-ci.org/paulstaab/jaatha)
+[![Coverage Status](https://coveralls.io/repos/paulstaab/jaatha/badge.svg?branch=develop)](https://coveralls.io/r/paulstaab/jaatha)
 
 You can install the development version from GitHub using: 
 
