@@ -1,5 +1,5 @@
 Package: jaatha
-Version: 2.99.0.9017
+Version: 2.99.0.9018
 Date: 2015-01-23
 License: GPL (>= 3)
 Title: A Fast Parameter Estimation Method for Evolutionary Biology
@@ -36,6 +36,7 @@ Collate:
     'helper_functions.R'
     'dm_sim_program.R'
     'dm_class.R'
+    'dm_parameter.R'
     'dm_sim_program_ms.R'
     'dm_sim_program_msms.R'
     'dm_sim_program_scrm.R'
