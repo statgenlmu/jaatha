@@ -24,10 +24,4 @@ The original model extended with the new parameter.
 \description{
 The function creates a new model parameter.
 }
-\examples{
-dm <- dm.createDemographicModel(c(15,23), 100)
-dm <- dm.addParameter(dm, "mig", 0.1, 5)
-dm <- dm.addMigration(dm, parameter="mig", pop.from=1, pop.to=2)
-dm <- dm.addMigration(dm, parameter="2*mig", pop.from=2, pop.to=1)
-}
 

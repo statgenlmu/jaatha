@@ -1,25 +1,46 @@
+# Base class for all parameters.
+# Contains an expression that can be assigned to some part of a feature.
 Parameter <- R6Class('Parameter', 
   private = list(
-    expr = NA,    
-    name = NA
+    expr = NA
   ),
   public = list(
-    initialize = function(expr, name=NA) {
+    initialize = function(expr) {
       if (!is.expression(expr)) stop("No expression provided: ", expr,
                                      " is of type ", is(expr))
       private$expr <- expr
-      
-      if (!(is.na(name) | is.character(name)))
-        stop('The parameter name must be a character')
-      private$name <- name
     },
     eval = function(envir = parent.frame()) {
       eval(private$expr, envir = envir)
     },
-    get_expression = function() private$expr,
+    get_expression = function() private$expr
+  )
+)
+
+# Base class for Model Parameters.
+# Model parameters have a name, and a value is assigned to a variable of that 
+# name for each simulation.
+Par_Model <- R6Class('Par_Model', inherit=Parameter, 
+  private = list(name = NA),
+  public = list(
+    initialize = function(name) {      
+      if (!(is.character(name) & length(name) == 1))
+        stop('The parameter name must be a character')
+      
+      super$initialize(parse(text=name))
+      private$name <- name
+    },
     get_name = function() private$name
   )
 )
+
+is.par <- function(par) {
+  'Parameter' %in% class(par)
+}
+
+is.par_model <- function(par) {
+  'Par_Model' %in% class(par)
+}
 
 #' Define Model Parameters
 #' 
@@ -46,6 +67,22 @@ par_expr <- function(expr) {
   Parameter$new(as.expression(substitute(expr)))
 }
 
+Par_Range <- R6Class('Par_Range', inherit = Par_Model,
+  private = list(range = NA),
+  public = list(
+    initialize = function(lower, upper, name) {
+      stopifnot(all(is.numeric(c(lower, upper))))
+      stopifnot(length(lower) == 1)
+      stopifnot(length(upper) == 1)
+      stopifnot(lower < upper)
+      
+      super$initialize(name)
+      private$range <- c(lower, upper)
+    },
+    get_range = function() private$range
+  )
+)
+
 #' @describeIn par_expr Creates an parameter that can take a range of possible
 #'  values. Used for creating model parameters for \code{Jaatha}.
 #' @export
@@ -53,5 +90,6 @@ par_expr <- function(expr) {
 #' @param lower A numeric. The lower boundary of the parameter's range.
 #' @param upper A numeric. The upper boundary of the parameter's range.
 par_range <- function(name, lower, upper) {
-  
+  Par_Range$new(lower, upper, name)
 }
+

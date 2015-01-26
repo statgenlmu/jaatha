@@ -31,7 +31,7 @@ bla bla bla
 expression.
 
 \item \code{par_range}: Creates an parameter that can take a range of possible
-values.
+values. Used for creating model parameters for \code{Jaatha}.
 }}
 \examples{
 par_expr(5)          # The parameters value is always 5.

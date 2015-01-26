@@ -33,6 +33,7 @@ Collate:
     'RcppExports.R'
     'block.R'
     'confidence_intervals.R'
+    'dm_build_model.R'
     'helper_functions.R'
     'dm_sim_program.R'
     'dm_class.R'

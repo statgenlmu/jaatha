@@ -119,9 +119,7 @@ rm(.show)
 # Private functions
 #------------------------------------------------------------------------------
 
-#---------------------------------------------------------------------
-# dm.addParameter()
-#---------------------------------------------------------------------
+
 #' Create a parameter that can be used for one or more features
 #'
 #' The function creates a new model parameter. 
@@ -134,12 +132,6 @@ rm(.show)
 #' @param upper.boundary Like 'lower.boundary', but the upper end of the
 #'                       parameter range.
 #' @return The original model extended with the new parameter.
-#' @export
-#' @examples
-#' dm <- dm.createDemographicModel(c(15,23), 100)
-#' dm <- dm.addParameter(dm, "mig", 0.1, 5)
-#' dm <- dm.addMigration(dm, parameter="mig", pop.from=1, pop.to=2)
-#' dm <- dm.addMigration(dm, parameter="2*mig", pop.from=2, pop.to=1)
 dm.addParameter <- function(dm, par.name, lower.boundary, upper.boundary) {
 
   checkType(dm,          c("dm",   "s"), T, F)
@@ -664,8 +656,7 @@ dm.getLociLengthMatrix <- function(dm, group=1) {
 #' dm <- dm.addMutation(dm, parameter=7)
 #'
 #' # Use an existing parameter
-#' dm <- dm.createDemographicModel(c(25,25), 100)
-#' dm <- dm.addParameter(dm, "theta", 0.01, 5)
+#' dm <- dm.createDemographicModel(c(25,25), 100) + par_range("theta", 0.01, 5)
 #' dm <- dm.addMutation(dm, parameter="2*log(theta)+1")
 dm.addMutation <- function(dm, lower.range=NA, upper.range=NA, 
                            parameter = "theta",
