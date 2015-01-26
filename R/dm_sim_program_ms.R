@@ -6,9 +6,9 @@
 # Licence:  GPLv3 or later
 # --------------------------------------------------------------
 
-possible.features  <- c("sample", "loci.number", "loci.length",
-                        "mutation", "migration", "split",
-                        "recombination", "size.change", "growth",
+possible.features  <- c("sample", "mutation", "migration", "migration_sym",
+                        "pop_merge",
+                        "recombination", "size_change", "growth",
                         "inter_locus_variation")
 possible.sum.stats <- c("jsfs", "trees", "seg.sites", "file")
 
@@ -29,9 +29,9 @@ generateMsOptionsCommand <- function(dm) {
       cmd <- c(cmd,'"-t"', ',', feat["parameter"], ',')
     }
 
-    else if (type == "split") {
+    else if (type == "pop_merge") {
       cmd <- c(cmd, '"-ej"', ',', feat["time.point"], ',',
-               feat["pop.sink"], ',', feat["pop.source"], ',')
+               feat["pop.source"], ',', feat["pop.sink"], ',')
     }
 
     else if (type == "migration")
@@ -39,6 +39,11 @@ generateMsOptionsCommand <- function(dm) {
                feat['pop.sink'], ',', feat['pop.source']  , ',',
                feat['parameter'], ',')
 
+    else if (type == "migration_sym")
+      cmd <- c(cmd, '"-eM"', ',', 
+               feat['time.point'], ',',
+               feat['parameter'], ',')
+    
     else if (type == "recombination") 
       cmd <- c(cmd, '"-r"', ',', feat['parameter'], ',', dm.getLociLength(dm), ',')
 
@@ -109,7 +114,7 @@ msSingleSimFunc <- function(dm, parameters) {
 
   # Run all simulation in with one ms call if they loci are identical,
   # or call ms for each locus if there is variation between the loci.
-  if (dm.hasInterLocusVariation(dm)) {
+  if (hasInterLocusVariation(dm)) {
     sim_reps <- 1:dm.getLociNumber(dm)
     sim_loci <- 1
   } else {

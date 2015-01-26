@@ -27,37 +27,53 @@ setClass("DemographicModel" ,
 # Initialization
 #-----------------------------------------------------------------------
 
+createFeatureTable <- function(type=character(), parameter=character(),
+                               pop.source=numeric(), pop.sink=numeric(),
+                               time.point=character(), group=numeric()) {
+  
+  stopifnot(is.character(type))
+  stopifnot(is.character(parameter))
+  stopifnot(is.na(pop.source) | is.numeric(pop.source))
+  stopifnot(is.na(pop.sink) | is.numeric(pop.sink))
+  stopifnot(is.na(time.point) | is.character(time.point))
+  stopifnot(is.numeric(group))
+  
+  data.frame(type=type,
+             parameter=parameter,
+             pop.source=pop.source,
+             pop.sink=pop.sink,
+             time.point=time.point,
+             group=group,
+             stringsAsFactors=F)
+}
+
 .init <- function(.Object, sample.size, loci.number, loci.length,
                   finiteSites, tsTvRatio){
   
   .Object <- resetSumStats(.Object)
   
-  .Object@features <- data.frame(type=character(),
-                                 parameter=character(),
-                                 pop.source=numeric(),
-                                 pop.sink=numeric(),
-                                 time.point=character(),
-                                 group=numeric(),
-                                 stringsAsFactors=F,
-                                 loci=data.frame(group=numeric(),
-                                                 number=numeric(),  
-                                                 name=character(), 
-                                                 name_l=character(),
-                                                 name_r=character(),
-                                                 length_l=numeric(),
-                                                 length_il=numeric(),
-                                                 length_m=numeric(),
-                                                 length_ir=numeric(),
-                                                 length_r=numeric(),
-                                                 stringsAsFactors=F )
-                                  )
+  .Object@features <- createFeatureTable()
+  
+  .Object@loci <- data.frame(group=numeric(),
+                             number=numeric(),  
+                             name=character(), 
+                             name_l=character(),
+                             name_r=character(),
+                             length_l=numeric(),
+                             length_il=numeric(),
+                             length_m=numeric(),
+                             length_ir=numeric(),
+                             length_r=numeric(),
+                             stringsAsFactors=F )
 
   .Object@parameters <- data.frame(parameter=character(),
                                    lower.range=numeric(),
                                    upper.range=numeric(),
                                    stringsAsFactors=F )  
 
-  .Object <- dm.addSampleSize(.Object, sample.size)
+  for (pop in seq(along = sample.size)) {
+    .Object <- .Object + feat_sample(sample.size[pop], pop)
+  }
   .Object <- dm.addLocus(.Object, length = loci.length, number = loci.number)
   
   .Object@finiteSites     <- finiteSites
@@ -119,19 +135,6 @@ rm(.show)
 # Private functions
 #------------------------------------------------------------------------------
 
-
-#' Create a parameter that can be used for one or more features
-#'
-#' The function creates a new model parameter. 
-#'
-#' @param dm    The demographic model to which the parameter will be added
-#' @param par.name The name of the parameter. You can use this name later to
-#'                 access the parameter from a model feature
-#' @param lower.boundary The lower boundary of the range within which the
-#'                       parameter value will be estimated.
-#' @param upper.boundary Like 'lower.boundary', but the upper end of the
-#'                       parameter range.
-#' @return The original model extended with the new parameter.
 dm.addParameter <- function(dm, par.name, lower.boundary, upper.boundary) {
 
   checkType(dm,          c("dm",   "s"), T, F)
@@ -148,85 +151,20 @@ dm.addParameter <- function(dm, par.name, lower.boundary, upper.boundary) {
   return(dm)
 }
 
-#' Low level function for adding a new feature to a demographic Model
-#'
-#' Use this function to add a feature to a dm if there is no higher level
-#' "dm.add*"-function availible.
-#'
-#' @param dm       The demographic model to which the feature will be added 
-#' @param type     The type of the feature coded as a character
-#' @param lower.range The lower boundary for the value of the parameter
-#' @param upper.range The upper boundary for the value of the parameter
-#' @param pop.source The source population if availible (think e.g. of migration)
-#' @param pop.sink   The target or "sink" population if availible (think e.g. of migration)
-#' @param time.point Normally the point in backwards time where the feature
-#'                   starts.
-#' @param parameter Either the name of the parameter (par.new=TRUE), or an R expression
-#'            possibly containing one or more previously created parameter
-#'            names.
-#' @param group     For genomic features, different groups can be created.
-#' @param variance Set to a value different from 0 to introduce variation in the
-#'                 the parameter value for different loci. The 
-#'                 variation follows a gamma distribution with mean equal to
-#'                 the value provided as \code{parameter}, and variance as given
-#'                 here. Can also be set to a previously 
-#'                 created parameter, or an expression based on parameters. 
-#' @param zero.inflation If used, a zero inflated gamma distribution is 
-#'                 used to model the variablility between loci. This parameter
-#'                 should evluate to the percent of loci for which the parameter
-#'                 is 0. The values for all other loci will be drawn from the
-#'                 discretized gamma distribution.
-#' @return         The extended demographic model.
-addFeature <- function(dm, type, parameter,
-                       lower.range=NA, upper.range=NA,
-                       pop.source=NA, pop.sink=NA,
-                       time.point=NA, group=0,
-                       variance=0, zero.inflation=0) {
+
+dm.addFeature <- function(dm, feature) {
+  stopifnot(is.feature(feature))
   
-  if (missing(pop.source))  pop.source <- NA
-  if (missing(pop.sink))    pop.sink <- NA
-  if (missing(time.point))  time.point <- NA
-  if (missing(group))       group <- 0
-  parameter <- as.character(parameter)
-
-  # Check inputs
-  checkType(dm,          c("dm",   "s"), T, F)
-  checkType(type,        c("char", "s"), T, F)
-  checkType(parameter,   c("char", "s"), T, T)
-  checkType(pop.source,  c("num",  "s"), T, T)
-  checkType(pop.sink,    c("num",  "s"), T, T)
-  checkType(time.point,  c("char", "s"), T, T)
-  checkType(group,       c("num",  "s"), T, T)
-  checkType(variance,    c("s"), T, T)
-
-  if (!is.na(lower.range)) {
-    dm <- dm.addParameter(dm, parameter, lower.range, upper.range)
-  }
-
-  if (variance != 0) {
-    dm <- dm.addInterLocusVariation(dm, group)
-    parameter <- paste0('rgamma(1, ', parameter, '^2/', variance, 
-                                ', ', parameter, '/', variance, ')')
+  dm@features <- rbind(dm@features, feature$get_table())
+  for (parameter in feature$get_parameters()) {
+    dm <- dm + parameter
   }
   
-  if (zero.inflation != 0) {
-    dm <- dm.addInterLocusVariation(dm, group)
-    parameter <- paste0('ifelse(locus <= ', 
-                        zero.inflation, '*', dm.getLociNumber(dm, group),
-                        ', 0, ', parameter, ')')
+  if (feature$get_inter_locus_var()) {
+    dm <- addInterLocusVariation(dm, feature$get_group())
   }
   
-  # Append the feature
-  dm <- appendToFeatures(dm = dm,
-                         type = type,
-                         parameter = parameter,
-                         pop.source = pop.source,
-                         pop.sink = pop.sink,
-                         time.point = time.point,
-                         group = group)
-
-  dm@finalized = FALSE
-  return(dm)
+  dm
 }
 
 #' Adds a summary statistic to the model.
@@ -274,23 +212,7 @@ dm.addSummaryStatistic <- function(dm, sum.stat, population = 0, group = 0) {
   stop("No simulation program for summary statistic", sum.stat)
 }
 
-# Helper function that appends a feature to the "feature" dataframe
-# Does not check the feature for consistency
-# This should only be used by addFeature().
-appendToFeatures <- function(dm, type, parameter, pop.source, 
-                             pop.sink, time.point, group) {
-  
-  new.feature <- data.frame(type=type,
-                            parameter=parameter,
-                            pop.source=pop.source,
-                            pop.sink=pop.sink,
-                            time.point=time.point,
-                            group=group,
-                            stringsAsFactors=F)
 
-  dm@features <- rbind(dm@features, new.feature)
-  return(dm)
-}
 
 # Helper function that appends a parameter to the "parameters" dataframe
 # Does not check the feature for consistency
@@ -411,9 +333,6 @@ resetSumStats <- function(dm) {
 # Creation new models
 #------------------------------------------------------------------------------
 
-#---------------------------------------------------------------------
-# dm.createDemographicModel()
-#---------------------------------------------------------------------
 #' Create a basic demographic model
 #' 
 #' This function creates a basic empty demographic model, which
@@ -438,12 +357,6 @@ dm.createDemographicModel <- function(sample.sizes, loci.num, seq.length=1000) {
   dm <- dm.addSummaryStatistic(dm, 'jsfs')
   return(dm)
 }
-
-
-#---------------------------------------------------------------------------------
-# Front end functions for adding features
-#---------------------------------------------------------------------------------
-
 
 
 # Low level function for adding a locus
@@ -608,87 +521,6 @@ dm.getLociLengthMatrix <- function(dm, group=1) {
   as.matrix(llm)
 }
 
-#--------------------------------------------------------------------
-# dm.addMutation()
-#--------------------------------------------------------------------
-#' Adds mutations to a demographic model
-#' 
-#' This functions adds the assumption to the model that neutral mutations
-#' occur in the genomes at a constant rate. The rate is quantified through
-#' a parameter usually named theta in population genetics. It equals 4*N0*mu,
-#' where N0 is the effective diploid population size of population one at the
-#' time of sampling and mu is the neutral mutation rate for an entire locus.
-#'
-#' @param dm  The demographic model to which mutations should be added
-#' @param lower.range  If you want to estimate the mutation rate, this 
-#'            will be used as the smallest possible value.
-#' @param upper.range  If you want to estimate the mutation rate, this 
-#'            will be used as the largest possible value.
-#' @param parameter  Instead of creating a new parameter, you can also
-#'            set the mutation rate to an expression based on existing
-#'            parameters. For example setting this to "theta" will use
-#'            an parameter with name theta that you have previously 
-#'            created. You can also use R expression here, so "2*theta"
-#'            or "5*theta+2*tau" (if tau is another parameter) will also
-#'            work (also it does not make much sense).
-#' @param variance Set to a value different from 0 to introduce variation in the
-#'                 the parameter value for different loci. The 
-#'                 variation follows a gamma distribution with mean equal to
-#'                 the value provided as \code{parameter}, and variance as given
-#'                 here. Can also be set to a previously 
-#'                 created parameter, or an expression based on parameters. 
-#' @param group    Group of loci for with this feature is added. 0 means that
-#'                 the feature applies to all groups, and 1 is the default group.
-#'                 Set to 1 or an greater integer to set this feature only for 
-#'                 the corresponding group of loci. 
-#' @return    The demographic model with mutation.
-#' @export
-#'
-#' @examples
-#' # Create a new parameter
-#' dm <- dm.createDemographicModel(c(25,25), 100)
-#' dm <- dm.addSpeciationEvent(dm, 0.01, 5, 'tau', 1, 2)
-#' dm <- dm.addMutation(dm, 1, 20)
-#'
-#' # Create a new fixed parameter
-#' dm <- dm.createDemographicModel(c(25,25), 100)
-#' dm <- dm.addSpeciationEvent(dm, 0.01, 5, 'tau', 1, 2)
-#' dm <- dm.addMutation(dm, parameter=7)
-#'
-#' # Use an existing parameter
-#' dm <- dm.createDemographicModel(c(25,25), 100) + par_range("theta", 0.01, 5)
-#' dm <- dm.addMutation(dm, parameter="2*log(theta)+1")
-dm.addMutation <- function(dm, lower.range=NA, upper.range=NA, 
-                           parameter = "theta",
-                           group = 0, variance = 0) {
-  
-  dm <- addFeature(dm, "mutation", parameter, lower.range, upper.range,
-                   variance = variance, group = group)
-  dm
-}
-
-
-
-#-------------------------------------------------------------------
-#  dm.addSampleSize
-#-------------------------------------------------------------------
-#' Sets how many individuals from each population are sampled at time 0.
-#' 
-#' @param dm  The demographic model to which recombination events should be added.
-#' @param sample.size A vector with sample sizes for each population. 
-#' @return The demographic model with the sample
-#' @export
-#'
-dm.addSampleSize <- function(dm, sample.size) {
-  checkType(sample.size, "num")
-  for (smpl.nr in seq(along=sample.size)) {
-    dm <- addFeature(dm, "sample", sample.size[smpl.nr], 
-                     pop.source=smpl.nr, group=0, time.point='0')
-  }
-  return(dm)
-}
-
-
 dm.getSampleSize <- function(dm) {
   feat.samples <- searchFeature(dm, type="sample")
   stopifnot(nrow(feat.samples) > 0)
@@ -704,236 +536,9 @@ dm.getSampleSize <- function(dm) {
 }
 
 
-#-------------------------------------------------------------------
-#  dm.addRecombination()
-#-------------------------------------------------------------------
-#' Adds recombination events to a demographic model
-#'
-#' This function add the assumption to the model that recombination
-#' events may occur within each locus. The corresponding parameter
-#' - usually name rho - equals 4*N0*r, where r is the 
-#' probability that a recombination event within the locus will
-#' occur in one generation. Even when using an infinite sites
-#' mutation model, this assumes an finite locus length which is given
-#' by the 'seq.length' parameter of the demographic model.
-#'
-#' Please note that it does not make sense to estimate recombination
-#' rates with Jaatha because it assumes unlinked loci.
-#' 
-#' @param dm  The demographic model to which recombination events should be added.
-#' @param lower.range  If you want to estimate the recombination rate (see note
-#             above), this will be used as the smallest possible value.
-#' @param upper.range  Same as lower.range, but the largest possible value.
-#' @param parameter  Instead of creating a new parameter, you can also
-#'            set the mutation rate to an expression based on existing
-#'            parameters. For example setting this to "rho" will use
-#'            an parameter with name theta that you have previously 
-#'            created. You can also use R expression here, so "2*rho"
-#'            or "5*rho+2*tau" (if tau is another parameter) will also
-#'            work (also it does not make much sense).
-#' @param variance Set to a value different from 0 to introduce variation in the
-#'                 the parameter value for different loci. The 
-#'                 variation follows a gamma distribution with mean equal to
-#'                 the value provided as \code{parameter}, and variance as given
-#'                 here. Can also be set to a previously 
-#'                 created parameter, or an expression based on parameters. 
-#' @param group    Group of loci for with this feature is added. 0 means that
-#'                 the feature applies to all groups, and 1 is the default group.
-#'                 Set to 1 or an greater integer to set this feature only for 
-#'                 the corresponding group of loci. 
-#' @return    The demographic model with recombination
-#' @export
-#'
-#' @examples
-#' dm <- dm.createDemographicModel(c(25,25), 100)
-#' dm <- dm.addSpeciationEvent(dm, 0.01, 5, 'tau', 1, 2)
-#' dm <- dm.addRecombination(dm, 20)
-#' dm <- dm.addMutation(dm, 1, 20)
-dm.addRecombination <- function(dm, lower.range=NA, upper.range=NA, 
-                                parameter="rho", 
-                                group = 0, variance = 0) {
-
-  dm <- addFeature(dm, "recombination", parameter, lower.range, upper.range,
-                   time.point="0", group = group, variance = variance)
-  dm
-}
 
 
 
-#-------------------------------------------------------------------
-#  dm.addMigration
-#-------------------------------------------------------------------
-#' Add migration/gene flow between two populations to a demographic model
-#'
-#' This function adds the assumption to the model that some individuals
-#' 'migrate' from one sub-population to another, i.e. they leave the one
-#' and become a member of the other. This is usually used to model ongoing
-#' gene flow through hybridisation after the populations separated. 
-#'
-#' You can enter a time ('time.start') at which the migration is 
-#' assumed to start (looking backwards in time). From that time on, a 
-#' fixed number of migrants move from population 'pop.from' to
-#' population 'pop.to' each generation. This number is given via this 
-#' feature's parameter, which equals 4*N0*m,  where m is the 
-#' fraction of 'pop.to' that is replaced with migrants each generation. 
-#' If 'pop.to' has also size Ne, than this is just the
-#' expected number of individuals that migrate each generation.
-#' 
-#' You can add different mutation rates at different times to your model.
-#' Then each rate will be used for the period from its time point to
-#' the next. Migration from and to an population always ends with the 
-#' speciation event in which the population is created.
-#'
-#' @param dm  The demographic model to which recombination events should be added.
-#' @param lower.range  If you want to estimate the migration parameter (see note
-#             above), this will be used as the smallest possible value.
-#' @param upper.range  Same as lower.range, but the largest possible value.
-#' @param parameter  Instead of creating a new parameter, you can also
-#'            set the mutation rate to an expression based on existing
-#'            parameters. For example setting this to "M" will use
-#'            an parameter with name M that you have previously 
-#'            created. You can also use R expression here, so "2*M"
-#'            or "5*M+2*tau" (if tau is another parameter) will also
-#'            work (also this does not make much sense).
-#' @param pop.from The population from which the individuals leave.
-#' @param pop.to The population to which the individuals move.
-#' @param time.start The time point at which the migration with this rate
-#'            starts.
-#' @return    The demographic model with migration
-#' @export
-#'
-#' @examples
-#' # Constant asymmetric migration
-#' dm <- dm.createDemographicModel(c(25,25), 100)
-#' dm <- dm.addMigration(dm, 0.01, 5, pop.from=1, pop.to=2, time.start="0")
-#'
-#' # Stepwise decreasing mutation
-#' dm <- dm.createDemographicModel(c(25,25), 100)
-#' dm <- dm.addMigration(dm, 0.01, 5, pop.from=1, pop.to=2, parameter="M", time.start="0")
-#' dm <- dm.addMigration(dm, pop.from=1, pop.to=2, parameter="0.5*M", time.start="0.5*tau")
-dm.addMigration <- function(dm, lower.range=NA, upper.range=NA, parameter="M",
-                            pop.from, pop.to, time.start="0") {
-
-  checkType(pop.from, "num", T, F)
-  checkType(pop.to,   "num", T, F)
-
-  dm <- addFeature(dm, "migration", parameter, lower.range, upper.range,
-                   pop.from, pop.to, time.start)
-  dm
-}
-
-
-#-------------------------------------------------------------------
-#  dm.addSymmetricMigration
-#-------------------------------------------------------------------
-#' Adds symmetric migration between all populations
-#'
-#' This adds migration between all subpopulation, all with the same
-#' rate. Please look at the documentation for \link{dm.addMigration} for 
-#' detailed information about migration.
-#' 
-#' @param dm  The demographic model to which migration events should be added.
-#' @param lower.range  If you want to estimate the migration parameter (see note
-#             above), this will be used as the smallest possible value.
-#' @param upper.range  Same as lower.range, but the largest possible value.
-#' @param parameter  Instead of creating a new parameter, you can also
-#'            set the mutation rate to an expression based on existing
-#'            parameters. For example setting this to "M" will use
-#'            an parameter with name M that you have previously 
-#'            created. You can also use R expression here, so "2*M"
-#'            or "5*M+2*tau" (if tau is another parameter) will also
-#'            work (also this does not make much sense).
-#' @param time.start The time point at which the migration with this rate
-#'            starts.
-#' @return    The demographic model with migration
-#' @export
-#'
-#' @examples
-#' dm <- dm.createDemographicModel(c(25,25), 100)
-#' dm <- dm.addSymmetricMigration(dm, 0.01, 5, time.start="0.5*tau")
-dm.addSymmetricMigration <- function(dm, lower.range, upper.range, 
-                                     parameter="M", time.start="0") {
-
-  if (!missing(lower.range)) {
-    dm <- dm.addParameter(dm, parameter, lower.range, upper.range)
-  }  
-
-  for (i in getPopulations(dm)) {
-    for (j in getPopulations(dm)) {
-      if (i==j) next
-      dm <- dm.addMigration(dm, parameter=parameter, 
-                            time.start=time.start,
-                            pop.from=i, pop.to=j)
-    }
-  }
-
-  return(dm)
-}
-
-
-#-------------------------------------------------------------------
-# dm.addSpeciationEvent
-#-------------------------------------------------------------------
-#' Adds a speciation event to a demographic model
-#'
-#' You can use this function the create a new population that splits 
-#' of from an existing population at a given time in the past. The time
-#' can be given as parameter or as an expression based on previously
-#' generated time points.
-#'
-#' Time in measured in Number of 4N0 generations in the past,
-#' where N0 is the size of population 1 at time 0.
-#'
-#' @param dm  The demographic model to which the split should be added.
-#' @param min.time  If you want to estimate the time point, this will be 
-#'            used as the smallest possible value.
-#' @param max.time  Same as min.time, but the largest possible value.
-#' @param in.pop The population in which the spilt
-#'            occurs. See above for more information.
-#' @param to.pop The newly created population.
-#' @param time.point  Instead of creating a new parameter, you can also
-#'            set the mutation rate to an expression based on existing
-#'            parameters. For example setting this to "tau" will use
-#'            an parameter with name tau that you have previously 
-#'            created. You can also use R expression here, i.e. "2*tau"
-#'            or "5*M+2*tau" (if M is another parameter) will also
-#'            work (also this does not make much sense).
-#' @return    The demographic model with a split.
-#' @export
-#' @examples
-#' dm <- dm.createDemographicModel(c(25,25), 100)
-#' dm <- dm.addSpeciationEvent(dm, 0.01, 5, 'tau', 1, 2)
-#' dm <- dm.addMutation(dm, 1, 20)
-#' dm
-#' 
-#' dm <- dm.createDemographicModel(c(25,25), 100)
-#' dm <- dm.addSymmetricMigration(dm, .1, 2)
-#' dm <- dm.addSpeciationEvent(dm, 0.01, 5, 'tau', 1, 2)
-#' dm <- dm.addMutation(dm, 1, 20)
-#' dm
-dm.addSpeciationEvent <- function(dm, min.time, max.time, 
-                                  time.point="tau", 
-                                  in.pop, to.pop) {
-
-  checkType(dm,         c("dm",  "s"),  T, F)
-  checkType(in.pop,     c("num", "s"),  T, F)
-  checkType(to.pop,     c("num", "s"),  T, F)
-  checkType(min.time,   c("num", "s"),  F, F)
-  checkType(max.time,   c("num", "s"),  F, F)
-  checkType(time.point, c("char", "s"),  F, T)
-  
-  # in.population valid?
-  populations <- getPopulations(dm)
-  if (!all(c(in.pop, to.pop) %in% populations)) 
-    stop("Error finding one of the populations")
-
-  # time.points
-  if (!missing(min.time)) dm <- dm.addParameter(dm, time.point, min.time, max.time)
-
-  addFeature(dm, "split", parameter=NA,
-             pop.source=in.pop, pop.sink=to.pop,
-             time.point=time.point)
-}
 
 
 
@@ -1440,13 +1045,13 @@ scaleDemographicModel <- function(dm, scaling.factor) {
   dm
 }
 
-dm.addInterLocusVariation <- function(dm, group = 0) {
-  if (dm.hasInterLocusVariation(dm, group)) return(dm)
-  dm <- addFeature(dm, 'inter_locus_variation', parameter = NA, group = group)
-  dm
+addInterLocusVariation <- function(dm, group = 0) {
+  stopifnot(is.numeric(group))
+  if (hasInterLocusVariation(dm, group)) return(dm)
+  dm + Feature$new('inter_locus_variation', par_const(NA), group = group)
 }
 
-dm.hasInterLocusVariation <- function(dm, group = 0) {
+hasInterLocusVariation <- function(dm, group = 0) {
   nrow(searchFeature(dm, 'inter_locus_variation', group = group)) > 0
 }
 

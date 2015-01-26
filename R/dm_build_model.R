@@ -19,3 +19,7 @@ addToModel.Par_Range <- function(par, model, par_name) {
   range <- par$get_range()
   dm.addParameter(model, par$get_name(), range[1], range[2])
 }
+
+addToModel.Feature <- function(feat, model, feat_name) {
+  dm.addFeature(model, feat)
+}

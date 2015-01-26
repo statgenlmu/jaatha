@@ -2,11 +2,14 @@
 % Please edit documentation in R/dm_parameter.R
 \name{par_expr}
 \alias{ModelParameters}
+\alias{par_const}
 \alias{par_expr}
 \alias{par_range}
 \title{Define Model Parameters}
 \usage{
 par_expr(expr)
+
+par_const(constant)
 
 par_range(name, lower, upper)
 }
@@ -15,6 +18,8 @@ par_range(name, lower, upper)
 is performed. I can contain other named parameters, but not parameters
 created with \code{par_expr}. Make sure that the expression always evaluates
 to a suitable parameter value (a single numeric in almost all cases).}
+
+\item{constant}{The constant value of the parameter}
 
 \item{name}{A string. The name of the parameter.}
 
@@ -30,11 +35,14 @@ bla bla bla
 \item \code{par_expr}: A parameter whichs value is determined by evalutating an
 expression.
 
+\item \code{par_const}: Creates an parameter that is equal to a fixed value.
+Different to par_expr, the value is evaluated on parameter creation.
+
 \item \code{par_range}: Creates an parameter that can take a range of possible
 values. Used for creating model parameters for \code{Jaatha}.
 }}
 \examples{
-par_expr(5)          # The parameters value is always 5.
+par_const(5)         # The parameters value is always 5.
 par_expr(runif(1))   # Creates an parameter which takes a uniformly
                      # distributed value in each simulation.
 par_range('x', 1, 5) # Creates an parameter with name x with possible values

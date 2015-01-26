@@ -133,7 +133,7 @@ msmsSimFunc <- function(dm, parameters) {
 
   # Run all simulation in with one ms call if they loci are identical,
   # or call ms for each locus if there is variation between the loci.
-  if (dm.hasInterLocusVariation(dm)) {
+  if (hasInterLocusVariation(dm)) {
     sim_reps <- 1:dm.getLociNumber(dm)
     sim_loci <- 1
   } else {

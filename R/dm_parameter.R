@@ -56,7 +56,7 @@ is.par_model <- function(par) {
 #' @aliases ModelParameters
 #' @author Paul Staab
 #' @examples
-#' par_expr(5)          # The parameters value is always 5.
+#' par_const(5)         # The parameters value is always 5.
 #' par_expr(runif(1))   # Creates an parameter which takes a uniformly
 #'                      # distributed value in each simulation.    
 #' par_range('x', 1, 5) # Creates an parameter with name x with possible values 
@@ -66,6 +66,16 @@ is.par_model <- function(par) {
 par_expr <- function(expr) {
   Parameter$new(as.expression(substitute(expr)))
 }
+
+
+#' @describeIn par_expr Creates an parameter that is equal to a fixed value. 
+#'   Different to par_expr, the value is evaluated on parameter creation.
+#' @export
+#' @param constant The constant value of the parameter  
+par_const <- function(constant) {
+  Parameter$new(as.expression(constant))
+}
+
 
 Par_Range <- R6Class('Par_Range', inherit = Par_Model,
   private = list(range = NA),

@@ -7,16 +7,9 @@
 dm.setTrioMutationRates(dm, middle_rate, outer_rate, group = 0)
 }
 \arguments{
-\item{dm}{The demographic model to which mutations should be added}
-
 \item{middle_rate}{The mutation rate used for the middle locus}
 
 \item{outer_rate}{The mutation rate for the two outer loci}
-
-\item{group}{Group of loci for with this feature is added. 0 means that
-the feature applies to all groups, and 1 is the default group.
-Set to 1 or an greater integer to set this feature only for
-the corresponding group of loci.}
 }
 \description{
 Set the mutation rates for trios

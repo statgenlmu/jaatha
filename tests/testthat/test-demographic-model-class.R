@@ -1,56 +1,14 @@
 context("Demographic Model")
 
-test_that("addFeature works", {
-  dm_tmp <- dm.createDemographicModel(11:12, 100)
-  n.feat <- nrow(dm_tmp@features)
-  dm_tmp <- addFeature(dm_tmp, type = "split", parameter = "tau", lower.range = 1, 
-                   upper.range = 10)
-  expect_equal(nrow(dm_tmp@features), n.feat + 1)
-  dm_tmp <- addFeature(dm_tmp, "mutation", parameter = 5, 
-                   pop.source = 1, pop.sink = 2, time.point = "t2", group = 3)
-  expect_equal(nrow(dm_tmp@features), n.feat + 2)
-  
-  # Test variance
-  dm_tmp <- dm.createDemographicModel(11:12, 100)
-  dm_tmp <- addFeature(dm_tmp, 'mutation', parameter = 'theta', variance = '10')
-  expect_true(dm.hasInterLocusVariation(dm_tmp))
-  par_expr <- searchFeature(dm_tmp, 'mutation')$parameter
-  theta = 5
-  sim <- sapply(1:1000, function(x) eval(parse(text=par_expr)))
-  expect_true(abs(mean(sim) - theta) < .3)
-  
-  # Test zero.inflation
-  dm_tmp <- dm.createDemographicModel(11:12, 100)
-  dm_tmp <- addFeature(dm_tmp, 'mutation', parameter = 'theta', 
-                       zero.inflation = '.1')
-  expect_true(dm.hasInterLocusVariation(dm_tmp))
-  
-  par_expr <- searchFeature(dm_tmp, 'mutation')$parameter
-  theta = 5
-  locus <- 1; expect_equal(eval(parse(text=par_expr)), 0)
-  locus <- 5; expect_equal(eval(parse(text=par_expr)), 0)
-  locus <- 10; expect_equal(eval(parse(text=par_expr)), 0)
-  locus <- 11; expect_equal(eval(parse(text=par_expr)), 5)
-  locus <- 30; expect_equal(eval(parse(text=par_expr)), 5)
-  locus <- 72; expect_equal(eval(parse(text=par_expr)), 5)  
-  
-  # Test zero.inflation & variance
-  dm_tmp <- dm.createDemographicModel(11:12, 100)
-  dm_tmp <- addFeature(dm_tmp, 'mutation', parameter = 'theta', 
-                       variance = '10', zero.inflation = '.1')
-  expect_true(dm.hasInterLocusVariation(dm_tmp))
-  par_expr <- searchFeature(dm_tmp, 'mutation')$parameter
-  theta = 5
-  sim <- sapply(1:1000, function(x) { 
-    locus <- x %% 100; 
-    eval(parse(text=par_expr))
-  })
-  expect_true(abs(mean(sim) - theta*0.9) < .3)
-  expect_equal(sum(sim == 5), 0)
-  expect_true(sum(sim == 0) > 80)
+test_that("creating models works", {
+  dm <- dm.createDemographicModel(11:12, 111, 1234) 
+  expect_equal(dm.getSampleSize(dm), 11:12)
+  expect_equal(dm.getLociNumber(dm), 111)
+  expect_equal(dm.getLociLength(dm), 1234)
 })
 
-test_that("test.addParameter", {
+
+test_that("adding parameters works", {
   dm <- dm.createDemographicModel(11:12, 100)
   dm <- dm.addParameter(dm, "theta", 1, 5)
   expect_equal("theta", dm@parameters$name)
@@ -58,29 +16,27 @@ test_that("test.addParameter", {
   expect_equal(5, dm@parameters$upper.range)
 })
 
-test_that("test.addPositiveSelection", {
-  dm <- dm.addPositiveSelection(dm.tt, 1, 2, population = 1, 
-                                at.time = "2")
-  expect_true("pos.selection" %in% dm@features$type)
-  dm <- dm.addPositiveSelection(dm.tt, parameter = 1, 
-                                population = 1, at.time = "2")
-  expect_true("pos.selection" %in% dm@features$type)
-  expect_error(dm.addPositiveSelection(dm.tt, 1, 2, at.time = "2"))
-  expect_error(dm.addPositiveSelection(dm.tt, 1, 2, population = 1))
+
+test_that("adding features works", {
+  dm <- dm.createDemographicModel(11:12, 100)
+  dm <- dm + Feature$new('blub', 5)
+  expect_equal(nrow(searchFeature(dm, 'blub')), 1)
+  
+  dm <- dm.createDemographicModel(11:12, 100)
+  dm <- dm + Feature$new('bli', par_range('bla', 1, 5))
+  expect_equal(nrow(searchFeature(dm, 'bli')), 1)
+  expect_true('bla' %in% dm@parameters$name)
+  
+  dm <- dm.createDemographicModel(11:12, 100)
+  dm <- dm + Feature$new('bli', par_range('bla', 1, 5), variance='15')
+  expect_true(hasInterLocusVariation(dm))
+  
+  dm <- dm.createDemographicModel(11:12, 100)
+  dm <- dm + Feature$new('bli', par_range('bla', 1, 5), group=1, variance='15')
+  expect_false(hasInterLocusVariation(dm, 0))
+  expect_true(hasInterLocusVariation(dm, 1))
 })
 
-test_that("test.addSampleSize", {
-  dm <- dm.tt
-  expect_equal(sum(dm@features$type == "sample"), 2)
-  expect_equal(subset(dm@features, type == "sample" & pop.source == 
-                        1)$parameter, "11")
-  expect_equal(subset(dm@features, type == "sample" & pop.source == 
-                        2)$parameter, "12")
-  expect_equal(nrow(subset(dm@features, type == "sample" & 
-                             group == 0)), 2)
-  expect_equal(nrow(subset(dm@features, type == "sample" & 
-                             time.point == "0")), 2)
-})
 
 test_that("test.dm.addSummaryStatistics", {
   dm <- dm.createDemographicModel(11:12, 100)
@@ -265,13 +221,6 @@ test_that("set and get loci number works", {
   expect_equal(dm.getLociNumber(dm, 2), 23)
 })
 
-test_that("test.setMutationModel", {
-  dm <- dm.createDemographicModel(11:12, 100)
-  dm <- dm.setMutationModel(dm, "HKY")
-  expect_true("mutation.model" %in% dm@features$type)
-  expect_error(dm <- dm.setMutationModel(dm, "bla"))
-})
-
 test_that('locus length matrix generations works', {
   # Multiple loci with equal length
   dimnames <- list(NULL,  c('length_l', 'length_il', 'length_m', 
@@ -351,32 +300,6 @@ test_that("test.printGroupDM", {
   unlink(tmp_file)
 })
 
-test_that("addMutation works", {
-  dm_tmp <- dm.createDemographicModel(5:6, 10, 1000)
-  dm_tmp <- dm.addSpeciationEvent(dm_tmp, 0.01, 5, "tau", 1, 2)  
-  dm_tmp <- dm.addRecombination(dm_tmp, parameter=2)
-  dm_tmp2 <- dm.addMutation(dm_tmp, 1, 20)
-  
-  expect_equal(searchFeature(dm_tmp2, "mutation")$parameter, 'theta')
-  expect_equal(nrow(searchFeature(dm_tmp2, "mutation")), 1)  
-  
-  dm_tmp3 <- dm.addMutation(dm_tmp, 1, 20, variance = 20)
-  expect_equal(nrow(searchFeature(dm_tmp3, "mutation")), 1)
-})
-
-test_that("addRecombination works", {
-  dm_tmp <- dm.createDemographicModel(5:6, 10, 1000)
-  dm_tmp <- dm.addSpeciationEvent(dm_tmp, 0.01, 5, "tau", 1, 2)  
-  dm_tmp <- dm.addRecombination(dm_tmp, parameter=2)
-  dm_tmp <- dm.addMutation(dm_tmp, 1, 20)
-  
-  expect_equal(searchFeature(dm_tmp, "recombination")$parameter, '2')
-  expect_equal(nrow(searchFeature(dm_tmp, "recombination")), 1)  
-  
-  dm_tmp <- dm.addRecombination(dm_tmp, 1, 20, variance = 20,
-                                parameter = 'rho2', group = 2)
-  expect_equal(nrow(searchFeature(dm_tmp, "recombination")), 2)
-})
 
 test_that('setTrioMutationsRates works', {
   dm <- dm.setTrioMutationRates(dm_trios, '17', 'theta', group=2)

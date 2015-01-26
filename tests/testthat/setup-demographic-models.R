@@ -1,20 +1,22 @@
 set.seed(10121416)
 
 # Theta-Tau Model 
-dm.tt        <- dm.createDemographicModel(11:12, 5, 100)
-dm.tt        <- dm.addSpeciationEvent(dm.tt, .1, 2, 'tau', 1, 2)
-dm.tt        <- dm.addRecombination(dm.tt, parameter = .5)
-dm.tt        <- dm.addMutation(dm.tt, 1, 10)
+dm.tt <- dm.createDemographicModel(11:12, 5, 100) +
+  feat_pop_merge(par_range('tau', .1, 2), 2, 1) +
+  feat_recombination(par_const(.5)) +
+  feat_mutation(par_range('theta', 1, 10))
+
 sum.stats.tt <- dm.simSumStats(dm.addSummaryStatistic(dm.tt, 'seg.sites'), 
                                c(1, 5))
 jaatha.tt    <- Jaatha.initialize(sum.stats.tt, dm.tt, cores = 2) 
 
 # Migration Model
-dm.mig        <- dm.createDemographicModel(11:12, 5)
-dm.mig        <- dm.addSymmetricMigration(dm.mig, .1, 5)
-dm.mig        <- dm.addSpeciationEvent(dm.mig, .1, 2, 'tau', 1, 2)
-dm.mig        <- dm.addMutation(dm.mig, 1, 10)
-dm.mig        <- dm.addRecombination(dm.mig, parameter = .5)
+dm.mig <- dm.createDemographicModel(11:12, 5) +
+  feat_migration(par_range('M', .1, 5), symmetric = TRUE) +
+  feat_pop_merge(par_range('tau', .1, 2), 2, 1) +
+  feat_recombination(par_const(.5)) +
+  feat_mutation(par_range('theta', 1, 10))
+
 sum.stats.mig <- dm.simSumStats(dm.addSummaryStatistic(dm.mig, 'seg.sites'), 
                                 c(.3, 1, 5))
 jaatha.mig    <- Jaatha.initialize(sum.stats.mig, dm.mig, cores = 2)

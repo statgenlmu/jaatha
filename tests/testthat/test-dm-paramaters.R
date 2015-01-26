@@ -36,6 +36,15 @@ test_that('par_expr works', {
 })
 
 
+test_that('par_const works', {
+  x <- 5
+  basic_par <- par_const(2*x)
+  x <- 6
+  expect_equal(basic_par$eval(), 10)
+})
+
+
+
 test_that('par_range works', {
   par <- par_range('theta', 1, 2)
   expect_true(is.par(par))
