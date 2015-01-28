@@ -15,10 +15,9 @@ Description: Jaatha is a composite likelihood method for inferring evolutionary
 URL: http://evol.bio.lmu.de/_statgen/software/jaatha
 Depends:
     R (>= 3.1.0),
-    methods
+    methods,
+    coalsimr (>= 0.0.9000)
 Imports:
-    phyclust (>= 0.1-14),
-    scrm (>= 1.3-3),
     Rcpp (>= 0.11.0),
     reshape2 (>= 1.4),
     checkmate (>= 1.5.0),
