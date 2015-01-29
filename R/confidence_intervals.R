@@ -112,7 +112,7 @@ Jaatha.getCIsFromLogs <- function(jaatha, conf_level=0.95, log_folder) {
   return(invisible(jaatha))
 }
 
-rerunAnalysis <- function(idx, jaatha, seeds, sim.data=NULL, log.folder) {
+rerunAnalysis <- function(idx, jaatha, seeds, sim_data=NULL, log.folder) {
   message("Starting run ", idx, " ...")
   
   # Initialize a copy of the jaatha object

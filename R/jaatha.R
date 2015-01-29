@@ -22,9 +22,6 @@
 #' @name jaatha-package
 #' @docType package
 #' @keywords package
-#' @importFrom phyclust ms
-#' @importFrom scrm scrm
-#' @importFrom methods new representation 
 #' @importFrom parallel mclapply
 #' @importFrom Rcpp evalCpp
 #' @importFrom checkmate qassert qtest assertClass
@@ -87,6 +84,7 @@ setClass("Jaatha",
 )
 
 ## constructor method for Jaatha object
+#' @importFrom methods setMethod
 init <- function(.Object, sim_func, par_ranges, sum_stats, cores = 1) {
   # Check sim.func
   qassert(sim_func, "f1")
@@ -172,13 +170,16 @@ rm(init)
 #' @param only_synonymous Only use synonymous SNP if set to \code{TRUE}. Requires
 #'              to provided \code{data} as a PopGenome "GENOME" object.
 #' @return A S4-Object of type jaatha containing the settings
+#' @importFrom coalsimr get_groups get_parameter_table get_summary_statistics
+#' @importFrom coalsimr sumstat_jsfs sumstat_seg_sites
+#' @importFrom methods new representation 
 #' @export
 Jaatha.initialize <- function(data, model, cores=1, scaling.factor=1,
                               folded=FALSE, smoothing=FALSE, 
                               only_synonymous=FALSE, use_fpc=FALSE,
                               fpc_populations=1:2) {
   
-  checkType(model, c("dm", "s"))
+  stopifnot('CoalModel' %in% class(model))
   checkType(folded, c("bool", "single"))
   checkType(smoothing, c("bool", "single"))
   checkType(scaling.factor, c("num","single"))
@@ -186,9 +187,9 @@ Jaatha.initialize <- function(data, model, cores=1, scaling.factor=1,
     stop("You can't use smoothing together with a folded JSFS")
   
   dm <- model
-  if (!'jsfs' %in% dm.getSummaryStatistics(dm)) {
+  if (!'jsfs' %in% get_summary_statistics(dm)) {
     warning("JSFS is not a summary statistic of the model. Adding it.")
-    dm <- dm.addSummaryStatistic(dm, 'jsfs')
+    dm <- dm + sumstat_jsfs()
   }
   
   # Convert the data into a list containing the seg.sites of the different groups
@@ -203,7 +204,7 @@ Jaatha.initialize <- function(data, model, cores=1, scaling.factor=1,
   # ------------------------------------------------------------
   sum.stats <- list()
   seg.sites <- NULL
-  groups <- dm.getGroups(dm)
+  groups <- get_groups(dm)
   
   for (group in groups) {
     if (length(groups) == 1) {
@@ -236,8 +237,8 @@ Jaatha.initialize <- function(data, model, cores=1, scaling.factor=1,
     # FPC Summary Statistic
     # ------------------------------------------------------------
     if (use_fpc) {
-      if (!'seg.sites' %in% dm.getSummaryStatistics(dm)) {
-        dm <- dm.addSummaryStatistic(dm, 'seg.sites', group = 0)
+      if (!'seg.sites' %in% get_summary_statistics(dm)) {
+        dm <- dm + sumstat_seg_sites()
       }
       
       # TODO: Assert that dm contains 'seg.sites' statistic
@@ -265,11 +266,14 @@ Jaatha.initialize <- function(data, model, cores=1, scaling.factor=1,
   # ------------------------------------------------------------
   # Create the Jaatha object
   # ------------------------------------------------------------
+  par_ranges <- as.matrix(get_parameter_table(dm)[,-1])
+  rownames(par_ranges) <- get_parameter_table(dm)$name
+  
   jaatha <- new("Jaatha", 
                 sim_func=function(sim.pars, jaatha) {
-                  dm.simSumStats(jaatha@opts[['dm']], sim.pars)
+                  simulate(jaatha@opts[['dm']], pars=sim.pars)
                 },
-                par_ranges=as.matrix(dm.getParRanges(dm)),  
+                par_ranges=par_ranges,  
                 sum_stats=sum.stats,
                 cores=cores)
 
@@ -278,7 +282,7 @@ Jaatha.initialize <- function(data, model, cores=1, scaling.factor=1,
     jaatha@scaling.factor <- scaling.factor
   }
 
-  jaatha@opts[['dm']] <- dm.finalize(dm)
+  jaatha@opts[['dm']] <- dm
   jaatha@opts[['jsfs.folded']] <- folded
 
   invisible(jaatha)

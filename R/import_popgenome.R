@@ -1,7 +1,8 @@
+#' @importFrom coalsimr get_outgroup_size
 checkModelDataConsistency <- function(data, model) {
-  if (dm.getOutgroupSize(model) != length(data@outgroup)) {
+  if (get_outgroup_size(model) != length(data@outgroup)) {
     stop("Expecting an outgroup size of ", length(data@outgroup), 
-         " from data, but is ", dm.getOutgroupSize(model), " in model.")
+         " from data, but is ", get_outgroup_size(model), " in model.")
   }
 }
 
@@ -32,27 +33,22 @@ convPopGenomeToSegSites <- function(data, only_synonymous=FALSE) {
   list(seg.sites = seg_sites_list[!sapply(seg_sites_list, is.null)])
 }
 
-dm.createModelFromPopGenome <- function(data, finite_sites = TRUE, 
-                                        base_frequencies = c(A=.25, C=.25, G=.25, T=.25)) {
-  
+#' @importFrom coalsimr CoalModel
+createModelFromPopGenome <- function(data, quiet=FALSE) {
   stopifnot("GENOME" %in% is(data))
   sample_sizes <- sapply(data@populations, length)
+  if (!quiet) message("Sample Sizes: ", paste(sample_sizes, collapse=' '))
   
   loci_mask <- data@n.valid.sites > 0
   loci_length <- data@n.valid.sites[loci_mask]
   
-  dm <- dm.createDemographicModel(sample_sizes, 
-                                  length(loci_length), 
-                                  round(mean(loci_length)))
+  if (!quiet) message("Number of Loci: ", length(loci_length))
+  if (!quiet) message("Average Loci Length: ", mean(loci_length))
   
-  if (finite_sites) {
-    tstv_ration <- sum(sapply(data@region.data@transitions[loci_mask], sum)) /
+  # Calculate TS/TV, but don't add it to the model
+  tstv_ratio <- sum(sapply(data@region.data@transitions[loci_mask], sum)) /
       sum(sapply(data@region.data@transitions[loci_mask], function(x) sum(1-x)))
-    
-    dm <- dm.setMutationModel(dm, mutation.model = "HKY", 
-                              base.frequencies = base_frequencies,
-                              tstv.ratio = tstv_ration)
-  }
+  if (!quiet) message("Empirical TS/TV: ", tstv_ratio)
   
-  dm
+  CoalModel(sample_sizes, length(loci_length), round(mean(loci_length)))
 }

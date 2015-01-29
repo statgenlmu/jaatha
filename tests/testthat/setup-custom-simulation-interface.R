@@ -37,3 +37,14 @@ rownames(smooth_par_ranges) <- c('x', 'y')
  
 smooth_jaatha <- new("Jaatha", smooth_simfunc, smooth_par_ranges, list(csi=smooth_stat))
 smooth_sim_data <- jaatha:::simulateWithinBlock(10, block.test, smooth_jaatha)
+
+
+dm_tt <- coalsimr::CoalModel(c(10, 10), 10) +
+  coalsimr::feat_pop_merge(coalsimr::par_range('tau', 0.01, 5), 2, 1) +
+  coalsimr::feat_mutation(coalsimr::par_range('theta', 1, 10)) +
+  coalsimr::feat_migration(coalsimr::par_const(2), symmetric = TRUE) +
+  coalsimr::sumstat_seg_sites() +
+  coalsimr::sumstat_jsfs()
+
+sumstat_tt <- simulate(dm_tt, pars=c(1,5))
+

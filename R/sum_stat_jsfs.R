@@ -87,13 +87,14 @@ summarizeFoldedJSFS <- function(jsfs) {
 }
 
 # Binning
+#' @importFrom coalsimr get_sample_size
 Stat_JSFS <- R6Class('Stat_JSFS', 
   inherit = Stat_PoiInd,
   public = list(
-    initialize = function(seg_sites, dm, group=0) {
+    initialize = function(seg_sites, model, group=0) {
       name <- getStatName('jsfs', group)
       fake_sim_data <- list()
-      fake_sim_data[[name]] <- calcJsfs(seg_sites, dm.getSampleSize(dm))
+      fake_sim_data[[name]] <- calcJsfs(seg_sites, get_sample_size(model))
       super$initialize(fake_sim_data, name)
     },
     transform = function(sim_data) summarizeJSFS(sim_data[[private$name]])
@@ -117,6 +118,7 @@ Stat_JSFS_border <- R6Class('Stat_JSFS_border',
 )
 
 # Smoothing
+#' @importFrom coalsimr get_sample_size
 Stat_JSFS_smooth <- R6Class('Stat_JSFS_smooth',
   inherit = Stat_PoiSmooth,
   private = list(
@@ -126,7 +128,7 @@ Stat_JSFS_smooth <- R6Class('Stat_JSFS_smooth',
   ),
   public = list(
     initialize = function(seg_sites, dm, group=0) {
-      sample_size <- dm.getSampleSize(dm)
+      sample_size <- get_sample_size(dm)
       model <- paste0("( X1 + I(X1^2) + X2 + I(X2^2) + log(X1) + log(",
                       sample_size[1]+1, "-X1) + log(X2) + log(",
                       sample_size[2]+1, "-X2) )^2")

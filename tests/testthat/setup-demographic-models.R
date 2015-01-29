@@ -76,14 +76,5 @@ if (require('ape', quietly = TRUE)) {
   test_ape <- FALSE
 }
 
-# PopGenome Data
-output <- tempfile("output")
-sink(output)
-data_pg <- PopGenome::readData(system.file('example_fasta_files',  package='jaatha'), 
-                          progress_bar_switch = FALSE)
-data_pg <- PopGenome::set.outgroup(data_pg, c("Individual_Out-1", "Individual_Out-2"))
-data_pg <- PopGenome::set.populations(data_pg, list(paste0("Individual_1-", 1:5), 
-                                                    paste0("Individual_2-", 1:5)))
-sink(NULL)
-unlink(output)
+
 
