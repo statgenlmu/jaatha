@@ -2,20 +2,16 @@ context('Refined Search')
 
 test_that('refined search works', {
   tmp <- tempfile()
+
   sink(tmp)
   jaatha <- Jaatha.initialSearch(jaatha.csi, 10, 2)
-  jaatha <- Jaatha.refinedSearch(jaatha, 2, sim = 10, sim.final = 10, 
-                                 max.steps = 10)
+  jaatha <- Jaatha.refinedSearch(jaatha, 2, sim = 20, sim.final = 10)
   sink(NULL)
+
   expect_true(is.matrix(jaatha@likelihood.table))
   expect_true(ncol(jaatha@likelihood.table) == 4)
   expect_true(nrow(jaatha@likelihood.table) >= 10)
-  jaatha@cores <- 1
-  sink(tmp)
-  jaatha2 <- Jaatha.refinedSearch(jaatha, 2, sim = 10, sim.final = 10,
-                                  max.steps = 10)
-  sink(NULL)
-  expect_equal(jaatha2@likelihood.table, jaatha@likelihood.table)
+  
   unlink(tmp)
 })
 

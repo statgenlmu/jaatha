@@ -16,24 +16,22 @@ test_that("creation of initial blocks works", {
 
 test_that("initial search works", {
   tmp <- tempfile()
+  
+  jaatha.csi@cores <- 2
   sink(tmp)
   jaatha <- Jaatha.initialSearch(jaatha.csi, 10, 2)
   sink(NULL)
-  
-  sink(tmp)
   pStartPoints <- Jaatha.getStartingPoints(jaatha)
-  sink(NULL)
-  expect_equal(nrow(Jaatha.getStartingPoints(jaatha)), 4)
+  expect_equal(nrow(pStartPoints), 4)
   
-  jaatha@cores <- 1
   sink(tmp)
+  jaatha.csi@cores <- 1
   jaatha <- Jaatha.initialSearch(jaatha.csi, 10, 2)
   sink(NULL)
   expect_equal(pStartPoints, Jaatha.getStartingPoints(jaatha))
 
-  jaatha@cores <- 2
   sink(tmp)
-  jaatha <- Jaatha.initialSearch(jaatha.csi, 20, 1)
+  jaatha <- Jaatha.initialSearch(jaatha.csi, 10, 1)
   sink(NULL)
   expect_equal(nrow(Jaatha.getStartingPoints(jaatha)), 1)
   
