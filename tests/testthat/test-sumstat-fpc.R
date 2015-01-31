@@ -16,8 +16,7 @@ test_that("Fpc Breaks calculation works", {
   expect_false(is.null(fpc$get_breaks()$perc_polym))
   rm(fpc)
   
-  skip("Temporarily deactivated")
-  fpc = Stat_FPC$new(sum.stats.grp$seg.sites.1, dm.grp, 
+  fpc = Stat_FPC$new(sum_stat_grps$seg.sites.1, dm_grps, 
                      population = 1, group = 1)
   expect_false(is.null(fpc$get_breaks()))
   expect_false(is.null(fpc$get_breaks()$mid_near))
@@ -25,7 +24,7 @@ test_that("Fpc Breaks calculation works", {
   expect_false(is.null(fpc$get_breaks()$perc_polym))
   rm(fpc)  
   
-  fpc = Stat_FPC$new(sum.stats.grp$seg.sites.2, dm.grp, 
+  fpc = Stat_FPC$new(sum_stat_grps$seg.sites.2, dm_grps, 
                      population = 2, group = 2)
   expect_false(is.null(fpc$get_breaks()))
   expect_false(is.null(fpc$get_breaks()$mid_near))
@@ -203,16 +202,22 @@ test_that('Stat_FPC works with groups', {
               is_less_than(coalsimr::get_locus_number(dm_tt)+1))
   expect_equal(fpc$transform(sumstat_tt), fpc$get_data())
   
-  skip("Temporarily deactivated")
   # With groups
-  fpc = Stat_FPC$new(sum.stats.grp$seg.sites.2, dm.grp, 1, group = 2)
+  fpc = Stat_FPC$new(sum_stat_grps$seg.sites.2, dm_grps, 1, group = 2)
   expect_that(sum(fpc$get_data()), is_more_than(0))
-  expect_that(sum(fpc$get_data()), is_less_than(dm.getLociNumber(dm.grp, 2)+1))
-  expect_equal(fpc$transform(sum.stats.grp), fpc$get_data())
+  expect_that(sum(fpc$get_data()), 
+              is_less_than(coalsimr::get_locus_number(dm_grps, 2)+1))
+  expect_equal(fpc$transform(sum_stat_grps), fpc$get_data())
   
   # With trios
-  fpc = Stat_FPC$new(trios_sum_stats$seg.sites.2, dm_trios, 1, group = 2) 
+  skip_on_cran()
+  dm_trios = dm_tt + coalsimr::locus_trio(locus_length = c(10, 30, 50), 
+                                          distance = c(20, 40),
+                                          number = 5,
+                                          group = 2)
+  sumstat_trios <- simulate(dm_trios, pars=c(1,5))
+  fpc = Stat_FPC$new(sumstat_trios$seg.sites.2, dm_trios, 1, group = 2) 
   expect_that(sum(fpc$get_data()), is_more_than(0))
-  expect_equal(fpc$transform(trios_sum_stats), fpc$get_data())
+  expect_equal(fpc$transform(sumstat_trios), fpc$get_data())
 })
 

@@ -52,3 +52,7 @@ dm_tt <- coalsimr::CoalModel(c(10, 10), 10) +
 
 sumstat_tt <- simulate(dm_tt, pars=c(1,5))
 
+dm_grps <- dm_tt +
+  coalsimr::locus_averaged(11, 101, group = 2) +
+  coalsimr::locus_averaged(12, 102, group = 3)
+sum_stat_grps <- simulate(dm_grps, pars=c(1,5))

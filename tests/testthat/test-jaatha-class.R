@@ -64,15 +64,14 @@ test_that("JSFS is added when not in model", {
 
 
 test_that("PG initialization with groups works", {
-  skip("Temporarily deactivated")
-  jaatha.grp <- Jaatha.initialize(sum.stats.grp, dm.grp)
+  jaatha.grp <- Jaatha.initialize(sum_stat_grps, dm_grps)
   for (i in 1:3) {
     name <- getStatName('jsfs', i)
     expect_that(jaatha.grp@sum.stats[[name]], is_a('Stat_PoiInd'))
     expect_that(sum(jaatha.grp@sum.stats[[name]]$get_data()), is_more_than(0))
   }
     
-  jaatha.grp <- Jaatha.initialize(sum.stats.grp, dm.grp, smoothing = TRUE)
+  jaatha.grp <- Jaatha.initialize(sum_stat_grps, dm_grps, smoothing = TRUE)
   for (i in 1:3) {
     name <- getStatName('jsfs', i)
     expect_that(jaatha.grp@sum.stats[[name]], is_a('Stat_PoiSmooth'))
@@ -103,8 +102,7 @@ test_that("PG initialization with FPC statistic", {
   expect_false(is.null(jaatha.fpc@sum.stats[["fpc_pop2"]]))
   
   # With groups
-  skip("Temporarily deactivated")
-  jaatha.fpc <- Jaatha.initialize(sum.stats.grp, dm.grp, use_fpc = TRUE)
+  jaatha.fpc <- Jaatha.initialize(sum_stat_grps, dm_grps, use_fpc = TRUE)
   expect_false(is.null(jaatha.fpc@sum.stats[[getStatName('fpc',1,1)]]))
   expect_false(is.null(jaatha.fpc@sum.stats[[getStatName('fpc',1,2)]]))
   expect_false(is.null(jaatha.fpc@sum.stats[[getStatName('fpc',2,1)]]))
