@@ -1,4 +1,4 @@
-context("Simulation (Jaatha side)")
+context("Simulation")
 
 test_that("test.runSimulatinos", {
     set.seed(15)
@@ -14,6 +14,7 @@ test_that("test.runSimulatinos", {
     }
 })
 
+
 test_that("test.simulateWithinBlock", {
     checkSumStat <- function(x, block) {
         if (is.null(x$pars) || is.null(x$pars.normal)) 
@@ -23,9 +24,6 @@ test_that("test.simulateWithinBlock", {
     sum.stats <- simulateWithinBlock(10, block.test, jaatha.csi)
     expect_true(is.list(sum.stats))
     expect_equal(14, length(sum.stats))
-    expect_true(all(sapply(sum.stats, checkSumStat, block = block.test)))
-    sum.stats <- simulateWithinBlock(2, block.test, jaatha.tt)
-    expect_equal(6, length(sum.stats))
     expect_true(all(sapply(sum.stats, checkSumStat, block = block.test)))
 })
 

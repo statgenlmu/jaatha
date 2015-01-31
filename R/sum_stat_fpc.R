@@ -1,11 +1,12 @@
 #' @importFrom R6 R6Class
+#' @importFrom coalsimr get_locus_length_matrix get_population_indiviuals
 Stat_FPC <- R6Class('Stat_FPC', inherit = Stat_PoiInd,
   public = list(
     initialize = function(seg_sites, dm, population, group = 0,
                           break_probs = c(.2, .5)) {
 
-      private$individuals = getIndOfPop(dm, population)
-      private$llm = dm.getLociLengthMatrix(dm, group)
+      private$individuals = get_population_indiviuals(dm, population)
+      private$llm = get_locus_length_matrix(dm, group)
       if (any(break_probs > 1)) stop('probs greater then one')
       
       # Setup the cube for the middle locus

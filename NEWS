@@ -1,13 +1,13 @@
 jaatha 2.99.0.9018
 ============
 
-* New function based system to define model parameters.
+* Moved Demographic Model part into a new package called coalsimr (#27).
 
 
 jaatha 2.99.0.9017
 ============
 
-* Fix a bug when symmetric migration was not added to a model in some 
+* Fixed a bug when symmetric migration was not added to a model in some 
   cirumstances (#48).
 * Removed the dm.createThetaTauModel function.
 

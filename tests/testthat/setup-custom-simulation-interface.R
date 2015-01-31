@@ -4,14 +4,18 @@ set.seed(111222555)
 block.test <- new("Block")
 block.test@border <- matrix(c(0.4, 0.4, 0.6, 0.6), 2, 2) 
 
-csi.sim.func <- function(x, jaatha) {
-  list(data=c(rpois(5, x[1]), rpois(5, x[2])))
-}
+csi.sim.func <- function(x, jaatha) rpois(20, x)
 csi.obs <- csi.sim.func(c(3,5))
-csi.sum.stat <- R6::R6Class("Stat_PoiInd", inherit = jaatha:::Stat_Base)$new(csi.obs, 'csi')
+csi.sum.stat <- R6::R6Class("Stat_PoiInd", inherit = jaatha:::Stat_Base, 
+  private = list(mask=rep(c(TRUE,FALSE), 20)),
+  public = list(transform = function(data) {
+    c(sum(data[c(TRUE,FALSE)]), sum(data[c(FALSE,TRUE)]))
+  })
+)$new(csi.obs, 'csi')
+
 csi.par.ranges <- matrix(c(0.1, 0.1, 10, 10), 2, 2)
 rownames(csi.par.ranges) <- c('x', 'y')
-jaatha.csi <- new("Jaatha", csi.sim.func, csi.par.ranges, list(csi=csi.sum.stat), 2)
+jaatha.csi <- new("Jaatha", csi.sim.func, csi.par.ranges, list(csi=csi.sum.stat), 1)
 sim.data.csi <- jaatha:::simulateWithinBlock(10, block.test, jaatha.csi)
 
 # A Smoothing Model
@@ -37,3 +41,18 @@ rownames(smooth_par_ranges) <- c('x', 'y')
  
 smooth_jaatha <- new("Jaatha", smooth_simfunc, smooth_par_ranges, list(csi=smooth_stat))
 smooth_sim_data <- jaatha:::simulateWithinBlock(10, block.test, smooth_jaatha)
+
+
+dm_tt <- coalsimr::CoalModel(c(10, 10), 10) +
+  coalsimr::feat_pop_merge(coalsimr::par_range('tau', 0.01, 5), 2, 1) +
+  coalsimr::feat_mutation(coalsimr::par_range('theta', 1, 10)) +
+  coalsimr::feat_migration(coalsimr::par_const(2), symmetric = TRUE) +
+  coalsimr::sumstat_seg_sites() +
+  coalsimr::sumstat_jsfs()
+
+sumstat_tt <- simulate(dm_tt, pars=c(1,5))
+
+dm_grps <- dm_tt +
+  coalsimr::locus_averaged(11, 101, group = 2) +
+  coalsimr::locus_averaged(12, 102, group = 3)
+sum_stat_grps <- simulate(dm_grps, pars=c(1,5))

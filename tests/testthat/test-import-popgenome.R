@@ -1,5 +1,17 @@
 context("PopGenome import")
 
+# Create Test Data
+output <- tempfile("output")
+sink(output)
+data_pg <- PopGenome::readData(system.file('example_fasta_files',  package='jaatha'), 
+                               progress_bar_switch = FALSE)
+data_pg <- PopGenome::set.outgroup(data_pg, c("Individual_Out-1", "Individual_Out-2"))
+data_pg <- PopGenome::set.populations(data_pg, list(paste0("Individual_1-", 1:5), 
+                                                    paste0("Individual_2-", 1:5)))
+sink(NULL)
+unlink(output)
+
+
 test_that("PopGenome data import works", {  
   seg_sites <- convPopGenomeToSegSites(data_pg)
   expect_is(seg_sites, "list")
@@ -17,25 +29,24 @@ test_that("PopGenome data import works", {
   expect_true(all(attr(seg_sites$seg.sites[[1]], "positions") <= 1))
 })
 
+
 test_that("PopGenome Model creation works", {
-  dm_pg <- dm.createModelFromPopGenome(data_pg)
-  expect_equal(dm.getSampleSize(dm_pg), c(5,5))
-  expect_equal(dm.getLociNumber(dm_pg), 1)
-  expect_equal(dm.getLociLength(dm_pg), 16)
+  dm_pg <- createModelFromPopGenome(data_pg, quiet=T)
+  suppressMessages(dm_pg <- createModelFromPopGenome(data_pg))
+  expect_equal(coalsimr::get_sample_size(dm_pg), c(5,5))
+  expect_equal(coalsimr::get_locus_number(dm_pg), 1)
+  expect_equal(coalsimr::get_locus_length(dm_pg), 16)
 })
 
+
 test_that("Initialization with PopGenome-Data works", {
-  if (!test_seqgen) skip('seq-gen not installed')
-  dm_pg <- dm.createModelFromPopGenome(data_pg)
-  dm_pg <- dm.addMutation(dm_pg, 1, 5)
-  dm_pg <- dm.addSpeciationEvent(dm_pg, .1, .5, 'tau', 1, 2)
+  dm_pg <- createModelFromPopGenome(data_pg, quiet = TRUE) +
+    coalsimr::feat_mutation(coalsimr::par_range('theta', 1, 5)) +
+    coalsimr::feat_pop_merge(coalsimr::par_range('tau', .1, .5), 2, 1) +
+    coalsimr::sumstat_jsfs()
   
   # Outgroup is missing
   expect_error(jaatha <- Jaatha.initialize(data_pg, dm_pg))
-  
-  # Wrong outgroup size
-  expect_error(Jaatha.initialize(data_pg, dm.addOutgroup(dm_pg, "2*tau", 3)))
-  
-  dm_pg <- dm.addOutgroup(dm_pg, "2*tau", sample_size = 2)
-  jaatha <- Jaatha.initialize(data_pg, dm_pg)
+    
+
 })

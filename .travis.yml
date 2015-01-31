@@ -12,13 +12,10 @@ before_install:
 
 install:
   - ./travis-tool.sh install_deps
-  - ./travis-tool.sh aptget_install seq-gen
+  - ./travis-tool.sh github_package paulstaab/coalsimr
   - ./travis-tool.sh github_package jimhester/covr
-  - wget http://www.mabs.at/ewing/msms/msms3.2rc-b163.jar && sudo mv msms3.2rc-b163.jar /usr/local/bin/msms.jar
 
-script: 
-  - ./travis-tool.sh run_tests
-  - ./tests/integration/run-tests.R
+script: ./travis-tool.sh run_tests
 
 after_failure:
   - ./travis-tool.sh dump_logs

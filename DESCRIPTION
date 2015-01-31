@@ -17,45 +17,14 @@ Depends:
     R (>= 3.1.0),
     methods
 Imports:
-    phyclust (>= 0.1-14),
-    scrm (>= 1.3-3),
-    Rcpp (>= 0.11.0),
-    reshape2 (>= 1.4),
     checkmate (>= 1.5.0),
+    coalsimr (>= 0.0.9000),
     PopGenome (>= 2.1.0),
     R6 (>= 2.0.1),
+    Rcpp (>= 0.11.0),
+    reshape2 (>= 1.4),
     parallel
 Suggests:
     ape (>= 2.7),
     testthat
 LinkingTo: Rcpp
-Collate:
-    'RcppExports.R'
-    'block.R'
-    'confidence_intervals.R'
-    'helper_functions.R'
-    'dm_sim_program.R'
-    'dm_class.R'
-    'dm_parameter.R'
-    'dm_sim_program_ms.R'
-    'dm_sim_program_msms.R'
-    'dm_sim_program_scrm.R'
-    'dm_sim_program_seqgen.R'
-    'estimate_log_likelihood.R'
-    'find_best_par_in_block.R'
-    'fit_glm.R'
-    'import_popgenome.R'
-    'initial_search.R'
-    'jaatha.R'
-    'normalize.R'
-    'parallelization.R'
-    'read_fasta.R'
-    'refined_search.R'
-    'run_simulations.R'
-    'sim_likelihood.R'
-    'simulate_within_block.R'
-    'sum_stat_classes.R'
-    'sum_stat_fpc.R'
-    'sum_stat_generate.R'
-    'sum_stat_jsfs.R'
-    'sum_stat_pmc.R'
