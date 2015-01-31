@@ -171,7 +171,7 @@ rm(init)
 #'              to provided \code{data} as a PopGenome "GENOME" object.
 #' @return A S4-Object of type jaatha containing the settings
 #' @importFrom coalsimr get_groups get_parameter_table get_summary_statistics
-#' @importFrom coalsimr sumstat_jsfs sumstat_seg_sites
+#' @importFrom coalsimr sumstat_jsfs sumstat_seg_sites scale_model
 #' @importFrom methods new representation 
 #' @export
 Jaatha.initialize <- function(data, model, cores=1, scaling.factor=1,
@@ -278,7 +278,7 @@ Jaatha.initialize <- function(data, model, cores=1, scaling.factor=1,
                 cores=cores)
 
   if (scaling.factor != 1) {
-    dm <- scaleDemographicModel(dm, scaling.factor)
+    dm <- scale_model(dm, scaling.factor)
     jaatha@scaling.factor <- scaling.factor
   }
 

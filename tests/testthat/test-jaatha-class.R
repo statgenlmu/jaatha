@@ -44,10 +44,9 @@ test_that("PG initialization works", {
 
 
 test_that("PG initialization works with scaling", {
-  skip("Temporarily deactivated")
   jaatha <- Jaatha.initialize(sumstat_tt, dm_tt, scaling.factor = 5)
   expect_equal(jaatha@scaling.factor, 5)
-  expect_equal(get_locus_number(jaatha@opts[['dm']]), 1L)
+  expect_equal(coalsimr::get_locus_number(jaatha@opts[['dm']]), 2L)
 })
 
 
