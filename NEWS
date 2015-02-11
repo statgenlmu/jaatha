@@ -1,3 +1,108 @@
+jaatha 2.99.0.9019
+============
+
+* Improve model creation from PopGenome data
+
+
+jaatha 2.99.0.9018
+============
+
+* Moved Demographic Model part into a new package called coalsimr (#27).
+
+
+jaatha 2.99.0.9017
+============
+
+* Fixed a bug when symmetric migration was not added to a model in some 
+  cirumstances (#48).
+* Removed the dm.createThetaTauModel function.
+
+
+jaatha 2.99.0.9016
+============
+
+* Increase memory efficiency by saving only the transformed values for summary
+  statisics.
+* Speed-up the calculation of the fpc statistic
+
+
+jaatha 2.99.0.9015
+============
+
+* Add support for balancing selection.
+
+
+jaatha 2.99.0.9014
+============
+
+* Allow to set different mutation rates for middle and outer loci when using
+  trios.
+
+
+jaatha 2.99.0.9012
+============
+
+* Create an R6 based class system for Jaatha's summary statistics.
+
+
+jaatha 2.99.0.9011
+============
+
+* FPC statistic is now only calculated inside populations.
+
+
+jaatha 2.99.0.9010
+============
+
+* Allow to use loci with different length with seq-gen.
+
+
+jaatha 2.99.0.9009
+============
+
+* Calculate more FPC statistics.
+
+* Change the calculation of the FPC for the middle locus. Dimensions are now
+  percent near, percent far and fraction of polymorphic sites.
+
+
+jaatha 2.99.0.9008
+============
+
+* Bugfix: Correct the scaling when `scaling.factor` was used (#37).
+
+
+jaatha 2.99.0.9006
+============
+
+* Fix a problem with 'PopGenome' data import (#31, #34).
+
+
+jaatha 2.99.0.9003
+============
+
+* Remove 'fixed' parameters, as they can be easily replaced by expressions (#35).
+
+
+jaatha 2.99.0.9002
+============
+
+* Use package 'PopGenome' to import data (#31, #34).
+
+
+jaatha 2.99.0.9001
+============
+
+* Use package `checkmate` for input validation (#33)
+
+
+jaatha 2.99.0.9000
+============
+
+* add support for using scrm (#32).
+
+
+
 jaatha 2.7.0
 ============
 

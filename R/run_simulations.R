@@ -18,7 +18,7 @@ runSimulations <- function(pars, cores, jaatha) {
   stopifnot(ncol(pars) == getParNumber(jaatha))
   stopifnot(all( 0-1e-5 <= pars & pars <= 1 + 1e-5 ))
   colnames(pars) <- getParNames(jaatha)
-  seeds <- generateSeeds(length(pars)+1)
+  seeds <- sampleSeed(length(pars)+1)
 
   sim.data <- mclapply(1:nrow(pars), runSimulation, pars=pars, 
                        seeds=seeds, jaatha=jaatha,
@@ -36,10 +36,23 @@ runSimulations <- function(pars, cores, jaatha) {
 }
 
 runSimulation <- function(i, pars, seeds, jaatha) {
-  set.seed(seeds[i]) 
-  sim.pars <- denormalize(pars[i, ], jaatha)
-  sim.results <- jaatha@simFunc(sim.pars, jaatha)
-  sim.results$pars <- sim.pars
-  sim.results$pars.normal <- pars[i, ]
-  sim.results
+  # Set the seed & prepare parameters
+  set.seed(seeds[i])
+  sim_pars <- denormalize(pars[i, ], jaatha)
+  
+  # Simulate
+  sim_results <- jaatha@simFunc(sim_pars, jaatha)
+  
+  # Calculate Summary Statistics
+  sim_sum_stats <- lapply(jaatha@sum.stats, function(sum_stat) {
+    sum_stat$transform(sim_results)
+  })
+  
+  # Add the parameter values
+  sim_sum_stats$pars <- sim_pars
+  sim_sum_stats$pars.normal <- pars[i, ]
+  
+  sim_sum_stats
 }
+
+

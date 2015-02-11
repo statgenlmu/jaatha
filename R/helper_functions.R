@@ -138,6 +138,4 @@ getTempFile <- function(file.name="file") {
 #-----------------------------------------------------------------------
 # Function to generate seeds
 #-----------------------------------------------------------------------
-generateSeeds <- function(n=1) {
-  return(sample.int(2^20,n))
-}
+sampleSeed <- function(n=1) sample.int(2^20,n)

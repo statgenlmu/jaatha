@@ -49,7 +49,7 @@ Jaatha.confidenceIntervals <- function(jaatha, conf.level=0.95,
   set.seed(jaatha@seeds[1])
   # First two seeds are already used for initial & refined search. 
   # Last seed will be used for generating the bootstrap data.
-  seeds <- generateSeeds(replicas+3)[-(1:2)] 
+  seeds <- sampleSeed(replicas+3)[-(1:2)] 
 
   dir.create(log.folder, showWarnings=FALSE)
   message("Storing logs in ", log.folder)
@@ -63,12 +63,10 @@ Jaatha.confidenceIntervals <- function(jaatha, conf.level=0.95,
   set.seed(seeds[length(seeds)])
   sim.pars <- matrix(est.pars, replicas, getParNumber(jaatha), byrow=TRUE)
   sim.data <- runSimulations(sim.pars, cores, jaatha) 
-  sum.stats <- lapply(sim.data, convertSimDataToSumStats, 
-                      sum.stats=jaatha@sum.stats)
 
   .print("Conducting Bootstrap Runs...")
   bs.results <- mclapply(subset, rerunAnalysis, 
-                         seeds=seeds, jaatha=jaatha, sum.stats=sum.stats,
+                         seeds=seeds, jaatha=jaatha, sim.data=sim.data,
                          log.folder=log.folder, mc.cores=cores)
 
   if (all(subset == 1:replicas)) {
@@ -114,15 +112,18 @@ Jaatha.getCIsFromLogs <- function(jaatha, conf_level=0.95, log_folder) {
   return(invisible(jaatha))
 }
 
-rerunAnalysis <- function(idx, jaatha, seeds, sum.stats=NULL, log.folder) {
+rerunAnalysis <- function(idx, jaatha, seeds, sim_data=NULL, log.folder) {
   message("Starting run ", idx, " ...")
-
+  
   # Initialize a copy of the jaatha object
   set.seed(seeds[idx])
-  jaatha@seeds <- c(seeds[idx], generateSeeds(2))
+  jaatha@seeds <- c(seeds[idx], sampleSeed(2))
   sink(paste0(log.folder, "/run_", idx, ".log"))
-  if( !is.null(sum.stats) ) jaatha@sum.stats <- sum.stats[[idx]]
   jaatha@cores <- 1
+  if (!is.null(sim.data)) {
+    jaatha@sum.stats <- convertSimDataToSumStats(sim_data[[idx]], 
+                                                 jaatha@sum.stats)
+  }
 
   jaatha <- Jaatha.initialSearch(jaatha, rerun=TRUE) 
   jaatha <- Jaatha.refinedSearch(jaatha, rerun=TRUE)
@@ -134,15 +135,12 @@ rerunAnalysis <- function(idx, jaatha, seeds, sum.stats=NULL, log.folder) {
 }
 
 
-convertSimDataToSumStats <- function(sim.data, sum.stats) {
-  for (sum.stat in names(sum.stats)) {
-    sum.stats[[sum.stat]]$value <- sim.data[[sum.stat]]
-    if(!is.null(sum.stats[[sum.stat]]$transformation)) {
-      sum.stats[[sum.stat]]$value.transformed <-
-        sum.stats[[sum.stat]]$transformation(sum.stats[[sum.stat]]$value) 
-    }
+convertSimDataToSumStats <- function(sim_data, sum_stats) {
+  stop("Need to clone sum_stats")
+  for (sum_stat in names(sum_stats)) {
+    sum_stats[[sum_stat]]$set_data(sim_data)
   }
-  return(sum.stats)
+  sum_stats
 }
 
 

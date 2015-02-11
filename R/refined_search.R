@@ -22,11 +22,7 @@
 #' @param sim The number of simulations that are performed in each step
 #' @param sim.final The number of simulations that are performed after the search to estimate the 
 #'        composite log likelihood. If not specified, the value of \code{sim} will be used
-#' @param epsilon Obsolete. Has no effect anymore and will be remove on next
-#'        major release.
 #' @param half.block.size The size of the new block that is created around a new maximum.
-#' @param weight Obsolete. Has no effect anymore and will be remove on next
-#'        major release.
 #' @param max.steps The search will stop at this number of steps if not stopped
 #'        before (see \code{epsilon}).
 #' @param rerun You can repeat a previously done refined search in Jaatha.
@@ -38,11 +34,8 @@
 #' @export
 Jaatha.refinedSearch <- function(jaatha, best.start.pos=2,
                                  sim=length(getParNames(jaatha))*25,
-                                 sim.final=min(sim, 100), epsilon=NULL, half.block.size=.025,
-                                 weight=NULL, max.steps=200, rerun=FALSE) {
-
-  if (!is.null(epsilon)) warning('Parameter "epsilon" is obsolete and will be removed soon.')
-  if (!is.null(weight)) warning('Parameter "weight" is obsolete and will be removed soon.')
+                                 sim.final=min(sim, 100), half.block.size=.025,
+                                 max.steps=200, rerun=FALSE) {
 
   if (rerun) {
     if( is.null(jaatha@calls[['refined.search']]) ) 
@@ -135,7 +128,7 @@ refinedSearchSingleBlock <- function(jaatha, start.point, sim, sim.final,
                                           sim.data, step.current)
       tryCatch({
         # Fit the GLM
-        glm.fitted <- fitGlm(sim.saved, jaatha)
+        glm.fitted <- fitGlm(jaatha, sim.saved)
         break
       }, error = function(e) {
         if (j < 5) .print("Failed to fit the GLM. Retrying with more simulations...")
@@ -148,7 +141,8 @@ refinedSearchSingleBlock <- function(jaatha, start.point, sim, sim.final,
     # Should be a bit more accurate as previous estimate of the likelihood,
     # as it is in the center of the block now.
     search.block@score <- estimateLogLikelihood(search.block@MLest, glm.fitted, 
-                                                jaatha@sum.stats)
+                                                jaatha@sum.stats, 
+                                                getScalingFactor(jaatha))
     
     # Keep track of the optimal likelihood, and in which step it has be reached.
     if (search.block@score > optimum.li) {
@@ -179,7 +173,9 @@ refinedSearchSingleBlock <- function(jaatha, start.point, sim, sim.final,
     }
 
     # Estimate the best parameters in the current block.
-    search.block@MLest <- findBestParInBlock(search.block, glm.fitted, jaatha@sum.stats)$est 
+    search.block@MLest <- findBestParInBlock(search.block, glm.fitted, 
+                                             jaatha@sum.stats, 
+                                             getScalingFactor(jaatha))$est 
     .print()
   }
 
