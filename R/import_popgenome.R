@@ -33,22 +33,34 @@ convPopGenomeToSegSites <- function(data, only_synonymous=FALSE) {
   list(seg.sites = seg_sites_list[!sapply(seg_sites_list, is.null)])
 }
 
-#' @importFrom coalsimr CoalModel
+#' @importFrom coalsimr CoalModel feat_outgroup
 createModelFromPopGenome <- function(data, quiet=FALSE) {
   stopifnot("GENOME" %in% is(data))
   sample_sizes <- sapply(data@populations, length)
-  if (!quiet) message("Sample Sizes: ", paste(sample_sizes, collapse=' '))
+  if (!quiet) { 
+    message("Sample Sizes: ")
+    for (pop in seq(along = sample_sizes)) {
+      message(" Population ", pop, ": ", sample_sizes[pop])
+    }
+  }
+  
+  outgroup_size <- length(data@outgroup)
+  outgroup_number <- length(sample_sizes) + 1
+  if (!quiet) message("Outgroup size: ", paste(outgroup_size, collapse=' '), 
+                      " (will be population ", outgroup_number, ')')
   
   loci_mask <- data@n.valid.sites > 0
-  loci_length <- data@n.valid.sites[loci_mask]
+  loci_length <- round(mean(data@n.valid.sites[loci_mask]))
+  loci_number <- length(loci_length)
   
-  if (!quiet) message("Number of Loci: ", length(loci_length))
-  if (!quiet) message("Average Loci Length: ", mean(loci_length))
+  if (!quiet) message("Number of Loci: ", loci_number)
+  if (!quiet) message("Average Loci Length: ", loci_length, 'bp')
   
   # Calculate TS/TV, but don't add it to the model
   tstv_ratio <- sum(sapply(data@region.data@transitions[loci_mask], sum)) /
       sum(sapply(data@region.data@transitions[loci_mask], function(x) sum(1-x)))
-  if (!quiet) message("Empirical TS/TV: ", tstv_ratio)
+  if (!quiet) message("Observed TS/TV: ", tstv_ratio, " (Not added to Model)")
   
-  CoalModel(sample_sizes, length(loci_length), round(mean(loci_length)))
+  CoalModel(c(sample_sizes, outgroup_size), loci_number, loci_length) + 
+    feat_outgroup(outgroup_number)
 }
