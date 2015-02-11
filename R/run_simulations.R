@@ -56,3 +56,19 @@ runSimulation <- function(i, pars, seeds, jaatha) {
 }
 
 
+test_simulation <- function(jaatha, quite=FALSE) {
+  pars <- matrix(rep(0.5, nrow(jaatha@par.ranges)), nrow = 1)
+  
+  time <- system.time(
+    a <- runSimulation(1, pars, sampleSeed(1), jaatha)
+  )['elapsed']
+
+  if (time > 30) warning('Each simulation takes about ', round(time),
+                         's, Jaatha might run for a long time.')
+  if (!quite && time <= 30) {
+    if (time < 1) message('A simulation takes less than a second')
+    else message('A simulation takes about ', round(time), 's')
+  }
+  
+  invisible(NULL)
+}

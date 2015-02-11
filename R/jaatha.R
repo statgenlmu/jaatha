@@ -85,7 +85,8 @@ setClass("Jaatha",
 
 ## constructor method for Jaatha object
 #' @importFrom methods setMethod
-init <- function(.Object, sim_func, par_ranges, sum_stats, cores = 1) {
+init <- function(.Object, sim_func, par_ranges, sum_stats, 
+                 cores = 1, options = list(), scaling.factor = 1) {
   # Check sim.func
   qassert(sim_func, "f1")
   .Object@simFunc <- sim_func
@@ -124,15 +125,17 @@ init <- function(.Object, sim_func, par_ranges, sum_stats, cores = 1) {
   .Object <- setCores(.Object, cores)
 
   # Placeholders
-  .Object@opts <- list()
+  .Object@opts <- options
   .Object@calls <- list()
   .Object@conf.ints <- matrix()
   .Object@likelihood.table <- matrix()
   .Object@starting.positions <- list()
   
-  .Object@scaling.factor <- 1
+  .Object@scaling.factor <- scaling.factor
+  
+  test_simulation(.Object)
 
-  return (.Object)
+  return(.Object)
 }
 setMethod(f="initialize", signature ="Jaatha", definition=init)
 rm(init)
@@ -269,21 +272,22 @@ Jaatha.initialize <- function(data, model, cores=1, scaling.factor=1,
   par_ranges <- as.matrix(get_parameter_table(dm)[,-1])
   rownames(par_ranges) <- get_parameter_table(dm)$name
   
+  if (scaling.factor != 1) {
+    dm <- scale_model(dm, scaling.factor)
+  }
+  
   jaatha <- new("Jaatha", 
                 sim_func=function(sim.pars, jaatha) {
                   simulate(jaatha@opts[['dm']], pars=sim.pars)
                 },
                 par_ranges=par_ranges,  
                 sum_stats=sum.stats,
-                cores=cores)
+                cores=cores,
+                options = list(dm=dm, jsfs.folded = folded),
+                scaling.factor = scaling.factor)
 
-  if (scaling.factor != 1) {
-    dm <- scale_model(dm, scaling.factor)
-    jaatha@scaling.factor <- scaling.factor
-  }
 
-  jaatha@opts[['dm']] <- dm
-  jaatha@opts[['jsfs.folded']] <- folded
+
 
   invisible(jaatha)
 }

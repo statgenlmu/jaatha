@@ -48,7 +48,8 @@ createModelFromPopGenome <- function(data, quiet=FALSE) {
   outgroup_number <- length(sample_sizes) + 1
   if (!quiet) message("Outgroup size: ", paste(outgroup_size, collapse=' '), 
                       " (will be population ", outgroup_number, ')')
-  
+
+
   loci_mask <- data@n.valid.sites > 0
   loci_length <- round(mean(data@n.valid.sites[loci_mask]))
   loci_number <- sum(loci_mask)
@@ -61,6 +62,6 @@ createModelFromPopGenome <- function(data, quiet=FALSE) {
       sum(sapply(data@region.data@transitions[loci_mask], function(x) sum(1-x)))
   if (!quiet) message("Observed TS/TV: ", tstv_ratio, " (Not added to Model)")
   
-  CoalModel(c(sample_sizes, outgroup_size), loci_number, loci_length) + 
+  CoalModel(c(sample_sizes, outgroup_size), loci_number, loci_length) +
     feat_outgroup(outgroup_number)
 }
