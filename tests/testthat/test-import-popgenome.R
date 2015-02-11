@@ -33,7 +33,9 @@ test_that("PopGenome data import works", {
 test_that("PopGenome Model creation works", {
   dm_pg <- createModelFromPopGenome(data_pg, quiet=T)
   suppressMessages(dm_pg <- createModelFromPopGenome(data_pg))
-  expect_equal(coalsimr::get_sample_size(dm_pg), c(5,5))
+  expect_equal(coalsimr::get_sample_size(dm_pg), c(5,5,2))
+  expect_equal(coalsimr::get_outgroup(dm_pg), 3)
+  expect_equal(coalsimr::get_outgroup_size(dm_pg), 2)
   expect_equal(coalsimr::get_locus_number(dm_pg), 1)
   expect_equal(coalsimr::get_locus_length(dm_pg), 16)
 })
@@ -45,8 +47,5 @@ test_that("Initialization with PopGenome-Data works", {
     coalsimr::feat_pop_merge(coalsimr::par_range('tau', .1, .5), 2, 1) +
     coalsimr::sumstat_jsfs()
   
-  # Outgroup is missing
-  expect_error(jaatha <- Jaatha.initialize(data_pg, dm_pg))
-    
-
+  jaatha <- Jaatha.initialize(data_pg, dm_pg)
 })

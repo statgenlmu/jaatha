@@ -51,7 +51,7 @@ createModelFromPopGenome <- function(data, quiet=FALSE) {
   
   loci_mask <- data@n.valid.sites > 0
   loci_length <- round(mean(data@n.valid.sites[loci_mask]))
-  loci_number <- length(loci_length)
+  loci_number <- sum(loci_mask)
   
   if (!quiet) message("Number of Loci: ", loci_number)
   if (!quiet) message("Average Loci Length: ", loci_length, 'bp')
