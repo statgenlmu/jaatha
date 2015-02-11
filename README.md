@@ -25,16 +25,13 @@ Installation
 
 ### Stable Version
 
-[![Build Status](https://travis-ci.org/paulstaab/jaatha.png?branch=stable)](https://travis-ci.org/paulstaab/jaatha)
-[![Coverage Status](https://coveralls.io/repos/paulstaab/jaatha/badge.svg?branch=stable)](https://coveralls.io/r/paulstaab/jaatha)
-
 To install the current stable version of jaatha from CRAN, type
 
 ```R
 install.packages('jaatha')
 ```
 
-in R. The stable version corresponds to branch `stable` on [GitHub][4].
+in R.
 
 
 ### Development Version
@@ -48,13 +45,13 @@ You can install the development version from [GitHub][4] using:
 devtools::install_github('paulstaab/jaatha')
 ```
 
-The current development version corresponds to branch `master` on [GitHub][4].
 
 
 Usage
 -----
 
 Please refer to the [The Jaatha HowTo][2] for usage information.
+
 
 
 Links
