@@ -23,29 +23,32 @@ you encounter problems using Jaatha or have suggestions for future versions.
 Installation
 ------------
 
-## Stable Version from CRAN:
+### Stable Version
 
-[![Build Status](https://travis-ci.org/paulstaab/jaatha.png?branch=master)](https://travis-ci.org/paulstaab/jaatha)
-[![Coverage Status](https://coveralls.io/repos/paulstaab/jaatha/badge.svg?branch=master)](https://coveralls.io/r/paulstaab/jaatha)
+[![Build Status](https://travis-ci.org/paulstaab/jaatha.png?branch=stable)](https://travis-ci.org/paulstaab/jaatha)
+[![Coverage Status](https://coveralls.io/repos/paulstaab/jaatha/badge.svg?branch=stable)](https://coveralls.io/r/paulstaab/jaatha)
 
-To install the current stable version of jaatha from CRAN, simply type
+To install the current stable version of jaatha from CRAN, type
 
 ```R
 install.packages('jaatha')
 ```
 
-in R.
+in R. The stable version corresponds to branch `stable` on [GitHub][4].
 
-## Development Version from GitHub  
 
-[![Build Status](https://travis-ci.org/paulstaab/jaatha.png?branch=develop)](https://travis-ci.org/paulstaab/jaatha)
-[![Coverage Status](https://coveralls.io/repos/paulstaab/jaatha/badge.svg?branch=develop)](https://coveralls.io/r/paulstaab/jaatha)
+### Development Version
 
-You can install the development version from GitHub using: 
+[![Build Status](https://travis-ci.org/paulstaab/jaatha.png?branch=master)](https://travis-ci.org/paulstaab/jaatha)
+[![Coverage Status](https://coveralls.io/repos/paulstaab/jaatha/badge.svg?branch=master)](https://coveralls.io/r/paulstaab/jaatha)
+
+You can install the development version from [GitHub][4] using: 
 
 ```R
-devtools::install_github('paulstaab/jaatha', ref='develop')
+devtools::install_github('paulstaab/jaatha')
 ```
+
+The current development version corresponds to branch `master` on [GitHub][4].
 
 
 Usage
