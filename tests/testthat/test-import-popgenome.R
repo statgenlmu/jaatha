@@ -42,6 +42,7 @@ test_that("PopGenome Model creation works", {
 
 
 test_that("Initialization with PopGenome-Data works", {
+  skip_on_cran()
   dm_pg <- createModelFromPopGenome(data_pg, quiet = TRUE) +
     coalsimr::feat_mutation(coalsimr::par_range('theta', 1, 5), model = 'HKY') +
     coalsimr::feat_pop_merge(coalsimr::par_range('tau', .1, .5), 2, 1) +
