@@ -31,7 +31,7 @@ test_that("PopGenome data import works", {
 
 
 test_that("PopGenome Model creation works", {
-  dm_pg <- createModelFromPopGenome(data_pg, quiet=T)
+  dm_pg <- createModelFromPopGenome(data_pg, quiet=TRUE)
   suppressMessages(dm_pg <- createModelFromPopGenome(data_pg))
   expect_equal(coalsimr::get_sample_size(dm_pg), c(5,5,2))
   expect_equal(coalsimr::get_outgroup(dm_pg), 3)
@@ -42,9 +42,12 @@ test_that("PopGenome Model creation works", {
 
 
 test_that("Initialization with PopGenome-Data works", {
+  skip_on_cran()
   dm_pg <- createModelFromPopGenome(data_pg, quiet = TRUE) +
-    coalsimr::feat_mutation(coalsimr::par_range('theta', 1, 5)) +
+    coalsimr::feat_mutation(coalsimr::par_range('theta', 1, 5), model = 'HKY') +
     coalsimr::feat_pop_merge(coalsimr::par_range('tau', .1, .5), 2, 1) +
+    coalsimr::feat_migration(coalsimr::par_const(.5), symmetric = TRUE) +
+    coalsimr::feat_recombination(coalsimr::par_const(.05)) +
     coalsimr::sumstat_jsfs()
   
   jaatha <- Jaatha.initialize(data_pg, dm_pg)
