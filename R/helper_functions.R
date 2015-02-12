@@ -128,14 +128,6 @@ checkType <- function(variable, type, required=T, allow.na=T) {
 
 
 #-----------------------------------------------------------------------
-# Functions to deal with temporary files
-#-----------------------------------------------------------------------
-getTempFile <- function(file.name="file") {
-  tempfile(paste0('jaatha', '_', Sys.getpid(), "_", file.name, "_"))
-}
-
-
-#-----------------------------------------------------------------------
 # Function to generate seeds
 #-----------------------------------------------------------------------
 sampleSeed <- function(n=1) sample.int(2^20,n)
