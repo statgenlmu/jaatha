@@ -87,14 +87,16 @@ summarizeFoldedJSFS <- function(jsfs) {
 }
 
 # Binning
-#' @importFrom coalsimr get_sample_size
+#' @importFrom coalsimr calc_jsfs get_population_indiviuals
 Stat_JSFS <- R6Class('Stat_JSFS', 
   inherit = Stat_PoiInd,
   public = list(
     initialize = function(seg_sites, model, group=0) {
       name <- getStatName('jsfs', group)
       fake_sim_data <- list()
-      fake_sim_data[[name]] <- calcJsfs(seg_sites, get_sample_size(model))
+      fake_sim_data[[name]] <- calc_jsfs(seg_sites, 
+                                         get_population_indiviuals(model, 1),
+                                         get_population_indiviuals(model, 2))
       super$initialize(fake_sim_data, name)
     },
     transform = function(sim_data) summarizeJSFS(sim_data[[private$name]])
@@ -118,7 +120,7 @@ Stat_JSFS_border <- R6Class('Stat_JSFS_border',
 )
 
 # Smoothing
-#' @importFrom coalsimr get_sample_size
+#' @importFrom coalsimr calc_jsfs get_population_indiviuals get_sample_size
 Stat_JSFS_smooth <- R6Class('Stat_JSFS_smooth',
   inherit = Stat_PoiSmooth,
   private = list(
@@ -138,7 +140,9 @@ Stat_JSFS_smooth <- R6Class('Stat_JSFS_smooth',
       
       name <- getStatName('jsfs', group)
       fake_sim_data <- list()
-      fake_sim_data[[name]] <- calcJsfs(seg_sites, sample_size)
+      fake_sim_data[[name]] <- calc_jsfs(seg_sites, 
+                                         get_population_indiviuals(dm, 1),
+                                         get_population_indiviuals(dm, 2))
       super$initialize(fake_sim_data, name, model)
       
       if (all(self$get_data()$sum.stat == 0)) 
