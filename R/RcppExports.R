@@ -5,16 +5,6 @@ calcPercentFpcViolation <- function(seg_sites_list, individuals, locus_length) {
     .Call('jaatha_calcPercentFpcViolation', PACKAGE = 'jaatha', seg_sites_list, individuals, locus_length)
 }
 
-#' Calculate the JSFS from a list of segregating sites statistics
-#' 
-#' @param seg_sites List of segregating sites
-#' @param sample_size A numberic vector of size 2, giving the sample sizes
-#'        of the two population for which the JSFS is calulated
-#' @return The Joint Site Frequency Spectrum, as a matrix.
-calcJsfs <- function(seg_sites, sample_size) {
-    .Call('jaatha_calcJsfs', PACKAGE = 'jaatha', seg_sites, sample_size)
-}
-
 classifyPolym <- function(seg_sites, sample_size) {
     .Call('jaatha_classifyPolym', PACKAGE = 'jaatha', seg_sites, sample_size)
 }
