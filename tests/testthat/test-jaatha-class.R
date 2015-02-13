@@ -51,7 +51,7 @@ test_that("PG initialization works with scaling", {
 
 
 test_that("JSFS is added when not in model", {
-  dm <- coalsimr::CoalModel(c(10, 15), 10) +
+  dm <- coalsimr::CoalModel(c(10, 10), 10) +
     coalsimr::feat_pop_merge(coalsimr::par_range('tau', 0.01, 5), 2, 1) +
     coalsimr::feat_mutation(coalsimr::par_range('theta', 1, 10)) +
     coalsimr::feat_migration(coalsimr::par_const(2), symmetric = TRUE)
