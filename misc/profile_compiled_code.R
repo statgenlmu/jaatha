@@ -15,4 +15,4 @@
 # save(llm, sim_data, file='misc//test_data.Rda')
 
 load('test_data.Rda')
-jaatha:::calcPercentFpcViolation(sim_data$seg.sites, 1:20, llm)
+jaatha:::calcPercentFpcViolation(sim_data$seg_sites, 1:20, llm)

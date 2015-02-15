@@ -15,7 +15,8 @@ csi.sum.stat <- R6::R6Class("Stat_PoiInd", inherit = jaatha:::Stat_Base,
 
 csi.par.ranges <- matrix(c(0.1, 0.1, 10, 10), 2, 2)
 rownames(csi.par.ranges) <- c('x', 'y')
-jaatha.csi <- new("Jaatha", csi.sim.func, csi.par.ranges, list(csi=csi.sum.stat), 1)
+suppressMessages(jaatha.csi <- new("Jaatha", csi.sim.func, csi.par.ranges, 
+                                   list(csi=csi.sum.stat), 1))
 sim.data.csi <- jaatha:::simulateWithinBlock(10, block.test, jaatha.csi)
 
 # A Smoothing Model
@@ -39,7 +40,8 @@ smooth_stat <- jaatha:::Stat_PoiSmooth$new(smooth_obs, 'csi',
 smooth_par_ranges <- matrix(c(2, 1, 7, 7), 2, 2)
 rownames(smooth_par_ranges) <- c('x', 'y')
  
-smooth_jaatha <- new("Jaatha", smooth_simfunc, smooth_par_ranges, list(csi=smooth_stat))
+suppressMessages(smooth_jaatha <- new("Jaatha", smooth_simfunc, 
+                                      smooth_par_ranges, list(csi=smooth_stat)))
 smooth_sim_data <- jaatha:::simulateWithinBlock(10, block.test, smooth_jaatha)
 
 
@@ -56,3 +58,4 @@ dm_grps <- dm_tt +
   coalsimr::locus_averaged(11, 101, group = 2) +
   coalsimr::locus_averaged(12, 102, group = 3)
 sum_stat_grps <- simulate(dm_grps, pars=c(1,5))
+

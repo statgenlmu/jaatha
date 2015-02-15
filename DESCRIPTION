@@ -18,7 +18,7 @@ Depends:
     methods
 Imports:
     checkmate (>= 1.5.0),
-    coalsimr (>= 0.0.9006),
+    coalsimr (>= 0.0.9007),
     PopGenome (>= 2.1.0),
     R6 (>= 2.0.1),
     Rcpp (>= 0.11.0),
