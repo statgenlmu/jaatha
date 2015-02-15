@@ -2,21 +2,21 @@ context("SumStat FPC")
 
 
 test_that("Fpc Breaks calculation works", {
-  fpc = Stat_FPC$new(sumstat_tt$seg.sites, dm_tt, population = 1, group = 0)
+  fpc = Stat_FPC$new(sumstat_tt$seg_sites, dm_tt, population = 1, group = 0)
   expect_false(is.null(fpc$get_breaks()))
   expect_false(is.null(fpc$get_breaks()$mid_near))
   expect_false(is.null(fpc$get_breaks()$mid_far))
   expect_false(is.null(fpc$get_breaks()$perc_polym))
   rm(fpc)
   
-  fpc = Stat_FPC$new(sumstat_tt$seg.sites, dm_tt, population = 2, group = 0)
+  fpc = Stat_FPC$new(sumstat_tt$seg_sites, dm_tt, population = 2, group = 0)
   expect_false(is.null(fpc$get_breaks()))
   expect_false(is.null(fpc$get_breaks()$mid_near))
   expect_false(is.null(fpc$get_breaks()$mid_far))
   expect_false(is.null(fpc$get_breaks()$perc_polym))
   rm(fpc)
   
-  fpc = Stat_FPC$new(sum_stat_grps$seg.sites.1, dm_grps, 
+  fpc = Stat_FPC$new(sum_stat_grps$seg_sites.1, dm_grps, 
                      population = 1, group = 1)
   expect_false(is.null(fpc$get_breaks()))
   expect_false(is.null(fpc$get_breaks()$mid_near))
@@ -24,7 +24,7 @@ test_that("Fpc Breaks calculation works", {
   expect_false(is.null(fpc$get_breaks()$perc_polym))
   rm(fpc)  
   
-  fpc = Stat_FPC$new(sum_stat_grps$seg.sites.2, dm_grps, 
+  fpc = Stat_FPC$new(sum_stat_grps$seg_sites.2, dm_grps, 
                      population = 2, group = 2)
   expect_false(is.null(fpc$get_breaks()))
   expect_false(is.null(fpc$get_breaks()$mid_near))
@@ -196,14 +196,14 @@ test_that('Distance based classification of trios works', {
 
 
 test_that('Stat_FPC works with groups', {
-  fpc = Stat_FPC$new(sumstat_tt$seg.sites, dm_tt, 1)
+  fpc = Stat_FPC$new(sumstat_tt$seg_sites, dm_tt, 1)
   expect_that(sum(fpc$get_data()), is_more_than(0))
   expect_that(sum(fpc$get_data()), 
               is_less_than(coalsimr::get_locus_number(dm_tt)+1))
   expect_equal(fpc$transform(sumstat_tt), fpc$get_data())
   
   # With groups
-  fpc = Stat_FPC$new(sum_stat_grps$seg.sites.2, dm_grps, 1, group = 2)
+  fpc = Stat_FPC$new(sum_stat_grps$seg_sites.2, dm_grps, 1, group = 2)
   expect_that(sum(fpc$get_data()), is_more_than(0))
   expect_that(sum(fpc$get_data()), 
               is_less_than(coalsimr::get_locus_number(dm_grps, 2)+1))
@@ -216,7 +216,7 @@ test_that('Stat_FPC works with groups', {
                                           number = 5,
                                           group = 2)
   sumstat_trios <- simulate(dm_trios, pars=c(1,5))
-  fpc = Stat_FPC$new(sumstat_trios$seg.sites.2, dm_trios, 1, group = 2) 
+  fpc = Stat_FPC$new(sumstat_trios$seg_sites.2, dm_trios, 1, group = 2) 
   expect_that(sum(fpc$get_data()), is_more_than(0))
   expect_equal(fpc$transform(sumstat_trios), fpc$get_data())
 })

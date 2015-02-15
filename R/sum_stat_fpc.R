@@ -23,7 +23,7 @@ Stat_FPC <- R6Class('Stat_FPC', inherit = Stat_PoiInd,
       private$trio_classes = classifyTriosByDistance(private$llm)
       
       # Calculate observed values
-      private$seg_sites_name <- getStatName('seg.sites', group)
+      private$seg_sites_name <- getStatName('seg_sites', group)
       fake_sim_data <- list()
       fake_sim_data[[private$seg_sites_name]] <- seg_sites
 
@@ -45,7 +45,7 @@ Stat_FPC <- R6Class('Stat_FPC', inherit = Stat_PoiInd,
     get_breaks = function() private$breaks
   ),
   private = list(
-    seg_sites_name = 'seg.sites',
+    seg_sites_name = 'seg_sites',
     individuals = NA,
     llm = NA,
     breaks = NA,

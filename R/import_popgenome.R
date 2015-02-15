@@ -30,7 +30,7 @@ convPopGenomeToSegSites <- function(data, only_synonymous=FALSE) {
     seg_sites
   })
   
-  list(seg.sites = seg_sites_list[!sapply(seg_sites_list, is.null)])
+  list(seg_sites = seg_sites_list[!sapply(seg_sites_list, is.null)])
 }
 
 #' @importFrom coalsimr CoalModel feat_outgroup

@@ -112,7 +112,7 @@ test_that("PG initialization with FPC statistic", {
 
 test_that("seg.sites are added when not in model", {
   j <- Jaatha.initialize(sumstat_tt, dm_tt, use_fpc = TRUE)
-  expect_true('seg.sites' %in% get_summary_statistics(j@opts[['dm']]))
+  expect_true('seg_sites' %in% get_summary_statistics(j@opts[['dm']]))
 })
 
 

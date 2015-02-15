@@ -16,17 +16,17 @@ test_that("PopGenome data import works", {
   seg_sites <- convPopGenomeToSegSites(data_pg)
   expect_is(seg_sites, "list")
   expect_equal(length(seg_sites), 1)
-  expect_is(seg_sites$seg.sites, "list")
-  expect_equal(length(seg_sites$seg.sites), 1)  
-  expect_is(seg_sites$seg.sites[[1]], "matrix")
-  expect_equal(nrow(seg_sites$seg.sites[[1]]), 12)
-  expect_equal(grep("Individual_1", row.names(seg_sites$seg.sites[[1]])), 1:5)
-  expect_equal(grep("Individual_2", row.names(seg_sites$seg.sites[[1]])), 6:10)  
-  expect_equal(grep("Out", row.names(seg_sites$seg.sites[[1]])), 11:12)
+  expect_is(seg_sites$seg_sites, "list")
+  expect_equal(length(seg_sites$seg_sites), 1)  
+  expect_is(seg_sites$seg_sites[[1]], "matrix")
+  expect_equal(nrow(seg_sites$seg_sites[[1]]), 12)
+  expect_equal(grep("Individual_1", row.names(seg_sites$seg_sites[[1]])), 1:5)
+  expect_equal(grep("Individual_2", row.names(seg_sites$seg_sites[[1]])), 6:10)  
+  expect_equal(grep("Out", row.names(seg_sites$seg_sites[[1]])), 11:12)
   
-  expect_false(is.null(attr(seg_sites$seg.sites[[1]], "positions")))
-  expect_true(all(attr(seg_sites$seg.sites[[1]], "positions") >= 0)) 
-  expect_true(all(attr(seg_sites$seg.sites[[1]], "positions") <= 1))
+  expect_false(is.null(attr(seg_sites$seg_sites[[1]], "positions")))
+  expect_true(all(attr(seg_sites$seg_sites[[1]], "positions") >= 0)) 
+  expect_true(all(attr(seg_sites$seg_sites[[1]], "positions") <= 1))
 })
 
 
@@ -43,6 +43,8 @@ test_that("PopGenome Model creation works", {
 
 test_that("Initialization with PopGenome-Data works", {
   skip_on_cran()
+  if (!coalsimr:::checkForSeqgen(FALSE, TRUE)) skip('seqgen not installed')
+
   dm_pg <- createModelFromPopGenome(data_pg, quiet = TRUE) +
     coalsimr::feat_mutation(coalsimr::par_range('theta', 1, 5), model = 'HKY') +
     coalsimr::feat_pop_merge(coalsimr::par_range('tau', .1, .5), 2, 1) +
