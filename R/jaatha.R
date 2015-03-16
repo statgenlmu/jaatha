@@ -24,7 +24,6 @@
 #' @keywords package
 #' @importFrom parallel mclapply
 #' @importFrom Rcpp evalCpp
-#' @importFrom checkmate qassert qtest assertClass
 #' @useDynLib jaatha
 NULL
 
@@ -86,13 +85,14 @@ setClass("Jaatha",
 ## constructor method for Jaatha object
 #' @importFrom methods setMethod
 init <- function(.Object, sim_func, par_ranges, sum_stats, 
-                 cores = 1, options = list(), scaling_factor = 1) {
+                 cores = 1, options = list(), scaling_factor = 1,
+                 sim_test = TRUE) {
   # Check sim.func
-  qassert(sim_func, "f1")
+  assert_that(is.function(sim_func))
   .Object@simFunc <- sim_func
 
   # Check par.ranges
-  qassert(par_ranges, "M+")
+  assert_that(is.matrix(par_ranges))
   dim(par_ranges)[2] == 2 || stop("par.ranges must have two columns")
   colnames(par_ranges) <- c("min", "max")
   if (is.null(rownames(par_ranges))) 
@@ -121,7 +121,9 @@ init <- function(.Object, sim_func, par_ranges, sum_stats,
   .Object@seeds <- sampleSeed(3)
 
   # Check cores 
-  qassert(cores, "R1")
+  assert_that(is.numeric(cores))
+  assert_that(length(cores) == 1)
+  assert_that(cores %% 1 == 0)
   .Object <- setCores(.Object, cores)
 
   # Placeholders
@@ -133,7 +135,7 @@ init <- function(.Object, sim_func, par_ranges, sum_stats,
   
   .Object@scaling_factor <- scaling_factor
   
-  test_simulation(.Object)
+  if (sim_test) test_simulation(.Object)
 
   return(.Object)
 }
@@ -150,7 +152,6 @@ rm(init)
 #' @param data  The observed data. Jaatha can use data imported with package 
 #'              \pkg{PopGenome}. Please refer the to the vignette 
 #'              "The Jaatha HowTo" for more information.
-#' @param folded If 'TRUE', Jaatha will assume that the JSFS is folded.
 #' @param cores The number of cores to use in parallel. If 0, it tries to
 #'              guess the number of available cores and use them all.
 #' @param scaling_factor You can use this option if you have a large dataset. If
@@ -162,14 +163,6 @@ rm(init)
 #'              position of the different entries is treated as a model
 #'              parameter. This feature is still experimental and not
 #'              recommended for productive use at the moment.  
-#' @param use_fpc Additionally to the JSFS, also use the four point condition
-#'        (FPC) summary statistc. The FPC statistic is sensitive for 
-#'        recombination and selection, so consider adding it if your model has
-#'        either or both.
-#' @param fpc_populations the populations within which the FPC statistic is
-#'        calculated if \code{use_fpc = TRUE}. Recommended settings are both
-#'        population unless the model has directional selection one population. 
-#'        In that case, only use this population. 
 #' @param only_synonymous Only use synonymous SNP if set to \code{TRUE}. Requires
 #'              to provided \code{data} as a PopGenome "GENOME" object.
 #' @return A S4-Object of type jaatha containing the settings
