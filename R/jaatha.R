@@ -230,12 +230,14 @@ Jaatha.initialize <- function(data, model, cores=1, scaling_factor=1,
     
     # --- iHH Summary Statistic -------------------------------------
     else if ("sumstat_ihh" %in% class(sumstat)) {
-      sumstats[[name]] <- Stat_Ihh$new(seg_sites, model, sumstat)
+      sumstats[[name]] <- Stat_Ihh$new(seg_sites, model, 
+                                       sumstat, c(.5, .75, .95))
     }
     
     # --- Omega' Summary Statistic ----------------------------------
     else if ("SumstatOmegaPrime" %in% class(sumstat)) {
-      sumstats[[name]] <- Stat_OmegaPrime$new(seg_sites, model, sumstat)
+      sumstats[[name]] <- Stat_OmegaPrime$new(seg_sites, model, 
+                                              sumstat, c(.5, .75, .95))
     }
   }
   
