@@ -6,7 +6,7 @@ test_that("Scaling produces resonable results", {
   dm <- dm.addSpeciationEvent(dm, time.point = ".5", in.pop = 1, to.pop = 2)
   sum_stats <- dm.simSumStats(dm.addSummaryStatistic(dm, 'seg.sites'), c(2))
   
-  jaatha <- Jaatha.initialize(sum_stats, dm, scaling.factor = 20)
+  jaatha <- Jaatha.initialize(sum_stats, dm, scaling_factor = 20)
   expect_equal(dm.getLociNumber(jaatha@opts[['dm']]), 10)
   jaatha <- Jaatha.initialSearch(jaatha, sim = 50, blocks.per.par = 1)
   expect_that(Jaatha.getStartingPoints(jaatha)[2], is_less_than(5))

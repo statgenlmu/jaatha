@@ -141,7 +141,7 @@ refinedSearchSingleBlock <- function(jaatha, start.point, sim, sim.final,
     # Should be a bit more accurate as previous estimate of the likelihood,
     # as it is in the center of the block now.
     search.block@score <- estimateLogLikelihood(search.block@MLest, glm.fitted, 
-                                                jaatha@sum.stats, 
+                                                jaatha@sum_stats, 
                                                 getScalingFactor(jaatha))
     
     # Keep track of the optimal likelihood, and in which step it has be reached.
@@ -174,7 +174,7 @@ refinedSearchSingleBlock <- function(jaatha, start.point, sim, sim.final,
 
     # Estimate the best parameters in the current block.
     search.block@MLest <- findBestParInBlock(search.block, glm.fitted, 
-                                             jaatha@sum.stats, 
+                                             jaatha@sum_stats, 
                                              getScalingFactor(jaatha))$est 
     .print()
   }

@@ -33,7 +33,7 @@ convPopGenomeToSegSites <- function(data, only_synonymous=FALSE) {
   list(seg_sites = seg_sites_list[!sapply(seg_sites_list, is.null)])
 }
 
-#' @importFrom coalsimr CoalModel feat_outgroup
+#' @importFrom coalsimr coal_model feat_outgroup
 createModelFromPopGenome <- function(data, quiet=FALSE) {
   stopifnot("GENOME" %in% is(data))
   sample_sizes <- sapply(data@populations, length)
@@ -62,6 +62,6 @@ createModelFromPopGenome <- function(data, quiet=FALSE) {
       sum(sapply(data@region.data@transitions[loci_mask], function(x) sum(1-x)))
   if (!quiet) message("Observed TS/TV: ", tstv_ratio, " (Not added to Model)")
   
-  CoalModel(c(sample_sizes, outgroup_size), loci_number, loci_length) +
+  coal_model(c(sample_sizes, outgroup_size), loci_number, loci_length) +
     feat_outgroup(outgroup_number)
 }

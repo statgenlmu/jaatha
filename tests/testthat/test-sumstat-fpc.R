@@ -2,6 +2,7 @@ context("SumStat FPC")
 
 
 test_that("Fpc Breaks calculation works", {
+  skip("Awaiting removal")
   fpc = Stat_FPC$new(sumstat_tt$seg_sites, dm_tt, population = 1, group = 0)
   expect_false(is.null(fpc$get_breaks()))
   expect_false(is.null(fpc$get_breaks()$mid_near))
@@ -34,6 +35,7 @@ test_that("Fpc Breaks calculation works", {
 })
 
 test_that("generateLociCube works", {
+  skip("Awaiting removal")
   stat = cbind(1:6, 1:6, 1:6)
   breaks = list(1:2+.5, 3.5, c(1,3,5)+.5)
   cube = array(generateLociCube(stat, breaks, 1:3), c(3,2,4))
@@ -78,6 +80,7 @@ test_that("generateLociCube works", {
 })
 
 test_that("calcPercentFpcViolation works", {
+  skip("Awaiting removal")
   seg_sites <- list(matrix(c(1, 1, 0, 0, 0, 
                              1, 0, 1, 0, 1, 
                              1, 1, 0, 1, 0, 
@@ -173,6 +176,7 @@ test_that("calcPercentFpcViolation works", {
 
 
 test_that('Distance based classification of trios works', {
+  skip("Awaiting removal")
   llm <- matrix(c(0,0,1000,0,0), 5, 5, byrow = TRUE)
   expect_equal(classifyTriosByDistance(llm),
                list(both_near=numeric(), one_one=numeric(), both_far=numeric()))
@@ -196,6 +200,7 @@ test_that('Distance based classification of trios works', {
 
 
 test_that('Stat_FPC works with groups', {
+  skip("Awaiting removal")
   fpc = Stat_FPC$new(sumstat_tt$seg_sites, dm_tt, 1)
   expect_that(sum(fpc$get_data()), is_more_than(0))
   expect_that(sum(fpc$get_data()), 

@@ -13,7 +13,7 @@ Slots:
    parameters we want to estimate. The first row gives the lower range for
    the parameters, the second row the upper ranges. Each row stands for one
    parameter and the row-names will be used as names for the parameters.}
-   \item{sum.stats}{The observed summary statistics.}
+   \item{sumstats}{The observed summary statistics.}
    \item{seeds}{A set of random seeds. First one to generate the other two.
                 The next one is for the initial search, the last is for the
                 refined search}

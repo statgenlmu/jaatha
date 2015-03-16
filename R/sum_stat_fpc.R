@@ -6,7 +6,7 @@ Stat_FPC <- R6Class('Stat_FPC', inherit = Stat_PoiInd,
                           break_probs = c(.2, .5)) {
 
       private$individuals = get_population_indiviuals(dm, population)
-      private$llm = get_locus_length_matrix(dm, group)
+      private$llm = get_locus_length_matrix(dm)
       if (any(break_probs > 1)) stop('probs greater then one')
       
       # Setup the cube for the middle locus
@@ -20,7 +20,7 @@ Stat_FPC <- R6Class('Stat_FPC', inherit = Stat_PoiInd,
       names(private$breaks) <- colnames(fpc_percent)
       
       # Setup cubes for trio loci if available
-      private$trio_classes = classifyTriosByDistance(private$llm)
+      private$trio_classes = classifyTriosByDistance(private$ll)
       
       # Calculate observed values
       private$seg_sites_name <- getStatName('seg_sites', group)

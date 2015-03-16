@@ -3,7 +3,7 @@ simLikelihood <- function(jaatha, sim, pars) {
   sim_data <- runSimulations(sim_pars, jaatha@cores, jaatha)
 
   llh <- 0
-  for (sum_stat in jaatha@sum.stats) {
+  for (sum_stat in jaatha@sum_stats) {
     # sapply + S3 dispatch case unit tests to fails => use 'for' here
     llh <- llh + simLogLLH(sum_stat, sim_data, getScalingFactor(jaatha))
   }

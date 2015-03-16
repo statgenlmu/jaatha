@@ -24,7 +24,6 @@
 #' @keywords package
 #' @importFrom parallel mclapply
 #' @importFrom Rcpp evalCpp
-#' @importFrom checkmate qassert qtest assertClass
 #' @useDynLib jaatha
 NULL
 
@@ -39,7 +38,7 @@ NULL
 #'    parameters we want to estimate. The first row gives the lower range for
 #'    the parameters, the second row the upper ranges. Each row stands for one
 #'    parameter and the row-names will be used as names for the parameters.} 
-#'    \item{sum.stats}{The observed summary statistics.}
+#'    \item{sumstats}{The observed summary statistics.}
 #'    \item{seeds}{A set of random seeds. First one to generate the other two.
 #'                 The next one is for the initial search, the last is for the
 #'                 refined search}
@@ -68,7 +67,7 @@ setClass("Jaatha",
       # Settings
       simFunc="function",
       par.ranges = "matrix",
-      sum.stats = "list",
+      sum_stats = "list",
       seeds="numeric",
       cores = "numeric",
       use.shm = "logical",
@@ -79,39 +78,40 @@ setClass("Jaatha",
       likelihood.table = "matrix",
       conf.ints = "matrix",
       route = "list",
-      scaling.factor = "numeric"
+      scaling_factor = "numeric"
     ),
 )
 
 ## constructor method for Jaatha object
 #' @importFrom methods setMethod
 init <- function(.Object, sim_func, par_ranges, sum_stats, 
-                 cores = 1, options = list(), scaling.factor = 1) {
+                 cores = 1, options = list(), scaling_factor = 1,
+                 sim_test = TRUE) {
   # Check sim.func
-  qassert(sim_func, "f1")
+  assert_that(is.function(sim_func))
   .Object@simFunc <- sim_func
 
   # Check par.ranges
-  qassert(par_ranges, "M+")
+  assert_that(is.matrix(par_ranges))
   dim(par_ranges)[2] == 2 || stop("par.ranges must have two columns")
   colnames(par_ranges) <- c("min", "max")
   if (is.null(rownames(par_ranges))) 
     rownames(par_ranges) <- as.character(1:nrow(par_ranges)) 
   .Object@par.ranges <- par_ranges
 
-  # Add sum.stats
-  is.list(sum_stats) || stop("sum.stats needs to be a list")
-  .Object@sum.stats <- list()
+  # Add sumstats
+  is.list(sum_stats) || stop("sumstats needs to be a list")
+  .Object@sum_stats <- list()
   for (sum_stat in sum_stats) {
     if (!any(class(sum_stat) %in% c("Stat_PoiInd", "Stat_PoiSmooth")))
       stop("Unknown summary statistic of type ", class(sum_stat))
     
-    if (sum_stat$get_name() %in% names(.Object@sum.stats)) {
+    if (sum_stat$get_name() %in% names(.Object@sum_stats)) {
       stop('There is already a summary statistic with name ', 
            sum_stat$get_name())
     }
 
-    .Object@sum.stats[[sum_stat$get_name()]] <- sum_stat
+    .Object@sum_stats[[sum_stat$get_name()]] <- sum_stat
   }
 
   # Sample seeds
@@ -121,7 +121,9 @@ init <- function(.Object, sim_func, par_ranges, sum_stats,
   .Object@seeds <- sampleSeed(3)
 
   # Check cores 
-  qassert(cores, "R1")
+  assert_that(is.numeric(cores))
+  assert_that(length(cores) == 1)
+  assert_that(cores %% 1 == 0)
   .Object <- setCores(.Object, cores)
 
   # Placeholders
@@ -131,9 +133,9 @@ init <- function(.Object, sim_func, par_ranges, sum_stats,
   .Object@likelihood.table <- matrix()
   .Object@starting.positions <- list()
   
-  .Object@scaling.factor <- scaling.factor
+  .Object@scaling_factor <- scaling_factor
   
-  test_simulation(.Object)
+  if (sim_test) test_simulation(.Object)
 
   return(.Object)
 }
@@ -150,11 +152,10 @@ rm(init)
 #' @param data  The observed data. Jaatha can use data imported with package 
 #'              \pkg{PopGenome}. Please refer the to the vignette 
 #'              "The Jaatha HowTo" for more information.
-#' @param folded If 'TRUE', Jaatha will assume that the JSFS is folded.
 #' @param cores The number of cores to use in parallel. If 0, it tries to
 #'              guess the number of available cores and use them all.
-#' @param scaling.factor You can use this option if you have a large dataset. If
-#'              so, Jaatha only simulates only a fraction 1/scaling.factor of the
+#' @param scaling_factor You can use this option if you have a large dataset. If
+#'              so, Jaatha only simulates only a fraction 1/scaling_factor of the
 #'              dataset and interpolates the missing data.
 #' @param smoothing If set to true, Jaatha uses a different way to summaries the
 #'              JSFS. Instead of binning certain areas, and fitting a glm per
@@ -162,129 +163,122 @@ rm(init)
 #'              position of the different entries is treated as a model
 #'              parameter. This feature is still experimental and not
 #'              recommended for productive use at the moment.  
-#' @param use_fpc Additionally to the JSFS, also use the four point condition
-#'        (FPC) summary statistc. The FPC statistic is sensitive for 
-#'        recombination and selection, so consider adding it if your model has
-#'        either or both.
-#' @param fpc_populations the populations within which the FPC statistic is
-#'        calculated if \code{use_fpc = TRUE}. Recommended settings are both
-#'        population unless the model has directional selection one population. 
-#'        In that case, only use this population. 
 #' @param only_synonymous Only use synonymous SNP if set to \code{TRUE}. Requires
 #'              to provided \code{data} as a PopGenome "GENOME" object.
 #' @return A S4-Object of type jaatha containing the settings
-#' @importFrom coalsimr get_groups get_parameter_table get_summary_statistics
+#' @importFrom coalsimr get_parameter_table get_summary_statistics
 #' @importFrom coalsimr sumstat_jsfs sumstat_seg_sites scale_model
-#' @importFrom methods new representation 
+#' @importFrom methods new representation
+#' @importFrom assertthat assert_that
 #' @export
-Jaatha.initialize <- function(data, model, cores=1, scaling.factor=1,
-                              folded=FALSE, smoothing=FALSE, 
-                              only_synonymous=FALSE, use_fpc=FALSE,
-                              fpc_populations=1:2) {
+Jaatha.initialize <- function(data, model, cores=1, scaling_factor=1,
+                              smoothing=FALSE, only_synonymous=FALSE) {
   
-  stopifnot('CoalModel' %in% class(model))
-  checkType(folded, c("bool", "single"))
-  checkType(smoothing, c("bool", "single"))
-  checkType(scaling.factor, c("num","single"))
-  if (smoothing && folded) 
-    stop("You can't use smoothing together with a folded JSFS")
+  # --- Check parameters -------------------------------------
+  assert_that('Coalmodel' %in% class(model)) 
+  assert_that(is.numeric(cores))
+  assert_that(length(cores) == 1)
+  assert_that(is.numeric(scaling_factor))
+  assert_that(length(scaling_factor) == 1)
+  assert_that(is.logical(smoothing)) 
+  assert_that(length(smoothing) == 1)
+  assert_that(is.logical(only_synonymous)) 
+  assert_that(length(only_synonymous) == 1)  
   
-  dm <- model
-  if (!'jsfs' %in% get_summary_statistics(dm)) {
-    warning("JSFS is not a summary statistic of the model. Adding it.")
-    dm <- dm + sumstat_jsfs()
-  }
   
-  # Convert the data into a list containing the seg.sites of the different groups
+  # --- Convert the data into a list containing the seg.sites of the different groups
   if ('GENOME' %in% is(data)) {
-    checkModelDataConsistency(data, dm)
+    checkModelDataConsistency(data, model)
     data <- convPopGenomeToSegSites(data, only_synonymous)
   }
   if (!is.list(data)) stop('`data` has an unexpected format.')
   
   # ------------------------------------------------------------
-  # Create Summary Statistics for each group
+  # Create Summary Statistics for summary statistic of the model
   # ------------------------------------------------------------
-  sum.stats <- list()
-  seg.sites <- NULL
-  groups <- get_groups(dm)
+  sumstats <- list()
   
-  for (group in groups) {
-    if (length(groups) == 1) {
-      grp_name_ext <- ''
-      group <- 0
-    } else {
-      grp_name_ext <- paste0('.', group)
+  #  if (length(groups) == 1) {
+  #    grp_name_ext <- ''
+  #    group <- 0
+  #  } else {
+  #    grp_name_ext <- paste0('.', group)
+  #  }
+  
+  model_sumstats <- get_summary_statistics(model)
+  seg_sites <- data[['seg_sites']]
+  group <- 0
+  if (is.null(seg_sites)) stop('No seg_sites in `data` for group ', group)
+
+  for (sumstat in model_sumstats) {
+    # --- JSFS Summary Statistic ---------------------------------
+    if ("SumstatJsfs" %in% class(sumstat)) {
+      name <- #paste0(sumstat$get_name(), "_", group)
+        sumstat$get_name()
+      if (!smoothing) {
+        sumstats[[name]] <- Stat_JSFS$new(seg_sites, model, group)
+      } else {
+        sumstats[[name]] <- 
+          Stat_JSFS_smooth$new(seg_sites, model, group)
+        sumstats[[paste0("border_", name)]] <- 
+          Stat_JSFS_border$new(seg_sites, model, group)
+      }
     }
     
-    seg.sites <- data[[paste0('seg_sites', grp_name_ext)]]
-    if (is.null(seg.sites)) stop('No seg_sites in `data` for group ', group)
+    
+  }
+  
 
-    # ------------------------------------------------------------
-    # JSFS Summary Statistic
-    # ------------------------------------------------------------
-    if (!smoothing) {
-      if (folded) sum.stats[[paste0('jsfs', grp_name_ext)]] <- 
-        Stat_JSFS_folded$new(seg.sites, dm, group)
-      else sum.stats[[paste0('jsfs', grp_name_ext)]] <- 
-        Stat_JSFS$new(seg.sites, dm, group)
-    } else {
-      if (folded) stop("You can't use both smoothing and a folded JSFS")
-      sum.stats[[paste0('jsfs', grp_name_ext)]] <- 
-        Stat_JSFS_smooth$new(seg.sites, dm, group)
-      sum.stats[[paste0('jsfs_border', grp_name_ext)]] <- 
-        Stat_JSFS_border$new(seg.sites, dm, group)
-    }
+
 
     # ------------------------------------------------------------
     # FPC Summary Statistic
     # ------------------------------------------------------------
-    if (use_fpc) {
-      if (!'seg_sites' %in% get_summary_statistics(dm)) {
-        dm <- dm + sumstat_seg_sites()
-      }
-      
-      # TODO: Assert that dm contains 'seg.sites' statistic
-      for (pop in 1:2) {
-        if (pop %in% fpc_populations) {
-          sum.stats[[paste0('fpc_pop', pop, grp_name_ext)]] <- 
-            Stat_FPC$new(seg.sites, dm, population = pop, group = group)
-        }
-      }
-    }
+#     if (use_fpc) {
+#       if (!'seg_sites' %in% get_summary_statistics(model)) {
+#         model <- model + sumstat_seg_sites()
+#       }
+#       
+#       # TODO: Assert that model contains 'seg.sites' statistic
+#       for (pop in 1:2) {
+#         if (pop %in% fpc_populations) {
+#           sumstats[[paste0('fpc_pop', pop, grp_name_ext)]] <- 
+#             Stat_FPC$new(seg.sites, model, population = pop, group = group)
+#         }
+#       }
+#     }
 
     # ------------------------------------------------------------
     # PMC Summary Statistic
     # ------------------------------------------------------------
-    #if ('pmc' %in% dm.getSummaryStatistics(dm, group)) {
-    #  dm <- calcPmcBreaks(dm, seg.sites, group = group)
-    #  sum.stats[[paste0('pmc', grp_name_ext)]] <- 
+    #if ('pmc' %in% model.getSummaryStatistics(model, group)) {
+    #  model <- calcPmcBreaks(model, seg.sites, group = group)
+    #  sumstats[[paste0('pmc', grp_name_ext)]] <- 
     #    list(method='poisson.transformed', transformation=as.vector,
-    #         value=createPolymClasses(seg.sites, dm, group = group),
+    #         value=createPolymClasses(seg.sites, model, group = group),
     #         data = paste0('seg.sites', grp_name_ext))
     #}
-  }
 
 
   # ------------------------------------------------------------
   # Create the Jaatha object
   # ------------------------------------------------------------
-  par_ranges <- as.matrix(get_parameter_table(dm)[,-1])
-  rownames(par_ranges) <- get_parameter_table(dm)$name
+  par_ranges <- as.matrix(get_parameter_table(model)[,-1])
+  rownames(par_ranges) <- get_parameter_table(model)$name
   
-  if (scaling.factor != 1) {
-    dm <- scale_model(dm, scaling.factor)
+  if (scaling_factor != 1) {
+    model <- scale_model(model, scaling_factor)
   }
   
   jaatha <- new("Jaatha", 
                 sim_func=function(sim.pars, jaatha) {
-                  simulate(jaatha@opts[['dm']], pars=sim.pars)
+                  simulate(jaatha@opts[['model']], pars=sim.pars)
                 },
                 par_ranges=par_ranges,  
-                sum_stats=sum.stats,
+                sum_stats=sumstats,
                 cores=cores,
-                options = list(dm=dm, jsfs.folded = folded),
-                scaling.factor = scaling.factor)
+                options = list(model=model),
+                scaling_factor = scaling_factor)
 
 
 
@@ -429,7 +423,7 @@ getParNumber <- function(jaatha) nrow(jaatha@par.ranges)
 getParNames <- function(jaatha) rownames(jaatha@par.ranges) 
 
 getScalingFactor <- function(jaatha) {
-  jaatha@scaling.factor
+  jaatha@scaling_factor
 }
 
 getStatName <- function(stat, group, pop) {

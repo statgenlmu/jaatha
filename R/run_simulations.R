@@ -44,7 +44,7 @@ runSimulation <- function(i, pars, seeds, jaatha) {
   sim_results <- jaatha@simFunc(sim_pars, jaatha)
   
   # Calculate Summary Statistics
-  sim_sum_stats <- lapply(jaatha@sum.stats, function(sum_stat) {
+  sim_sum_stats <- lapply(jaatha@sum_stats, function(sum_stat) {
     sum_stat$transform(sim_results)
   })
   

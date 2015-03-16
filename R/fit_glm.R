@@ -16,9 +16,9 @@ fitGlm.default <- function(sum_stat, sim_data...) stop('Unkown Summary Statistic
 #' statistic.
 fitGlm.Jaatha <- function(jaatha, sim_data) { 
   glm_fitted <- list()
-  for (i in seq(along = jaatha@sum.stats)) {
-    name <- names(jaatha@sum.stats)[i]
-    glm_fitted[[name]] <- fitGlm(jaatha@sum.stats[[name]], sim_data)
+  for (i in seq(along = jaatha@sum_stats)) {
+    name <- names(jaatha@sum_stats)[i]
+    glm_fitted[[name]] <- fitGlm(jaatha@sum_stats[[name]], sim_data)
   }
   glm_fitted
 }
