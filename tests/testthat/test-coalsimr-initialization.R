@@ -8,6 +8,7 @@ model <- coalsimr::coal_model(10:11, 10, 100) +
 
 data <- simulate(model + coalsimr::sumstat_seg_sites(), pars=c(1, 5))
 
+
 test_that("coalsimr initialization works", {  
   # dm + jsfs
   checkType(Jaatha.initialize(data, model), "jaatha")
@@ -41,36 +42,15 @@ test_that("PG initialization works with scaling", {
 })
 
 
-test_that("PG initialization with FPC statistic", {
-  skip("Temporarily deactived")
-  # Without groups
-  jaatha.fpc <- Jaatha.initialize(sumstat_tt, dm_tt, use_fpc = TRUE)
-  for (pop in 1:2) {
-    fpc_stat <- jaatha.fpc@sum.stats[[getStatName('fpc',0,pop)]]
-    expect_false(is.null(fpc_stat))
-    expect_that(sum(fpc_stat$get_data()), is_more_than(0))
-    expect_that(sum(fpc_stat$get_data()), 
-                is_less_than(coalsimr:::get_locus_number(dm_tt)+1))
-  }
+test_that("initialization with FPC statistic", {
+  jaatha.fpc <- Jaatha.initialize(data, model + 
+                                    coalsimr::sumstat_four_gamete('fgc'))
   
-  jaatha.fpc <- Jaatha.initialize(sumstat_tt, dm_tt, 
-                                  use_fpc = TRUE, fpc_populations = 1)
-  expect_false(is.null(jaatha.fpc@sum.stats[[getStatName('fpc',0,1)]]))
-  expect_true(is.null(jaatha.fpc@sum.stats[[getStatName('fpc',0,2)]]))  
-  
-  jaatha.fpc <- Jaatha.initialize(sumstat_tt, dm_tt,
-                                  use_fpc = TRUE, fpc_populations = 2)
-  expect_true(is.null(jaatha.fpc@sum.stats[["fpc_pop1"]]))
-  expect_false(is.null(jaatha.fpc@sum.stats[["fpc_pop2"]]))
-  
-  # With groups
-  jaatha.fpc <- Jaatha.initialize(sum_stat_grps, dm_grps, use_fpc = TRUE)
-  expect_false(is.null(jaatha.fpc@sum.stats[[getStatName('fpc',1,1)]]))
-  expect_false(is.null(jaatha.fpc@sum.stats[[getStatName('fpc',1,2)]]))
-  expect_false(is.null(jaatha.fpc@sum.stats[[getStatName('fpc',2,1)]]))
-  expect_false(is.null(jaatha.fpc@sum.stats[[getStatName('fpc',2,2)]]))
-  expect_false(is.null(jaatha.fpc@sum.stats[[getStatName('fpc',3,1)]]))
-  expect_false(is.null(jaatha.fpc@sum.stats[[getStatName('fpc',3,2)]]))
+  fpc_stat <- jaatha.fpc@sum_stats[['fgc']]
+  expect_false(is.null(fpc_stat))
+  expect_that(sum(fpc_stat$get_data()), is_more_than(0))
+  expect_that(sum(fpc_stat$get_data()), 
+              is_less_than(coalsimr:::get_locus_number(dm_tt)+1))
 })
 
 
