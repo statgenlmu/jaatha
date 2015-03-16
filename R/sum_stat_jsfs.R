@@ -92,6 +92,7 @@ Stat_JSFS <- R6Class('Stat_JSFS',
   inherit = Stat_PoiInd,
   public = list(
     initialize = function(seg_sites, model, group=0) {
+      assert_that(is.list(seg_sites))
       name <- getStatName('jsfs', group)
       fake_sim_data <- list()
       fake_sim_data[[name]] <- calc_jsfs(seg_sites, 
@@ -99,15 +100,9 @@ Stat_JSFS <- R6Class('Stat_JSFS',
                                          get_population_indiviuals(model, 2))
       super$initialize(fake_sim_data, name)
     },
-    transform = function(sim_data) summarizeJSFS(sim_data[[private$name]])
-  )
-)
-
-# Binning + Folded JSFS
-Stat_JSFS_folded <- R6Class('Stat_JSFS_folded', 
-  inherit = Stat_JSFS,
-  public = list(
-    transform = function(sim_data) summarizeFoldedJSFS(sim_data[[private$name]])
+    transform = function(sim_data) {
+      summarizeJSFS(sim_data[[private$name]])
+    }
   )
 )
 

@@ -37,13 +37,13 @@ test_that("PopGenome Model creation works", {
   expect_equal(coalsimr::get_outgroup(dm_pg), 3)
   expect_equal(coalsimr::get_outgroup_size(dm_pg), 2)
   expect_equal(coalsimr::get_locus_number(dm_pg), 1)
-  expect_equal(coalsimr::get_locus_length(dm_pg), 16)
+  expect_equal(coalsimr:::get_locus_length(dm_pg, 1), 16)
 })
 
 
 test_that("Initialization with PopGenome-Data works", {
   skip_on_cran()
-  if (!coalsimr:::checkForSeqgen(FALSE, TRUE)) skip('seqgen not installed')
+  if (!coalsimr:::sg_find_exe(FALSE, TRUE)) skip('seqgen not installed')
 
   dm_pg <- createModelFromPopGenome(data_pg, quiet = TRUE) +
     coalsimr::feat_mutation(coalsimr::par_range('theta', 1, 5), model = 'HKY') +

@@ -45,7 +45,7 @@ suppressMessages(smooth_jaatha <- new("Jaatha", smooth_simfunc,
 smooth_sim_data <- jaatha:::simulateWithinBlock(10, block.test, smooth_jaatha)
 
 
-dm_tt <- coalsimr::CoalModel(c(10, 10), 10) +
+dm_tt <- coalsimr::coal_model(c(10, 10), 10) +
   coalsimr::feat_pop_merge(coalsimr::par_range('tau', 0.01, 5), 2, 1) +
   coalsimr::feat_mutation(coalsimr::par_range('theta', 1, 10)) +
   coalsimr::feat_migration(coalsimr::par_const(2), symmetric = TRUE) +

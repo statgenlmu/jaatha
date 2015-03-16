@@ -65,7 +65,7 @@ Jaatha.initialSearch <- function(jaatha, sim=200, blocks.per.par=2, rerun=FALSE)
     }
 
     optimal <- findBestParInBlock(firstBlocks[[i]], glms.fitted, 
-                                  jaatha@sum.stats, getScalingFactor(jaatha)) 
+                                  jaatha@sum_stats, getScalingFactor(jaatha)) 
     
     firstBlocks[[i]]@score <- optimal$score
 

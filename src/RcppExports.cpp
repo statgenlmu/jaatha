@@ -9,32 +9,24 @@ using namespace Rcpp;
 NumericMatrix calcPercentFpcViolation(const List seg_sites_list, const IntegerVector individuals, const NumericMatrix locus_length);
 RcppExport SEXP jaatha_calcPercentFpcViolation(SEXP seg_sites_listSEXP, SEXP individualsSEXP, SEXP locus_lengthSEXP) {
 BEGIN_RCPP
-    SEXP __sexp_result;
-    {
-        Rcpp::RNGScope __rngScope;
-        Rcpp::traits::input_parameter< const List >::type seg_sites_list(seg_sites_listSEXP );
-        Rcpp::traits::input_parameter< const IntegerVector >::type individuals(individualsSEXP );
-        Rcpp::traits::input_parameter< const NumericMatrix >::type locus_length(locus_lengthSEXP );
-        NumericMatrix __result = calcPercentFpcViolation(seg_sites_list, individuals, locus_length);
-        PROTECT(__sexp_result = Rcpp::wrap(__result));
-    }
-    UNPROTECT(1);
-    return __sexp_result;
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< const List >::type seg_sites_list(seg_sites_listSEXP);
+    Rcpp::traits::input_parameter< const IntegerVector >::type individuals(individualsSEXP);
+    Rcpp::traits::input_parameter< const NumericMatrix >::type locus_length(locus_lengthSEXP);
+    __result = Rcpp::wrap(calcPercentFpcViolation(seg_sites_list, individuals, locus_length));
+    return __result;
 END_RCPP
 }
 // classifyPolym
 NumericVector classifyPolym(const NumericMatrix seg_sites, const NumericVector sample_size);
 RcppExport SEXP jaatha_classifyPolym(SEXP seg_sitesSEXP, SEXP sample_sizeSEXP) {
 BEGIN_RCPP
-    SEXP __sexp_result;
-    {
-        Rcpp::RNGScope __rngScope;
-        Rcpp::traits::input_parameter< const NumericMatrix >::type seg_sites(seg_sitesSEXP );
-        Rcpp::traits::input_parameter< const NumericVector >::type sample_size(sample_sizeSEXP );
-        NumericVector __result = classifyPolym(seg_sites, sample_size);
-        PROTECT(__sexp_result = Rcpp::wrap(__result));
-    }
-    UNPROTECT(1);
-    return __sexp_result;
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< const NumericMatrix >::type seg_sites(seg_sitesSEXP);
+    Rcpp::traits::input_parameter< const NumericVector >::type sample_size(sample_sizeSEXP);
+    __result = Rcpp::wrap(classifyPolym(seg_sites, sample_size));
+    return __result;
 END_RCPP
 }

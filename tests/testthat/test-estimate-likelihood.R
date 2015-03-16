@@ -25,7 +25,7 @@ test_that("calcStatLLH works for Stat_PoiSmooth", {
 
 test_that("estimateLogLikelihood works", {
   glm_fit <- fitGlm(jaatha.csi, sim.data.csi)
-  ll <- estimateLogLikelihood(c(x=3, y=3), glm_fit, jaatha.csi@sum.stats)
+  ll <- estimateLogLikelihood(c(x=3, y=3), glm_fit, jaatha.csi@sum_stats)
   expect_true(is.numeric(ll))
   expect_true(0 <= exp(ll) | exp(ll) <= 1)
   

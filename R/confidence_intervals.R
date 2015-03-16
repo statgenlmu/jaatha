@@ -121,8 +121,8 @@ rerunAnalysis <- function(idx, jaatha, seeds, sim_data=NULL, log.folder) {
   sink(paste0(log.folder, "/run_", idx, ".log"))
   jaatha@cores <- 1
   if (!is.null(sim.data)) {
-    jaatha@sum.stats <- convertSimDataToSumStats(sim_data[[idx]], 
-                                                 jaatha@sum.stats)
+    jaatha@sum_stats <- convertSimDataToSumStats(sim_data[[idx]], 
+                                                 jaatha@sum_stats)
   }
 
   jaatha <- Jaatha.initialSearch(jaatha, rerun=TRUE) 
