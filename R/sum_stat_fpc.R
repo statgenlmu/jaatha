@@ -1,39 +1,31 @@
 #' @importFrom R6 R6Class
 #' @importFrom coalsimr get_locus_length_matrix get_population_indiviuals
 Stat_FPC <- R6Class('Stat_FPC', inherit = Stat_PoiInd,
+  private = list(
+    stat_name = NA,
+    breaks = NA,
+    trio_classes = NA
+  ),
   public = list(
-    initialize = function(seg_sites, dm, population, group = 0,
-                          break_probs = c(.2, .5)) {
-
-      private$individuals = get_population_indiviuals(dm, population)
-      private$llm = get_locus_length_matrix(dm)
+    initialize = function(seg_sites, model, stat, break_probs = c(.2, .5)) {
       if (any(break_probs > 1)) stop('probs greater then one')
       
       # Setup the cube for the middle locus
-      fpc_percent <- calcPercentFpcViolation(seg_sites, 
-                                             private$individuals, 
-                                             private$llm)
+      private$stat_name <- stat$get_name()
+      fpc_percent <- stat$calculate(seg_sites, NULL, model)
+      fake_sim_data <- list()
+      fake_sim_data[[private$stat_name]] <- fpc_percent
       
       private$breaks = lapply(1:ncol(fpc_percent), function(i) {
         calcBreaks(fpc_percent[, i], break_probs)
       })
       names(private$breaks) <- colnames(fpc_percent)
       
-      # Setup cubes for trio loci if available
-      private$trio_classes = classifyTriosByDistance(private$ll)
-      
-      # Calculate observed values
-      private$seg_sites_name <- getStatName('seg_sites', group)
-      fake_sim_data <- list()
-      fake_sim_data[[private$seg_sites_name]] <- seg_sites
-
-      super$initialize(fake_sim_data, getStatName('fpc', group, population))
+      super$initialize(fake_sim_data, stat$get_name())
     },
     transform = function(sim_data) {
-      fpc <- calcPercentFpcViolation(sim_data[[private$seg_sites_name]],
-                                     private$individuals, 
-                                     private$llm)
-      
+      fpc <- sim_data[[private$stat_name]]
+
       central_cube <- generateLociCube(fpc, private$breaks, c(1,2,6))
       outer_cubes <- lapply(private$trio_classes, function(loci) {
         if (length(loci) == 0) return(NULL)
@@ -43,13 +35,7 @@ Stat_FPC <- R6Class('Stat_FPC', inherit = Stat_PoiInd,
       c(central=central_cube, unlist(outer_cubes))
     },
     get_breaks = function() private$breaks
-  ),
-  private = list(
-    seg_sites_name = 'seg_sites',
-    individuals = NA,
-    llm = NA,
-    breaks = NA,
-    trio_classes = NA)
+  )
 )
 
 

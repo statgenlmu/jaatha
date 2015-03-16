@@ -223,10 +223,17 @@ Jaatha.initialize <- function(data, model, cores=1, scaling_factor=1,
       }
     }
     
-    
+    # --- Four Gamete Summary Statistic ---------------------------
+    else if ("SumstatFourGamete" %in% class(sumstat)) {
+      name <- #paste0(sumstat$get_name(), "_", group)
+        sumstat$get_name()
+        sumstats[[name]] <- Stat_FPC$new(seg_sites, model, sumstat)
+    }
   }
   
-
+  if (scaling_factor != 1) {
+    model <- scale_model(model, scaling_factor)
+  }
 
 
     # ------------------------------------------------------------
@@ -264,9 +271,7 @@ Jaatha.initialize <- function(data, model, cores=1, scaling_factor=1,
   par_ranges <- as.matrix(get_parameter_table(model)[,-1])
   rownames(par_ranges) <- get_parameter_table(model)$name
   
-  if (scaling_factor != 1) {
-    model <- scale_model(model, scaling_factor)
-  }
+
   
   jaatha <- new("Jaatha", 
                 sim_func=function(sim.pars, jaatha) {

@@ -1,41 +1,27 @@
 context("SumStat FPC")
 
-
-test_that("Fpc Breaks calculation works", {
-  skip("Awaiting removal")
-  fpc = Stat_FPC$new(sumstat_tt$seg_sites, dm_tt, population = 1, group = 0)
-  expect_false(is.null(fpc$get_breaks()))
-  expect_false(is.null(fpc$get_breaks()$mid_near))
-  expect_false(is.null(fpc$get_breaks()$mid_far))
-  expect_false(is.null(fpc$get_breaks()$perc_polym))
-  rm(fpc)
+test_that("fpc initialization works", {
+  stat <- coalsimr::sumstat_four_gamete()
+  fpc = Stat_FPC$new(sumstat_tt$seg_sites, dm_tt, stat)
   
-  fpc = Stat_FPC$new(sumstat_tt$seg_sites, dm_tt, population = 2, group = 0)
-  expect_false(is.null(fpc$get_breaks()))
-  expect_false(is.null(fpc$get_breaks()$mid_near))
-  expect_false(is.null(fpc$get_breaks()$mid_far))
-  expect_false(is.null(fpc$get_breaks()$perc_polym))
-  rm(fpc)
-  
-  fpc = Stat_FPC$new(sum_stat_grps$seg_sites.1, dm_grps, 
-                     population = 1, group = 1)
-  expect_false(is.null(fpc$get_breaks()))
-  expect_false(is.null(fpc$get_breaks()$mid_near))
-  expect_false(is.null(fpc$get_breaks()$mid_far))
-  expect_false(is.null(fpc$get_breaks()$perc_polym))
-  rm(fpc)  
-  
-  fpc = Stat_FPC$new(sum_stat_grps$seg_sites.2, dm_grps, 
-                     population = 2, group = 2)
-  expect_false(is.null(fpc$get_breaks()))
-  expect_false(is.null(fpc$get_breaks()$mid_near))
-  expect_false(is.null(fpc$get_breaks()$mid_far))
-  expect_false(is.null(fpc$get_breaks()$perc_polym))
-  rm(fpc)
+  expect_that(fpc$get_data(), is_a("integer"))
+  expect_that(sum(fpc$get_data()), is_more_than(0))
+  expect_that(fpc$get_breaks(), is_a("list"))
+  expect_equal(length(fpc$get_breaks()), 6)
 })
 
+
+test_that("fpc break calculation works", {
+  stat <- coalsimr::sumstat_four_gamete()
+  fpc = Stat_FPC$new(sumstat_tt$seg_sites, dm_tt, stat)
+  expect_false(is.null(fpc$get_breaks()))
+  expect_false(is.null(fpc$get_breaks()$mid_near))
+  expect_false(is.null(fpc$get_breaks()$mid_far))
+  expect_false(is.null(fpc$get_breaks()$perc_polym))
+})
+
+
 test_that("generateLociCube works", {
-  skip("Awaiting removal")
   stat = cbind(1:6, 1:6, 1:6)
   breaks = list(1:2+.5, 3.5, c(1,3,5)+.5)
   cube = array(generateLociCube(stat, breaks, 1:3), c(3,2,4))
