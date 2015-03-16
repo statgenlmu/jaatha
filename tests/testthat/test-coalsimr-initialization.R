@@ -42,7 +42,7 @@ test_that("PG initialization works with scaling", {
 })
 
 
-test_that("initialization with FPC statistic", {
+test_that("initialization with FPC statistic works", {
   jaatha.fpc <- Jaatha.initialize(data, model + 
                                     coalsimr::sumstat_four_gamete('fgc'))
   
@@ -54,24 +54,26 @@ test_that("initialization with FPC statistic", {
 })
 
 
-# test_that("Initialization of PMC statistic", {
-#   dm.pmc <- dm.addSummaryStatistic(dm.fpc, 'pmc')
-#   
-#   # Without groups
-#   jaatha.pmc <- Jaatha.initialize(sum.stats.fpc, dm.pmc)
-#   expect_true(sum(jaatha.pmc@sum.stats[["pmc"]]$value) > 0)
-#   expect_false(is.null(jaatha.pmc@opts$dm@options[["pmc_breaks_private"]]))
-#   expect_false(is.null(jaatha.pmc@opts$dm@options[["pmc_breaks_fixed"]]))  
-#   
-#   # With groups
-#   dm.pmc <- dm.addSummaryStatistic(dm.grp, 'pmc', group=1)
-#   dm.pmc <- dm.addSummaryStatistic(dm.pmc, 'pmc', group=3)
-#   
-#   jaatha.pmc <- Jaatha.initialize(sum.stats.grp, dm.pmc)
-#   expect_equal(length(jaatha.pmc@sum.stats), 5)
-#   expect_false(is.null(jaatha.pmc@sum.stats$pmc.1))
-#   expect_true(sum(jaatha.pmc@sum.stats[["pmc.1"]]$value) > 0)
-#   expect_true(is.null(jaatha.pmc@sum.stats$pmc.2))
-#   expect_false(is.null(jaatha.pmc@sum.stats$pmc.3))
-#   expect_true(sum(jaatha.pmc@sum.stats[["pmc.3"]]$value) > 0)
-# })
+test_that("initialization with iHH statistic works", {
+  if (!requireNamespace("rehh", quietly = TRUE)) skip("rehh not installed")
+  model <- model + coalsimr::sumstat_ihh("ihh", position = .5)
+  jaatha.fpc <- Jaatha.initialize(data, model)
+  
+  stat <- jaatha.fpc@sum_stats[['ihh']]
+  expect_false(is.null(stat))
+  expect_that(sum(stat$get_data()), is_more_than(0))
+  expect_that(sum(stat$get_data()), 
+              is_less_than(coalsimr:::get_locus_number(dm_tt)+1))
+})
+
+
+test_that("initialization with Omega' statistic works", {
+  model <- model + coalsimr::sumstat_omegaprime("op")
+  jaatha.fpc <- Jaatha.initialize(data, model)
+  
+  stat <- jaatha.fpc@sum_stats[['op']]
+  expect_false(is.null(stat))
+  expect_that(sum(stat$get_data()), is_more_than(0))
+  expect_that(sum(stat$get_data()), 
+              is_less_than(coalsimr:::get_locus_number(dm_tt)+1))
+})
