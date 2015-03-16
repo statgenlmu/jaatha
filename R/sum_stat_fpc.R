@@ -1,5 +1,4 @@
 #' @importFrom R6 R6Class
-#' @importFrom coalsimr get_locus_length_matrix get_population_indiviuals
 Stat_FPC <- R6Class('Stat_FPC', inherit = Stat_PoiInd,
   private = list(
     stat_name = NA,

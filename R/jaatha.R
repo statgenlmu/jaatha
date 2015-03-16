@@ -209,10 +209,10 @@ Jaatha.initialize <- function(data, model, cores=1, scaling_factor=1,
   if (is.null(seg_sites)) stop('No seg_sites in `data` for group ', group)
 
   for (sumstat in model_sumstats) {
-    # --- JSFS Summary Statistic ---------------------------------
+    name <- sumstat$get_name()
+    
+    # --- JSFS Summary Statistic ------------------------------------
     if ("SumstatJsfs" %in% class(sumstat)) {
-      name <- #paste0(sumstat$get_name(), "_", group)
-        sumstat$get_name()
       if (!smoothing) {
         sumstats[[name]] <- Stat_JSFS$new(seg_sites, model, group)
       } else {
@@ -223,11 +223,19 @@ Jaatha.initialize <- function(data, model, cores=1, scaling_factor=1,
       }
     }
     
-    # --- Four Gamete Summary Statistic ---------------------------
+    # --- Four Gamete Summary Statistic -----------------------------
     else if ("SumstatFourGamete" %in% class(sumstat)) {
-      name <- #paste0(sumstat$get_name(), "_", group)
-        sumstat$get_name()
-        sumstats[[name]] <- Stat_FPC$new(seg_sites, model, sumstat)
+      sumstats[[name]] <- Stat_FPC$new(seg_sites, model, sumstat)
+    }
+    
+    # --- iHH Summary Statistic -------------------------------------
+    else if ("sumstat_ihh" %in% class(sumstat)) {
+      sumstats[[name]] <- Stat_Ihh$new(seg_sites, model, sumstat)
+    }
+    
+    # --- Omega' Summary Statistic ----------------------------------
+    else if ("SumstatOmegaPrime" %in% class(sumstat)) {
+      sumstats[[name]] <- Stat_OmegaPrime$new(seg_sites, model, sumstat)
     }
   }
   
