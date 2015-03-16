@@ -5,19 +5,6 @@
 
 using namespace Rcpp;
 
-// calcPercentFpcViolation
-NumericMatrix calcPercentFpcViolation(const List seg_sites_list, const IntegerVector individuals, const NumericMatrix locus_length);
-RcppExport SEXP jaatha_calcPercentFpcViolation(SEXP seg_sites_listSEXP, SEXP individualsSEXP, SEXP locus_lengthSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject __result;
-    Rcpp::RNGScope __rngScope;
-    Rcpp::traits::input_parameter< const List >::type seg_sites_list(seg_sites_listSEXP);
-    Rcpp::traits::input_parameter< const IntegerVector >::type individuals(individualsSEXP);
-    Rcpp::traits::input_parameter< const NumericMatrix >::type locus_length(locus_lengthSEXP);
-    __result = Rcpp::wrap(calcPercentFpcViolation(seg_sites_list, individuals, locus_length));
-    return __result;
-END_RCPP
-}
 // classifyPolym
 NumericVector classifyPolym(const NumericMatrix seg_sites, const NumericVector sample_size);
 RcppExport SEXP jaatha_classifyPolym(SEXP seg_sitesSEXP, SEXP sample_sizeSEXP) {
