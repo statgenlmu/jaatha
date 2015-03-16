@@ -1,6 +1,6 @@
 Package: jaatha
-Version: 2.99.0.9024
-Date: 2015-03-11
+Version: 2.99.0.9025
+Date: 2015-03-16
 License: GPL (>= 3)
 Title: A Parameter Estimation Method for Evolutionary Biology
 Authors@R: c( person('Paul', 'Staab', , 'develop@paulstaab.de', role=c('aut',
@@ -21,9 +21,7 @@ Imports:
     coalsimr (>= 0.0.9023),
     PopGenome (>= 2.1.0),
     R6 (>= 2.0.1),
-    Rcpp (>= 0.11.0),
     reshape2 (>= 1.4),
     parallel
 Suggests:
     testthat
-LinkingTo: Rcpp

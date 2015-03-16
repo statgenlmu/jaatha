@@ -23,8 +23,6 @@
 #' @docType package
 #' @keywords package
 #' @importFrom parallel mclapply
-#' @importFrom Rcpp evalCpp
-#' @useDynLib jaatha
 NULL
 
 
