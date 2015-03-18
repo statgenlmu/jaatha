@@ -65,7 +65,7 @@ test_simulation <- function(jaatha, quite=FALSE) {
 
   if (time > 30) warning('Each simulation takes about ', round(time),
                          's, Jaatha might run for a long time.')
-  if (!quite && time <= 30) {
+  if (!quite) {
     if (time < 1) message('A simulation takes less than a second')
     else message('A simulation takes about ', round(time), 's')
   }
