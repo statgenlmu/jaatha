@@ -87,18 +87,15 @@ summarizeFoldedJSFS <- function(jsfs) {
 }
 
 # Binning
-#' @importFrom coalsimr calc_jsfs get_population_indiviuals
 Stat_JSFS <- R6Class('Stat_JSFS', 
   inherit = Stat_PoiInd,
   public = list(
-    initialize = function(seg_sites, model, group=0) {
-      assert_that(is.list(seg_sites))
-      name <- getStatName('jsfs', group)
+    initialize = function(seg_sites, model, stat) {
+      name <- stat$get_name()
+      jsfs <- stat$calculate(seg_sites, NULL, model)
       fake_sim_data <- list()
-      fake_sim_data[[name]] <- calc_jsfs(seg_sites, 
-                                         get_population_indiviuals(model, 1),
-                                         get_population_indiviuals(model, 2))
-      super$initialize(fake_sim_data, name)
+      fake_sim_data[[name]] <- jsfs
+      super$initialize(fake_sim_data, stat$get_name())
     },
     transform = function(sim_data) {
       summarizeJSFS(sim_data[[private$name]])
@@ -115,7 +112,6 @@ Stat_JSFS_border <- R6Class('Stat_JSFS_border',
 )
 
 # Smoothing
-#' @importFrom coalsimr calc_jsfs get_population_indiviuals get_sample_size
 Stat_JSFS_smooth <- R6Class('Stat_JSFS_smooth',
   inherit = Stat_PoiSmooth,
   private = list(
@@ -124,20 +120,19 @@ Stat_JSFS_smooth <- R6Class('Stat_JSFS_smooth',
       cols = NA
   ),
   public = list(
-    initialize = function(seg_sites, dm, group=0) {
-      sample_size <- get_sample_size(dm)
-      model <- paste0("( X1 + I(X1^2) + X2 + I(X2^2) + log(X1) + log(",
-                      sample_size[1]+1, "-X1) + log(X2) + log(",
-                      sample_size[2]+1, "-X2) )^2")
-      
-      private$rows <- 2:sample_size[1]
-      private$cols <- 2:sample_size[2]
-      
-      name <- getStatName('jsfs', group)
+    initialize = function(seg_sites, dm, stat) {
+      name <- stat$get_name()
+      jsfs <- stat$calculate(seg_sites, NULL, dm)
       fake_sim_data <- list()
-      fake_sim_data[[name]] <- calc_jsfs(seg_sites, 
-                                         get_population_indiviuals(dm, 1),
-                                         get_population_indiviuals(dm, 2))
+      fake_sim_data[[name]] <- jsfs
+      
+      model <- paste0("( X1 + I(X1^2) + X2 + I(X2^2) + log(X1) + log(",
+                      nrow(jsfs), "-X1) + log(X2) + log(",
+                      ncol(jsfs), "-X2) )^2")
+      
+      private$rows <- 2:(nrow(jsfs)-1)
+      private$cols <- 2:(ncol(jsfs)-1)
+      
       super$initialize(fake_sim_data, name, model)
       
       if (all(self$get_data()$sum.stat == 0)) 
