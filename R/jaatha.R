@@ -164,8 +164,8 @@ rm(init)
 #' @param only_synonymous Only use synonymous SNP if set to \code{TRUE}. Requires
 #'              to provided \code{data} as a PopGenome "GENOME" object.
 #' @return A S4-Object of type jaatha containing the settings
-#' @importFrom coalsimr get_parameter_table get_summary_statistics
-#' @importFrom coalsimr sumstat_jsfs sumstat_seg_sites scale_model
+#' @importFrom coalsimr get_parameter_table get_summary_statistics 
+#' @importFrom coalsimr get_locus_number scale_model
 #' @importFrom methods new representation
 #' @importFrom assertthat assert_that
 #' @export
@@ -207,6 +207,9 @@ Jaatha.initialize <- function(data, model, cores=1, scaling_factor=1,
   seg_sites <- data[['seg_sites']]
   group <- 0
   if (is.null(seg_sites)) stop('No seg_sites in `data` for group ', group)
+  assert_that(is.list(seg_sites))
+  assert_that(length(seg_sites) == get_locus_number(model))
+  assert_that(all(sapply(seg_sites, is.matrix)))
 
   for (sumstat in model_sumstats) {
     name <- sumstat$get_name()
@@ -214,12 +217,12 @@ Jaatha.initialize <- function(data, model, cores=1, scaling_factor=1,
     # --- JSFS Summary Statistic ------------------------------------
     if ("SumstatJsfs" %in% class(sumstat)) {
       if (!smoothing) {
-        sumstats[[name]] <- Stat_JSFS$new(seg_sites, model, group)
+        sumstats[[name]] <- Stat_JSFS$new(seg_sites, model, sumstat)
       } else {
         sumstats[[name]] <- 
-          Stat_JSFS_smooth$new(seg_sites, model, group)
+          Stat_JSFS_smooth$new(seg_sites, model, sumstat)
         sumstats[[paste0("border_", name)]] <- 
-          Stat_JSFS_border$new(seg_sites, model, group)
+          Stat_JSFS_border$new(seg_sites, model, sumstat)
       }
     }
     
