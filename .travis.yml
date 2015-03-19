@@ -2,21 +2,8 @@ language: r
 warnings_are_errors: true
 env: _R_CHECK_CRAN_INCOMING_=FALSE
 
-r_binary_packages:
-  - reshape2
-  - assertthat
-  - igraph
-  - stringdist
-  - shiny
-
 r_github_packages:
   - paulstaab/coalsimr
-  - jimhester/covr
-  - jimhester/lintr
-
-after_success:
-  - Rscript -e 'library(covr); codecov()'
-  - Rscript -e 'lintr::lint_package()'
 
 notifications:
   email:
