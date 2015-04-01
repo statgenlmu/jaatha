@@ -22,7 +22,7 @@ convPopGenomeToSegSites <- function(data, only_synonymous=FALSE) {
       syn[is.na(syn)] <- FALSE
       seg_sites <- seg_sites[c(pop1, pop2, outgroup), syn, drop=FALSE]
     } else {
-      seg_sites <- seg_sites[c(pop1, pop2, outgroup), ]
+      seg_sites <- seg_sites[c(pop1, pop2, outgroup), , drop=FALSE]
     }
 
     attr(seg_sites, "positions") <- 
