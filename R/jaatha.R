@@ -1,12 +1,3 @@
-# --------------------------------------------------------------
-# Jaatha.R
-# This file contains the Jaatha S4-Class and a few related 
-# helper functions 
-# 
-# Authors:  Lisha Mathew & Paul R. Staab
-# Licence:  GPLv3 or later
-# --------------------------------------------------------------
-
 #' Fast estimation of demographic parameters
 #' 
 #' Jaatha is a composite maximum likelihood method to estimate parameters

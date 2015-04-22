@@ -1,13 +1,3 @@
-# --------------------------------------------------------------
-# confidence_intervals.R 
-# Contains a function for calculating bias corrected bootstrap 
-# confidence intervals 
-# 
-# Authors:  Paul R. Staab
-# Date:     2013-10-21
-# Licence:  GPLv3 or later
-# --------------------------------------------------------------
-
 #' Function for calculating bootstrap confidence intervals for 
 #' jaatha estimates.
 #' 

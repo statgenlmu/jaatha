@@ -1,9 +1,3 @@
-# --------------------------------------------------------------
-# Authors:  Paul R. Staab & Lisha Mathew
-# Date:     2013-11-13
-# Licence:  GPLv3 or later
-# --------------------------------------------------------------
-
 #' Convert parameters from the natural scale into Jaatha's internal scale
 #'
 #' @param value A parameter combination in this natural scale

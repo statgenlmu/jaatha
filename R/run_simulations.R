@@ -1,9 +1,3 @@
-# --------------------------------------------------------------
-# Authors:  Paul R. Staab
-# Date:     2013-11-14
-# Licence:  GPLv3 or later
-# --------------------------------------------------------------
-
 #' The function that actually executes the simulations from within Jaatha.
 #' 
 #' @param pars A matrix with parameter values for the simulations. Each row is a

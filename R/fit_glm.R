@@ -1,8 +1,3 @@
-# --------------------------------------------------------------
-# Functions to fit GLMs to learn how the summary statistics depend
-# on the parameters.
-# --------------------------------------------------------------
-
 fitGlm <- function(sum_stat, sim_data, ...) UseMethod("fitGlm")
 fitGlm.default <- function(sum_stat, sim_data...) stop('Unkown Summary Statistic')
 

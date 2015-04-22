@@ -1,13 +1,3 @@
-# --------------------------------------------------------------
-# refined_search.R
-# This file contains refinedSearch() and helper functions used only 
-# by it.
-# 
-# Authors:  Lisha Mathew & Paul R. Staab
-# Date:     2013-09-04
-# Licence:  GPLv3 or later
-# --------------------------------------------------------------
-
 #' Iterative search for the maximum composite likelihood parameters
 #'
 #' This function searches for the parameter combination with the highest

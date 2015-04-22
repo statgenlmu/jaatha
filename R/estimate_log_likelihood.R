@@ -1,9 +1,3 @@
-# --------------------------------------------------------------
-# Authors:  Paul R. Staab & Lisha Mathew
-# Licence:  GPLv3 or later
-# --------------------------------------------------------------
-
-
 #' Estimates the likelihood for a parameter combination
 #'
 #' @param param The parameter combination. Must be a named vector where the

@@ -13,7 +13,8 @@ setCores <- function(jaatha, cores=1) {
   assert_that(is_single_numeric(cores))
   
   if (cores > 1 && .Platform$OS.type == "windows") {
-    warning("Parallelization is not supported on Windows. The 'cores' option will be ignored") 
+    warning("Parallelization is not supported on Windows. ",
+            "The 'cores' option will be ignored") 
     jaatha@cores <- 1
   } else {
     jaatha@cores <- cores

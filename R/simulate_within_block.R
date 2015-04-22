@@ -1,9 +1,3 @@
-# --------------------------------------------------------------
-# Authors:  Paul R. Staab & Lisha Mathew
-# Date:     2013-11-13
-# Licence:  GPLv3 or later
-# --------------------------------------------------------------
-
 #' This function executes simulations for a number of random 
 #' parameter values inside a block.
 #' 
