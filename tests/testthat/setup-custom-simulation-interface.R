@@ -45,9 +45,9 @@ smooth_sim_data <- jaatha:::simulateWithinBlock(10, block.test, smooth_jaatha)
 
 
 dm_tt <- coala::coal_model(c(10, 10), 10) +
-  coala::feat_pop_merge(coalsimr::par_range('tau', 0.01, 5), 2, 1) +
-  coala::feat_mutation(coalsimr::par_range('theta', 1, 10)) +
-  coala::feat_migration(coalsimr::par_const(2), symmetric = TRUE) +
+  coala::feat_pop_merge(coala::par_range('tau', 0.01, 5), 2, 1) +
+  coala::feat_mutation(coala::par_range('theta', 1, 10)) +
+  coala::feat_migration(coala::par_const(2), symmetric = TRUE) +
   coala::sumstat_seg_sites() +
   coala::sumstat_jsfs()
 

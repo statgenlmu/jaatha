@@ -1,7 +1,7 @@
 context("SumStat FPC")
 
 test_that("fpc initialization works", {
-  stat <- coalsimr::sumstat_four_gamete()
+  stat <- coala::sumstat_four_gamete()
   fpc = Stat_FPC$new(sumstat_tt$seg_sites, dm_tt, stat)
   
   expect_that(fpc$get_data(), is_a("integer"))
@@ -12,7 +12,7 @@ test_that("fpc initialization works", {
 
 
 test_that("fpc break calculation works", {
-  stat <- coalsimr::sumstat_four_gamete()
+  stat <- coala::sumstat_four_gamete()
   fpc = Stat_FPC$new(sumstat_tt$seg_sites, dm_tt, stat)
   expect_false(is.null(fpc$get_breaks()))
   expect_false(is.null(fpc$get_breaks()$mid_near))
@@ -95,19 +95,19 @@ test_that('Stat_FPC works with groups', {
   fpc = Stat_FPC$new(sumstat_tt$seg_sites, dm_tt, 1)
   expect_that(sum(fpc$get_data()), is_more_than(0))
   expect_that(sum(fpc$get_data()), 
-              is_less_than(coalsimr::get_locus_number(dm_tt)+1))
+              is_less_than(coala::get_locus_number(dm_tt)+1))
   expect_equal(fpc$transform(sumstat_tt), fpc$get_data())
   
   # With groups
   fpc = Stat_FPC$new(sum_stat_grps$seg_sites.2, dm_grps, 1, group = 2)
   expect_that(sum(fpc$get_data()), is_more_than(0))
   expect_that(sum(fpc$get_data()), 
-              is_less_than(coalsimr::get_locus_number(dm_grps, 2)+1))
+              is_less_than(coala::get_locus_number(dm_grps, 2)+1))
   expect_equal(fpc$transform(sum_stat_grps), fpc$get_data())
   
   # With trios
   skip_on_cran()
-  dm_trios = dm_tt + coalsimr::locus_trio(locus_length = c(10, 30, 50), 
+  dm_trios = dm_tt + coala::locus_trio(locus_length = c(10, 30, 50), 
                                           distance = c(20, 40),
                                           number = 5,
                                           group = 2)

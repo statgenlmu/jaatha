@@ -33,24 +33,24 @@ test_that("PopGenome data import works", {
 test_that("PopGenome Model creation works", {
   dm_pg <- createModelFromPopGenome(data_pg, quiet=TRUE)
   suppressMessages(dm_pg <- createModelFromPopGenome(data_pg))
-  expect_equal(coalsimr::get_sample_size(dm_pg), c(5,5,2))
-  expect_equal(coalsimr::get_outgroup(dm_pg), 3)
-  expect_equal(coalsimr::get_outgroup_size(dm_pg), 2)
-  expect_equal(coalsimr::get_locus_number(dm_pg), 1)
-  expect_equal(coalsimr:::get_locus_length(dm_pg, 1), 16)
+  expect_equal(coala::get_sample_size(dm_pg), c(5,5,2))
+  expect_equal(coala::get_outgroup(dm_pg), 3)
+  expect_equal(coala::get_outgroup_size(dm_pg), 2)
+  expect_equal(coala::get_locus_number(dm_pg), 1)
+  expect_equal(coala:::get_locus_length(dm_pg, 1), 16)
 })
 
 
 test_that("Initialization with PopGenome-Data works", {
   skip_on_cran()
-  if (!coalsimr:::sg_find_exe(FALSE, TRUE)) skip('seqgen not installed')
+  if (!coala:::sg_find_exe(FALSE, TRUE)) skip('seqgen not installed')
 
   dm_pg <- createModelFromPopGenome(data_pg, quiet = TRUE) +
-    coalsimr::feat_mutation(coalsimr::par_range('theta', 1, 5), model = 'HKY') +
-    coalsimr::feat_pop_merge(coalsimr::par_range('tau', .1, .5), 2, 1) +
-    coalsimr::feat_migration(coalsimr::par_const(.5), symmetric = TRUE) +
-    coalsimr::feat_recombination(coalsimr::par_const(.05)) +
-    coalsimr::sumstat_jsfs()
+    coala::feat_mutation(coala::par_range('theta', 1, 5), model = 'HKY') +
+    coala::feat_pop_merge(coala::par_range('tau', .1, .5), 2, 1) +
+    coala::feat_migration(coala::par_const(.5), symmetric = TRUE) +
+    coala::feat_recombination(coala::par_const(.05)) +
+    coala::sumstat_jsfs()
   
   jaatha <- Jaatha.initialize(data_pg, dm_pg)
 })

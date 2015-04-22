@@ -1,4 +1,4 @@
-#' @importFrom coalsimr get_outgroup_size
+#' @importFrom coala get_outgroup_size
 checkModelDataConsistency <- function(data, model) {
   if (get_outgroup_size(model) != length(data@outgroup)) {
     stop("Expecting an outgroup size of ", length(data@outgroup), 
@@ -33,7 +33,7 @@ convPopGenomeToSegSites <- function(data, only_synonymous=FALSE) {
   list(seg_sites = seg_sites_list[!sapply(seg_sites_list, is.null)])
 }
 
-#' @importFrom coalsimr coal_model feat_outgroup
+#' @importFrom coala coal_model feat_outgroup
 createModelFromPopGenome <- function(data, quiet=FALSE) {
   stopifnot("GENOME" %in% is(data))
   sample_sizes <- sapply(data@populations, length)

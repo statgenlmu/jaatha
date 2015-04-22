@@ -2,7 +2,7 @@ context("SumStat Cubes")
 
 test_that("initialization of iHH sumstat works", {
   if (!requireNamespace("rehh", quietly = TRUE)) skip("rehh not installed")
-  stat <- coalsimr::sumstat_ihh(position = .5)
+  stat <- coala::sumstat_ihh(position = .5)
   ihh = Stat_Ihh$new(sumstat_tt$seg_sites, dm_tt, stat, c(.1, .5, .9))
   expect_that(ihh$get_data(), is_a("integer"))
   expect_that(ihh$get_data(), is_a("integer"))
@@ -13,7 +13,7 @@ test_that("initialization of iHH sumstat works", {
 
 
 test_that("initialization of Omega' sumstat works", {
-  stat <- coalsimr::sumstat_omegaprime()
+  stat <- coala::sumstat_omegaprime()
   ihh = Stat_OmegaPrime$new(sumstat_tt$seg_sites, dm_tt, stat, c(.1, .5, .9))
   expect_that(ihh$get_data(), is_a("integer"))
   expect_that(ihh$get_data(), is_a("integer"))

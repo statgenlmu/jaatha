@@ -161,8 +161,8 @@ rm(init)
 #' @param only_synonymous Only use synonymous SNP if set to \code{TRUE}. Requires
 #'              to provided \code{data} as a PopGenome "GENOME" object.
 #' @return A S4-Object of type jaatha containing the settings
-#' @importFrom coalsimr get_parameter_table get_summary_statistics 
-#' @importFrom coalsimr get_locus_number scale_model
+#' @importFrom coala get_parameter_table get_summary_statistics 
+#' @importFrom coala get_locus_number scale_model
 #' @importFrom methods new representation
 #' @importFrom assertthat assert_that
 #' @export
