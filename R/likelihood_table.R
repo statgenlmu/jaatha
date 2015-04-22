@@ -13,7 +13,8 @@
 #' @export
 Jaatha.getLikelihoods <- function(jaatha, max_rows = NULL, 
                                   initial_search = FALSE) {
-  checkType(jaatha, "jaatha")
+  
+  assert_that(is_jaatha(jaatha))
   
   if (!initial_search) lt <- jaatha@likelihoods_rs
   else lt <- jaatha@likelihoods_is

@@ -14,7 +14,7 @@
 #' @return A list, where each entry is a list of summary statistics for a 
 #'         simulation.
 runSimulations <- function(pars, cores, jaatha) {
-  checkType(pars, c('mat', 'num'))
+  assert_that(is.matrix(pars))
   stopifnot(ncol(pars) == getParNumber(jaatha))
   stopifnot(all( 0-1e-5 <= pars & pars <= 1 + 1e-5 ))
   colnames(pars) <- getParNames(jaatha)

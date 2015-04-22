@@ -12,7 +12,7 @@ data <- simulate(model + coala::sumstat_seg_sites(), pars=c(1, 5))
 
 test_that("coala initialization works", {  
   # dm + jsfs
-  checkType(Jaatha.initialize(data, model), "jaatha")
+  expect_true(is_jaatha(Jaatha.initialize(data, model)))
   expect_error(Jaatha.initialize(model))
   expect_error(Jaatha.initialize(NULL))
   

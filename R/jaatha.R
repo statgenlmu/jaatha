@@ -137,6 +137,7 @@ init <- function(.Object, sim_func, par_ranges, sum_stats,
 setMethod(f="initialize", signature ="Jaatha", definition=init)
 rm(init)
 
+is_jaatha <- function(jaatha) any("Jaatha" == class(jaatha))
 
 #' Initialization of a Jaatha estimation for population genetics
 #'

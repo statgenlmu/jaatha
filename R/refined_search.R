@@ -59,12 +59,12 @@ Jaatha.refinedSearch <- function(jaatha, best.start.pos=2,
 
   # Check parameters
 
-  checkType(jaatha, c("jaatha", "single"))
-  checkType(best.start.pos, c("num", "single"))
-  checkType(sim, c("num", "single"))
-  checkType(sim.final, c("num", "single"), F)
-  checkType(half.block.size, c("num", "single"))
-  checkType(max.steps, c("num", "single"))
+  assert_that(is_jaatha(jaatha))
+  assert_that(is_single_numeric(best.start.pos))
+  assert_that(is_single_numeric(sim))
+  assert_that(is_single_numeric(sim.final))
+  assert_that(is_single_numeric(half.block.size))
+  assert_that(is_single_numeric(max.steps))
 
   if (nrow(jaatha@likelihoods_is) == 0) 
     stop("No starting positions available. Did you run a initial search first?")
