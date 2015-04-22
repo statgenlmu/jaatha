@@ -1,15 +1,15 @@
 # --- Global Variables ---------------------------------------------------------
-if (!exists(".jaatha")) jaatha_env <- new.env()
+if (!exists("jaatha_env")) jaatha_env <- new.env()
 
-setJaathaVariable <- function(name, value) {
+set_jaatha_var <- function(name, value) {
   jaatha_env[[name]] <- value
 }
 
-getJaathaVariable <- function(name) {
+get_jaatha_var <- function(name) {
   return(get(name, envir = jaatha_env))
 }
 
-isJaathaVariable <- function(name) {
+is_jaatha_var <- function(name) {
   exists(name, envir = jaatha_env)
 }
 
@@ -23,4 +23,4 @@ is_single_numeric <- function(value) is.numeric(value) && length(value) == 1
 
 
 # --- Seeds --------------------------------------------------------------------
-sampleSeed <- function(n = 1) sample.int(2 ^ 20, n)
+sample_seed <- function(n = 1) sample.int(2 ^ 20, n)

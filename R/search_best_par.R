@@ -8,7 +8,7 @@
 #' @return A list with maximum likelihood parameter (\code{est}) 
 #'   and log-likelihood (\code{score})
 #' @author Paul Staab & Lisha Mathew
-findBestParInBlock <- function(block, glm_fitted, sum_stats, scaling_factor=1) {
+search_best_par <- function(block, glm_fitted, sum_stats, scaling_factor=1) {
   border <- block$get_border()
   
   best.value <- optim(block$get_middle(), 

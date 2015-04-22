@@ -105,7 +105,7 @@ init <- function(.Object, sim_func, par_ranges, sum_stats,
   # Jaatha uses three seeds. The first is the "main seed" used to generate the
   # other two seeds if provided, the second is the seed for the initial search
   # and the refined search.
-  .Object@seeds <- sampleSeed(3)
+  .Object@seeds <- sample_seed(3)
 
   # Check cores 
   assert_that(is.numeric(cores))

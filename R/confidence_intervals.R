@@ -39,7 +39,7 @@ Jaatha.confidenceIntervals <- function(jaatha, conf.level=0.95,
   set.seed(jaatha@seeds[1])
   # First two seeds are already used for initial & refined search. 
   # Last seed will be used for generating the bootstrap data.
-  seeds <- sampleSeed(replicas+3)[-(1:2)] 
+  seeds <- sample_seed(replicas+3)[-(1:2)] 
 
   dir.create(log.folder, showWarnings=FALSE)
   message("Storing logs in ", log.folder)
@@ -110,7 +110,7 @@ rerunAnalysis <- function(idx, jaatha, seeds, sim_data=NULL, log.folder) {
   
   # Initialize a copy of the jaatha object
   set.seed(seeds[idx])
-  jaatha@seeds <- c(seeds[idx], sampleSeed(2))
+  jaatha@seeds <- c(seeds[idx], sample_seed(2))
   sink(paste0(log.folder, "/run_", idx, ".log"))
   jaatha@cores <- 1
   if (!is.null(sim_data)) {

@@ -1,5 +1,5 @@
-fitGlm <- function(sum_stat, sim_data, ...) UseMethod("fitGlm")
-fitGlm.default <- function(sum_stat, sim_data...) stop("Unkown Summary Statistic")
+fit_glm <- function(sum_stat, sim_data, ...) UseMethod("fit_glm")
+fit_glm.default <- function(sum_stat, sim_data...) stop("Unkown Summary Statistic")
 
 #' Fits a Generalized Linear Model within a block.  
 #'
@@ -9,11 +9,11 @@ fitGlm.default <- function(sum_stat, sim_data...) stop("Unkown Summary Statistic
 #' @param jaatha A Jaatha Object.
 #' @return A list containing a list of fitted GLMs for each summary
 #' statistic.
-fitGlm.Jaatha <- function(jaatha, sim_data) { 
+fit_glm.Jaatha <- function(jaatha, sim_data) { 
   glm_fitted <- list()
   for (i in seq(along = jaatha@sum_stats)) {
     name <- names(jaatha@sum_stats)[i]
-    glm_fitted[[name]] <- fitGlm(jaatha@sum_stats[[name]], sim_data)
+    glm_fitted[[name]] <- fit_glm(jaatha@sum_stats[[name]], sim_data)
   }
   glm_fitted
 }
@@ -24,7 +24,7 @@ fitGlm.Jaatha <- function(jaatha, sim_data) {
 #' @param sim_data Results from simulations
 #' @param sum_stat Name of the summary statistics
 #' @return A list of fitted GLMs, one for each function
-fitGlm.Stat_PoiInd <- function(sum_stat, sim_data) { 
+fit_glm.Stat_PoiInd <- function(sum_stat, sim_data) { 
   stat_sim <- t(sapply(sim_data, 
                        function(data) c(data$pars.normal, data[[sum_stat$get_name()]])))
   
@@ -45,7 +45,7 @@ fitGlm.Stat_PoiInd <- function(sum_stat, sim_data) {
 #' @param sim_data Results from simulations
 #' @param sum_stat Name of the summary statistics
 #' @return A list with one fitted GLM
-fitGlm.Stat_PoiSmooth <- function(sum_stat, sim_data) {
+fit_glm.Stat_PoiSmooth <- function(sum_stat, sim_data) {
   par_names <- names(sim_data[[1]]$pars)
   model <- paste0("sum.stat ~ ",
                   "(", sum_stat$get_model(), ")",  

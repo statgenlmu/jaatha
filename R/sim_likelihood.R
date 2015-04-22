@@ -38,8 +38,8 @@ simLogLLH.Stat_PoiSmooth <- function(sum_stat, sim_data, scaling_factor = 1) {
 }
 
 calcLogFactorial <- function(k) {
-  if (!isJaathaVariable("logfacs")) setJaathaVariable("logfacs", c(0)) 
-  logfacs <- getJaathaVariable("logfacs")
+  if (!is_jaatha_var("logfacs")) set_jaatha_var("logfacs", c(0)) 
+  logfacs <- get_jaatha_var("logfacs")
 
   maxk <- max(k)
   if (maxk > length(logfacs)) {
@@ -48,7 +48,7 @@ calcLogFactorial <- function(k) {
     for (i in l:maxk) {
       logfacs[i] <- logfacs[i-1] + log(i)
     }
-    setJaathaVariable("logfacs", logfacs)
+    set_jaatha_var("logfacs", logfacs)
   }
 
   ret <- rep(0, length(k))

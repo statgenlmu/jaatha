@@ -115,7 +115,7 @@ refinedSearchSingleBlock <- function(jaatha, start_pos, sim, sim.final,
                                           sim.data, step.current)
       tryCatch({
         # Fit the GLM
-        glm.fitted <- fitGlm(jaatha, sim.saved)
+        glm.fitted <- fit_glm(jaatha, sim.saved)
         break
       }, error = function(e) {
         if (j < 5) .print("Failed to fit the GLM. Retrying with more simulations...")
@@ -159,7 +159,7 @@ refinedSearchSingleBlock <- function(jaatha, start_pos, sim, sim.final,
     }
 
     # Estimate the best parameters in the current block.
-    estimate <- findBestParInBlock(search.block, glm.fitted, 
+    estimate <- search_best_par(search.block, glm.fitted, 
                                    jaatha@sum_stats, 
                                    getScalingFactor(jaatha))$est 
     .print()

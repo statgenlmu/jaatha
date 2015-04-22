@@ -12,7 +12,7 @@ runSimulations <- function(pars, cores, jaatha) {
   stopifnot(ncol(pars) == getParNumber(jaatha))
   stopifnot(all( 0-1e-5 <= pars & pars <= 1 + 1e-5 ))
   colnames(pars) <- getParNames(jaatha)
-  seeds <- sampleSeed(length(pars)+1)
+  seeds <- sample_seed(length(pars)+1)
 
   sim.data <- mclapply(1:nrow(pars), runSimulation, pars=pars, 
                        seeds=seeds, jaatha=jaatha,
@@ -54,7 +54,7 @@ test_simulation <- function(jaatha, quite=FALSE) {
   pars <- matrix(rep(0.5, nrow(jaatha@par.ranges)), nrow = 1)
   
   time <- system.time(
-    a <- runSimulation(1, pars, sampleSeed(1), jaatha)
+    a <- runSimulation(1, pars, sample_seed(1), jaatha)
   )["elapsed"]
 
   if (time > 30) warning("Each simulation takes about ", round(time),
