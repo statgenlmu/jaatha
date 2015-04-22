@@ -30,7 +30,8 @@
 #'        object result of the first refined search and set rerun to 'TRUE'.
 #'              
 #' @return An Jaatha object. The found values are written to the slot likelihood.table.
-#'
+#' 
+#' @include block.R
 #' @export
 Jaatha.refinedSearch <- function(jaatha, best.start.pos=2,
                                  sim=length(getParNames(jaatha))*25,

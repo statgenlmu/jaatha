@@ -1,7 +1,7 @@
 set.seed(111222555)
 
 # A Block
-block.test <- block_class$new(matrix(c(0.4, 0.4, 0.6, 0.6), 2, 2))
+block.test <- jaatha:::block_class$new(matrix(c(0.4, 0.4, 0.6, 0.6), 2, 2))
 
 csi.sim.func <- function(x, jaatha) rpois(20, x)
 csi.obs <- csi.sim.func(c(3,5))

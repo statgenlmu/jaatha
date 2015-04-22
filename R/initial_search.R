@@ -27,7 +27,8 @@
 #'        object result of the first initial search and set rerun to 'TRUE'.
 #'
 #' @return The jaatha object with starting positions
-#'
+#' 
+#' @include block.R
 #' @export
 Jaatha.initialSearch <- function(jaatha, sim=200, blocks.per.par=2, rerun=FALSE){
 

@@ -4,7 +4,7 @@
 #' vales from an Jaatha object.
 #'
 #' @param jaatha The Jaatha options
-#' @param max.entries If given, no more than this number of entries will be 
+#' @param max_rows If given, no more than this number of entries will be 
 #'                returned.
 #' @param initial_search If \code{TRUE}, then the estimates for the blocks in 
 #'   the initial search will be reported.

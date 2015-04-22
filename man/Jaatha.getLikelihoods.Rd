@@ -9,11 +9,11 @@ Jaatha.getLikelihoods(jaatha, max_rows = NULL, initial_search = FALSE)
 \arguments{
 \item{jaatha}{The Jaatha options}
 
+\item{max_rows}{If given, no more than this number of entries will be
+returned.}
+
 \item{initial_search}{If \code{TRUE}, then the estimates for the blocks in
 the initial search will be reported.}
-
-\item{max.entries}{If given, no more than this number of entries will be
-returned.}
 }
 \value{
 A matrix with log composite likelihoods and parameters of The

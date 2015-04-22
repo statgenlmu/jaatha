@@ -93,10 +93,11 @@ Jaatha.getCIsFromLogs <- function(jaatha, conf_level=0.95, log_folder) {
   
   bs_estimates <- t(sapply(results, function(result) {
     load(result)
-    pars <- Jaatha.getLikelihoods(jaatha, max.entries=1)[,-(1:2)]
+    pars <- Jaatha.getLikelihoods(jaatha, 1)[,-(1:2)]
     pars_scaled <- normalize(pars, jaatha)
     if (any(pars == 0 | pars == 1))
-      warning("Bootstrap estimate hit boundary of parameter space. Confidence Interval might be inaccurate.")
+      warning("Bootstrap estimate hit boundary of parameter space. ",
+              "The confidence interval might be inaccurate.")
     pars
   }))
   
