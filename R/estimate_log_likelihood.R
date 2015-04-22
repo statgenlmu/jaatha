@@ -1,15 +1,9 @@
-# --------------------------------------------------------------
-# Authors:  Paul R. Staab & Lisha Mathew
-# Licence:  GPLv3 or later
-# --------------------------------------------------------------
-
-
 #' Estimates the likelihood for a parameter combination
 #'
 #' @param param The parameter combination. Must be a named vector where the
 #'              names are the name of the parameters.
 #' @param glm_fitted A list of the fitted GLMs, as produced by fitGLM().
-#' @param sum_stats The summary statistic description, as in jaatha's sum.stats
+#' @param sum_stats The summary statistic description, as in jaatha"s sum.stats
 #' @param scaling_factor The scaling factor used for the simulations
 #' slot.
 #' @return The estimated log-likelihood
@@ -23,7 +17,7 @@ estimateLogLikelihood <- function(param, glm_fitted, sum_stats,
 }
 
 calcStatLLH <- function(sum_stat, ...) UseMethod("calcStatLLH")
-calcStatLLH.default <- function(sum_stat, ...) stop('Unkown Summary Statistic')
+calcStatLLH.default <- function(sum_stat, ...) stop("Unkown Summary Statistic")
 
 calcStatLLH.Stat_PoiInd <- function(sum_stat, glm_fitted, param, 
                                     scaling_factor = 1) {
@@ -50,11 +44,11 @@ calcStatLLH.Stat_PoiSmooth <- function(sum_stat, glm_fitted, param,
   colnames(pars) <- names(param)
   data <- data.frame(pars,  sum_stat$get_data())
   
-  suppressWarnings(loglambda <- predict(glm_fitted[['smooth']], newdata=data))
+  suppressWarnings(loglambda <- predict(glm_fitted[["smooth"]], newdata=data))
   
   sum(data$sum.stat * loglambda - 
         exp(loglambda) - calcLogFactorial(data$sum.stat))
-#   if (!is.null(glm.fitted[[name]][['border']])) {
+#   if (!is.null(glm.fitted[[name]][["border"]])) {
 #     loglambda <- sapply(glm.fitted[[name]]$border, 
 #                         predict, newdata=data.frame(t(as.matrix(param))))
 #     loglambda[!sapply(glm.fitted[[name]]$border, function(x) x$converged)] <- 0.5 

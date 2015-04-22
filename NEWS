@@ -1,7 +1,14 @@
+jaatha 2.99.0.9030
+============
+
+* Ported the block class to R6
+* Various cleanup of the codebase
+
+
 jaatha 2.99.0.9027
 ============
 
-* Delegated calculation of summary statistics to coalsimr 
+* Delegated calculation of summary statistics to coala
 
 
 jaatha 2.99.0.9020

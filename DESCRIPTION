@@ -1,10 +1,10 @@
 Package: jaatha
-Version: 2.99.0.9029
+Version: 2.99.0.9030
 Date: 2015-04-22
 License: GPL (>= 3)
 Title: Simulation Based Parameter Estimation in a Frequentistic Framework
-Authors@R: c( 
-    person('Paul', 'Staab', , 'develop@paulstaab.de', role=c('aut', 'cre', 'cph')), 
+Authors@R: c(
+    person('Paul', 'Staab', , 'develop@paulstaab.de', role=c('aut', 'cre', 'cph')),
     person('Lisha', 'Mathew', role=c('aut', 'cph')),
     person('Dirk', 'Metzler', role=c('aut', 'cph', 'ths')) )
 BugReports: https://github.com/paulstaab/jaatha
@@ -26,3 +26,24 @@ Imports:
     parallel
 Suggests:
     testthat
+Collate:
+    'block.R'
+    'confidence_intervals.R'
+    'estimate_log_likelihood.R'
+    'fit_glm.R'
+    'helper_functions.R'
+    'import_popgenome.R'
+    'initial_search.R'
+    'jaatha.R'
+    'likelihood_table.R'
+    'normalize.R'
+    'parallelization.R'
+    'refined_search.R'
+    'run_simulations.R'
+    'search_best_par.R'
+    'sim_likelihood.R'
+    'simulate_within_block.R'
+    'sum_stat_classes.R'
+    'sum_stat_cube.R'
+    'sum_stat_fpc.R'
+    'sum_stat_jsfs.R'

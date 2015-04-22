@@ -25,9 +25,7 @@ Slots:
    are used to rerun the searches with the exactly same settings for
    generating bootstrap confidence intervals and the likelihood-ratio
    statistic.}
-   \item{starting.positions}{A list of the starting positions, returned by
-   the initial search}
-   \item{likelihood.table}{A matrix with the best composite log likelihood values and
+   \item{likelihoods_rs}{A matrix with the best composite log likelihood values and
                            corresponding parameters}
    \item{conf.ints}{Confidence Intervals for parameter estimates produced by
    Jaatha.confidenceIntervals}

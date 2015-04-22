@@ -15,7 +15,7 @@ Jaatha.confidenceIntervals.}
 level can vary slightly.}
 
 \item{log_folder}{The folder with logs from the previous run. Just use the
-folder that was given as 'log.folder' argument there.}
+folder that was given as "log.folder" argument there.}
 }
 \value{
 The Jaatha Object with confidence intervals included.

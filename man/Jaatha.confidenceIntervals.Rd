@@ -6,7 +6,7 @@
 jaatha estimates.}
 \usage{
 Jaatha.confidenceIntervals(jaatha, conf.level = 0.95, replicas = 100,
-  cores = 1, log.folder = tempfile("jaatha-logs"), subset = 1:replicas)
+  cores = 1, log.folder = tempfile("jaatha_logs_"), subset = 1:replicas)
 }
 \arguments{
 \item{jaatha}{A jaatha object that was returned by Jaatha.refinedSearch.}
@@ -31,7 +31,7 @@ copy all logs into a single folder and call
 \code{\link{Jaatha.getCIsFromLogs}} on this folder.}
 }
 \value{
-The Jaatha Object with confidence intervals included if 'subset' was
+The Jaatha Object with confidence intervals included if "subset" was
  not used. Nothing otherwise.
 }
 \description{

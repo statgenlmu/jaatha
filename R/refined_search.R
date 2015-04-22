@@ -1,13 +1,3 @@
-# --------------------------------------------------------------
-# refined_search.R
-# This file contains refinedSearch() and helper functions used only 
-# by it.
-# 
-# Authors:  Lisha Mathew & Paul R. Staab
-# Date:     2013-09-04
-# Licence:  GPLv3 or later
-# --------------------------------------------------------------
-
 #' Iterative search for the maximum composite likelihood parameters
 #'
 #' This function searches for the parameter combination with the highest
@@ -27,10 +17,11 @@
 #'        before (see \code{epsilon}).
 #' @param rerun You can repeat a previously done refined search in Jaatha.
 #'        Do do so, just call the refined search function with the jaatha 
-#'        object result of the first refined search and set rerun to 'TRUE'.
+#'        object result of the first refined search and set rerun to "TRUE".
 #'              
 #' @return An Jaatha object. The found values are written to the slot likelihood.table.
-#'
+#' 
+#' @include block.R
 #' @export
 Jaatha.refinedSearch <- function(jaatha, best.start.pos=2,
                                  sim=length(getParNames(jaatha))*25,
@@ -38,14 +29,14 @@ Jaatha.refinedSearch <- function(jaatha, best.start.pos=2,
                                  max.steps=200, rerun=FALSE) {
 
   if (rerun) {
-    if( is.null(jaatha@calls[['refined.search']]) ) 
+    if( is.null(jaatha@calls[["refined.search"]]) ) 
       stop("No arguments found. Did you run the refined search before?")
 
-    best.start.pos <- jaatha@calls[['refined.search']]$best.start.pos
-    sim <- jaatha@calls[['refined.search']]$sim
-    sim.final <- jaatha@calls[['refined.search']]$sim.final
-    half.block.size <- jaatha@calls[['refined.search']]$half.block.size
-    max.steps <- jaatha@calls[['refined.search']]$max.steps
+    best.start.pos <- jaatha@calls[["refined.search"]]$best.start.pos
+    sim <- jaatha@calls[["refined.search"]]$sim
+    sim.final <- jaatha@calls[["refined.search"]]$sim.final
+    half.block.size <- jaatha@calls[["refined.search"]]$half.block.size
+    max.steps <- jaatha@calls[["refined.search"]]$max.steps
 
   } else {
     arguments <- list(best.start.pos=best.start.pos,
@@ -53,35 +44,32 @@ Jaatha.refinedSearch <- function(jaatha, best.start.pos=2,
                       sim.final=sim.final,
                       half.block.size=half.block.size,
                       max.steps=max.steps)
-    jaatha@calls[['refined.search']] <- arguments 
+    jaatha@calls[["refined.search"]] <- arguments 
   }
 
   # Check parameters
 
-  checkType(jaatha, c("jaatha", "single"))
-  checkType(best.start.pos, c("num", "single"))
-  checkType(sim, c("num", "single"))
-  checkType(sim.final, c("num", "single"), F)
-  checkType(half.block.size, c("num", "single"))
-  checkType(max.steps, c("num", "single"))
+  assert_that(is_jaatha(jaatha))
+  assert_that(is_single_numeric(best.start.pos))
+  assert_that(is_single_numeric(sim))
+  assert_that(is_single_numeric(sim.final))
+  assert_that(is_single_numeric(half.block.size))
+  assert_that(is_single_numeric(max.steps))
 
-
-  if (length(jaatha@starting.positions) == 0) 
+  if (nrow(jaatha@likelihoods_is) == 0) 
     stop("No starting positions available. Did you run a initial search first?")
-  startPoints <- Jaatha.pickBestStartPoints(blocks=jaatha@starting.positions,
-                                            best=best.start.pos)
 
-  jaatha@likelihood.table <- matrix(0,0, getParNumber(jaatha) + 2)
+  jaatha@likelihoods_rs <- create_likelihood_table(jaatha, 0)
 
   # Setup environment for the refined search
   set.seed(jaatha@seeds[3])
 
   # Start a search for every start point
-  for (s in 1:length(startPoints)){
-    .print("*** Search with starting Point in Block ",s," of ",length(startPoints)," ***")
-    jaatha <- refinedSearchSingleBlock(jaatha, startPoints[[s]]@MLest, sim=sim,sim.final=sim.final,
-                                        half.block.size=half.block.size,
-                                        max.steps=max.steps,block.nr=s)  
+  for (s in 1:best.start.pos) {
+    jaatha <- refinedSearchSingleBlock(jaatha, start_pos=s, 
+                                       sim=sim, sim.final=sim.final,
+                                       half.block.size=half.block.size,
+                                       max.steps=max.steps)  
   }
 
   .print()
@@ -94,20 +82,19 @@ Jaatha.refinedSearch <- function(jaatha, best.start.pos=2,
 
 ## This is called from Jaatha.refinedSearch for each block. The actual search is done here.
 ## Parameters are the same as in Jaatha.refinedSearch
-refinedSearchSingleBlock <- function(jaatha, start.point, sim, sim.final,
+refinedSearchSingleBlock <- function(jaatha, start_pos, sim, sim.final,
                                      half.block.size, 
-                                     max.steps=max.steps, block.nr){
+                                     max.steps=max.steps){
+  
+  .print("*** Search with starting point ", start_pos, " ***")
+  
   ## initialize values 
   step.current <- 0
+  estimate <- sort_likelihood_table(jaatha@likelihoods_is)[start_pos, -(1:2)]
+  score = -Inf
+  likelihoods <- create_likelihood_table(jaatha, max.steps)
 
-  ##since the likelihood estimate for the starting point is
-  ##only a very rough estimate we don't keep that value 
-  search.block <- new("Block", score=-Inf, MLest=start.point)
   sim.saved <- list()
-
-  ## best ten parameters with score are kept for end evaluation
-  topTen <- array(0, dim=c(10,(1+getParNumber(jaatha))), 
-                  dimnames= list(1:10, c("score", getParNames(jaatha))))     
 
   optimum.li <- -Inf
   optimum.step <- 0
@@ -117,8 +104,8 @@ refinedSearchSingleBlock <- function(jaatha, start.point, sim, sim.final,
     step.current <- step.current + 1
     .print("Step No ", step.current)
 
-    # Update the Search Blocks Border
-    search.block@border <- calcBorders(search.block@MLest, radius=half.block.size)
+    # Update the Search Block
+    search.block <- block_class$new(calcBorders(estimate, half.block.size))
 
     # Simulate Data and Fit Model
     # If Glm does not converge, try using more simulations
@@ -128,33 +115,32 @@ refinedSearchSingleBlock <- function(jaatha, start.point, sim, sim.final,
                                           sim.data, step.current)
       tryCatch({
         # Fit the GLM
-        glm.fitted <- fitGlm(jaatha, sim.saved)
+        glm.fitted <- fit_glm(jaatha, sim.saved)
         break
       }, error = function(e) {
         if (j < 5) .print("Failed to fit the GLM. Retrying with more simulations...")
-        else stop('Failed to fit the GLM. Try disabeling smoothing')
+        else stop("Failed to fit the GLM. Try disabeling smoothing")
       })
     }
-    stopifnot(exists('glm.fitted'))
+    stopifnot(exists("glm.fitted"))
 
     # Update likelihood of last steps estimate, based on new simulated data.
     # Should be a bit more accurate as previous estimate of the likelihood,
     # as it is in the center of the block now.
-    search.block@score <- estimateLogLikelihood(search.block@MLest, glm.fitted, 
-                                                jaatha@sum_stats, 
-                                                getScalingFactor(jaatha))
+    score <- estimateLogLikelihood(estimate, glm.fitted, jaatha@sum_stats, 
+                                   getScalingFactor(jaatha))
     
     # Keep track of the optimal likelihood, and in which step it has be reached.
-    if (search.block@score > optimum.li) {
-      optimum.li <- search.block@score
+    if (score > optimum.li) {
+      optimum.li <- score
       optimum.step <- step.current - 1
     }
 
-    # Keep the best 10 parameter combinations with their score
-    topTen <- .saveBestTen(topTen, step.current-1, search.block)
+    # Record the parameter combination
+    likelihoods[step.current, ] <- c(score, start_pos, estimate)
 
     # Output current best position
-    printBestPar(jaatha, search.block)
+    printBestPar(estimate, score, jaatha)
 
     # Stop criterion 1: maximal likelihood did not increase in the last 10 steps
     if ( step.current >= optimum.step + 10 ) {
@@ -165,7 +151,7 @@ refinedSearchSingleBlock <- function(jaatha, start.point, sim, sim.final,
     } 
 
     # Stop criterion 2: more than max.steps search steps
-    if ( step.current > (max.steps-1) ) {
+    if ( step.current >= (max.steps) ) {
       .print()
       .print("Maximimum number of search steps",max.steps,"reached.\n")
       .print()
@@ -173,37 +159,31 @@ refinedSearchSingleBlock <- function(jaatha, start.point, sim, sim.final,
     }
 
     # Estimate the best parameters in the current block.
-    search.block@MLest <- findBestParInBlock(search.block, glm.fitted, 
-                                             jaatha@sum_stats, 
-                                             getScalingFactor(jaatha))$est 
+    estimate <- search_best_par(search.block, glm.fitted, 
+                                   jaatha@sum_stats, 
+                                   getScalingFactor(jaatha))$est 
     .print()
   }
 
-  topTen <- topTen[topTen[,1] != 0, ]
-
-  likelihoods <- c()
-  .print("Calculating log-composite-likelihoods for best estimates:")
-  for (t in 1:nrow(topTen)){
-    topPar <- topTen[t,-1]
-    .print("* Parameter combination",t,"of", nrow(topTen))
-    likelihoods[t] <- simLikelihood(jaatha, sim.final, topPar)
-  }
-
-  likelihood.table <- cbind(log.cl=likelihoods, 
-                            block=block.nr,
-                            topTen[topTen[,1]!=0,-1])
+  likelihoods <- sort_likelihood_table(likelihoods, 10)
   
-  jaatha@likelihood.table <- rbind(jaatha@likelihood.table,
-                                   likelihood.table)
+  .print("Calculating log-likelihoods for best estimates:")
+
+  for (t in 1:nrow(likelihoods)) {
+    .print("* Parameter combination", t, "of", nrow(likelihoods))
+    likelihoods[t, 1] <- simLikelihood(jaatha, sim.final, likelihoods[t, -(1:2)])
+  }
+  
+  jaatha@likelihoods_rs <- rbind(jaatha@likelihoods_rs, likelihoods)
 
   .print()
   return(jaatha)
 }
 
 
-## Function to determine the boarders (i.e. 'around' to either side)
+## Function to determine the boarders (i.e. "around" to either side)
 ## of the new block where to continue the search. The new boarders are
-## determined by subtracting and adding 'around' to each dimension of
+## determined by subtracting and adding "around" to each dimension of
 ## point.
 calcBorders <- function(point, radius) {
   if (any(point < 0 || point > 1)) {
@@ -236,34 +216,7 @@ getReusableSimulations <- function(block, jaatha, sim.saved, sim.data, step.curr
   if (length(sim.saved) == 0) return(lapply(sim.data, function(x) { x$step <- step.current; x }))
   c(lapply(sim.data, function(x) { x$step <- step.current; x }),
     sim.saved[sapply(sim.saved, 
-                     function(x) isInBlock(block, normalize(x$pars, jaatha)))]) 
+                     function(x) block$includes(normalize(x$pars, jaatha)))]) 
 }
 
-## Function to save the ten best parameters along the search path with
-## their likelihoods.
-.saveBestTen <- function (currentTopTen, numSteps, search.block){
-  if (numSteps <= 10){  # the first 9 estimates are kept
-    currentTopTen[numSteps, ] <- c(search.block@score, search.block@MLest)
-  } else{
-    minScore <- min(currentTopTen[ ,1])
-    if(minScore < search.block@score){
-      minIndex <- which.min(currentTopTen[ ,1])
-      currentTopTen[minIndex,] <- c(search.block@score,
-                                    search.block@MLest)
-    }
-  }
-  return(currentTopTen)
-}
 
-## Function to concatenate all parNsumstat-fields of the blocks in
-## 'blockList' with newParNsumstat, so they can later be used for the
-## glm-fitting.
-.concatWithPrevSumstats <- function(newParNss,blockList){
-  data <- newParNss
-  if(length(blockList)!=0){
-    for (b in seq(along = blockList)){
-      data <- rbind(data,blockList[[b]]@parNsumstat)
-    }
-  } else{}   
-  return (data)
-}

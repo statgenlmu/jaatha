@@ -1,13 +1,3 @@
-# --------------------------------------------------------------
-# confidence_intervals.R 
-# Contains a function for calculating bias corrected bootstrap 
-# confidence intervals 
-# 
-# Authors:  Paul R. Staab
-# Date:     2013-10-21
-# Licence:  GPLv3 or later
-# --------------------------------------------------------------
-
 #' Function for calculating bootstrap confidence intervals for 
 #' jaatha estimates.
 #' 
@@ -37,19 +27,19 @@
 #'  are accutally executed. After all runs have finished, you need to manally
 #'  copy all logs into a single folder and call 
 #'  \code{\link{Jaatha.getCIsFromLogs}} on this folder.
-#' @return The Jaatha Object with confidence intervals included if 'subset' was 
+#' @return The Jaatha Object with confidence intervals included if "subset" was 
 #'  not used. Nothing otherwise.
 #' @export
 Jaatha.confidenceIntervals <- function(jaatha, conf.level=0.95, 
                                       replicas=100, cores = 1, 
-                                      log.folder=tempfile('jaatha-logs'),
+                                      log.folder=tempfile("jaatha_logs_"),
                                       subset=1:replicas) {
   
   # Get a seed for each replica plus for simulating data 
   set.seed(jaatha@seeds[1])
   # First two seeds are already used for initial & refined search. 
   # Last seed will be used for generating the bootstrap data.
-  seeds <- sampleSeed(replicas+3)[-(1:2)] 
+  seeds <- sample_seed(replicas+3)[-(1:2)] 
 
   dir.create(log.folder, showWarnings=FALSE)
   message("Storing logs in ", log.folder)
@@ -82,24 +72,27 @@ Jaatha.confidenceIntervals <- function(jaatha, conf.level=0.95,
 #' @param conf_level The intended confidence level of the interval. The actual
 #'               level can vary slightly.
 #' @param log_folder The folder with logs from the previous run. Just use the
-#'               folder that was given as 'log.folder' argument there.
+#'               folder that was given as "log.folder" argument there.
 #' @return The Jaatha Object with confidence intervals included.
 #' @export
 Jaatha.getCIsFromLogs <- function(jaatha, conf_level=0.95, log_folder) {
-  results <- list.files(log_folder, 'run_[0-9]+.Rda$', full.names = TRUE)
+  results <- list.files(log_folder, "run_[0-9]+.Rda$", full.names = TRUE)
+  if (length(results) == 0) stop("Not logfiles of bootstrap runs found")
   message("Using ", length(results), " completed runs.")
   
   est_pars <- Jaatha.getLikelihoods(jaatha, 1)[, -(1:2)]
   
   bs_estimates <- t(sapply(results, function(result) {
     load(result)
-    pars <- Jaatha.getLikelihoods(jaatha, max.entries=1)[,-(1:2)]
+    pars <- Jaatha.getLikelihoods(jaatha, 1)[,-(1:2)]
     pars_scaled <- normalize(pars, jaatha)
     if (any(pars == 0 | pars == 1))
-      warning("Bootstrap estimate hit boundary of parameter space. Confidence Interval might be inaccurate.")
+      warning("Bootstrap estimate hit boundary of parameter space. ",
+              "The confidence interval might be inaccurate.")
     pars
   }))
   
+  print(bs_estimates)
   jaatha@conf.ints <- t(sapply(1:ncol(bs_estimates), function(i) {
     par.name <- getParNames(jaatha)[i]
     return(calcBCaConfInt(conf_level, bs_estimates[,i], 
@@ -117,10 +110,10 @@ rerunAnalysis <- function(idx, jaatha, seeds, sim_data=NULL, log.folder) {
   
   # Initialize a copy of the jaatha object
   set.seed(seeds[idx])
-  jaatha@seeds <- c(seeds[idx], sampleSeed(2))
+  jaatha@seeds <- c(seeds[idx], sample_seed(2))
   sink(paste0(log.folder, "/run_", idx, ".log"))
   jaatha@cores <- 1
-  if (!is.null(sim.data)) {
+  if (!is.null(sim_data)) {
     jaatha@sum_stats <- convertSimDataToSumStats(sim_data[[idx]], 
                                                  jaatha@sum_stats)
   }
@@ -151,7 +144,7 @@ calcBCaConfInt <- function(conf.level, bs.values, estimates, replicas) {
   quantiles.corrected <- pnorm(z.hat.null + (z.hat.null + z.alpha) / 
                                  (1-a.hat*(z.hat.null + z.alpha)))  
   conf.int <- quantile(bs.values, probs=quantiles.corrected) 
-  names(conf.int) <- c('lower', 'upper')
+  names(conf.int) <- c("lower", "upper")
   return(conf.int)
 }
 

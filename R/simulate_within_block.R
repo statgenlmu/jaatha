@@ -1,9 +1,3 @@
-# --------------------------------------------------------------
-# Authors:  Paul R. Staab & Lisha Mathew
-# Date:     2013-11-13
-# Licence:  GPLv3 or later
-# --------------------------------------------------------------
-
 #' This function executes simulations for a number of random 
 #' parameter values inside a block.
 #' 
@@ -14,13 +8,12 @@
 #'         summary statistics.
 simulateWithinBlock <- function(sim, block, jaatha) {
   # Sample random simulation parameters
-  sim.pars <- aperm(array(runif(getParNumber(jaatha)*sim,
-                                 min=block@border[,1],
-                                 max=block@border[,2]),
-                           dim=c(getParNumber(jaatha),sim)))
+  border <- block$get_border()
+  sim_pars <- rbind(aperm(array(runif(getParNumber(jaatha) * sim,
+                                      min = border[ , 1],
+                                      max = border[ , 2]),
+                                dim = c(getParNumber(jaatha), sim))),
+                    block$get_corners())
   
-  # Add the corners of the block to sim parameters
-  sim.pars <- rbind(sim.pars, getCorners(block))
-
-  runSimulations(sim.pars, jaatha@cores, jaatha)
+  runSimulations(sim_pars, jaatha@cores, jaatha)
 }

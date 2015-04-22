@@ -1,12 +1,3 @@
-# --------------------------------------------------------------
-# Contains the initialSearch() and helper functions used nowhere else 
-# 
-# Authors:  Lisha Naduvilezhath & Paul R. Staab
-# Date:     2013-09-04
-# Licence:  GPLv3 or later
-# --------------------------------------------------------------
-
-
 #' Search the parameter space for good starting positions
 #'
 #' This functions divides the parameter space in different parts (blocks).
@@ -24,30 +15,33 @@
 #'        restricting them to only a fraction of this axis.
 #' @param rerun You can repeat a previously done initial search in Jaatha.
 #'        Do do so, just call the initial search function with the jaatha 
-#'        object result of the first initial search and set rerun to 'TRUE'.
+#'        object result of the first initial search and set rerun to "TRUE".
 #'
 #' @return The jaatha object with starting positions
-#'
+#' 
+#' @include block.R
 #' @export
 Jaatha.initialSearch <- function(jaatha, sim=200, blocks.per.par=2, rerun=FALSE){
 
   if (rerun) {
-    if( is.null(jaatha@calls[['initial.search']]) ) 
+    if( is.null(jaatha@calls[["initial.search"]]) ) 
       stop("No arguments found. Did you run the initial search before?")
-    sim <- jaatha@calls[['initial.search']]$sim
-    blocks.per.par <- jaatha@calls[['initial.search']]$blocks.per.par
+    sim <- jaatha@calls[["initial.search"]]$sim
+    blocks.per.par <- jaatha@calls[["initial.search"]]$blocks.per.par
   } else {
-    jaatha@calls[['initial.search']] <- list(sim=sim,
+    jaatha@calls[["initial.search"]] <- list(sim=sim,
                                              blocks.per.par=blocks.per.par) 
   }
 
   set.seed(jaatha@seeds[2])
 
   firstBlocks <- createInitialBlocks(jaatha@par.ranges, blocks.per.par)
+  jaatha@likelihoods_is <- create_likelihood_table(jaatha, length(firstBlocks))
+  
 
   for (i in seq(along=firstBlocks)){
     .print("*** Block", i, "of", length(firstBlocks), ":", 
-           printBorder(firstBlocks[[i]], jaatha))
+           firstBlocks[[i]]$print_border(jaatha))
 
     sim.data <- list()     
     
@@ -56,49 +50,51 @@ Jaatha.initialSearch <- function(jaatha, sim=200, blocks.per.par=2, rerun=FALSE)
     for (j in 1:5) {
       sim.data = c(sim.data, simulateWithinBlock(sim, firstBlocks[[i]], jaatha))
       tryCatch({
-        suppressWarnings(glms.fitted <- fitGlm(jaatha, sim.data))
+        suppressWarnings(glms.fitted <- fit_glm(jaatha, sim.data))
         break
       }, error = function(e) {
         if (j < 5) .print("Failed to fit the GLM. Retrying with more simulations...")
-        else stop('Failed to fit the GLM. Try disabeling smoothing or using more simulations')
+        else stop("Failed to fit the GLM. Try disabeling smoothing or using more simulations")
       })
     }
 
-    optimal <- findBestParInBlock(firstBlocks[[i]], glms.fitted, 
+    optimal <- search_best_par(firstBlocks[[i]], glms.fitted, 
                                   jaatha@sum_stats, getScalingFactor(jaatha)) 
     
-    firstBlocks[[i]]@score <- optimal$score
-
-    firstBlocks[[i]]@MLest <- c(optimal$est, optimal$theta)
-    printBestPar(jaatha, firstBlocks[[i]])
-
+    
+    jaatha@likelihoods_is[i, ] <- c(optimal$score, i, optimal$est)
+    printBestPar(optimal$est, optimal$score, jaatha)
+    
     .print()
   }
 
-  jaatha@starting.positions <- firstBlocks
-  print(Jaatha.getStartingPoints(jaatha))
+  .print("Possible starting positions are:")
+  print(Jaatha.getLikelihoods(jaatha, initial_search = TRUE)[ , -2])
 
-  return(jaatha)
+  jaatha
 }
+
 
 createInitialBlocks <- function(par.ranges, blocks.per.par) {
   basic.block <- par.ranges # Just to get dimensions & names
-  basic.block[,1] <- 0
-  basic.block[,2] <- 1
+  basic.block[ , 1] <- 0
+  basic.block[ , 2] <- 1
   
   if (blocks.per.par == 1) {
-    return(list(new("Block", border=basic.block)))
+    return(list(block_class$new(basic.block)))
   }
 
-  blocks <- vector("list", nrow(par.ranges)*blocks.per.par)
+  blocks <- list() 
+  length(blocks) <- nrow(par.ranges) * blocks.per.par
   for (i in 1:nrow(par.ranges)) {
     for (j in 1:blocks.per.par) {
       new.block <- basic.block
-      new.block[i,2] <- 1/blocks.per.par
-      new.block[i, ] <- new.block[i, ] + (j-1)/blocks.per.par
-      blocks[(j-1)*nrow(par.ranges)+i] <- new("Block", border=new.block)
+      new.block[i, 2] <- 1 / blocks.per.par
+      new.block[i, ] <- new.block[i, ] + (j - 1) / blocks.per.par
+      blocks[[(j - 1) * nrow(par.ranges) + i]] <- block_class$new(new.block)
     }
   }
 
   blocks
 }
+

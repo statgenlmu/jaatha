@@ -27,7 +27,7 @@ before (see \code{epsilon}).}
 
 \item{rerun}{You can repeat a previously done refined search in Jaatha.
        Do do so, just call the refined search function with the jaatha
-       object result of the first refined search and set rerun to 'TRUE'.}
+       object result of the first refined search and set rerun to "TRUE".}
 }
 \value{
 An Jaatha object. The found values are written to the slot likelihood.table.

@@ -4,14 +4,14 @@ simLikelihood <- function(jaatha, sim, pars) {
 
   llh <- 0
   for (sum_stat in jaatha@sum_stats) {
-    # sapply + S3 dispatch case unit tests to fails => use 'for' here
+    # sapply + S3 dispatch case unit tests to fails => use "for" here
     llh <- llh + simLogLLH(sum_stat, sim_data, getScalingFactor(jaatha))
   }
   llh
 }
 
 simLogLLH <- function(sum_stat, ...) UseMethod("simLogLLH")
-simLogLLH.default <- function(sum_stat, ...) stop('Unkown Summary Statistic')
+simLogLLH.default <- function(sum_stat, ...) stop("Unkown Summary Statistic")
 
 simLogLLH.Stat_PoiInd <- function(sum_stat, sim_data, scaling_factor = 1) {
   values <- t(sapply(sim_data,  function(data) data[[sum_stat$get_name()]])) 
@@ -38,8 +38,8 @@ simLogLLH.Stat_PoiSmooth <- function(sum_stat, sim_data, scaling_factor = 1) {
 }
 
 calcLogFactorial <- function(k) {
-  if (!isJaathaVariable("logfacs")) setJaathaVariable("logfacs", c(0)) 
-  logfacs <- getJaathaVariable("logfacs")
+  if (!is_jaatha_var("logfacs")) set_jaatha_var("logfacs", c(0)) 
+  logfacs <- get_jaatha_var("logfacs")
 
   maxk <- max(k)
   if (maxk > length(logfacs)) {
@@ -48,7 +48,7 @@ calcLogFactorial <- function(k) {
     for (i in l:maxk) {
       logfacs[i] <- logfacs[i-1] + log(i)
     }
-    setJaathaVariable("logfacs", logfacs)
+    set_jaatha_var("logfacs", logfacs)
   }
 
   ret <- rep(0, length(k))
