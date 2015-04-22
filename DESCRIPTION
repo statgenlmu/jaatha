@@ -1,5 +1,5 @@
 Package: jaatha
-Version: 2.99.0.9028
+Version: 2.99.0.9029
 Date: 2015-04-01
 License: GPL (>= 3)
 Title: A Parameter Estimation Method for Evolutionary Biology
@@ -18,7 +18,7 @@ Depends:
     methods
 Imports:
     assertthat (>= 0.1),
-    coalsimr (>= 0.0.9023),
+    coala (>= 0.0.9030),
     PopGenome (>= 2.1.0),
     R6 (>= 2.0.1),
     reshape2 (>= 1.4),
