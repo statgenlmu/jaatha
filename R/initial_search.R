@@ -15,7 +15,7 @@
 #'        restricting them to only a fraction of this axis.
 #' @param rerun You can repeat a previously done initial search in Jaatha.
 #'        Do do so, just call the initial search function with the jaatha 
-#'        object result of the first initial search and set rerun to 'TRUE'.
+#'        object result of the first initial search and set rerun to "TRUE".
 #'
 #' @return The jaatha object with starting positions
 #' 
@@ -24,12 +24,12 @@
 Jaatha.initialSearch <- function(jaatha, sim=200, blocks.per.par=2, rerun=FALSE){
 
   if (rerun) {
-    if( is.null(jaatha@calls[['initial.search']]) ) 
+    if( is.null(jaatha@calls[["initial.search"]]) ) 
       stop("No arguments found. Did you run the initial search before?")
-    sim <- jaatha@calls[['initial.search']]$sim
-    blocks.per.par <- jaatha@calls[['initial.search']]$blocks.per.par
+    sim <- jaatha@calls[["initial.search"]]$sim
+    blocks.per.par <- jaatha@calls[["initial.search"]]$blocks.per.par
   } else {
-    jaatha@calls[['initial.search']] <- list(sim=sim,
+    jaatha@calls[["initial.search"]] <- list(sim=sim,
                                              blocks.per.par=blocks.per.par) 
   }
 
@@ -54,7 +54,7 @@ Jaatha.initialSearch <- function(jaatha, sim=200, blocks.per.par=2, rerun=FALSE)
         break
       }, error = function(e) {
         if (j < 5) .print("Failed to fit the GLM. Retrying with more simulations...")
-        else stop('Failed to fit the GLM. Try disabeling smoothing or using more simulations')
+        else stop("Failed to fit the GLM. Try disabeling smoothing or using more simulations")
       })
     }
 

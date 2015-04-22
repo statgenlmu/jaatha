@@ -1,5 +1,5 @@
 #' @importFrom R6 R6Class
-Stat_FPC <- R6Class('Stat_FPC', inherit = Stat_PoiInd,
+Stat_FPC <- R6Class("Stat_FPC", inherit = Stat_PoiInd,
   private = list(
     stat_name = NA,
     breaks = NA,
@@ -7,7 +7,7 @@ Stat_FPC <- R6Class('Stat_FPC', inherit = Stat_PoiInd,
   ),
   public = list(
     initialize = function(seg_sites, model, stat, break_probs = c(.2, .5)) {
-      if (any(break_probs > 1)) stop('probs greater then one')
+      if (any(break_probs > 1)) stop("probs greater then one")
       
       # Setup the cube for the middle locus
       private$stat_name <- stat$get_name()
@@ -73,21 +73,21 @@ generateLociCube = function(stat, breaks, cols, rows) {
 
 #' A function that cassifies locus trios by the distance between the loci
 #' 
-#' Each pair of loci in a trio can be either 'near' together 
-#' (low distance between) or more 'far' appart (somewhat larger distance), 
-#' where the distances corresponding to 'near' and 'far' can be defined as
+#' Each pair of loci in a trio can be either "near" together 
+#' (low distance between) or more "far" appart (somewhat larger distance), 
+#' where the distances corresponding to "near" and "far" can be defined as
 #' function arguments. The function returns trios for with the left to middle 
-#' and middle to right comparisons is either 'both near', one near, one far' 
-#' or 'both far'. Trio for which at least one distance is to short for 'near' 
-#' or to large for 'far' are ignored.
+#' and middle to right comparisons is either "both near", one near, one far" 
+#' or "both far". Trio for which at least one distance is to short for "near" 
+#' or to large for "far" are ignored.
 #' 
 #' @param llm The Locus Length matrix as produced by 
 #'   \code{dm.getLociLengthMatrix}
-#' @param near A vector of length two, giving the boundaries for the 'near' 
+#' @param near A vector of length two, giving the boundaries for the "near" 
 #'   class.
-#' @param far A vector of length two, giving the boundaries for the 'far' 
+#' @param far A vector of length two, giving the boundaries for the "far" 
 #'   class.
-#' @return A list with entries 'both_near', 'one_one' and 'both_far', which
+#' @return A list with entries "both_near", "one_one" and "both_far", which
 #'   are vectors of the indexes of the loci that fall into the corresponding
 #'   class.
 #' @author Paul Staab

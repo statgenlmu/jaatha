@@ -2,12 +2,12 @@
 % Please edit documentation in R/normalize.R
 \name{denormalize}
 \alias{denormalize}
-\title{Convert parameters from Jaatha's internal scale into their natural scale}
+\title{Convert parameters from Jaatha"s internal scale into their natural scale}
 \usage{
 denormalize(value, jaatha)
 }
 \arguments{
-\item{value}{A parameter combination in Jaatha's internal scale}
+\item{value}{A parameter combination in Jaatha"s internal scale}
 
 \item{jaatha}{The current jaatha object}
 }
@@ -15,6 +15,6 @@ denormalize(value, jaatha)
 The parameter from value, converted into their natural scale
 }
 \description{
-Convert parameters from Jaatha's internal scale into their natural scale
+Convert parameters from Jaatha"s internal scale into their natural scale
 }
 

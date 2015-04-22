@@ -11,7 +11,7 @@ runSimulations(pars, cores, jaatha)
 set of model parameters. Should be in jaatha internal 0-1 scaling.}
 
 \item{cores}{The number of cores to use. Using more than one core requires
-the 'multicore' package.}
+the "multicore" package.}
 
 \item{jaatha}{The current jaatha object}
 }

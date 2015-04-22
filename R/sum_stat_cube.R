@@ -1,5 +1,5 @@
 #' @importFrom R6 R6Class
-Stat_Cube <- R6Class('Stat_Cube', inherit = Stat_PoiInd,
+Stat_Cube <- R6Class("Stat_Cube", inherit = Stat_PoiInd,
   private = list(
     stat_name = NA,
     breaks = NA
@@ -7,7 +7,7 @@ Stat_Cube <- R6Class('Stat_Cube', inherit = Stat_PoiInd,
   public = list(
     to_matrix = function(x) x,
     initialize = function(seg_sites, model, stat, break_probs = c(.1, .5)) {
-      if (any(break_probs > 1)) stop('probs greater then one')
+      if (any(break_probs > 1)) stop("probs greater then one")
                         
       private$stat_name <- stat$get_name()
       value <- stat$calculate(seg_sites, NULL, model)
@@ -31,7 +31,7 @@ Stat_Cube <- R6Class('Stat_Cube', inherit = Stat_PoiInd,
 )
 
 #' @importFrom R6 R6Class
-Stat_Ihh <- R6Class('Stat_Ihh', inherit = Stat_Cube,
+Stat_Ihh <- R6Class("Stat_Ihh", inherit = Stat_Cube,
   public = list(
     to_matrix = function(value) {
       do.call(rbind, lapply(value, function(x) rowMeans(x)))
@@ -41,7 +41,7 @@ Stat_Ihh <- R6Class('Stat_Ihh', inherit = Stat_Cube,
 
 
 #' @importFrom R6 R6Class
-Stat_OmegaPrime <- R6Class('Stat_OmegaPrime', inherit = Stat_Cube,
+Stat_OmegaPrime <- R6Class("Stat_OmegaPrime", inherit = Stat_Cube,
   public = list(
     to_matrix = function(value) {
       matrix(value, ncol = 1)

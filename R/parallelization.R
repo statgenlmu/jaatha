@@ -14,7 +14,7 @@ setCores <- function(jaatha, cores=1) {
   
   if (cores > 1 && .Platform$OS.type == "windows") {
     warning("Parallelization is not supported on Windows. ",
-            "The 'cores' option will be ignored") 
+            "The \"cores\" option will be ignored") 
     jaatha@cores <- 1
   } else {
     jaatha@cores <- cores

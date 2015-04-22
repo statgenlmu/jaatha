@@ -1,5 +1,5 @@
 fitGlm <- function(sum_stat, sim_data, ...) UseMethod("fitGlm")
-fitGlm.default <- function(sum_stat, sim_data...) stop('Unkown Summary Statistic')
+fitGlm.default <- function(sum_stat, sim_data...) stop("Unkown Summary Statistic")
 
 #' Fits a Generalized Linear Model within a block.  
 #'
@@ -35,7 +35,7 @@ fitGlm.Stat_PoiInd <- function(sum_stat, sim_data) {
   formulas <- paste0(stat_names, "~", paste(par_names ,collapse= "+"))
   glms <- lapply(formulas, glm, data=data.frame(stat_sim), family=poisson,
                  model = FALSE, x = FALSE, y = FALSE, control = list(maxit = 200))
-  sapply(glms, function(x){if (!x$converged) stop('GLM did not converge')})
+  sapply(glms, function(x){if (!x$converged) stop("GLM did not converge")})
   glms
 }
 
@@ -61,7 +61,7 @@ fitGlm.Stat_PoiSmooth <- function(sum_stat, sim_data) {
   smooth_glm  <- glm(model, data=sim_data_df, family=poisson("log"), 
                      model = FALSE, x = FALSE, y = FALSE,
                      control = list(maxit = 200))
-  if (!smooth_glm$converged) stop('GLM did not converge')
+  if (!smooth_glm$converged) stop("GLM did not converge")
   
   list(smooth=smooth_glm)
 }

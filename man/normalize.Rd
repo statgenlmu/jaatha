@@ -2,7 +2,7 @@
 % Please edit documentation in R/normalize.R
 \name{normalize}
 \alias{normalize}
-\title{Convert parameters from the natural scale into Jaatha's internal scale}
+\title{Convert parameters from the natural scale into Jaatha"s internal scale}
 \usage{
 normalize(value, jaatha)
 }
@@ -12,9 +12,9 @@ normalize(value, jaatha)
 \item{jaatha}{The current jaatha object}
 }
 \value{
-The parameter from value, converted into Jaatha's interval 0-1 scale
+The parameter from value, converted into Jaatha"s interval 0-1 scale
 }
 \description{
-Convert parameters from the natural scale into Jaatha's internal scale
+Convert parameters from the natural scale into Jaatha"s internal scale
 }
 

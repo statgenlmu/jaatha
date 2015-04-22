@@ -17,7 +17,7 @@
 #'        before (see \code{epsilon}).
 #' @param rerun You can repeat a previously done refined search in Jaatha.
 #'        Do do so, just call the refined search function with the jaatha 
-#'        object result of the first refined search and set rerun to 'TRUE'.
+#'        object result of the first refined search and set rerun to "TRUE".
 #'              
 #' @return An Jaatha object. The found values are written to the slot likelihood.table.
 #' 
@@ -29,14 +29,14 @@ Jaatha.refinedSearch <- function(jaatha, best.start.pos=2,
                                  max.steps=200, rerun=FALSE) {
 
   if (rerun) {
-    if( is.null(jaatha@calls[['refined.search']]) ) 
+    if( is.null(jaatha@calls[["refined.search"]]) ) 
       stop("No arguments found. Did you run the refined search before?")
 
-    best.start.pos <- jaatha@calls[['refined.search']]$best.start.pos
-    sim <- jaatha@calls[['refined.search']]$sim
-    sim.final <- jaatha@calls[['refined.search']]$sim.final
-    half.block.size <- jaatha@calls[['refined.search']]$half.block.size
-    max.steps <- jaatha@calls[['refined.search']]$max.steps
+    best.start.pos <- jaatha@calls[["refined.search"]]$best.start.pos
+    sim <- jaatha@calls[["refined.search"]]$sim
+    sim.final <- jaatha@calls[["refined.search"]]$sim.final
+    half.block.size <- jaatha@calls[["refined.search"]]$half.block.size
+    max.steps <- jaatha@calls[["refined.search"]]$max.steps
 
   } else {
     arguments <- list(best.start.pos=best.start.pos,
@@ -44,7 +44,7 @@ Jaatha.refinedSearch <- function(jaatha, best.start.pos=2,
                       sim.final=sim.final,
                       half.block.size=half.block.size,
                       max.steps=max.steps)
-    jaatha@calls[['refined.search']] <- arguments 
+    jaatha@calls[["refined.search"]] <- arguments 
   }
 
   # Check parameters
@@ -119,10 +119,10 @@ refinedSearchSingleBlock <- function(jaatha, start_pos, sim, sim.final,
         break
       }, error = function(e) {
         if (j < 5) .print("Failed to fit the GLM. Retrying with more simulations...")
-        else stop('Failed to fit the GLM. Try disabeling smoothing')
+        else stop("Failed to fit the GLM. Try disabeling smoothing")
       })
     }
-    stopifnot(exists('glm.fitted'))
+    stopifnot(exists("glm.fitted"))
 
     # Update likelihood of last steps estimate, based on new simulated data.
     # Should be a bit more accurate as previous estimate of the likelihood,
@@ -181,9 +181,9 @@ refinedSearchSingleBlock <- function(jaatha, start_pos, sim, sim.final,
 }
 
 
-## Function to determine the boarders (i.e. 'around' to either side)
+## Function to determine the boarders (i.e. "around" to either side)
 ## of the new block where to continue the search. The new boarders are
-## determined by subtracting and adding 'around' to each dimension of
+## determined by subtracting and adding "around" to each dimension of
 ## point.
 calcBorders <- function(point, radius) {
   if (any(point < 0 || point > 1)) {

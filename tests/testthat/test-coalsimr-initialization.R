@@ -25,12 +25,12 @@ test_that("coala initialization works", {
   # smoothing
   jaatha <- Jaatha.initialize(data, model, smoothing = TRUE)
   expect_equal(length(jaatha@sum_stats), 2)
-  expect_that(jaatha@sum_stats$jsfs$get_data(), is_a('data.frame'))
-  expect_equal(colnames(jaatha@sum_stats$jsfs$get_data()), c('X1', 'X2', 'sum.stat'))
+  expect_that(jaatha@sum_stats$jsfs$get_data(), is_a("data.frame"))
+  expect_equal(colnames(jaatha@sum_stats$jsfs$get_data()), c("X1", "X2", "sum.stat"))
   expect_that(sum(jaatha@sum_stats$jsfs$get_data()), is_more_than(0))
-  expect_that(jaatha@sum_stats$jsfs$get_model(), is_a('character'))
+  expect_that(jaatha@sum_stats$jsfs$get_model(), is_a("character"))
   
-  expect_that(jaatha@sum_stats$border_jsfs, is_a('Stat_PoiInd'))
+  expect_that(jaatha@sum_stats$border_jsfs, is_a("Stat_PoiInd"))
   expect_that(sum(jaatha@sum_stats$border_jsfs$get_data()), is_more_than(0))
 })
 
@@ -39,15 +39,15 @@ test_that("PG initialization works with scaling", {
   skip("Temporarily deactived")
   jaatha <- Jaatha.initialize(data, model, scaling_factor = 5)
   expect_equal(jaatha@scaling_factor, 5)
-  expect_equal(coala::get_locus_number(jaatha@opts[['dm']]), 2L)
+  expect_equal(coala::get_locus_number(jaatha@opts[["dm"]]), 2L)
 })
 
 
 test_that("initialization with FPC statistic works", {
   jaatha.fpc <- Jaatha.initialize(data, model + 
-                                    coala::sumstat_four_gamete('fgc'))
+                                    coala::sumstat_four_gamete("fgc"))
   
-  fpc_stat <- jaatha.fpc@sum_stats[['fgc']]
+  fpc_stat <- jaatha.fpc@sum_stats[["fgc"]]
   expect_false(is.null(fpc_stat))
   expect_that(sum(fpc_stat$get_data()), is_more_than(0))
   expect_that(sum(fpc_stat$get_data()), 
@@ -60,7 +60,7 @@ test_that("initialization with iHH statistic works", {
   model <- model + coala::sumstat_ihh("ihh", position = .5)
   jaatha.fpc <- Jaatha.initialize(data, model)
   
-  stat <- jaatha.fpc@sum_stats[['ihh']]
+  stat <- jaatha.fpc@sum_stats[["ihh"]]
   expect_false(is.null(stat))
   expect_that(sum(stat$get_data()), is_more_than(0))
   expect_that(sum(stat$get_data()), 
@@ -68,11 +68,11 @@ test_that("initialization with iHH statistic works", {
 })
 
 
-test_that("initialization with Omega' statistic works", {
+test_that("initialization with OmegaPrime statistic works", {
   model <- model + coala::sumstat_omegaprime("op")
   jaatha.fpc <- Jaatha.initialize(data, model)
   
-  stat <- jaatha.fpc@sum_stats[['op']]
+  stat <- jaatha.fpc@sum_stats[["op"]]
   expect_false(is.null(stat))
   expect_that(sum(stat$get_data()), is_more_than(0))
   expect_that(sum(stat$get_data()), 

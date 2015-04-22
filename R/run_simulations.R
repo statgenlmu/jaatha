@@ -3,7 +3,7 @@
 #' @param pars A matrix with parameter values for the simulations. Each row is a
 #'         set of model parameters. Should be in jaatha internal 0-1 scaling.
 #' @param cores The number of cores to use. Using more than one core requires
-#'         the 'multicore' package.
+#'         the "multicore" package.
 #' @param jaatha The current jaatha object
 #' @return A list, where each entry is a list of summary statistics for a 
 #'         simulation.
@@ -21,7 +21,7 @@ runSimulations <- function(pars, cores, jaatha) {
   if ( "try-error" %in% unlist(sapply(sim.data, is)) ) {
     cat("Error(s) while simulating:\n")
     sapply(sim.data["try-error" %in% unlist(sapply(sim.data, is))],
-           function(x) print(attr(x, 'condition')))
+           function(x) print(attr(x, "condition")))
     stop("One or more errors while simulating. Check your sim.func")
   }
   
@@ -55,13 +55,13 @@ test_simulation <- function(jaatha, quite=FALSE) {
   
   time <- system.time(
     a <- runSimulation(1, pars, sampleSeed(1), jaatha)
-  )['elapsed']
+  )["elapsed"]
 
-  if (time > 30) warning('Each simulation takes about ', round(time),
-                         's, Jaatha might run for a long time.')
+  if (time > 30) warning("Each simulation takes about ", round(time),
+                         "s, Jaatha might run for a long time.")
   if (!quite) {
-    if (time < 1) message('A simulation takes less than a second')
-    else message('A simulation takes about ', round(time), 's')
+    if (time < 1) message("A simulation takes less than a second")
+    else message("A simulation takes about ", round(time), "s")
   }
   
   invisible(NULL)

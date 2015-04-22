@@ -10,25 +10,25 @@ classifyTriosByDistance(llm, near = c(5000, 10000), far = c(10000, 20000))
 \item{llm}{The Locus Length matrix as produced by
 \code{dm.getLociLengthMatrix}}
 
-\item{near}{A vector of length two, giving the boundaries for the 'near'
+\item{near}{A vector of length two, giving the boundaries for the "near"
 class.}
 
-\item{far}{A vector of length two, giving the boundaries for the 'far'
+\item{far}{A vector of length two, giving the boundaries for the "far"
 class.}
 }
 \value{
-A list with entries 'both_near', 'one_one' and 'both_far', which
+A list with entries "both_near", "one_one" and "both_far", which
   are vectors of the indexes of the loci that fall into the corresponding
   class.
 }
 \description{
-Each pair of loci in a trio can be either 'near' together
-(low distance between) or more 'far' appart (somewhat larger distance),
-where the distances corresponding to 'near' and 'far' can be defined as
+Each pair of loci in a trio can be either "near" together
+(low distance between) or more "far" appart (somewhat larger distance),
+where the distances corresponding to "near" and "far" can be defined as
 function arguments. The function returns trios for with the left to middle
-and middle to right comparisons is either 'both near', one near, one far'
-or 'both far'. Trio for which at least one distance is to short for 'near'
-or to large for 'far' are ignored.
+and middle to right comparisons is either "both near", one near, one far"
+or "both far". Trio for which at least one distance is to short for "near"
+or to large for "far" are ignored.
 }
 \author{
 Paul Staab

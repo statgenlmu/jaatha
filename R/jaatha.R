@@ -94,7 +94,7 @@ init <- function(.Object, sim_func, par_ranges, sum_stats,
       stop("Unknown summary statistic of type ", class(sum_stat))
     
     if (sum_stat$get_name() %in% names(.Object@sum_stats)) {
-      stop('There is already a summary statistic with name ', 
+      stop("There is already a summary statistic with name ", 
            sum_stat$get_name())
     }
 
@@ -162,7 +162,7 @@ Jaatha.initialize <- function(data, model, cores=1, scaling_factor=1,
                               smoothing=FALSE, only_synonymous=FALSE) {
   
   # --- Check parameters -------------------------------------
-  assert_that('Coalmodel' %in% class(model)) 
+  assert_that("Coalmodel" %in% class(model)) 
   assert_that(is.numeric(cores))
   assert_that(length(cores) == 1)
   assert_that(is.numeric(scaling_factor))
@@ -174,11 +174,11 @@ Jaatha.initialize <- function(data, model, cores=1, scaling_factor=1,
   
   
   # --- Convert the data into a list containing the seg.sites of the different groups
-  if ('GENOME' %in% is(data)) {
+  if ("GENOME" %in% is(data)) {
     checkModelDataConsistency(data, model)
     data <- convPopGenomeToSegSites(data, only_synonymous)
   }
-  if (!is.list(data)) stop('`data` has an unexpected format.')
+  if (!is.list(data)) stop("`data` has an unexpected format.")
   
   # ------------------------------------------------------------
   # Create Summary Statistics for summary statistic of the model
@@ -186,16 +186,16 @@ Jaatha.initialize <- function(data, model, cores=1, scaling_factor=1,
   sumstats <- list()
   
   #  if (length(groups) == 1) {
-  #    grp_name_ext <- ''
+  #    grp_name_ext <- ""
   #    group <- 0
   #  } else {
-  #    grp_name_ext <- paste0('.', group)
+  #    grp_name_ext <- paste0(".", group)
   #  }
   
   model_sumstats <- get_summary_statistics(model)
-  seg_sites <- data[['seg_sites']]
+  seg_sites <- data[["seg_sites"]]
   group <- 0
-  if (is.null(seg_sites)) stop('No seg_sites in `data` for group ', group)
+  if (is.null(seg_sites)) stop("No seg_sites in `data` for group ", group)
   assert_that(is.list(seg_sites))
   assert_that(length(seg_sites) == get_locus_number(model))
   assert_that(all(sapply(seg_sites, is.matrix)))
@@ -226,7 +226,7 @@ Jaatha.initialize <- function(data, model, cores=1, scaling_factor=1,
                                        sumstat, c(.5, .75, .95))
     }
     
-    # --- Omega' Summary Statistic ----------------------------------
+    # --- Omega" Summary Statistic ----------------------------------
     else if ("SumstatOmegaPrime" %in% class(sumstat)) {
       sumstats[[name]] <- Stat_OmegaPrime$new(seg_sites, model, 
                                               sumstat, c(.5, .75, .95))
@@ -242,14 +242,14 @@ Jaatha.initialize <- function(data, model, cores=1, scaling_factor=1,
     # FPC Summary Statistic
     # ------------------------------------------------------------
 #     if (use_fpc) {
-#       if (!'seg_sites' %in% get_summary_statistics(model)) {
+#       if (!"seg_sites" %in% get_summary_statistics(model)) {
 #         model <- model + sumstat_seg_sites()
 #       }
 #       
-#       # TODO: Assert that model contains 'seg.sites' statistic
+#       # TODO: Assert that model contains "seg.sites" statistic
 #       for (pop in 1:2) {
 #         if (pop %in% fpc_populations) {
-#           sumstats[[paste0('fpc_pop', pop, grp_name_ext)]] <- 
+#           sumstats[[paste0("fpc_pop", pop, grp_name_ext)]] <- 
 #             Stat_FPC$new(seg.sites, model, population = pop, group = group)
 #         }
 #       }
@@ -258,12 +258,12 @@ Jaatha.initialize <- function(data, model, cores=1, scaling_factor=1,
     # ------------------------------------------------------------
     # PMC Summary Statistic
     # ------------------------------------------------------------
-    #if ('pmc' %in% model.getSummaryStatistics(model, group)) {
+    #if ("pmc" %in% model.getSummaryStatistics(model, group)) {
     #  model <- calcPmcBreaks(model, seg.sites, group = group)
-    #  sumstats[[paste0('pmc', grp_name_ext)]] <- 
-    #    list(method='poisson.transformed', transformation=as.vector,
+    #  sumstats[[paste0("pmc", grp_name_ext)]] <- 
+    #    list(method="poisson.transformed", transformation=as.vector,
     #         value=createPolymClasses(seg.sites, model, group = group),
-    #         data = paste0('seg.sites', grp_name_ext))
+    #         data = paste0("seg.sites", grp_name_ext))
     #}
 
 
@@ -277,7 +277,7 @@ Jaatha.initialize <- function(data, model, cores=1, scaling_factor=1,
   
   jaatha <- new("Jaatha", 
                 sim_func=function(sim.pars, jaatha) {
-                  simulate(jaatha@opts[['model']], pars=sim.pars)
+                  simulate(jaatha@opts[["model"]], pars=sim.pars)
                 },
                 par_ranges=par_ranges,  
                 sum_stats=sumstats,
@@ -344,7 +344,7 @@ getScalingFactor <- function(jaatha) {
 }
 
 getStatName <- function(stat, group, pop) {
-  if (!missing(pop)) stat <- paste0(stat, '_pop', pop)
-  if (group > 0) stat <- paste0(stat, '.', group)
+  if (!missing(pop)) stat <- paste0(stat, "_pop", pop)
+  if (group > 0) stat <- paste0(stat, ".", group)
   stat
 }

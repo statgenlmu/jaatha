@@ -20,8 +20,8 @@ test_that("fitGlm works for PoiSmooth", {
 
 test_that("fitGlm works", {
   glm_fit <- fitGlm(jaatha.csi, sim.data.csi)
-  expect_that(glm_fit, is_a('list'))
+  expect_that(glm_fit, is_a("list"))
   expect_equal(length(glm_fit), 1)
   expect_false(is.null(glm_fit$csi))
-  expect_that(glm_fit$csi, is_a('list'))
+  expect_that(glm_fit$csi, is_a("list"))
 })

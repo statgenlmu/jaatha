@@ -12,7 +12,7 @@ test_that("initialization of iHH sumstat works", {
 })
 
 
-test_that("initialization of Omega' sumstat works", {
+test_that("initialization of OmegaPrime sumstat works", {
   stat <- coala::sumstat_omegaprime()
   ihh = Stat_OmegaPrime$new(sumstat_tt$seg_sites, dm_tt, stat, c(.1, .5, .9))
   expect_that(ihh$get_data(), is_a("integer"))

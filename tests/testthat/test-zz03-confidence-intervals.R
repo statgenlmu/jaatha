@@ -6,7 +6,7 @@ test_that("convertSimDataToSumStats works", {
   sim_data <- simulateWithinBlock(1, block.test, jaatha.csi)[[1]]
   sim_data$data <- rep(7.5, 6) 
   sum_stats <- list(csi=R6::R6Class("Stat_PoiInd", 
-                                    inherit = jaatha:::Stat_Base)$new(csi.obs, 'csi'))
+                                    inherit = jaatha:::Stat_Base)$new(csi.obs, "csi"))
   sum_stats <- convertSimDataToSumStats(sim_data, sum_stats)
   expect_equal(length(sum_stats), length(jaatha.csi@sum.stats))
   expect_false(all(jaatha.csi@sum.stats[[1]]$get_data() == 7.5))
@@ -26,7 +26,7 @@ test_that("Calculation of Confidence Intervals", {
   expect_true(all(conf.ints[, 1] <= estimates & estimates <= conf.ints[, 2]))
   
   # Simulate simulation on multiple machines using the subset feature
-  logs <- tempfile('j-test-logs')
+  logs <- tempfile("j-test-logs")
   Jaatha.confidenceIntervals(jaatha, 0.95, 20, 2, logs, 1:10)
   Jaatha.confidenceIntervals(jaatha, 0.95, 20, 2, logs, 11:20)
   jaatha <- Jaatha.getCIsFromLogs(jaatha, 0.95, logs)

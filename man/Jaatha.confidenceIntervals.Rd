@@ -31,7 +31,7 @@ copy all logs into a single folder and call
 \code{\link{Jaatha.getCIsFromLogs}} on this folder.}
 }
 \value{
-The Jaatha Object with confidence intervals included if 'subset' was
+The Jaatha Object with confidence intervals included if "subset" was
  not used. Nothing otherwise.
 }
 \description{

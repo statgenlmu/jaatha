@@ -1,6 +1,6 @@
 context("SumStat JSFS")
 
-test_that('Stat_JSFS works', {
+test_that("Stat_JSFS works", {
   stats <- list(Stat_JSFS, Stat_JSFS_border, Stat_JSFS_smooth)
   for (stat in stats) {
     jsfs = stat$new(sumstat_tt$seg_sites, dm_tt,

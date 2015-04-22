@@ -46,8 +46,8 @@ createModelFromPopGenome <- function(data, quiet=FALSE) {
   
   outgroup_size <- length(data@outgroup)
   outgroup_number <- length(sample_sizes) + 1
-  if (!quiet) message("Outgroup size: ", paste(outgroup_size, collapse=' '), 
-                      " (will be population ", outgroup_number, ')')
+  if (!quiet) message("Outgroup size: ", paste(outgroup_size, collapse=" "), 
+                      " (will be population ", outgroup_number, ")")
 
 
   loci_mask <- data@n.valid.sites > 0
@@ -55,9 +55,9 @@ createModelFromPopGenome <- function(data, quiet=FALSE) {
   loci_number <- sum(loci_mask)
   
   if (!quiet) message("Number of Loci: ", loci_number)
-  if (!quiet) message("Average Loci Length: ", loci_length, 'bp')
+  if (!quiet) message("Average Loci Length: ", loci_length, "bp")
   
-  # Calculate TS/TV, but don't add it to the model
+  # Calculate TS/TV, but don"t add it to the model
   tstv_ratio <- sum(sapply(data@region.data@transitions[loci_mask], sum)) /
       sum(sapply(data@region.data@transitions[loci_mask], function(x) sum(1-x)))
   if (!quiet) message("Observed TS/TV: ", tstv_ratio, " (Not added to Model)")

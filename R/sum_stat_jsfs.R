@@ -75,7 +75,7 @@ summarizeFoldedJSFS <- function(jsfs) {
 }
 
 # Binning
-Stat_JSFS <- R6Class('Stat_JSFS', 
+Stat_JSFS <- R6Class("Stat_JSFS", 
   inherit = Stat_PoiInd,
   public = list(
     initialize = function(seg_sites, model, stat) {
@@ -91,16 +91,16 @@ Stat_JSFS <- R6Class('Stat_JSFS',
   )
 )
 
-Stat_JSFS_border <- R6Class('Stat_JSFS_border', 
+Stat_JSFS_border <- R6Class("Stat_JSFS_border", 
   inherit = Stat_JSFS,
   public = list(
     transform = function(sim_data) summarizeFoldedJSFS(sim_data[[private$name]]),
-    get_name = function() paste0('border_', private$name)
+    get_name = function() paste0("border_", private$name)
   )
 )
 
 # Smoothing
-Stat_JSFS_smooth <- R6Class('Stat_JSFS_smooth',
+Stat_JSFS_smooth <- R6Class("Stat_JSFS_smooth",
   inherit = Stat_PoiSmooth,
   private = list(
       model = NA,

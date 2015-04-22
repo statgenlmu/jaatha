@@ -66,7 +66,7 @@ test_that("generateLociCube works", {
 })
 
 
-test_that('Distance based classification of trios works', {
+test_that("Distance based classification of trios works", {
   skip("Awaiting removal")
   llm <- matrix(c(0,0,1000,0,0), 5, 5, byrow = TRUE)
   expect_equal(classifyTriosByDistance(llm),
@@ -90,7 +90,7 @@ test_that('Distance based classification of trios works', {
 })
 
 
-test_that('Stat_FPC works with groups', {
+test_that("Stat_FPC works with groups", {
   skip("Awaiting removal")
   fpc = Stat_FPC$new(sumstat_tt$seg_sites, dm_tt, 1)
   expect_that(sum(fpc$get_data()), is_more_than(0))

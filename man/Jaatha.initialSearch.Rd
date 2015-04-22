@@ -18,7 +18,7 @@ restricting them to only a fraction of this axis.}
 
 \item{rerun}{You can repeat a previously done initial search in Jaatha.
        Do do so, just call the initial search function with the jaatha
-       object result of the first initial search and set rerun to 'TRUE'.}
+       object result of the first initial search and set rerun to "TRUE".}
 }
 \value{
 The jaatha object with starting positions

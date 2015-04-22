@@ -4,14 +4,14 @@ simLikelihood <- function(jaatha, sim, pars) {
 
   llh <- 0
   for (sum_stat in jaatha@sum_stats) {
-    # sapply + S3 dispatch case unit tests to fails => use 'for' here
+    # sapply + S3 dispatch case unit tests to fails => use "for" here
     llh <- llh + simLogLLH(sum_stat, sim_data, getScalingFactor(jaatha))
   }
   llh
 }
 
 simLogLLH <- function(sum_stat, ...) UseMethod("simLogLLH")
-simLogLLH.default <- function(sum_stat, ...) stop('Unkown Summary Statistic')
+simLogLLH.default <- function(sum_stat, ...) stop("Unkown Summary Statistic")
 
 simLogLLH.Stat_PoiInd <- function(sum_stat, sim_data, scaling_factor = 1) {
   values <- t(sapply(sim_data,  function(data) data[[sum_stat$get_name()]])) 

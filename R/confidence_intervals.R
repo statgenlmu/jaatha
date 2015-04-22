@@ -27,12 +27,12 @@
 #'  are accutally executed. After all runs have finished, you need to manally
 #'  copy all logs into a single folder and call 
 #'  \code{\link{Jaatha.getCIsFromLogs}} on this folder.
-#' @return The Jaatha Object with confidence intervals included if 'subset' was 
+#' @return The Jaatha Object with confidence intervals included if "subset" was 
 #'  not used. Nothing otherwise.
 #' @export
 Jaatha.confidenceIntervals <- function(jaatha, conf.level=0.95, 
                                       replicas=100, cores = 1, 
-                                      log.folder=tempfile('jaatha_logs_'),
+                                      log.folder=tempfile("jaatha_logs_"),
                                       subset=1:replicas) {
   
   # Get a seed for each replica plus for simulating data 
@@ -72,11 +72,11 @@ Jaatha.confidenceIntervals <- function(jaatha, conf.level=0.95,
 #' @param conf_level The intended confidence level of the interval. The actual
 #'               level can vary slightly.
 #' @param log_folder The folder with logs from the previous run. Just use the
-#'               folder that was given as 'log.folder' argument there.
+#'               folder that was given as "log.folder" argument there.
 #' @return The Jaatha Object with confidence intervals included.
 #' @export
 Jaatha.getCIsFromLogs <- function(jaatha, conf_level=0.95, log_folder) {
-  results <- list.files(log_folder, 'run_[0-9]+.Rda$', full.names = TRUE)
+  results <- list.files(log_folder, "run_[0-9]+.Rda$", full.names = TRUE)
   if (length(results) == 0) stop("Not logfiles of bootstrap runs found")
   message("Using ", length(results), " completed runs.")
   
@@ -144,7 +144,7 @@ calcBCaConfInt <- function(conf.level, bs.values, estimates, replicas) {
   quantiles.corrected <- pnorm(z.hat.null + (z.hat.null + z.alpha) / 
                                  (1-a.hat*(z.hat.null + z.alpha)))  
   conf.int <- quantile(bs.values, probs=quantiles.corrected) 
-  names(conf.int) <- c('lower', 'upper')
+  names(conf.int) <- c("lower", "upper")
   return(conf.int)
 }
 

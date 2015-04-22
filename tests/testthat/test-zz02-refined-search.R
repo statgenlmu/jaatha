@@ -1,6 +1,6 @@
-context('Refined Search')
+context("Refined Search")
 
-test_that('refined search works', {
+test_that("refined search works", {
   tmp <- tempfile()
 
   sink(tmp)
@@ -17,7 +17,7 @@ test_that('refined search works', {
 })
 
 
-test_that('refined search works with smoothing', {
+test_that("refined search works with smoothing", {
   tmp <- tempfile()
   sink(tmp)
   smooth_jaatha <- Jaatha.initialSearch(smooth_jaatha, 25, 2)

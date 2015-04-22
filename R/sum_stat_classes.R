@@ -5,9 +5,9 @@ Stat_Base <- R6Class("Stat_Base",
       private$name = name
       self$set_data(sim_data)
       if (length(private$data) == 0) 
-        stop('Failed to convert real data to ', name)
+        stop("Failed to convert real data to ", name)
       if (any(is.na(private$data)))
-        stop('NAs in real data for ', name)
+        stop("NAs in real data for ", name)
     },
     transform = function(sim_data) as.vector(sim_data$data),
     get_data = function() private$data,
@@ -16,7 +16,7 @@ Stat_Base <- R6Class("Stat_Base",
   ),
   private = list(
     data = NA,
-    name = ''
+    name = ""
   )
 )
 
@@ -39,9 +39,9 @@ Stat_PoiSmooth <- R6Class("Stat_PoiSmooth", inherit = Stat_Base,
     to_data_frame = function(data) {
       stopifnot(!is.null(data))
       dim_names <- lapply(dim(data), function(x) 1:x)
-      names(dim_names) <- paste0('X', 1:length(dim(data)))
+      names(dim_names) <- paste0("X", 1:length(dim(data)))
       dimnames(data) <- dim_names
-      melt(data, value.name = 'sum.stat')
+      melt(data, value.name = "sum.stat")
     }
   )
 )

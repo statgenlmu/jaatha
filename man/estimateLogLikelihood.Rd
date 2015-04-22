@@ -12,7 +12,7 @@ names are the name of the parameters.}
 
 \item{glm_fitted}{A list of the fitted GLMs, as produced by fitGLM().}
 
-\item{sum_stats}{The summary statistic description, as in jaatha's sum.stats}
+\item{sum_stats}{The summary statistic description, as in jaatha"s sum.stats}
 
 \item{scaling_factor}{The scaling factor used for the simulations
 slot.}
