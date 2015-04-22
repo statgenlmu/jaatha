@@ -42,7 +42,7 @@
 #' @export
 Jaatha.confidenceIntervals <- function(jaatha, conf.level=0.95, 
                                       replicas=100, cores = 1, 
-                                      log.folder=tempfile('jaatha-logs'),
+                                      log.folder=tempfile('jaatha_logs_'),
                                       subset=1:replicas) {
   
   # Get a seed for each replica plus for simulating data 
@@ -87,6 +87,7 @@ Jaatha.confidenceIntervals <- function(jaatha, conf.level=0.95,
 #' @export
 Jaatha.getCIsFromLogs <- function(jaatha, conf_level=0.95, log_folder) {
   results <- list.files(log_folder, 'run_[0-9]+.Rda$', full.names = TRUE)
+  if (length(results) == 0) stop("Not logfiles of bootstrap runs found")
   message("Using ", length(results), " completed runs.")
   
   est_pars <- Jaatha.getLikelihoods(jaatha, 1)[, -(1:2)]
@@ -101,6 +102,7 @@ Jaatha.getCIsFromLogs <- function(jaatha, conf_level=0.95, log_folder) {
     pars
   }))
   
+  print(bs_estimates)
   jaatha@conf.ints <- t(sapply(1:ncol(bs_estimates), function(i) {
     par.name <- getParNames(jaatha)[i]
     return(calcBCaConfInt(conf_level, bs_estimates[,i], 
@@ -121,7 +123,7 @@ rerunAnalysis <- function(idx, jaatha, seeds, sim_data=NULL, log.folder) {
   jaatha@seeds <- c(seeds[idx], sampleSeed(2))
   sink(paste0(log.folder, "/run_", idx, ".log"))
   jaatha@cores <- 1
-  if (!is.null(sim.data)) {
+  if (!is.null(sim_data)) {
     jaatha@sum_stats <- convertSimDataToSumStats(sim_data[[idx]], 
                                                  jaatha@sum_stats)
   }

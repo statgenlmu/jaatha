@@ -6,7 +6,7 @@
 jaatha estimates.}
 \usage{
 Jaatha.confidenceIntervals(jaatha, conf.level = 0.95, replicas = 100,
-  cores = 1, log.folder = tempfile("jaatha-logs"), subset = 1:replicas)
+  cores = 1, log.folder = tempfile("jaatha_logs_"), subset = 1:replicas)
 }
 \arguments{
 \item{jaatha}{A jaatha object that was returned by Jaatha.refinedSearch.}
