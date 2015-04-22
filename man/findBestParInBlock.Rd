@@ -2,26 +2,29 @@
 % Please edit documentation in R/find_best_par_in_block.R
 \name{findBestParInBlock}
 \alias{findBestParInBlock}
-\title{Functions that uses the fitted GLMs to estimate the parameters that have the
-highest likelihood.}
+\title{Function that uses the fitted GLMs to estimate maximum likelihood
+parameters within a block.}
 \usage{
-findBestParInBlock(block, glm.fitted, sum.stats, scaling_factor = 1)
+findBestParInBlock(block, glm_fitted, sum_stats, scaling_factor = 1)
 }
 \arguments{
 \item{block}{The block we are in.}
 
-\item{glm.fitted}{The fitted GlMs.}
+\item{glm_fitted}{The fitted GlMs.}
 
-\item{sum.stats}{The observed summary statistics}
+\item{sum_stats}{The observed summary statistics}
 
 \item{scaling_factor}{The scaling factor used for the simulations}
 }
 \value{
-A list with maximum likelihood parameter (est) and log-likelihood
-(score)
+A list with maximum likelihood parameter (\code{est})
+  and log-likelihood (\code{score})
 }
 \description{
-Functions that uses the fitted GLMs to estimate the parameters that have the
-highest likelihood.
+Function that uses the fitted GLMs to estimate maximum likelihood
+parameters within a block.
+}
+\author{
+Paul Staab & Lisha Mathew
 }
 

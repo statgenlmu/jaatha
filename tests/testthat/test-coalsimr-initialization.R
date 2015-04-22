@@ -1,12 +1,13 @@
 context("coalsimr initialization")
 
-model <- coalsimr::coal_model(10:11, 10, 100) +
-  coalsimr::feat_pop_merge(coalsimr::par_range("tau", .1, 2), 2, 1) +
-  coalsimr::feat_mutation(coalsimr::par_range("theta", 1, 10)) +
-  coalsimr::feat_recombination(1) +
-  coalsimr::sumstat_jsfs()
+set.seed(112233)
+model <- coala::coal_model(10:11, 10, 100) +
+  coala::feat_pop_merge(coala::par_range("tau", .1, 2), 2, 1) +
+  coala::feat_mutation(coala::par_range("theta", 1, 10)) +
+  coala::feat_recombination(1) +
+  coala::sumstat_jsfs()
 
-data <- simulate(model + coalsimr::sumstat_seg_sites(), pars=c(1, 5))
+data <- simulate(model + coala::sumstat_seg_sites(), pars=c(1, 5))
 
 
 test_that("coalsimr initialization works", {  

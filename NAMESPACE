@@ -3,7 +3,6 @@
 export(Jaatha.confidenceIntervals)
 export(Jaatha.getCIsFromLogs)
 export(Jaatha.getLikelihoods)
-export(Jaatha.getStartingPoints)
 export(Jaatha.initialSearch)
 export(Jaatha.initialize)
 export(Jaatha.refinedSearch)

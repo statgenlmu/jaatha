@@ -1,6 +1,6 @@
 context("Simulation")
 
-test_that("test.runSimulatinos", {
+test_that("runSimulations works", {
     set.seed(15)
     pars.test <- matrix(0.5, 3, 2)
     sum.stats1 <- runSimulations(pars.test, 1, jaatha.csi)
@@ -15,11 +15,11 @@ test_that("test.runSimulatinos", {
 })
 
 
-test_that("test.simulateWithinBlock", {
+test_that("simulateWithinBlock works", {
     checkSumStat <- function(x, block) {
         if (is.null(x$pars) || is.null(x$pars.normal)) 
             return(FALSE)
-        isInBlock(block, x$pars.normal)
+        block$includes(x$pars.normal)
     }
     sum.stats <- simulateWithinBlock(10, block.test, jaatha.csi)
     expect_true(is.list(sum.stats))

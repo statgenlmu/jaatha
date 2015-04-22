@@ -48,9 +48,7 @@ NULL
 #'    are used to rerun the searches with the exactly same settings for
 #'    generating bootstrap confidence intervals and the likelihood-ratio
 #'    statistic.} 
-#'    \item{starting.positions}{A list of the starting positions, returned by
-#'    the initial search}
-#'    \item{likelihood.table}{A matrix with the best composite log likelihood values and 
+#'    \item{likelihoods_rs}{A matrix with the best composite log likelihood values and 
 #'                            corresponding parameters}
 #'    \item{conf.ints}{Confidence Intervals for parameter estimates produced by
 #'    Jaatha.confidenceIntervals} 
@@ -72,8 +70,8 @@ setClass("Jaatha",
 
       opts = "list",
       calls = "list",
-      starting.positions = "list",
-      likelihood.table = "matrix",
+      likelihoods_rs = "matrix",
+      likelihoods_is = "matrix",
       conf.ints = "matrix",
       route = "list",
       scaling_factor = "numeric"
@@ -128,8 +126,7 @@ init <- function(.Object, sim_func, par_ranges, sum_stats,
   .Object@opts <- options
   .Object@calls <- list()
   .Object@conf.ints <- matrix()
-  .Object@likelihood.table <- matrix()
-  .Object@starting.positions <- list()
+  .Object@likelihoods_rs <- matrix()
   
   .Object@scaling_factor <- scaling_factor
   
@@ -305,8 +302,8 @@ Jaatha.initialize <- function(data, model, cores=1, scaling_factor=1,
 
 ## Shows the content of the slots of the Jaatha object.
 .show <- function(object) {
-  initial.done <- length(object@starting.positions) > 0
-  refined.done <- !is.na(object@likelihood.table[1,1])
+  initial.done <- !is.na(object@likelihoods_is[1,1])
+  refined.done <- !is.na(object@likelihoods_rs[1,1])
   cat("This is a container object for everything related to a Jaatha analysis.\n\n")
   cat("Status of this analysis:\n")
   cat("Initialization... done\n")
@@ -320,7 +317,7 @@ Jaatha.initialize <- function(data, model, cores=1, scaling_factor=1,
   
   if(initial.done & !refined.done) {
     cat("Possible starting positios:\n")
-    print(Jaatha.getStartingPoints(object))
+    print(Jaatha.getLikelihoods(object, initial_search = TRUE))
     cat("\n")
   }
   if(refined.done) {
@@ -340,98 +337,10 @@ Jaatha.initialize <- function(data, model, cores=1, scaling_factor=1,
 setMethod("show","Jaatha",.show)
 rm(.show)
 
-Jaatha.pickBestStartPoints <- function(blocks, best){
-  returnPoints <- list()
-  nBlocks <- length(blocks)
-  sortedL <- sort(sapply(1:nBlocks, function(x) blocks[[x]]@score),
-      decreasing=TRUE)
-  #cat("There used to be",nBlocks,"blocks in the list.\n")
-  #print(sortedL)
-  #cat("Keeping Block: ")
-  if (best>length(blocks)){
-    stop("There are only ",length(blocks)," blocks to choose from not ",best,"!")
-  }else{
-    for (s in 1:best){
-      for (p in seq(along = blocks)){
-        if (sortedL[s] == blocks[[p]]@score){
-          returnPoints <- c(returnPoints,blocks[[p]])
-          #cat(p," ")
-        }else{}
-      }
-    }
-   # cat("\n")
-  }
-  
-  return(returnPoints)
-}
-
-
-## Function to convert 'value' into a 'newBase'-system.  'expo'
-## determines the length of the return vector, i.e. how many positions
-## the result has. Each position has value: ('newBase'^('expo'-1)).
-## value: [0 .. ('newBase'^'expo')-1]
-.index2blocks <- function(value,newBase,expo){
-  if(value>= newBase^expo){
-    print(list(ERROR="Value is too big, i.e. not convertible! \n"))
-  }
-  else{
-    res <- c()
-    expo <- expo - 1
-    while (expo>-1){
-      pos <- newBase^expo
-      whole <- floor(value/pos)
-      res <- c(res,whole)
-      value <- value- whole*pos
-      expo <- expo -1 
-    }
-    if (value!=0) print(list(ERROR="Value is not convertible! \n"))
-    else res
-  }
-}
-
-#' Print Start points
-#'
-#' Method to print the start Points given by an initial Jaatha
-#' search sorted by score.
-#'
-#' @param jaatha The Jaatha options
-#' @return a matrix with score and parameters of each start point
-#' @export
-Jaatha.getStartingPoints <- function(jaatha){
-  checkType(jaatha, "jaatha")
-  mat <- t(sapply(jaatha@starting.positions, 
-                  function(x) round(c(log.likelihood=x@score,
-                                      denormalize(x@MLest, jaatha)), 3)) )
-
-  perm <- sort.list(mat[,1],decreasing=T) 
-  return(mat[perm, , drop=FALSE])
-}
-
-#' Gives the best estimates after a Jaatha search
-#'
-#' This method extracts the best estimates with log composite likelihood
-#' vales from an Jaatha object.
-#'
-#' @param jaatha The Jaatha options
-#' @param max.entries If given, no more than this number of entries will be 
-#'                returned.
-#' @return A matrix with log composite likelihoods and parameters of The
-#' best estimates
-#' @export
-Jaatha.getLikelihoods <- function(jaatha, max.entries=NULL) {
-  checkType(jaatha, "jaatha")
-  lt <- jaatha@likelihood.table
-  lt[,-(1:2)] <- t(sapply(1:nrow(lt), function(n) denormalize(lt[n,-(1:2), drop=F], jaatha)))
-  perm <- sort.list(lt[,1],decreasing=T)  
-  lt <- lt[perm, , drop=F]
-  return(lt[1:min(max.entries, nrow(lt)), , drop=F])
-}
-
-
-printBestPar <- function(jaatha, block) {
+printBestPar <- function(estimate, likelihood, jaatha) {
   .print("Best parameters", 
-         round(denormalize(block@MLest, jaatha), 3),
-         "with estimated log-likelihood ", round(block@score, 3))
+         round(denormalize(estimate, jaatha), 3),
+         "with estimated log-likelihood ", round(likelihood, 3))
 }
 
 

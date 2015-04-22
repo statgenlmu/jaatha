@@ -290,7 +290,7 @@ jaatha <- Jaatha.initialSearch(jaatha,
 \noindent
 To visualise the estimates for good stating positions sorted by score, type:
 <<PrintStartPoints>>=
-Jaatha.getStartingPoints(jaatha)
+Jaatha.getLikelihoods(jaatha, initial_search = TRUE)
 @
 \noindent
 Here, there is a big reduction in the likelihoods after the first three blocks. 

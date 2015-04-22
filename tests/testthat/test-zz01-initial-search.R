@@ -21,24 +21,25 @@ test_that("initial search works", {
   sink(tmp)
   jaatha <- Jaatha.initialSearch(jaatha.csi, 10, 2)
   sink(NULL)
-  pStartPoints <- Jaatha.getStartingPoints(jaatha)
+  pStartPoints <- Jaatha.getLikelihoods(jaatha, initial_search = TRUE)
   expect_equal(nrow(pStartPoints), 4)
   
   sink(tmp)
   jaatha.csi@cores <- 1
   jaatha <- Jaatha.initialSearch(jaatha.csi, 10, 2)
   sink(NULL)
-  expect_equal(pStartPoints, Jaatha.getStartingPoints(jaatha))
+  expect_equal(pStartPoints, 
+               Jaatha.getLikelihoods(jaatha, initial_search = TRUE))
 
   sink(tmp)
   jaatha <- Jaatha.initialSearch(jaatha.csi, 10, 1)
   sink(NULL)
-  expect_equal(nrow(Jaatha.getStartingPoints(jaatha)), 1)
+  expect_equal(nrow(Jaatha.getLikelihoods(jaatha, initial_search = TRUE)), 1)
   
   sink(tmp)
   jaatha <- Jaatha.initialSearch(jaatha.csi, 10, 3)
   sink(NULL)
-  expect_equal(nrow(Jaatha.getStartingPoints(jaatha)), 6)
+  expect_equal(nrow(Jaatha.getLikelihoods(jaatha, initial_search = TRUE)), 6)
   
   unlink(tmp)
 })

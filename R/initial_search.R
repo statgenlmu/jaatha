@@ -44,10 +44,12 @@ Jaatha.initialSearch <- function(jaatha, sim=200, blocks.per.par=2, rerun=FALSE)
   set.seed(jaatha@seeds[2])
 
   firstBlocks <- createInitialBlocks(jaatha@par.ranges, blocks.per.par)
+  jaatha@likelihoods_is <- create_likelihood_table(jaatha, length(firstBlocks))
+  
 
   for (i in seq(along=firstBlocks)){
     .print("*** Block", i, "of", length(firstBlocks), ":", 
-           printBorder(firstBlocks[[i]], jaatha))
+           firstBlocks[[i]]$print_border(jaatha))
 
     sim.data <- list()     
     
@@ -67,38 +69,40 @@ Jaatha.initialSearch <- function(jaatha, sim=200, blocks.per.par=2, rerun=FALSE)
     optimal <- findBestParInBlock(firstBlocks[[i]], glms.fitted, 
                                   jaatha@sum_stats, getScalingFactor(jaatha)) 
     
-    firstBlocks[[i]]@score <- optimal$score
-
-    firstBlocks[[i]]@MLest <- c(optimal$est, optimal$theta)
-    printBestPar(jaatha, firstBlocks[[i]])
-
+    
+    jaatha@likelihoods_is[i, ] <- c(optimal$score, i, optimal$est)
+    printBestPar(optimal$est, optimal$score, jaatha)
+    
     .print()
   }
 
-  jaatha@starting.positions <- firstBlocks
-  print(Jaatha.getStartingPoints(jaatha))
+  .print("Possible starting positions are:")
+  print(Jaatha.getLikelihoods(jaatha, initial_search = TRUE)[ , -2])
 
-  return(jaatha)
+  jaatha
 }
+
 
 createInitialBlocks <- function(par.ranges, blocks.per.par) {
   basic.block <- par.ranges # Just to get dimensions & names
-  basic.block[,1] <- 0
-  basic.block[,2] <- 1
+  basic.block[ , 1] <- 0
+  basic.block[ , 2] <- 1
   
   if (blocks.per.par == 1) {
-    return(list(new("Block", border=basic.block)))
+    return(list(block_class$new(basic.block)))
   }
 
-  blocks <- vector("list", nrow(par.ranges)*blocks.per.par)
+  blocks <- list() 
+  length(blocks) <- nrow(par.ranges) * blocks.per.par
   for (i in 1:nrow(par.ranges)) {
     for (j in 1:blocks.per.par) {
       new.block <- basic.block
-      new.block[i,2] <- 1/blocks.per.par
-      new.block[i, ] <- new.block[i, ] + (j-1)/blocks.per.par
-      blocks[(j-1)*nrow(par.ranges)+i] <- new("Block", border=new.block)
+      new.block[i, 2] <- 1 / blocks.per.par
+      new.block[i, ] <- new.block[i, ] + (j - 1) / blocks.per.par
+      blocks[[(j - 1) * nrow(par.ranges) + i]] <- block_class$new(new.block)
     }
   }
 
   blocks
 }
+

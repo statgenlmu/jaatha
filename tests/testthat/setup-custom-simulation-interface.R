@@ -1,8 +1,7 @@
 set.seed(111222555)
 
 # A Block
-block.test <- new("Block")
-block.test@border <- matrix(c(0.4, 0.4, 0.6, 0.6), 2, 2) 
+block.test <- block_class$new(matrix(c(0.4, 0.4, 0.6, 0.6), 2, 2))
 
 csi.sim.func <- function(x, jaatha) rpois(20, x)
 csi.obs <- csi.sim.func(c(3,5))
@@ -45,17 +44,11 @@ suppressMessages(smooth_jaatha <- new("Jaatha", smooth_simfunc,
 smooth_sim_data <- jaatha:::simulateWithinBlock(10, block.test, smooth_jaatha)
 
 
-dm_tt <- coalsimr::coal_model(c(10, 10), 10) +
-  coalsimr::feat_pop_merge(coalsimr::par_range('tau', 0.01, 5), 2, 1) +
-  coalsimr::feat_mutation(coalsimr::par_range('theta', 1, 10)) +
-  coalsimr::feat_migration(coalsimr::par_const(2), symmetric = TRUE) +
-  coalsimr::sumstat_seg_sites() +
-  coalsimr::sumstat_jsfs()
+dm_tt <- coala::coal_model(c(10, 10), 10) +
+  coala::feat_pop_merge(coalsimr::par_range('tau', 0.01, 5), 2, 1) +
+  coala::feat_mutation(coalsimr::par_range('theta', 1, 10)) +
+  coala::feat_migration(coalsimr::par_const(2), symmetric = TRUE) +
+  coala::sumstat_seg_sites() +
+  coala::sumstat_jsfs()
 
 sumstat_tt <- simulate(dm_tt, pars=c(1,5))
-
-dm_grps <- dm_tt +
-  coalsimr::locus_averaged(11, 101, group = 2) +
-  coalsimr::locus_averaged(12, 102, group = 3)
-sum_stat_grps <- simulate(dm_grps, pars=c(1,5))
-
