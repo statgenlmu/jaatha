@@ -1,7 +1,7 @@
 context("SumStat Cubes")
 
 test_that("initialization of iHH sumstat works", {
-  #skip_if_not_installed("rehh")
+  if (!requireNamespace("rehh", quietly = TRUE)) skip("rehh not installed")
   stat <- coala::sumstat_ihh(position = .5)
   ihh = Stat_Ihh$new(sumstat_tt$seg_sites, dm_tt, stat, c(.1, .5, .9))
   expect_that(ihh$get_data(), is_a("integer"))
