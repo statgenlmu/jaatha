@@ -1,3 +1,7 @@
+[![Build Status](https://travis-ci.org/paulstaab/jaatha.png?branch=master)](https://travis-ci.org/paulstaab/jaatha)
+[![Coverage Status](https://coveralls.io/repos/paulstaab/jaatha/badge.svg?branch=master)](https://coveralls.io/r/paulstaab/jaatha)
+![Download Number](http://cranlogs.r-pkg.org/badges/jaatha)
+
 Jaatha
 ======
 
@@ -35,9 +39,6 @@ in R.
 
 
 ### Development Version
-
-[![Build Status](https://travis-ci.org/paulstaab/jaatha.png?branch=master)](https://travis-ci.org/paulstaab/jaatha)
-[![Coverage Status](https://coveralls.io/repos/paulstaab/jaatha/badge.svg?branch=master)](https://coveralls.io/r/paulstaab/jaatha)
 
 You can install the development version from [GitHub][4] using: 
 
