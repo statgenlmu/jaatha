@@ -3,6 +3,7 @@ par_range_class <- R6Class("par_range",
   private = list(
     range = NA,
     log_range = NA,
+    log_range_width = NA,
     offset = 0
   ),
   public = list(

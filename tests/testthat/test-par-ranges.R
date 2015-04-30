@@ -19,18 +19,8 @@ test_that("Parameter normalization works", {
 
 test_that("Parameter denormalization works", {
   par_range <- par_range_class$new(matrix(-3:2, 3, 2))
-  expect_true(all(par_range$denormalize(c(0, 0, 0)) == c(0, 0, 0)))
-  expect_true(all(par_range$denormalize(c(1, 1, 1)) == c(1, 1, 1)))
-  expect_true(sum(abs(denormalize(c(0, 0), jaatha.csi) - c(0.1, 0.1))) < 1e-11)
-  expect_true(sum(abs(denormalize(c(1, 1), jaatha.csi) - c(10, 10))) < 1e-11)
+  expect_equal(par_range$denormalize(c(0, 0, 0)), -3:-1)
+  expect_equal(par_range$denormalize(c(1, 1, 1)), 0:2)  
+  expect_true(all(par_range$normalize(rep(.5, 3)) > -3))
+  expect_true(all(par_range$normalize(rep(.5, 3)) < 2))  
 })
-
-
-test_that("Normalization and Denormalization are inverse", {
-    for (x in 0:10/10) {
-        pars <- rep(x, 2)
-        expect_true(sum(abs(normalize(denormalize(x, jaatha.csi), 
-            jaatha.csi) - pars)) < 1e-11)
-    }
-})
-
