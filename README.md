@@ -45,7 +45,7 @@ in R.
 You can install the development version from [GitHub][4] using: 
 
 ```R
-devtools::install_github('paulstaab/jaatha')
+devtools::install_github('statgenlmu/jaatha')
 ```
 
 
@@ -61,11 +61,11 @@ Links
 -----
 
 [1]: http://onlinelibrary.wiley.com/doi/10.1002/ece3.722/abstract
-[2]: https://github.com/paulstaab/jaatha/raw/master/howtos/jaatha_howto.pdf
-[3]: https://github.com/paulstaab/jaatha/raw/master/howtos/custom_simulator_howto.pdf
-[4]: https://github.com/paulstaab/jaatha
+[2]: https://github.com/statgenlmu/jaatha/raw/master/howtos/jaatha_howto.pdf
+[3]: https://github.com/statgenlmu/jaatha/raw/master/howtos/custom_simulator_howto.pdf
+[4]: https://github.com/statgenlmu/jaatha
 
 * [Jaatha's Homepage](http://evol.bio.lmu.de/_statgen/software/jaatha)
-* [Source Code on GitHub](https://github.com/paulstaab/jaatha)
-* [Bug tracker](https://github.com/paulstaab/jaatha/issues)
+* [Source Code on GitHub](https://github.com/statgenlmu/jaatha)
+* [Bug tracker](https://github.com/paulstaab/statgenlmu/issues)
 * [Jaatha's page on CRAN](http://cran.r-project.org/web/packages/jaatha/index.html)
