@@ -1,6 +1,8 @@
-[![Build Status](https://travis-ci.org/paulstaab/jaatha.png?branch=master)](https://travis-ci.org/paulstaab/jaatha)
-[![Coverage Status](https://coveralls.io/repos/paulstaab/jaatha/badge.svg?branch=master)](https://coveralls.io/r/paulstaab/jaatha)
-![Download Number](http://cranlogs.r-pkg.org/badges/jaatha)
+[![Linux Build Status](https://travis-ci.org/statgenlmu/jaatha.svg?branch=master)](https://travis-ci.org/statgenlmu/jaatha) 
+[![Windows Build status](https://ci.appveyor.com/api/projects/status/2jrb6391ufp3p1an/branch/master?svg=true)](https://ci.appveyor.com/project/paulstaab/jaatha/branch/master) 
+[![Coverage Status](https://coveralls.io/repos/paulstaab/jaatha/badge.svg?branch=master)](https://coveralls.io/r/paulstaab/jaatha) 
+[![CRAN RStudio mirror downloads](http://cranlogs.r-pkg.org/badges/jaatha)](http://cran.r-project.org/web/packages/jaatha/index.html)
+
 
 Jaatha
 ======
