@@ -3,6 +3,7 @@ language: c
 env:
   global:
   - WARNINGS_ARE_ERRORS=1
+sudo: required
 
 before_install:
   - rm .Rprofile
@@ -13,8 +14,7 @@ before_install:
 install:
   - ./travis-tool.sh install_deps
   - ./travis-tool.sh aptget_install seq-gen
-  - ./travis-tool.sh github_package paulstaab/coala
-  - ./travis-tool.sh github_package jimhester/covr
+  - ./travis-tool.sh github_package statgenlmu/coala
 
 script: ./travis-tool.sh run_tests
 
@@ -22,6 +22,8 @@ after_failure:
   - ./travis-tool.sh dump_logs
 
 after_success:
+  - ./travis-tool.sh r_binary_install igraph stringdist shiny
+  - ./travis-tool.sh r_install covr
   - Rscript -e 'library(covr); coveralls()'
 
 notifications:
