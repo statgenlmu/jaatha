@@ -7,25 +7,25 @@ Authors@R: c(
     person('Paul', 'Staab', , 'develop@paulstaab.de', role=c('aut', 'cre', 'cph')),
     person('Lisha', 'Mathew', role=c('aut', 'cph')),
     person('Dirk', 'Metzler', role=c('aut', 'cph', 'ths')) )
-BugReports: https://github.com/paulstaab/jaatha
 Description: Jaatha is a composite likelihood method for inferring evolutionary
     parameters using genetic data. Given a model of the evolutionary history of
     two biological populations as well as SNP data from multiple individuals
     from each population, it estimates model parameters like the time of
     separation of both species.
 URL: http://evol.bio.lmu.de/_statgen/software/jaatha
+BugReports: https://github.com/paulstaab/jaatha/issues
 Depends:
     R (>= 3.1.0),
     methods
 Imports:
     assertthat (>= 0.1),
-    coala (>= 0.0.9030),
-    PopGenome (>= 2.1.0),
+    coala (>= 0.0.9100),
     R6 (>= 2.0.1),
     reshape2 (>= 1.4),
     parallel
 Suggests:
-    testthat
+    testthat (>= 0.10.0),
+    PopGenome (>= 2.1.0)
 Collate:
     'block.R'
     'confidence_intervals.R'
