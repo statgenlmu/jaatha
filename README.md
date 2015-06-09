@@ -2,7 +2,6 @@
 [![Windows Build Status](https://ci.appveyor.com/api/projects/status/m2liqrwf277ag6kh/branch/master?svg=true)](https://ci.appveyor.com/project/paulstaab/jaatha/branch/master) 
 [![Test Coverage](https://coveralls.io/repos/paulstaab/jaatha/badge.svg?branch=master)](https://coveralls.io/r/paulstaab/jaatha) 
 [![CRAN Status](http://www.r-pkg.org/badges/version/jaatha)](http://cran.r-project.org/web/packages/jaatha)
-[![CRAN RStudio Mirror Downloads](http://cranlogs.r-pkg.org/badges/jaatha)](http://cran.r-project.org/web/packages/jaatha/index.html)
 
 
 Jaatha

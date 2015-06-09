@@ -1,16 +1,24 @@
 #' @importFrom coala get_outgroup_size
 checkModelDataConsistency <- function(data, model) {
+  if (!requireNamespace("PopGenome", quietly = TRUE)) {
+    stop("Please install package 'PopGenome'")
+  }
+  
   if (get_outgroup_size(model) != length(data@outgroup)) {
     stop("Expecting an outgroup size of ", length(data@outgroup), 
          " from data, but is ", get_outgroup_size(model), " in model.")
   }
 }
 
-#' @importFrom PopGenome get.biallelic.matrix
+
 convPopGenomeToSegSites <- function(data, only_synonymous=FALSE) {
+  if (!requireNamespace("PopGenome", quietly = TRUE)) {
+    stop("Please install package 'PopGenome'")
+  }
+  
   seg_sites_list <- lapply(1:length(data@n.valid.sites), function(i) {
     if (data@n.valid.sites[[i]] == 0) return(NULL)
-    seg_sites <- get.biallelic.matrix(data, i)
+    seg_sites <- PopGenome::get.biallelic.matrix(data, i)
     
     # Sort individuals as Pop1, Pop2, Outgroup
     pop1 <- which(row.names(seg_sites) %in% data@populations[[1]])
@@ -33,8 +41,13 @@ convPopGenomeToSegSites <- function(data, only_synonymous=FALSE) {
   list(seg_sites = seg_sites_list[!sapply(seg_sites_list, is.null)])
 }
 
+
 #' @importFrom coala coal_model feat_outgroup
 createModelFromPopGenome <- function(data, quiet=FALSE) {
+  if (!requireNamespace("PopGenome", quietly = TRUE)) {
+    stop("Please install package 'PopGenome'")
+  }
+  
   stopifnot("GENOME" %in% is(data))
   sample_sizes <- sapply(data@populations, length)
   if (!quiet) { 
