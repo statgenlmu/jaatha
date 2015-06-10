@@ -34,7 +34,7 @@ Stat_Cube <- R6Class("Stat_Cube", inherit = Stat_PoiInd,
 Stat_Ihh <- R6Class("Stat_Ihh", inherit = Stat_Cube,
   public = list(
     to_matrix = function(value) {
-      do.call(rbind, lapply(value, function(x) rowMeans(x)))
+      do.call(rbind, lapply(value, function(x) max(x[ , 3])))
     }
   )
 )
