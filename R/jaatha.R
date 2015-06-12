@@ -80,7 +80,8 @@ init <- function(.Object, sim_func, par_ranges, sum_stats,
 
   # Check par.ranges
   assert_that(is.matrix(par_ranges))
-  dim(par_ranges)[2] == 2 || stop("par.ranges must have two columns")
+  nrow(par_ranges) > 0 || stop("No parameters specified")
+  ncol(par_ranges) == 2 || stop("par.ranges must have two columns")
   colnames(par_ranges) <- c("min", "max")
   if (is.null(rownames(par_ranges))) 
     rownames(par_ranges) <- as.character(1:nrow(par_ranges)) 
@@ -215,6 +216,11 @@ Jaatha.initialize <- function(data, model, cores=1, scaling_factor=1,
       }
     }
     
+    # --- JSFS Summary Statistic ------------------------------------
+    else if ("SumstatSfs" %in% class(sumstat)) {
+      sumstats[[name]] <- Stat_sfs$new(seg_sites, model, sumstat)
+    }
+    
     # --- Four Gamete Summary Statistic -----------------------------
     else if ("SumstatFourGamete" %in% class(sumstat)) {
       sumstats[[name]] <- Stat_FPC$new(seg_sites, model, sumstat)
@@ -231,40 +237,12 @@ Jaatha.initialize <- function(data, model, cores=1, scaling_factor=1,
       sumstats[[name]] <- Stat_OmegaPrime$new(seg_sites, model, 
                                               sumstat, c(.5, .75, .95))
     }
+    
   }
   
   if (scaling_factor != 1) {
     model <- scale_model(model, scaling_factor)
   }
-
-
-    # ------------------------------------------------------------
-    # FPC Summary Statistic
-    # ------------------------------------------------------------
-#     if (use_fpc) {
-#       if (!"seg_sites" %in% get_summary_statistics(model)) {
-#         model <- model + sumstat_seg_sites()
-#       }
-#       
-#       # TODO: Assert that model contains "seg.sites" statistic
-#       for (pop in 1:2) {
-#         if (pop %in% fpc_populations) {
-#           sumstats[[paste0("fpc_pop", pop, grp_name_ext)]] <- 
-#             Stat_FPC$new(seg.sites, model, population = pop, group = group)
-#         }
-#       }
-#     }
-
-    # ------------------------------------------------------------
-    # PMC Summary Statistic
-    # ------------------------------------------------------------
-    #if ("pmc" %in% model.getSummaryStatistics(model, group)) {
-    #  model <- calcPmcBreaks(model, seg.sites, group = group)
-    #  sumstats[[paste0("pmc", grp_name_ext)]] <- 
-    #    list(method="poisson.transformed", transformation=as.vector,
-    #         value=createPolymClasses(seg.sites, model, group = group),
-    #         data = paste0("seg.sites", grp_name_ext))
-    #}
 
 
   # ------------------------------------------------------------
