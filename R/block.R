@@ -12,8 +12,8 @@ block_class <- R6Class("Block",
     get_border = function() private$border,
     print = function() print(private$border),
     print_border = function(jaatha) {
-      lower <- denormalize(private$border[ ,1], jaatha)
-      upper <- denormalize(private$border[ ,2], jaatha)
+      lower <- denormalize(private$border[ , 1], jaatha)
+      upper <- denormalize(private$border[ , 2], jaatha)
       paste0(round(lower, 3), "-", round(upper, 3), collapse=" x ")
     },
     includes = function(point) {
@@ -22,13 +22,16 @@ block_class <- R6Class("Block",
             point <= private$border[ , 2] + 1e-15)
     },
     get_middle = function() {
-      (private$border[ , 2] - private$border[ , 1]) / 2 + private$border[ , 1]
+      m <- (private$border[ , 2] - private$border[ , 1]) / 2 + 
+        private$border[ , 1]
+      names(m) <- rownames(private$border)
+      m
     },
     get_corners = function() {
       corners <- expand.grid(lapply(1:nrow(private$border), function(i) {
-        private$border[i , ]
+        private$border[i , , drop = FALSE]
       }), KEEP.OUT.ATTRS = FALSE)
-      colnames(corners) <- colnames(private$border)
+      colnames(corners) <- rownames(private$border)
       as.matrix(corners)
     }
   )
