@@ -57,15 +57,20 @@ get_segsites <- function(data, locus_number, only_synonymous) {
   pop1 <- which(row.names(bam) %in% data@populations[[1]])
   pop2 <- which(row.names(bam) %in% data@populations[[2]])
   outgroup <- which(row.names(bam) %in% data@outgroup)
+  stopifnot(!is.null(pop1))
+  stopifnot(!is.null(pop2))
+  stopifnot(!is.null(outgroup))
   
   # Select relevant data
   if (only_synonymous) {
     syn <- data@region.data@synonymous[[locus_number]]
+    if (is.null(syn)) syn <- numeric(0)
     syn[is.na(syn)] <- FALSE
     seg_sites <- bam[c(pop1, pop2, outgroup), syn, drop = FALSE]
   } else {
     seg_sites <- bam[c(pop1, pop2, outgroup), , drop = FALSE]
   }
+  stopifnot(!is.null(seg_sites))
   
   # Add positions attribute
   attr(seg_sites, "positions") <-
