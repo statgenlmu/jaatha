@@ -54,13 +54,22 @@ get_segsites <- function(data, locus_number, only_synonymous) {
   }
   
   bam <- PopGenome::get.biallelic.matrix(data, locus_number)
+  if (is.null(bam)) {
+    warning("Locus ", i, " is NULL")
+    seg_sites <- matrix(0, length(data@populations[[1]]) + 
+                           length(data@populations[[2]]) + 
+                           length(data@outgroup), 0)
+    attr(seg_sites, "positions") <- numeric(0)
+    return(seg_sites)
+  }
+  
   pop1 <- which(row.names(bam) %in% data@populations[[1]])
   pop2 <- which(row.names(bam) %in% data@populations[[2]])
   outgroup <- which(row.names(bam) %in% data@outgroup)
   stopifnot(!is.null(pop1))
   stopifnot(!is.null(pop2))
   stopifnot(!is.null(outgroup))
-  
+
   # Select relevant data
   if (only_synonymous) {
     syn <- data@region.data@synonymous[[locus_number]]
