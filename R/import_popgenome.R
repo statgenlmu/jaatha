@@ -11,34 +11,66 @@ checkModelDataConsistency <- function(data, model) {
 }
 
 
-convPopGenomeToSegSites <- function(data, only_synonymous=FALSE) {
+convPopGenomeToSegSites <- function(data, 
+                                    only_synonymous = FALSE, 
+                                    trios = NULL) {
+  
+  if (is.null(trios)) {
+    seg_sites_list <- lapply(1:length(data@n.valid.sites), function(i) {
+      if (data@n.valid.sites[[i]] == 0) return(NULL)
+      get_segsites(data, i, only_synonymous)
+    })
+  } else {
+    assert_that(is.list(trios))
+    seg_sites_list <- lapply(trios, function(trio) {
+      assert_that(is.numeric(trio))
+      assert_that(length(trio) == 3)
+      left <- get_segsites(data, trio[1], only_synonymous)
+      middle <- get_segsites(data, trio[2], only_synonymous)
+      right <- get_segsites(data, trio[3], only_synonymous)
+      
+      seg_sites <- cbind(left, middle, right)
+      
+      attr(seg_sites, "positions") <- c(attr(left, "positions"),
+                                        attr(middle, "positions"),
+                                        attr(right, "positions"))
+      
+      attr(seg_sites, "locus") <- c(rep(-1, ncol(left)),
+                                    rep( 0, ncol(middle)),
+                                    rep( 1, ncol(right)))
+      seg_sites
+    })
+  }
+
+  list(seg_sites = seg_sites_list[!sapply(seg_sites_list, is.null)])
+}
+
+
+# Gets PopGenome's biallelic matrix (bam) and converts it to Jaatha's 
+# segregating sites
+get_segsites <- function(data, locus_number, only_synonymous) {
   if (!requireNamespace("PopGenome", quietly = TRUE)) {
     stop("Please install package 'PopGenome'")
   }
   
-  seg_sites_list <- lapply(1:length(data@n.valid.sites), function(i) {
-    if (data@n.valid.sites[[i]] == 0) return(NULL)
-    seg_sites <- PopGenome::get.biallelic.matrix(data, i)
-    
-    # Sort individuals as Pop1, Pop2, Outgroup
-    pop1 <- which(row.names(seg_sites) %in% data@populations[[1]])
-    pop2 <- which(row.names(seg_sites) %in% data@populations[[2]])
-    outgroup <- which(row.names(seg_sites) %in% data@outgroup)
-    
-    if (only_synonymous) {
-      syn <- data@region.data@synonymous[[i]]
-      syn[is.na(syn)] <- FALSE
-      seg_sites <- seg_sites[c(pop1, pop2, outgroup), syn, drop=FALSE]
-    } else {
-      seg_sites <- seg_sites[c(pop1, pop2, outgroup), , drop=FALSE]
-    }
-
-    attr(seg_sites, "positions") <- 
-      as.numeric(colnames(seg_sites)) / data@n.sites[[i]]
-    seg_sites
-  })
+  bam <- PopGenome::get.biallelic.matrix(data, locus_number)
+  pop1 <- which(row.names(bam) %in% data@populations[[1]])
+  pop2 <- which(row.names(bam) %in% data@populations[[2]])
+  outgroup <- which(row.names(bam) %in% data@outgroup)
   
-  list(seg_sites = seg_sites_list[!sapply(seg_sites_list, is.null)])
+  # Select relevant data
+  if (only_synonymous) {
+    syn <- data@region.data@synonymous[[locus_number]]
+    syn[is.na(syn)] <- FALSE
+    seg_sites <- bam[c(pop1, pop2, outgroup), syn, drop = FALSE]
+  } else {
+    seg_sites <- bam[c(pop1, pop2, outgroup), , drop = FALSE]
+  }
+  
+  # Add positions attribute
+  attr(seg_sites, "positions") <-
+    as.numeric(colnames(bam)) / data@n.sites[[locus_number]]
+  seg_sites
 }
 
 
