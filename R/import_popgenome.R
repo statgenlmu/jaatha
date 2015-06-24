@@ -55,7 +55,7 @@ get_segsites <- function(data, locus_number, only_synonymous) {
   
   bam <- PopGenome::get.biallelic.matrix(data, locus_number)
   if (is.null(bam)) {
-    warning("Locus ", i, " is NULL")
+    warning("Locus ", locus_number, " is NULL")
     seg_sites <- matrix(0, length(data@populations[[1]]) + 
                            length(data@populations[[2]]) + 
                            length(data@outgroup), 0)
