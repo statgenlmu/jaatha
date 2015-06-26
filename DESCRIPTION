@@ -19,7 +19,7 @@ Depends:
     methods
 Imports:
     assertthat (>= 0.1),
-    coala (>= 0.0.9100),
+    coala (>= 0.0.9900),
     R6 (>= 2.0.1),
     reshape2 (>= 1.4),
     parallel

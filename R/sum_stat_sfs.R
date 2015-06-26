@@ -3,7 +3,7 @@ Stat_sfs <- R6Class("Stat_SFS",
     public = list(
       initialize = function(seg_sites, model, stat) {
         name <- stat$get_name()
-        sfs <- stat$calculate(seg_sites, NULL, model)
+        sfs <- stat$calculate(seg_sites, NULL, NULL, model)
         fake_sim_data <- list()
         fake_sim_data[[name]] <- sfs
         super$initialize(fake_sim_data, stat$get_name())
