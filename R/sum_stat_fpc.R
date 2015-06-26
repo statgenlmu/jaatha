@@ -11,7 +11,7 @@ Stat_FPC <- R6Class("Stat_FPC", inherit = Stat_PoiInd,
       
       # Setup the cube for the middle locus
       private$stat_name <- stat$get_name()
-      fpc_percent <- stat$calculate(seg_sites, NULL, model)
+      fpc_percent <- stat$calculate(seg_sites, NULL, NULL, model)
       fake_sim_data <- list()
       fake_sim_data[[private$stat_name]] <- fpc_percent
       

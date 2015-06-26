@@ -80,7 +80,7 @@ Stat_JSFS <- R6Class("Stat_JSFS",
   public = list(
     initialize = function(seg_sites, model, stat) {
       name <- stat$get_name()
-      jsfs <- stat$calculate(seg_sites, NULL, model)
+      jsfs <- stat$calculate(seg_sites, NULL, NULL, model)
       fake_sim_data <- list()
       fake_sim_data[[name]] <- jsfs
       super$initialize(fake_sim_data, stat$get_name())
@@ -110,7 +110,7 @@ Stat_JSFS_smooth <- R6Class("Stat_JSFS_smooth",
   public = list(
     initialize = function(seg_sites, dm, stat) {
       name <- stat$get_name()
-      jsfs <- stat$calculate(seg_sites, NULL, dm)
+      jsfs <- stat$calculate(seg_sites, NULL, NULL, dm)
       fake_sim_data <- list()
       fake_sim_data[[name]] <- jsfs
       

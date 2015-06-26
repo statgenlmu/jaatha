@@ -10,7 +10,7 @@ Stat_Cube <- R6Class("Stat_Cube", inherit = Stat_PoiInd,
       if (any(break_probs > 1)) stop("probs greater then one")
                         
       private$stat_name <- stat$get_name()
-      value <- stat$calculate(seg_sites, NULL, model)
+      value <- stat$calculate(seg_sites, NULL, NULL, model)
       fake_sim_data <- list()
       fake_sim_data[[private$stat_name]] <- value
       
