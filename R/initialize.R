@@ -36,7 +36,7 @@ Jaatha.initialize <- function(data, model, cores=1, scaling_factor=1,
                               trios = NULL) {
   
   # --- Check parameters -------------------------------------
-  assert_that("Coalmodel" %in% class(model)) 
+  assert_that("coalmodel" %in% class(model)) 
   assert_that(is.numeric(cores))
   assert_that(length(cores) == 1)
   assert_that(is.numeric(scaling_factor))
@@ -70,7 +70,7 @@ Jaatha.initialize <- function(data, model, cores=1, scaling_factor=1,
     name <- sumstat$get_name()
     
     # --- JSFS Summary Statistic ------------------------------------
-    if ("SumstatJsfs" %in% class(sumstat)) {
+    if ("stat_jsfs" %in% class(sumstat)) {
       if (!smoothing) {
         sumstats[[name]] <- Stat_JSFS$new(seg_sites, model, sumstat)
       } else {
@@ -82,23 +82,23 @@ Jaatha.initialize <- function(data, model, cores=1, scaling_factor=1,
     }
     
     # --- JSFS Summary Statistic ------------------------------------
-    else if ("SumstatSfs" %in% class(sumstat)) {
+    else if ("stat_sfs" %in% class(sumstat)) {
       sumstats[[name]] <- Stat_sfs$new(seg_sites, model, sumstat)
     }
     
     # --- Four Gamete Summary Statistic -----------------------------
-    else if ("SumstatFourGamete" %in% class(sumstat)) {
+    else if ("stat_four_gamete" %in% class(sumstat)) {
       sumstats[[name]] <- Stat_FPC$new(seg_sites, model, sumstat)
     }
     
     # --- iHH Summary Statistic -------------------------------------
-    else if ("sumstat_ihh" %in% class(sumstat)) {
+    else if ("stat_ihh" %in% class(sumstat)) {
       sumstats[[name]] <- Stat_Ihh$new(seg_sites, model, 
                                        sumstat, c(.25, .5, .75, .95))
     }
     
     # --- Omega" Summary Statistic ----------------------------------
-    else if ("SumstatOmegaPrime" %in% class(sumstat)) {
+    else if ("stat_omega_prime" %in% class(sumstat)) {
       sumstats[[name]] <- Stat_OmegaPrime$new(seg_sites, model, 
                                               sumstat, c(.5, .75, .95))
     }

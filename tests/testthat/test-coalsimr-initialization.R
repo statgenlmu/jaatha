@@ -69,7 +69,7 @@ test_that("initialization with iHH statistic works", {
 
 
 test_that("initialization with OmegaPrime statistic works", {
-  model <- model + coala::sumstat_omegaprime("op")
+  model <- model + coala:::sumstat_omegaprime("op")
   jaatha.fpc <- Jaatha.initialize(data, model)
   
   stat <- jaatha.fpc@sum_stats[["op"]]
