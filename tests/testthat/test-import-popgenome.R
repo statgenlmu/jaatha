@@ -42,6 +42,7 @@ test_that("PopGenome data import works", {
 
 
 test_that("Trios can be imported from PopGenome", {
+  skip_if_not_installed("PopGenome")
   data_pg <- create_popgenome_test_data()
   
   seg_sites_list <- convPopGenomeToSegSites(data_pg, trios = list(rep(1, 3), 
