@@ -1,20 +1,37 @@
 #' @importFrom R6 R6Class
-jaatha_model_class <- R6Class("jaatha_model", lock = FALSE, 
+jaatha_model_class <- R6Class("jaatha_model", 
+  lock_objects = FALSE, lock_class = TRUE,
   private = list(
     par_ranges = NA,
     sum_stats = list(),
     add_statistic = function(stat) {
       private$sum_stats[[stat$get_name()]] <- stat
+    },
+    test = function(quiet = FALSE) {
+      time <- system.time(
+        a <- self$simulate(self$get_par_ranges()$get_middle(), 1)
+      )["elapsed"]
+      
+      if (time > 30) warning("Each simulation takes about ", round(time),
+                             "s, Jaatha might run for a long time.")
+      if (!quiet) {
+        if (time < 1) message("A simulation takes less than a second")
+        else message("A simulation takes about ", round(time), "s")
+      }
+      
+      invisible(NULL)
     }
   ),
   public = list(
-    initialize = function(sim_func, par_ranges, sum_stats) {
+    initialize = function(sim_func, par_ranges, sum_stats, test) {
       assert_that(is.function(sim_func))
-      private$sim_func = sim_func
-      private$par_ranges = par_range_class$new(par_ranges)
+      private$sim_func <- sim_func
+      private$par_ranges <- par_range_class$new(par_ranges)
       assert_that(is.list(sum_stats))
       lapply(sum_stats, private$add_statistic)
-      private$sum_stats = sum_stats
+      private$sum_stats <- sum_stats
+      
+      if (test) private$test()
     },
     simulate = function(pars, seed) {
       # Simulate
@@ -24,7 +41,7 @@ jaatha_model_class <- R6Class("jaatha_model", lock = FALSE,
       
       # Calculate Summary Statistics
       sim_stats <- lapply(private$sum_stats, function(sum_stat) {
-        sum_stat$transform(sim_result)
+        sum_stat$calculate(sim_result)
       })
       
       # Add the parameter values
@@ -33,30 +50,27 @@ jaatha_model_class <- R6Class("jaatha_model", lock = FALSE,
       
       sim_stats
     },
-    get_par_range = function() private$par_ranges
+    get_par_ranges = function() private$par_ranges
   )
 )
 
 
-create_jaatha_model <- function(sim_func, par_ranges, sum_stats, test = TRUE) {
-  jaatha_model_class$new(sim_func, par_ranges, sum_stats)
+create_jaatha_model <- function(x, ..., test = TRUE) {
+  UseMethod("create_jaatha_model")
+}
+
+
+create_jaatha_model.function <- function(x, par_ranges, sum_stats, ..., 
+                                         test = TRUE) {
+  jaatha_model_class$new(x, par_ranges, sum_stats, test)
 }
 
 
 create_test_model <- function() {
-  sim_func <- function(x, jaatha) rpois(20, x)
-  csi.obs <- csi.sim.func(c(3,5))
-  sum_stat <- R6::R6Class("Stat_PoiInd", inherit = jaatha:::Stat_Base, 
-                              private = list(mask=rep(c(TRUE,FALSE), 10)),
-                              public = list(transform = function(data) {
-                                c(sum(data[private$mask]), sum(data[!private$mask]))
-                              })
-  )$new(csi.obs, "csi")
-  par_ranges <- matrix(c(0.1, 0.1, 10, 10), 2, 2)
-  rownames(par_ranges) <- c("x", "y")
-  create_jaatha_model(sim_func, par_ranges, list(sum_stat))
+  create_jaatha_model(function(x) rpois(10, x),
+                      par_ranges = matrix(c(0.1, 0.1, 10, 10), 2, 2),
+                      sum_stats = list(stat_identity))
 }
-
 
 
 create_jaatha_data <- function(...) {}

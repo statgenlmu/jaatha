@@ -1,24 +1,29 @@
 #' @importFrom R6 R6Class
-Stat_Base <- R6Class("Stat_Base",
+stat_basic_class <- R6Class("jaatha_stat_basic",
+  lock_objects = FALSE, lock_class = TRUE,
   public = list(
-    initialize = function(sim_data, name) {
-      private$name = name
-      self$set_data(sim_data)
-      if (length(private$data) == 0) 
-        stop("Failed to convert real data to ", name)
-      if (any(is.na(private$data)))
-        stop("NAs in real data for ", name)
+    initialize = function(name, calc_func) {
+      assert_that(is.character(name) && length(name) == 1)
+      private$name <- name
+      
+      assert_that(is.function(calc_func))
+      self$calculate <- calc_func
     },
-    transform = function(sim_data) as.vector(sim_data$data),
-    get_data = function() private$data,
-    set_data = function(sim_data) private$data = self$transform(sim_data),
     get_name = function() private$name
   ),
   private = list(
-    data = NA,
     name = ""
   )
 )
+
+
+create_jaatha_stat <- function(name, calc_func) {
+  stat_basic_class$new(name, calc_func)
+}
+
+
+stat_identity <- create_jaatha_stat("id", I)
+
 
 Stat_PoiInd <- R6Class("Stat_PoiInd", inherit = Stat_Base)
 
