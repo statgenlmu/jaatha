@@ -25,10 +25,10 @@ create_jaatha_stat <- function(name, calc_func) {
 stat_identity <- create_jaatha_stat("id", I)
 
 
-Stat_PoiInd <- R6Class("Stat_PoiInd", inherit = Stat_Base)
+Stat_PoiInd <- R6Class("Stat_PoiInd", inherit = stat_basic_class)
 
 #' @importFrom reshape2 melt
-Stat_PoiSmooth <- R6Class("Stat_PoiSmooth", inherit = Stat_Base,
+Stat_PoiSmooth <- R6Class("Stat_PoiSmooth", inherit = stat_basic_class,
   public = list(
     get_model = function() private$model,
     transform = function(sim_data) {

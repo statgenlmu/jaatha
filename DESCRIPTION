@@ -28,6 +28,7 @@ Suggests:
     PopGenome (>= 2.1.0)
 Collate:
     'block.R'
+    'coala_interface.R'
     'confidence_intervals.R'
     'estimate_log_likelihood.R'
     'fit_glm.R'

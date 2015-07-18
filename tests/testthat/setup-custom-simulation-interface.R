@@ -5,7 +5,7 @@ block.test <- jaatha:::block_class$new(matrix(c(0.4, 0.4, 0.6, 0.6), 2, 2))
 
 csi.sim.func <- function(x, jaatha) rpois(20, x)
 csi.obs <- csi.sim.func(c(3,5))
-csi.sum.stat <- R6::R6Class("Stat_PoiInd", inherit = jaatha:::Stat_Base, 
+csi.sum.stat <- R6::R6Class("Stat_PoiInd", inherit = stat_basic_class, 
   private = list(mask=rep(c(TRUE,FALSE), 10)),
   public = list(transform = function(data) {
     c(sum(data[private$mask]), sum(data[!private$mask]))
