@@ -50,14 +50,16 @@ convert_coala_sumstats <- function(coala_model) {
     
     # --- iHH Summary Statistic -------------------------------------
     else if (inherits(stat, "stat_ihh")) {
-      sumstats[[name]] <- Stat_Ihh$new(seg_sites, model, 
-                                       stat, c(.25, .5, .75, .95))
+      sumstats[[name]] <- create_jaatha_stat(name, function(x) {
+        do.call(rbind, lapply(x[[name]], function(x) max(x[ , 3])))
+      }, poisson = FALSE, breaks = c(.25, .5, .75, .95))
     }
     
     # --- OmegaPrime Summary Statistic ----------------------------------
     else if (inherits(stat, "stat_omega_prime")) {
-      sumstats[[name]] <- Stat_OmegaPrime$new(seg_sites, model, 
-                                              stat, c(.5, .75, .95))
+      sumstats[[name]] <- create_jaatha_stat(name, function(x) {
+        matrix(x[[name]], ncol = 1)
+      }, poisson = FALSE, breaks = c(.5, .75, .95))
     }
     
     else {

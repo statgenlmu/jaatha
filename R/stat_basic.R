@@ -18,8 +18,11 @@ stat_basic_class <- R6Class("jaatha_stat_basic",
 )
 
 
-create_jaatha_stat <- function(name, calc_func) {
-  stat_basic_class$new(name, calc_func)
+create_jaatha_stat <- function(name, calc_func, poisson = TRUE, 
+                               breaks = c(.1, .5, .9)) {
+  
+  if (poisson) return(stat_basic_class$new(name, calc_func))
+  stat_cube_class$new(name, calc_func, breaks)
 }
 
 

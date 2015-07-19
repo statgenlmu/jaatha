@@ -38,38 +38,7 @@ Stat_FPC <- R6Class("Stat_FPC", inherit = Stat_PoiInd,
 )
 
 
-calcBreaks <- function(values, props) {
-  breaks <- unique(quantile(values, props, na.rm=TRUE))
-  breaks[breaks == 0] <- ifelse(length(breaks)==1, 0.01, min(0.01, min(breaks[-1])/2))
-  breaks
-}
 
-
-generateLociCube = function(stat, breaks, cols, rows) {
-  stopifnot(ncol(stat) == length(breaks))
-  stopifnot(all(cols <= ncol(stat)))
-  
-  # Select rows & remove loci with NaN statistics
-  if (missing(rows)) rows <- rep(TRUE, nrow(stat))
-  else rows <- 1:nrow(stat) %in% rows
-  rows <- rows & apply(!is.nan(stat[ ,cols, drop=FALSE]), 1, all)
-  stat <- stat[rows, cols, drop=FALSE]
-  breaks <- breaks[cols]
-  
-  # Classify the loci accordingly to their statistics
-  locus_class <- matrix(1, nrow(stat), ncol(stat))
-  for (i in 1:ncol(stat)) {
-    for (brk in breaks[[i]]) {
-      locus_class[,i] <- locus_class[,i] + (stat[,i] > brk)
-    }
-  }
-  
-  # Count the classes and return as vector
-  dims <- sapply(breaks, length) + 1
-  factors <- cumprod(c(1, dims[-length(dims)]))
-  classes_int <- apply(locus_class, 1, function(x) sum((x-1)*factors)+1)
-  tabulate(classes_int, nbins = prod(dims))
-}
 
 #' A function that cassifies locus trios by the distance between the loci
 #' 
