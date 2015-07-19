@@ -9,7 +9,8 @@ stat_basic_class <- R6Class("jaatha_stat_basic",
       assert_that(is.function(calc_func))
       self$calculate <- calc_func
     },
-    get_name = function() private$name
+    get_name = function() private$name,
+    generate_data_opts = function(data) NULL
   ),
   private = list(
     name = ""
@@ -22,10 +23,9 @@ create_jaatha_stat <- function(name, calc_func) {
 }
 
 
-stat_identity <- create_jaatha_stat("id", I)
+stat_identity <- function() create_jaatha_stat("id", function(x, y) x)
+stat_sum <- function() create_jaatha_stat("sum", function(x, y) sum(x))
 
-
-Stat_PoiInd <- R6Class("Stat_PoiInd", inherit = stat_basic_class)
 
 #' @importFrom reshape2 melt
 Stat_PoiSmooth <- R6Class("Stat_PoiSmooth", inherit = stat_basic_class,

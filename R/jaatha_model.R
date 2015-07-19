@@ -5,12 +5,16 @@ jaatha_model_class <- R6Class("jaatha_model",
     par_ranges = NA,
     sum_stats = list(),
     add_statistic = function(stat) {
-      private$sum_stats[[stat$get_name()]] <- stat
+      name <- stat$get_name()
+      if (!is.null(private$sum_stats[[name]])) {
+        stop("There already is a summary statistic with name '", name, 
+             "' in the model")
+      }
+      private$sum_stats[[name]] <- stat
     },
-    opts = list(),
     test = function(quiet = FALSE) {
       time <- system.time(
-        a <- self$simulate(self$get_par_ranges()$get_middle(), 1)
+        a <- private$sim_func(private$par_ranges$get_middle())
       )["elapsed"]
       
       if (time > 30) warning("Each simulation takes about ", round(time),
@@ -24,14 +28,12 @@ jaatha_model_class <- R6Class("jaatha_model",
     }
   ),
   public = list(
-    initialize = function(sim_func, par_ranges, sum_stats, ..., test) {
+    initialize = function(sim_func, par_ranges, sum_stats, test) {
       assert_that(is.function(sim_func))
       private$sim_func <- sim_func
-      private$par_ranges <- par_range_class$new(par_ranges)
+      private$par_ranges <- par_ranges_class$new(par_ranges)
       assert_that(is.list(sum_stats))
       lapply(sum_stats, private$add_statistic)
-      private$sum_stats <- sum_stats
-      private$opts <- list(...)
       if (test) private$test()
     },
     simulate = function(pars, seed) {
@@ -52,7 +54,7 @@ jaatha_model_class <- R6Class("jaatha_model",
       sim_stats
     },
     get_par_ranges = function() private$par_ranges,
-    get_opts = function(name) private$opts[[name]]
+    get_sum_stats = function() private$sum_stats
   )
 )
 
@@ -62,20 +64,17 @@ create_jaatha_model <- function(x, ..., test = TRUE) {
 }
 
 
-create_jaatha_model.function <- function(x, par_ranges, sum_stats, ..., 
+create_jaatha_model.function <- function(x, par_ranges, sum_stats,
                                          test = TRUE) {
-  jaatha_model_class$new(x, par_ranges, sum_stats, ..., test)
+  jaatha_model_class$new(x, par_ranges, sum_stats, test = test)
 }
+
+
+is_jaatha_model <- function(x) inherits(x, "jaatha_model")
 
 
 create_test_model <- function() {
   create_jaatha_model(function(x) rpois(10, x),
                       par_ranges = matrix(c(0.1, 0.1, 10, 10), 2, 2),
-                      sum_stats = list(stat_identity))
+                      sum_stats = list(stat_identity(), stat_sum()))
 }
-
-
-create_jaatha_data <- function(...) {}
-
-create_popgen_model <- function(...) {}
-create_popgen_data <- function(...) {}

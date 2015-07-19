@@ -26,28 +26,3 @@ Imports:
 Suggests:
     testthat (>= 0.10.0),
     PopGenome (>= 2.1.0)
-Collate:
-    'block.R'
-    'coala_interface.R'
-    'confidence_intervals.R'
-    'estimate_log_likelihood.R'
-    'fit_glm.R'
-    'helper_functions.R'
-    'import_popgenome.R'
-    'initial_search.R'
-    'initialize.R'
-    'jaatha.R'
-    'jaatha_model.R'
-    'likelihood_table.R'
-    'par_ranges.R'
-    'parallelization.R'
-    'refined_search.R'
-    'run_simulations.R'
-    'search_best_par.R'
-    'sim_likelihood.R'
-    'simulate_within_block.R'
-    'sum_stat_classes.R'
-    'sum_stat_cube.R'
-    'sum_stat_fpc.R'
-    'sum_stat_jsfs.R'
-    'sum_stat_sfs.R'

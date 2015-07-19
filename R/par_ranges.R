@@ -1,5 +1,5 @@
 #' @importFrom R6 R6Class
-par_range_class <- R6Class("par_range", 
+par_ranges_class <- R6Class("par_ranges", 
   private = list(
     range = NA,
     log_range = NA,
@@ -32,6 +32,8 @@ par_range_class <- R6Class("par_range",
     },
     get_middle = function() {
       (private$range[ , 2] - private$range[ , 1]) / 2 + private$range[ , 1]
-    }
+    },
+    get_par_number = function() nrow(private$range),
+    get_par_names = function() rownames(private$range)
   )
 )
