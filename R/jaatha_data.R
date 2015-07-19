@@ -38,3 +38,9 @@ create_jaatha_data <- function(data, model, ...) UseMethod("create_jaatha_data")
 create_jaatha_data.default <- function(data, model, ...) {
   jaatha_data_class$new(data, model)
 }
+
+
+create_test_data <- function(model) {
+  test_data <- model$test(quiet = TRUE)
+  create_jaatha_data(test_data, model)
+}

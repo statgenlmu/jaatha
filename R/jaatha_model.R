@@ -11,20 +11,6 @@ jaatha_model_class <- R6Class("jaatha_model",
              "' in the model")
       }
       private$sum_stats[[name]] <- stat
-    },
-    test = function(quiet = FALSE) {
-      time <- system.time(
-        a <- private$sim_func(private$par_ranges$get_middle())
-      )["elapsed"]
-      
-      if (time > 30) warning("Each simulation takes about ", round(time),
-                             "s, Jaatha might run for a long time.")
-      if (!quiet) {
-        if (time < 1) message("A simulation takes less than a second")
-        else message("A simulation takes about ", round(time), "s")
-      }
-      
-      invisible(NULL)
     }
   ),
   public = list(
@@ -34,27 +20,44 @@ jaatha_model_class <- R6Class("jaatha_model",
       private$par_ranges <- par_ranges_class$new(par_ranges)
       assert_that(is.list(sum_stats))
       lapply(sum_stats, private$add_statistic)
-      if (test) private$test()
+      if (test) self$test()
     },
-    simulate = function(pars, seed) {
+    simulate = function(pars, seed, data) {
+      assert_that(is_jaatha_data(data))
+      
       # Simulate
       set.seed(seed)
       sim_pars <- private$par_ranges$denormalize(pars)
       sim_result <- private$sim_func(sim_pars)
       
       # Calculate Summary Statistics
-      sim_stats <- lapply(private$sum_stats, function(sum_stat) {
-        sum_stat$calculate(sim_result)
+      sum_stats <- lapply(private$sum_stats, function(sum_stat) {
+        sum_stat$calculate(sim_result, data$get_opts(sum_stat))
       })
       
       # Add the parameter values
-      sim_stats$pars <- sim_pars
-      sim_stats$pars_normal <- pars
+      sum_stats$pars <- sim_pars
+      sum_stats$pars_normal <- pars
       
-      sim_stats
+      sum_stats
     },
     get_par_ranges = function() private$par_ranges,
-    get_sum_stats = function() private$sum_stats
+    get_sum_stats = function() private$sum_stats,
+    test = function(quiet = FALSE) {
+      time <- system.time(
+        sim_data <- private$sim_func(private$par_ranges$get_middle())
+      )["elapsed"]
+      
+      if (!quiet) {
+        if (time > 30) warning("Each simulation takes about ", round(time),
+                               "s, Jaatha might run for a long time.")
+        
+        if (time < 1) message("A simulation takes less than a second")
+        else message("A simulation takes about ", round(time), "s")
+      }
+      
+      invisible(sim_data)
+    }
   )
 )
 
@@ -76,5 +79,6 @@ is_jaatha_model <- function(x) inherits(x, "jaatha_model")
 create_test_model <- function() {
   create_jaatha_model(function(x) rpois(10, x),
                       par_ranges = matrix(c(0.1, 0.1, 10, 10), 2, 2),
-                      sum_stats = list(stat_identity(), stat_sum()))
+                      sum_stats = list(stat_identity(), stat_sum()),
+                      test = FALSE)
 }

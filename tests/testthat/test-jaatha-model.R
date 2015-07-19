@@ -24,11 +24,16 @@ test_that("adding summary statistics works", {
 
 test_that("simulation works", {
   model <- create_test_model()
-  res <- model$simulate(pars = c(1, 1), seed = 1)
+  data <- create_test_data(model)
+  
+  res <- model$simulate(pars = c(1, 1), seed = 1, data)
   expect_that(res, is_a("list"))
   expect_equal(length(res), length(model$get_sum_stats()) + 2)
   expect_equal(names(res), 
                c(names(model$get_sum_stats()), "pars", "pars_normal"))
   expect_equivalent(res$pars, c(10, 10))
   expect_equivalent(res$pars_normal, c(1, 1))
+  
+  res2 <- model$simulate(pars = c(1, 1), seed = 1, data)
+  expect_equal(res, res2)
 })
