@@ -16,7 +16,7 @@ is_jaatha_var <- function(name) {
 
 # --- Argument checking --------------------------------------------------------
 is_single_numeric <- function(value) is.numeric(value) && length(value) == 1
-
+is_single_logical <- function(value) is.logical(value) && length(value) == 1
 
 # --- Printing -----------------------------------------------------------------
 .print <- function(...) { cat(..., "\n") }

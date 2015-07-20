@@ -43,3 +43,24 @@ test_that("block returns its corners", {
   block <- block_class$new(border_1dim)
   expect_equivalent(block$get_corners(), matrix(c(0, 1), 1, 2))
 })
+
+
+test_that("sampling of parameters works", {
+  block <- block_class$new(border)
+  set.seed(17)
+  random_pars <- block$sample_pars(10)
+  expect_that(random_pars, is_a("matrix"))
+  expect_equal(dim(random_pars), c(10, 2))
+  expect_true(all(apply(random_pars, 1, function(x) block$includes(x))))
+  
+  set.seed(17)
+  random_pars_2 <- block$sample_pars(10, TRUE)
+  expect_equal(random_pars_2, rbind(random_pars, block$get_corners()))
+  expect_true(all(apply(random_pars, 1, function(x) block$includes(x))))
+  
+  block <- block_class$new(border_1dim)
+  random_pars <- block$sample_pars(5)
+  expect_that(random_pars, is_a("matrix"))
+  expect_equal(dim(random_pars), c(5, 1))
+  expect_true(all(apply(random_pars, 1, function(x) block$includes(x))))
+})

@@ -33,6 +33,22 @@ block_class <- R6Class("Block",
       }), KEEP.OUT.ATTRS = FALSE)
       colnames(corners) <- rownames(private$border)
       as.matrix(corners)
+    },
+    sample_pars = function(number, add_corners = FALSE) {
+      "Generates random parameter combinations inside the block's range"
+      assert_that(is_single_numeric(number))
+      assert_that(is_single_logical(add_corners))
+      
+      # Sample random simulation parameters
+      par_number <- nrow(self$get_border())
+      random_pars <- matrix(runif(par_number * number,
+                                  min = self$get_border()[ , 1],
+                                  max = self$get_border()[ , 2]),
+                            number, par_number)
+      
+      # Add corners if requested
+      if (add_corners) random_pars <- rbind(random_pars, self$get_corners())
+      random_pars
     }
   )
 )
