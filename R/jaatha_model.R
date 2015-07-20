@@ -1,4 +1,5 @@
 #' @importFrom R6 R6Class
+#' @importFrom parallel mclapply
 jaatha_model_class <- R6Class("jaatha_model", 
   lock_objects = FALSE, lock_class = TRUE,
   private = list(
@@ -22,24 +23,37 @@ jaatha_model_class <- R6Class("jaatha_model",
       lapply(sum_stats, private$add_statistic)
       if (test) self$test()
     },
-    simulate = function(pars, seed, data) {
+    simulate = function(pars, data, cores = 1) {
+      "conducts a simulation for each parameter combination in pars"
+      assert_that(is.matrix(pars))
+      assert_that(ncol(pars) == private$par_ranges$get_par_number())
+      assert_that(all(0-1e-5 <= pars & pars <= 1 + 1e-5))
       assert_that(is_jaatha_data(data))
+      assert_that(is_single_numeric(cores))
+      
+      # Generate a seed for each simulation
+      seeds <- sample_seed(length(pars)+1)
       
       # Simulate
-      set.seed(seed)
-      sim_pars <- private$par_ranges$denormalize(pars)
-      sim_result <- private$sim_func(sim_pars)
+      sim_data <- mclapply(1:nrow(pars), function(i) {
+        set.seed(seeds[i])
+        sim_pars <- private$par_ranges$denormalize(pars[i, ])
+        sim_result <- private$sim_func(sim_pars)
+        
+        # Calculate Summary Statistics
+        sum_stats <- lapply(private$sum_stats, function(sum_stat) {
+          sum_stat$calculate(sim_result, data$get_opts(sum_stat))
+        })
+        
+        # Add the parameter values
+        sum_stats$pars <- sim_pars
+        sum_stats$pars_normal <- pars[i, ]
+        
+        sum_stats
+      }, mc.preschedule=TRUE, mc.cores=cores)
       
-      # Calculate Summary Statistics
-      sum_stats <- lapply(private$sum_stats, function(sum_stat) {
-        sum_stat$calculate(sim_result, data$get_opts(sum_stat))
-      })
-      
-      # Add the parameter values
-      sum_stats$pars <- sim_pars
-      sum_stats$pars_normal <- pars
-      
-      sum_stats
+      set.seed(seeds[length(seeds)])
+      sim_data
     },
     get_par_ranges = function() private$par_ranges,
     get_sum_stats = function() private$sum_stats,

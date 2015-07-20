@@ -26,14 +26,33 @@ test_that("simulation works", {
   model <- create_test_model()
   data <- create_test_data(model)
   
-  res <- model$simulate(pars = c(1, 1), seed = 1, data)
+  # One parameter combination
+  set.seed(1)
+  res <- model$simulate(pars = matrix(c(1, 1), 1), data)
   expect_that(res, is_a("list"))
-  expect_equal(length(res), length(model$get_sum_stats()) + 2)
-  expect_equal(names(res), 
+  expect_equal(length(res), 1)
+  expect_equal(length(res[[1]]), length(model$get_sum_stats()) + 2)
+  expect_equal(names(res[[1]]), 
                c(names(model$get_sum_stats()), "pars", "pars_normal"))
-  expect_equivalent(res$pars, c(10, 10))
-  expect_equivalent(res$pars_normal, c(1, 1))
+  expect_equivalent(res[[1]]$pars, c(10, 10))
+  expect_equivalent(res[[1]]$pars_normal, c(1, 1))
   
-  res2 <- model$simulate(pars = c(1, 1), seed = 1, data)
+  # Check reproducibility
+  set.seed(1)
+  res2 <- model$simulate(pars = matrix(c(1, 1), 1), data)
   expect_equal(res, res2)
+  
+  # Two parameter combinations
+  res <- model$simulate(pars = matrix(c(1, 0, 1, 0), 2), data)
+  expect_equal(length(res), 2)
+  expect_equal(length(res[[1]]), length(model$get_sum_stats()) + 2)
+  expect_equal(length(res[[2]]), length(model$get_sum_stats()) + 2)
+  expect_equivalent(res[[1]]$pars_normal, c(1, 1))
+  expect_equivalent(res[[2]]$pars_normal, c(0, 0))
+  
+  # Errors
+  expect_error(model$simulate(pars = matrix(c(1, -0.1), 1), data))
+  expect_error(model$simulate(pars = matrix(c(1, 1.1), 1), data))
+  expect_error(model$simulate(pars = matrix(c(1, 1), 1), "data"))
+  expect_error(model$simulate(pars = matrix(c(1, 1), 1), data, "blub"))
 })
