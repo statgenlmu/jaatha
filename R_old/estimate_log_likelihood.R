@@ -7,35 +7,7 @@
 #' @param scaling_factor The scaling factor used for the simulations
 #' slot.
 #' @return The estimated log-likelihood
-estimateLogLikelihood <- function(param, glm_fitted, sum_stats, 
-                                  scaling_factor = 1) {
-  
-  assert_that(!is.null(names(param)))
-  sum(sapply(seq(along=sum_stats), function(i) {
-    name <- names(sum_stats)[i]
-    calcStatLLH(sum_stats[[name]], glm_fitted[[name]], param, scaling_factor)
-  }))
-}
 
-calcStatLLH <- function(sum_stat, ...) UseMethod("calcStatLLH")
-calcStatLLH.default <- function(sum_stat, ...) stop("Unkown Summary Statistic")
-
-calcStatLLH.Stat_PoiInd <- function(sum_stat, glm_fitted, param, 
-                                    scaling_factor = 1) {
-  
-  loglambda <- sapply(glm_fitted, predict, 
-                      newdata = data.frame(t(as.matrix(param))))
-  
-  #if glm did not converge, take sum(SS[s]) or a small number like 0.5 
-  loglambda[!sapply(glm_fitted, function(x) x$converged)] <- 0.5 
-  
-  # Upscale predicted expectation value if we use scaling
-  if (scaling_factor != 1) loglambda <- loglambda + log(scaling_factor)
-  
-  # Calculate the Poission log-likelihood
-  sum(sum_stat$get_data() * loglambda - 
-      exp(loglambda) - calcLogFactorial(sum_stat$get_data())) 
-}
 
 calcStatLLH.Stat_PoiSmooth <- function(sum_stat, glm_fitted, param, 
                                        scaling_factor = 1) {

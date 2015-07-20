@@ -17,10 +17,12 @@ fit_glm.jaatha_model <- function(x, sim_data, ...) {
 fit_glm.jaatha_stat_basic <- function(x, sim_data, ...) {
   "Fits a GLM for each entry of the simulation results"
   Y <- do.call(rbind, lapply(sim_data, function(data) data[[x$get_name()]]))
-  X <- do.call(rbind, lapply(sim_data, function(data) data$pars_normal))
+  X <- cbind(1, 
+             do.call(rbind, lapply(sim_data, function(data) data$pars_normal)))
   
   glms <- lapply(1:ncol(Y), function(i) {
-    glm.fit(X, Y[ , i], family = poisson("log"), control = list(maxit = 200))
+    glm.fit(X, Y[ , i], family = poisson("log"), 
+            control = list(maxit = 200))[c("coefficients", "converged")]
   })
   
   sapply(glms, function(x){if (!x$converged) stop("GLM did not converge")})

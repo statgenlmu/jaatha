@@ -3,7 +3,8 @@ jaatha_data_class <- R6Class("jaatha_data",
   lock_objects = TRUE, lock_class = TRUE,
   private = list(
     values = list(),
-    options = list()
+    options = list(),
+    log_factorials = list()
   ),
   public = list(
     initialize = function(data, model) {
@@ -11,6 +12,9 @@ jaatha_data_class <- R6Class("jaatha_data",
       private$values <- lapply(model$get_sum_stats(), function(stat) {
         private$options[[stat$get_name()]] <- stat$generate_data_opts(data)
         stat$calculate(data, private$options[[stat$get_name()]])
+      })
+      private$log_factorials <- lapply(private$values, function(x) {
+        log(factorial(x))
       })
     },
     get_values = function(stat = NULL) {
@@ -24,6 +28,13 @@ jaatha_data_class <- R6Class("jaatha_data",
         return(private$options[[stat]])
       }
       private$options[[stat$get_name()]]
+    },
+    get_log_factorial = function(stat = NULL) {
+      if (is.null(stat)) return(private$log_factorials)
+      if (is.character(stat) || is.numeric(stat)) {
+        return(private$log_factorials[[stat]])
+      }
+      private$log_factorials[[stat$get_name()]]
     }
   )
 )
