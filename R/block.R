@@ -52,3 +52,5 @@ block_class <- R6Class("Block",
     }
   )
 )
+
+create_block <- function(border) block_class$new(border)
