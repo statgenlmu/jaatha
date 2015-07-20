@@ -4,6 +4,7 @@ fit_glm.default <- function(x, sim_data, ...) {
 }
 
 
+#' @export
 fit_glm.jaatha_model <- function(x, sim_data, ...) { 
   "Fits a GLM to the simulation results"
   glm_fitted <- list()
@@ -11,13 +12,15 @@ fit_glm.jaatha_model <- function(x, sim_data, ...) {
 }
 
 
+#' @export
+#' @importFrom stats glm.fit poisson
 fit_glm.jaatha_stat_basic <- function(x, sim_data, ...) {
   "Fits a GLM for each entry of the simulation results"
   Y <- do.call(rbind, lapply(sim_data, function(data) data[[x$get_name()]]))
   X <- do.call(rbind, lapply(sim_data, function(data) data$pars_normal))
   
   glms <- lapply(1:ncol(Y), function(i) {
-    glm.fit(X, Y[ , i], family=poisson("log"), control = list(maxit = 200))
+    glm.fit(X, Y[ , i], family = poisson("log"), control = list(maxit = 200))
   })
   
   sapply(glms, function(x){if (!x$converged) stop("GLM did not converge")})
@@ -25,11 +28,6 @@ fit_glm.jaatha_stat_basic <- function(x, sim_data, ...) {
 }
 
 
-#' Fits a GLM for a summary statistics of type "poisson.smoothed"
-#'
-#' @param sim_data Results from simulations
-#' @param sum_stat Name of the summary statistics
-#' @return A list with one fitted GLM
 fit_glm.Stat_PoiSmooth <- function(sum_stat, sim_data) {
   par_names <- names(sim_data[[1]]$pars)
   model <- paste0("sum.stat ~ ",
