@@ -5,6 +5,7 @@ jaatha_model_class <- R6Class("jaatha_model",
   private = list(
     par_ranges = NA,
     sum_stats = list(),
+    scaling_factor = 1,
     add_statistic = function(stat) {
       name <- stat$get_name()
       if (!is.null(private$sum_stats[[name]])) {
@@ -15,12 +16,15 @@ jaatha_model_class <- R6Class("jaatha_model",
     }
   ),
   public = list(
-    initialize = function(sim_func, par_ranges, sum_stats, test) {
+    initialize = function(sim_func, par_ranges, sum_stats, 
+                          scaling_factor, test) {
       assert_that(is.function(sim_func))
       private$sim_func <- sim_func
       private$par_ranges <- par_ranges_class$new(par_ranges)
       assert_that(is.list(sum_stats))
       lapply(sum_stats, private$add_statistic)
+      assert_that(is_single_numeric(scaling_factor))
+      private$scaling_factor <- scaling_factor
       if (test) self$test()
     },
     simulate = function(pars, data, cores = 1) {
@@ -71,19 +75,22 @@ jaatha_model_class <- R6Class("jaatha_model",
       }
       
       invisible(sim_data)
-    }
+    },
+    get_scaling_factor = function() private$scaling_factor
   )
 )
 
 
-create_jaatha_model <- function(x, ..., test = TRUE) {
+create_jaatha_model <- function(x, ..., scaling_factor = 1, test = TRUE) {
   UseMethod("create_jaatha_model")
 }
 
 
 create_jaatha_model.function <- function(x, par_ranges, sum_stats,
+                                         scaling_factor = 1, 
                                          test = TRUE) {
-  jaatha_model_class$new(x, par_ranges, sum_stats, test = test)
+  jaatha_model_class$new(x, par_ranges, sum_stats, 
+                         scaling_factor = scaling_factor, test = test)
 }
 
 
