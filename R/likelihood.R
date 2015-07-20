@@ -35,3 +35,19 @@ approximate_llh.jaatha_stat_basic  <- function(x, data, param, glm_fitted,
   sum(data$get_values(x) * loglambda - 
         exp(loglambda) - data$get_log_factorial(x)) 
 }
+
+
+#' @importFrom stats optim
+optimize_llh <- function(block, model, data, glms) {
+  best_value <- optim(block$get_middle(),
+                      function(param) {
+                        approximate_llh(model, data, param, glms)
+                      },
+                      lower = block$get_border()[ , 1, drop = FALSE], 
+                      upper = block$get_border()[ , 2, drop = FALSE],
+                      method = "L-BFGS-B", 
+                      control = list(fnscale = -1))
+  
+  assert_that(block$includes(best_value$par))
+  best_value
+}
