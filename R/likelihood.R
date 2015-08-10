@@ -53,10 +53,16 @@ optimize_llh <- function(block, model, data, glms) {
 }
 
 
-estimate_local_ml <- function(block, model, data, sim, cores) {
-  sim_data <- model$simulate(pars = block$sample_pars(sim), 
+estimate_local_ml <- function(block, model, data, sim, cores, sim_cache) {
+  sim_data <- model$simulate(pars = block$sample_pars(sim, add_corners = TRUE), 
                              data = data,
                              cores = cores)
+  
+  # Cache simulation & load older simulations within this block
+  sim_cache$add(sim_data)
+  sim_data <- sim_cache$get_sim_data(block)
+  assert_that(length(sim_data) >= sim)
+  
   glms <- fit_glm(model, sim_data)
   optimize_llh(block, model, data, glms)
 }

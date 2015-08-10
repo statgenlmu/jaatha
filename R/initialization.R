@@ -1,35 +1,37 @@
-get_start_pos <- function(model, data, repetitions, 
-                          sim, init_method, cores) {
+get_start_pos <- function(model, data, reps, sim, init_method, cores, 
+                          sim_cache) {
   
   start_pos <- NULL
   if (init_method[1] == "zoom-in") {
-    start_pos <- do_zoom_in_search(model, data, repetitions, sim, cores)
+    start_pos <- do_zoom_in_search(model, data, reps, sim, cores, sim_cache)
   } else if (init_method[1] == "initial-search") {
-    start_pos <- do_initial_search(model, data, repetitions, sim, cores)
+    start_pos <- do_initial_search(model, data, reps, sim, cores, sim_cache)
   } else if (init_method[1] == "middle") {
-    start_pos <- matrix(.5, repetitions, model$get_par_number())
+    start_pos <- matrix(.5, reps, model$get_par_number())
   } else {
     stop("Unknown initialization method: ", init_method[1])
   }
   
   assert_that(is.matrix(start_pos))
-  assert_that(all((dim(start_pos) == c(repetitions, model$get_par_number()))))
+  assert_that(all((dim(start_pos) == c(reps, model$get_par_number()))))
   start_pos
 }
 
 
-do_initial_search <- function(model, data, repetititons, sim, cores) {
+do_initial_search <- function(model, data, reps, sim, cores, sim_cache) {
+  
   # Divide the parameter space in blocks
   par_number <- model$get_par_ranges()$get_par_number()
-  blocks_per_par <- determine_bpp(par_number, repetititons)
+  blocks_per_par <- determine_bpp(par_number, reps)
   blocks <- create_initial_blocks(model$get_par_ranges(), blocks_per_par)
   
   # Get an estimate infor each block
-  estimates <- lapply(blocks, estimate_local_ml, model, data, sim, cores)
+  estimates <- lapply(blocks, estimate_local_ml, model, data, 
+                      sim, cores, sim_cache)
   
   # Return the parameters for the best estimates
   best_indexes <- order(vapply(estimates, function(x) x$value, numeric(1)), 
-                        decreasing = TRUE)[1:repetititons]
+                        decreasing = TRUE)[1:reps]
   t(vapply(estimates[best_indexes], function(x) x$par, numeric(2)))
 }
 
@@ -68,13 +70,13 @@ create_initial_blocks <- function(par_ranges, blocks_per_par) {
 }
 
 
-do_zoom_in_search <- function(model, data, repetititons, sim, cores) {
-  t(vapply(1:repetititons, function(i) {
+do_zoom_in_search <- function(model, data, reps, sim, cores, sim_cache) {
+  t(vapply(1:reps, function(i) {
     middle <- rep(.5, model$get_par_number())
     for (block_width in c(1, 0.5, 0.25)) {
       block <- create_block(cbind(middle - block_width * .5,
                                   middle + block_width * .5), cut = TRUE)
-      middle <- estimate_local_ml(block, model, data, sim, cores)$par
+      middle <- estimate_local_ml(block, model, data, sim, cores, sim_cache)$par
     }
     middle
   }, numeric(model$get_par_number())))

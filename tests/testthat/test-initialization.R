@@ -35,17 +35,20 @@ test_that("a complete initial search works", {
   model <- create_test_model()
   data <- create_test_data(model)
   
-  par <- do_initial_search(model, data, 1, sim = 20, cores = 1)
+  sim_cache <- create_sim_cache()
+  par <- do_initial_search(model, data, 1, sim = 20, cores = 1, sim_cache)
   expect_that(par, is_a("matrix"))
   expect_equal(dim(par), c(1, model$get_par_number()))
   expect_true(all(par >= 0 & par <= 1))
   
-  par <- do_initial_search(model, data, 3, sim = 20, cores = 1)
+  sim_cache <- create_sim_cache()
+  par <- do_initial_search(model, data, 3, sim = 20, cores = 1, sim_cache)
   expect_that(par, is_a("matrix"))
   expect_equal(dim(par), c(3, model$get_par_number()))
   expect_true(all(par >= 0 & par <= 1))
   
-  par <- do_initial_search(model, data, 4, sim = 20, cores = 1)
+  sim_cache <- create_sim_cache()
+  par <- do_initial_search(model, data, 4, sim = 20, cores = 1, sim_cache)
   expect_that(par, is_a("matrix"))
   expect_equal(dim(par), c(4, model$get_par_number()))
   expect_true(all(par >= 0 & par <= 1))
@@ -56,17 +59,20 @@ test_that("zoom-in search works", {
   model <- create_test_model()
   data <- create_test_data(model)
   
-  par <- do_zoom_in_search(model, data, 1, sim = 20, cores = 1)
+  sim_cache <- create_sim_cache()
+  par <- do_zoom_in_search(model, data, 1, sim = 20, cores = 1, sim_cache)
   expect_that(par, is_a("matrix"))
   expect_equal(dim(par), c(1, model$get_par_number()))
   expect_true(all(par >= 0 & par <= 1))
   
-  par <- do_zoom_in_search(model, data, 2, sim = 20, cores = 1)
+  sim_cache <- create_sim_cache()
+  par <- do_zoom_in_search(model, data, 2, sim = 20, cores = 1, sim_cache)
   expect_that(par, is_a("matrix"))
   expect_equal(dim(par), c(2, model$get_par_number()))
   expect_true(all(par >= 0 & par <= 1))
   
-  par <- do_zoom_in_search(model, data, 3, sim = 20, cores = 1)
+  sim_cache <- create_sim_cache()
+  par <- do_zoom_in_search(model, data, 3, sim = 20, cores = 1, sim_cache)
   expect_that(par, is_a("matrix"))
   expect_equal(dim(par), c(3, model$get_par_number()))
   expect_true(all(par >= 0 & par <= 1))
@@ -78,24 +84,28 @@ test_that("getting the start positions works", {
   data <- create_test_data(model)
   
   # middle
-  expect_equal(get_start_pos(model, data, 1, "middle", sim = 20, cores = 1),
+  sim_cache <- create_sim_cache()
+  expect_equal(get_start_pos(model, data, 1, 20, "middle", 1, sim_cache),
                matrix(0.5, 1, model$get_par_number()))
-  expect_equal(get_start_pos(model, data, 2, "middle", sim = 20, cores = 1),
+  expect_equal(get_start_pos(model, data, 2, 20, "middle", 1, sim_cache),
                matrix(0.5, 2, model$get_par_number()))
-  expect_equal(get_start_pos(model, data, 3, "middle", sim = 20, cores = 1),
+  expect_equal(get_start_pos(model, data, 3, 20, "middle", 1, sim_cache),
                matrix(0.5, 3, model$get_par_number()))
   
   # initial search
-  pos <- get_start_pos(model, data, 1, "initial-search", sim = 20, cores = 1)
+  sim_cache <- create_sim_cache()
+  pos <- get_start_pos(model, data, 1, 20, "initial-search", 1, sim_cache)
   expect_that(pos, is_a("matrix"))
   expect_true(all(pos >= 0 & pos <= 1))
   
   # zoom-in
-  pos <- get_start_pos(model, data, 1, "zoom-in", sim = 20, cores = 1)
+  sim_cache <- create_sim_cache()
+  pos <- get_start_pos(model, data, 1, 20, "zoom-in", 1, sim_cache)
   expect_that(pos, is_a("matrix"))
   expect_true(all(pos >= 0 & pos <= 1))
   
   # errors
-  expect_error(get_start_pos(model, data, 1, "1", sim = 20, cores = 1))
-  expect_error(get_start_pos(model, data, 1, 1, sim = 20, cores = 1))
+  sim_cache <- create_sim_cache()
+  expect_error(get_start_pos(model, data, 1, 20, "1", 1, sim_cache))
+  expect_error(get_start_pos(model, data, 1, 20, 1, 1, sim_cache))
 })

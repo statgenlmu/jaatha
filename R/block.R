@@ -19,7 +19,7 @@ block_class <- R6Class("Block",
     print_border = function(jaatha) {
       lower <- denormalize(private$border[ , 1], jaatha)
       upper <- denormalize(private$border[ , 2], jaatha)
-      paste0(round(lower, 3), "-", round(upper, 3), collapse=" x ")
+      paste0(round(lower, 3), "-", round(upper, 3), collapse = " x ")
     },
     includes = function(point) {
       assert_that(length(point) == nrow(private$border))
@@ -49,10 +49,11 @@ block_class <- R6Class("Block",
       random_pars <- matrix(runif(par_number * number,
                                   min = self$get_border()[ , 1],
                                   max = self$get_border()[ , 2]),
-                            number, par_number)
+                            number, par_number, byrow = TRUE)
       
       # Add corners if requested
       if (add_corners) random_pars <- rbind(random_pars, self$get_corners())
+      assert_that(all(apply(random_pars, 1, self$includes)))
       random_pars
     }
   )

@@ -1,6 +1,6 @@
 context("Block")
 
-border <- matrix(c(0.4, 0.4, 0.6, 0.6), 2, 2)
+border <- matrix(c(0.4, 0.2, 0.6, 0.4), 2, 2)
 border_1dim <- matrix(c(0, 1), 1, 2)
 
 test_that("blocks can be initalized", {
@@ -18,12 +18,12 @@ test_that("blocks can be initalized", {
 
 test_that("test if a block includes a point works", {
   block <- create_block(border)
-  expect_equal(block$includes(c(0.5, 0.5)), TRUE)
-  expect_equal(block$includes(c(0.4, 0.5)), TRUE)
-  expect_equal(block$includes(c(0.6, 0.5)), TRUE)
-  expect_equal(block$includes(c(0.6, 0.6)), TRUE)
-  expect_equal(block$includes(c(0.3, 0.6)), FALSE)
+  expect_equal(block$includes(c(0.5, 0.3)), TRUE)
+  expect_equal(block$includes(c(0.4, 0.3)), TRUE)
+  expect_equal(block$includes(c(0.6, 0.3)), TRUE)
+  expect_equal(block$includes(c(0.6, 0.4)), TRUE)
   expect_equal(block$includes(c(0.3, 0.3)), FALSE)
+  expect_equal(block$includes(c(0.3, 0.1)), FALSE)
   expect_equal(block$includes(c(0.4, 0.61)), FALSE)
   
   expect_error(block$includes(0.5))
@@ -32,7 +32,7 @@ test_that("test if a block includes a point works", {
 
 test_that("block returns its middle", {
   block <- create_block(border)
-  expect_equivalent(block$get_middle(), c(.5, .5))
+  expect_equivalent(block$get_middle(), c(.5, .3))
   
   block <- create_block(border_1dim)
   expect_equivalent(block$get_middle(), .5)
@@ -42,7 +42,7 @@ test_that("block returns its middle", {
 test_that("block returns its corners", {
   block <- create_block(border)
   expect_equivalent(block$get_corners(), matrix(c(.4, .6, .4, .6,
-                                                  .4, .4, .6, .6), 4, 2))
+                                                  .2, .2, .4, .4), 4, 2))
   
   block <- create_block(border_1dim)
   expect_equivalent(block$get_corners(), matrix(c(0, 1), 1, 2))

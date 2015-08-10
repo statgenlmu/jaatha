@@ -26,6 +26,7 @@ jaatha <- function(model, data,
   
   # Setup
   #likelihood_table <- create_likelihood_table(jaatha, max_steps)
+  sim_cache <- create_sim_cache()
   start_pos <- get_start_pos(model, data, repetitions, sim, init_method, cores)
   block_width <- 0.1
   
