@@ -25,8 +25,7 @@ do_initial_search <- function(model, data, repetititons, sim, cores) {
   blocks <- create_initial_blocks(model$get_par_ranges(), blocks_per_par)
   
   # Get an estimate infor each block
-  estimates <- lapply(blocks, estimate_local_ml, model, data, 
-                      repetititons, sim, cores)
+  estimates <- lapply(blocks, estimate_local_ml, model, data, sim, cores)
   
   # Return the parameters for the best estimates
   best_indexes <- order(vapply(estimates, function(x) x$value, numeric(1)), 
@@ -75,8 +74,7 @@ do_zoom_in_search <- function(model, data, repetititons, sim, cores) {
     for (block_width in c(1, 0.5, 0.25)) {
       block <- create_block(cbind(middle - block_width * .5,
                                   middle + block_width * .5), cut = TRUE)
-      middle <- estimate_local_ml(block, model, data, 
-                                  repetititons, sim, cores)$par
+      middle <- estimate_local_ml(block, model, data, sim, cores)$par
     }
     middle
   }, numeric(model$get_par_number())))

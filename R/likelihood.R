@@ -53,7 +53,7 @@ optimize_llh <- function(block, model, data, glms) {
 }
 
 
-estimate_local_ml <- function(block, model, data, repetititons, sim, cores) {
+estimate_local_ml <- function(block, model, data, sim, cores) {
   sim_data <- model$simulate(pars = block$sample_pars(sim), 
                              data = data,
                              cores = cores)
