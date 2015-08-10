@@ -63,6 +63,7 @@ estimate_local_ml <- function(block, model, data, sim, cores, sim_cache) {
   sim_data <- sim_cache$get_sim_data(block)
   assert_that(length(sim_data) >= sim)
   
+  # Fit glms and find maximal likelihood value
   glms <- fit_glm(model, sim_data)
   optimize_llh(block, model, data, glms)
 }

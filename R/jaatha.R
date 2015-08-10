@@ -25,9 +25,9 @@ jaatha <- function(model, data,
   assert_that(is_positive_int(cores))
   
   # Setup
-  #likelihood_table <- create_likelihood_table(jaatha, max_steps)
   sim_cache <- create_sim_cache()
-  start_pos <- get_start_pos(model, data, repetitions, sim, init_method, cores)
+  start_pos <- get_start_pos(model, data, repetitions, sim, init_method, cores,
+                             sim_cache = sim_cache)
   block_width <- 0.1
   
   for (rep in 1:repetitions) {
@@ -41,7 +41,7 @@ jaatha <- function(model, data,
                                   estimate + block_width * .5), 
                             cut = TRUE)
       
-      local_ml <- estimate_local_ml(block, model, data, sim, cores)
+      local_ml <- estimate_local_ml(block, model, data, sim, cores, sim_cache)
       estimate <- local_ml$par
       
       if (local_ml$value > likelihood) {
