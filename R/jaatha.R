@@ -12,9 +12,9 @@ NULL
 
 jaatha <- function(model, data, 
                    repetitions = 3, 
-                   sim = model$get_par_ranges()$get_par_number() * 25, 
+                   sim = model$get_par_number() * 25, 
                    max_steps = 200, 
-                   initialization = c("zoom-in", "initial-search", "middle"),
+                   init_method = c("initial-search", "zoom-in", "middle"),
                    cores = 1) {
   
   # Check parameters
@@ -23,11 +23,10 @@ jaatha <- function(model, data,
   assert_that(is_positive_int(repetitions))
   assert_that(is_positive_int(sim))
   assert_that(is_positive_int(cores))
-  assert_that(any(initialization[1] == c("zoom-in", "initial-search", "middle")))
   
   # Setup
-  likelihood_table <- create_likelihood_table(jaatha, max.steps)
-  
+  #likelihood_table <- create_likelihood_table(jaatha, max_steps)
+  start_pos <- get_start_pos(model, data, repetitions, sim, init_method, cores)
   
   
 }

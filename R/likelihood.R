@@ -51,3 +51,12 @@ optimize_llh <- function(block, model, data, glms) {
   assert_that(block$includes(best_value$par))
   best_value
 }
+
+
+estimate_local_ml <- function(block, model, data, repetititons, sim, cores) {
+  sim_data <- model$simulate(pars = block$sample_pars(sim), 
+                             data = data,
+                             cores = cores)
+  glms <- fit_glm(model, sim_data)
+  optimize_llh(block, model, data, glms)
+}

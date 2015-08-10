@@ -37,3 +37,5 @@ par_ranges_class <- R6Class("par_ranges",
     get_par_names = function() rownames(private$range)
   )
 )
+
+is_par_ranges <- function(x) inherits(x, "par_ranges")

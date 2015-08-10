@@ -2,11 +2,16 @@
 block_class <- R6Class("Block", 
   private = list(border = NULL),
   public = list(
-    initialize = function(border) {
+    initialize = function(border, cut) {
       assert_that(is.matrix(border))
       assert_that(ncol(border) == 2)
       assert_that(nrow(border) >= 1)
       assert_that(all(border[ , 1] < border[ , 2]))
+      if (cut)  {
+        border[border < 0] <- 0
+        border[border > 1] <- 1
+      }
+      assert_that(all(border >= 0 & border <= 1))
       private$border <- border
     },
     get_border = function() private$border,
@@ -53,4 +58,4 @@ block_class <- R6Class("Block",
   )
 )
 
-create_block <- function(border) block_class$new(border)
+create_block <- function(border, cut = FALSE) block_class$new(border, cut)

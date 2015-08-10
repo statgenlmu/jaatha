@@ -2,6 +2,9 @@ context("Jaatha Model")
 
 test_that("jaatha model can be initialized", {
   model <- create_test_model()
+  expect_true(is_par_ranges(model$get_par_ranges()))
+  expect_equal(model$get_par_number(), model$get_par_ranges()$get_par_number())
+  expect_equal(model$get_scaling_factor(), 1)
 })
 
 
@@ -10,11 +13,11 @@ test_that("adding summary statistics works", {
   par_ranges = matrix(c(0.1, 0.1, 10, 10), 2, 2)
   
   model <- create_jaatha_model(sim_func, par_ranges, list(stat_identity()))
-  expect_equal(model$get_sum_stats(), list("id"=stat_identity()))
+  expect_equal(model$get_sum_stats(), list("id" = stat_identity()))
   
   model <- create_jaatha_model(sim_func, par_ranges, list(stat_identity(),
                                                           stat_sum()))
-  expect_equal(model$get_sum_stats(), list("id"=stat_identity(), 
+  expect_equal(model$get_sum_stats(), list("id" = stat_identity(), 
                                            "sum" = stat_sum()))
   
   expect_error(create_jaatha_model(sim_func, par_ranges, list(stat_identity(),
