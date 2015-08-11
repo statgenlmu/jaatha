@@ -12,6 +12,9 @@ par_ranges_class <- R6Class("par_ranges",
       assert_that(ncol(par_range) == 2)
       assert_that(nrow(par_range) >= 1)
       assert_that(all(par_range[ , 1] < par_range[ , 2]))
+      if (is.null(rownames(par_range))) {
+        rownames(par_range) <- paste0("p", 1:nrow(par_range))
+      }
       private$range <- par_range
       private$offset <- min(par_range) - 1
       private$log_range <- log(par_range - private$offset)

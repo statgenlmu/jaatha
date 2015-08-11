@@ -21,8 +21,8 @@ test_that("Parameter normalization works", {
 
 test_that("Parameter denormalization works", {
   par_range <- par_ranges_class$new(matrix(-3:2, 3, 2))
-  expect_equal(par_range$denormalize(c(0, 0, 0)), -3:-1)
-  expect_equal(par_range$denormalize(c(1, 1, 1)), 0:2)  
+  expect_equivalent(par_range$denormalize(c(0, 0, 0)), -3:-1)
+  expect_equivalent(par_range$denormalize(c(1, 1, 1)), 0:2)  
   expect_true(all(par_range$normalize(rep(.5, 3)) > -3))
   expect_true(all(par_range$normalize(rep(.5, 3)) < 2))  
 })
