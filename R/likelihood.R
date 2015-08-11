@@ -1,3 +1,12 @@
+calc_poisson_llh <- function(data, stat, loglambda, scaling_factor = 1) {
+  # Upscale predicted expectation value if we use scaling
+  if (scaling_factor != 1) loglambda <- loglambda + log(scaling_factor)
+  
+  sum(data$get_values(stat) * loglambda - 
+        exp(loglambda) - data$get_log_factorial(stat)) 
+}
+
+
 approximate_llh <- function(x, data, param, glm_fitted, ...) {
   "approximates the log-likelihood using the fitted glms"
   UseMethod("approximate_llh")
@@ -28,12 +37,8 @@ approximate_llh.jaatha_stat_basic  <- function(x, data, param, glm_fitted,
     glm_obj$coefficients %*% c(1, param)
   })
   
-  # Upscale predicted expectation value if we use scaling
-  if (scaling_factor != 1) loglambda <- loglambda + log(scaling_factor)
-  
   # Calculate the Poission log-likelihood
-  sum(data$get_values(x) * loglambda - 
-        exp(loglambda) - data$get_log_factorial(x)) 
+  calc_poisson_llh(data, x, loglambda, scaling_factor)
 }
 
 
@@ -66,4 +71,45 @@ estimate_local_ml <- function(block, model, data, sim, cores, sim_cache) {
   # Fit glms and find maximal likelihood value
   glms <- fit_glm(model, sim_data)
   optimize_llh(block, model, data, glms)
+}
+
+
+#' Estimate the Log-Likelihood for a given parameter combination
+#' 
+#' This function estimates the Log-likelihood value for a given
+#' parameter combination. It conducts a number of simulations for
+#' the parameter combination, averages the summary statistics to
+#' esimate their expected values, and uses them to calculate the
+#' likelihood. For a resonable number of simulation, this is more
+#' precise than the glm fitting used in the main algorithm.
+#' 
+#' @inheritParams jaatha
+#' @param parameter The parameter combination for which the loglikelihood
+#'          will be estimated.
+#' @param sim The number of simulations that will be used for averaging the
+#'          expectation values of the summary statistics.
+#' @param normalized For internal use. Indicates whether the parameter
+#'          combination is normalized to [0, 1]-scale, or on its natural
+#'          scale.
+#' @export
+estimate_llh <- function(model, data, parameter, sim = 100, 
+                         cores = 1, normalized = FALSE) {
+  
+  assert_that(is_jaatha_model(model))
+  assert_that(is_jaatha_data(data))
+  assert_that(is.numeric(parameter))
+  assert_that(is_positive_int(sim))
+  assert_that(is_positive_int(cores))
+  assert_that(is_single_logical(normalized))
+  
+  if (!normalized) parameter <- model$get_par_ranges()$normalize(parameter)
+  sim_pars <- matrix(parameter, sim, length(parameter), byrow = TRUE)
+  sim_data <- model$simulate(sim_pars, data, cores)
+  
+  sum(vapply(names(model$get_sum_stats()), function(stat){
+    stat_values <- sapply(sim_data, function(x) x[[stat]])
+    if (!is.matrix(stat_values)) stat_values <- matrix(stat_values, nrow = 1)
+    log_means <- log(rowMeans(stat_values))
+    calc_poisson_llh(data, stat, log_means, model$get_scaling_factor())
+  }, numeric(1)))
 }

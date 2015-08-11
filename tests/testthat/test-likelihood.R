@@ -57,3 +57,20 @@ test_that("llh optimization works", {
   expect_true(all(opt_llh$par > 0 & opt_llh$par < 1))
   expect_true(opt_llh$value < 0)
 })
+
+
+test_that("precise llh estimation works", {
+  model <- create_test_model()
+  data <- create_test_data(model)
+  llh <- estimate_llh(model, data, c(.5, .5), sim = 20, 
+                      cores = 1, normalized = TRUE)
+  expect_that(llh, is_less_than(0))
+  
+  model <- create_test_model()
+  data <- create_test_data(model)
+  expect_error(estimate_llh(model, data, c(1.5, 1.5), sim = 20, 
+                            cores = 1, normalized = TRUE))
+  llh <- estimate_llh(model, data, c(1.5, 1.5), sim = 20, 
+                      cores = 1, normalized = FALSE)
+  expect_that(llh, is_less_than(0))
+})

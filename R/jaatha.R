@@ -58,4 +58,14 @@ jaatha <- function(model, data,
       }
     }
   }
+  
+  # Get presice llh values for best estimates
+  best_values <- log$get_best_estimates(5)
+  for (i in 1:nrow(best_values)) {
+    llh <- estimate_llh(model, data, as.numeric(best_values[i, -(1:3)]), 
+                        100, cores, TRUE)
+    log$log_final_estimate(i, best_values[i, ], llh)
+  }
+  
+  log$get_best_estimates(10, final = TRUE)
 }
