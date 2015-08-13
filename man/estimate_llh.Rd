@@ -8,11 +8,21 @@ estimate_llh(model, data, parameter, sim = 100, cores = 1,
   normalized = FALSE)
 }
 \arguments{
+\item{model}{The model used for the estimation.
+See \code{\link{create_jaatha_model}}.}
+
+\item{data}{The data used for the estimation.
+See \code{\link{create_jaatha_data}}.}
+
 \item{parameter}{The parameter combination for which the loglikelihood
 will be estimated.}
 
 \item{sim}{The number of simulations that will be used for averaging the
 expectation values of the summary statistics.}
+
+\item{cores}{The number of CPU cores that will be used for the simulations.
+The relies on the \package{parallel} package, and consequenlty only one
+core is supported on Windows.}
 
 \item{normalized}{For internal use. Indicates whether the parameter
 combination is normalized to [0, 1]-scale, or on its natural

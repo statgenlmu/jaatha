@@ -10,6 +10,35 @@
 #' @importFrom assertthat assert_that
 NULL
 
+#' Simulation based maximum likelihood estimation
+#' 
+#' @param model The model used for the estimation. 
+#'   See \code{\link{create_jaatha_model}}.
+#' @param data The data used for the estimation.
+#'   See \code{\link{create_jaatha_data}}.
+#' @param repetitions The number of independend optimizations that will be
+#'   conducted. You should use a value greater than one here, to minimize
+#'   the chance that the algorithms is stuck in a local maximum.
+#' @param sim The number of simulations conducted for each step.
+#' @param max_step The maximal number of steps, in case Jaatha fails to 
+#'   converge.
+#' @param init_method Determines how the starting position of each repetition
+#'   is chosen. See below for a description of the different options. 
+#' @param cores The number of CPU cores that will be used for the simulations.
+#'   The relies on the \package{parallel} package, and consequenlty only one
+#'   core is supported on Windows.
+#' @param verbose If \code{TRUE}, information about the optimization algorithm
+#'   is printed.
+#' @return TBR
+#' 
+#' @section Algorithm:
+#'   TBR
+#'   
+#' @section Initialization Methods:
+#'   TBR
+#'   
+#' @author Paul Staab and Lisha Mathew
+#' @export
 jaatha <- function(model, data, 
                    repetitions = 3, 
                    sim = model$get_par_number() * 25, 
