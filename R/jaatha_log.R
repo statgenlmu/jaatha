@@ -5,6 +5,7 @@ jaatha_log_class <- R6Class("jaatha_log",
     max_steps = 0,
     verbose = FALSE,
     par_ranges = NULL,
+    converged = NULL,
     format_par = function(par) {
       paste(format(private$par_ranges$denormalize(par)), collapse = " ")
     }
@@ -22,23 +23,21 @@ jaatha_log_class <- R6Class("jaatha_log",
       private$max_steps <- max_steps
       private$verbose <- verbose
       private$par_ranges <- model$get_par_ranges()
+      private$converged <- rep(FALSE, reps)
     },
     log_estimate = function(rep, step, estimate) {
-      private$estimates[[rep]][step, ] <- 
-        c(rep, step, estimate$value, estimate$par)
+      entry <- c(rep, step, estimate$value, estimate$par)
+      if (is.numeric(rep)) {
+        private$estimates[[rep]][step, ] <- entry
+      } else if (all(rep == "final")) {
+        private$final_estimates[step, ] <- entry
+      } else {
+        stop("Unexpected value for 'rep'")
+      }
       
       if (private$verbose) {
         message("Step ", step, ": Loglikelihood ", format(estimate$value), 
                 ", Parameter: ", private$format_par(estimate$par))
-      }
-    },
-    log_final_estimate = function(i, prev, llh) {
-      prev$llh <- llh
-      private$final_estimates[i, ] <- prev
-        
-      if (private$verbose) {
-        message("Final llh correction", i, ": Loglikelihood ", format(llh), 
-                ", Parameter: ", private$format_par(prev[1, -(1:3)]))
       }
     },
     log_new_rep = function(rep, start_pos) {
@@ -47,8 +46,9 @@ jaatha_log_class <- R6Class("jaatha_log",
                 " starting at ", private$format_par(start_pos))
       }
     },
-    log_convergence = function() {
+    log_convergence = function(step) {
       if (private$verbose) message("Convergence detected")
+      private$converged[step] = TRUE
     },
     get_estimates = function(rep) private$estimates[[rep]],
     get_best_estimates = function(n = 5, final = FALSE) {
@@ -62,7 +62,13 @@ jaatha_log_class <- R6Class("jaatha_log",
       }))
       best_est[order(best_est$llh, decreasing = TRUE), ]
     },
-    create_results = function() {}
+    create_results = function() {
+      "creates the results list the main function returns"
+      best_estimate <- self$get_best_estimates(1, TRUE)
+      list(param = as.numeric(best_estimate[1, -(1:3)]),
+           loglikelihood = as.numeric(best_estimate[1, 3]),
+           converged = all(private$converged))
+    }
   )
 )
 

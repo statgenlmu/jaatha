@@ -106,10 +106,13 @@ estimate_llh <- function(model, data, parameter, sim = 100,
   sim_pars <- matrix(parameter, sim, length(parameter), byrow = TRUE)
   sim_data <- model$simulate(sim_pars, data, cores)
   
-  sum(vapply(names(model$get_sum_stats()), function(stat){
+  llh <- sum(vapply(names(model$get_sum_stats()), function(stat){
     stat_values <- sapply(sim_data, function(x) x[[stat]])
     if (!is.matrix(stat_values)) stat_values <- matrix(stat_values, nrow = 1)
     log_means <- log(rowMeans(stat_values))
     calc_poisson_llh(data, stat, log_means, model$get_scaling_factor())
   }, numeric(1)))
+  
+  list(param = parameter,
+       value = llh)
 }

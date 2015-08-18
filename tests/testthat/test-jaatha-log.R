@@ -58,3 +58,24 @@ test_that("getting best estimates works", {
                                p1 = c(2.0, 1.9, 1.0, 0.9),
                                p2 = c(2.0, 1.9, 1.0, 0.9)))
 })
+
+
+test_that("getting best estimates works", {
+  model <- create_test_model()
+  log <- create_jaatha_log(2, 10, model)
+  log$log_estimate("final", 1, list(par = rep(1, model$get_par_number()),
+                                    value = 1))
+  log$log_estimate("final", 2, list(par = rep(2, model$get_par_number()),
+                                    value = 2))
+  
+  expect_equivalent(log$create_results(),
+                    list(param = c(2, 2),
+                         loglikelihood = 2,
+                         converged = FALSE))
+  
+  log$log_convergence(1)
+  expect_equal(log$create_results()$converged, FALSE)
+  log$log_convergence(2)
+  expect_equal(log$create_results()$converged, TRUE)
+  
+})

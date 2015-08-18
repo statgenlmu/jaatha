@@ -64,7 +64,8 @@ test_that("precise llh estimation works", {
   data <- create_test_data(model)
   llh <- estimate_llh(model, data, c(.5, .5), sim = 20, 
                       cores = 1, normalized = TRUE)
-  expect_that(llh, is_less_than(0))
+  expect_equivalent(llh$param, c(.5, .5))
+  expect_that(llh$value, is_less_than(0))
   
   model <- create_test_model()
   data <- create_test_data(model)
@@ -72,5 +73,6 @@ test_that("precise llh estimation works", {
                             cores = 1, normalized = TRUE))
   llh <- estimate_llh(model, data, c(1.5, 1.5), sim = 20, 
                       cores = 1, normalized = FALSE)
-  expect_that(llh, is_less_than(0))
+  expect_equivalent(llh$param, model$get_par_ranges()$normalize(c(1.5, 1.5)))
+  expect_that(llh$value, is_less_than(0))
 })
