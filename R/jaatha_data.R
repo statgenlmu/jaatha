@@ -43,6 +43,12 @@ jaatha_data_class <- R6Class("jaatha_data",
 is_jaatha_data <- function(x) inherits(x, "jaatha_data")
 
 
+#' Prepare data for use in jaatha
+#' 
+#' @param data The data that is imported
+#' @param ... Additinal arguments that might be used in a dispatched function
+#' @inheritParams jaatha
+#' @export
 create_jaatha_data <- function(data, model, ...) UseMethod("create_jaatha_data")
 
 

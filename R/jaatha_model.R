@@ -82,6 +82,17 @@ jaatha_model_class <- R6Class("jaatha_model",
 )
 
 
+#' Specify a model for a Jaatha analysis 
+#' 
+#' @param x The primary argument. Can be a function used for simulations,
+#'   or a coala model.
+#' @param ... Additinoal parameters passed on to the dispatched functions.
+#' @param scaling_factor If your model is a down-scaled version of your data,
+#'   you can indicated this using this value. The estimated expectation values
+#'   are multiplied with this factor before the likelihood is calculated.
+#' @param test A logical indicating whether a simulation is performed to test
+#'   test model.
+#' @export
 create_jaatha_model <- function(x, ..., scaling_factor = 1, test = TRUE) {
   UseMethod("create_jaatha_model")
 }

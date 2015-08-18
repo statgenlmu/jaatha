@@ -21,18 +21,18 @@ the chance that the algorithms is stuck in a local maximum.}
 
 \item{sim}{The number of simulations conducted for each step.}
 
+\item{max_steps}{The maximal number of steps, in case Jaatha fails to
+converge.}
+
 \item{init_method}{Determines how the starting position of each repetition
 is chosen. See below for a description of the different options.}
 
 \item{cores}{The number of CPU cores that will be used for the simulations.
-The relies on the \package{parallel} package, and consequenlty only one
+The relies on the \pkg{parallel} package, and consequenlty only one
 core is supported on Windows.}
 
 \item{verbose}{If \code{TRUE}, information about the optimization algorithm
 is printed.}
-
-\item{max_step}{The maximal number of steps, in case Jaatha fails to
-converge.}
 }
 \value{
 TBR

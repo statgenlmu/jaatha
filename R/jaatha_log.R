@@ -65,9 +65,11 @@ jaatha_log_class <- R6Class("jaatha_log",
     create_results = function() {
       "creates the results list the main function returns"
       best_estimate <- self$get_best_estimates(1, TRUE)
-      list(param = as.numeric(best_estimate[1, -(1:3)]),
-           loglikelihood = as.numeric(best_estimate[1, 3]),
-           converged = all(private$converged))
+      res <- list(param = as.numeric(best_estimate[1, -(1:3)]),
+                  loglikelihood = as.numeric(best_estimate[1, 3]),
+                  converged = all(private$converged))
+      class(res) <- c("jaatha_result", class(res))
+      res
     }
   )
 )
