@@ -3,18 +3,10 @@
 \docType{package}
 \name{jaatha-package}
 \alias{jaatha-package}
-\title{Fast estimation of demographic parameters}
+\title{Jaatha: Simulation-based maximum likelihood parameter estimation}
 \description{
-Jaatha is a composite maximum likelihood method to estimate parameters
-of a speciation model of closely related biological species out of SNP
-data.
-}
-\author{
-Lisha Naduvilezhath \email{lisha (at) biologie.uni-muenchen.de},
-Paul R. Staab \email{staab (at) biologie.uni-muenchen.de} and
-Dirk Metzler \email{metzler (at) biologie.uni-muenchen.de}
-
-Maintainer: Paul R. Staab \email{staab (at) biologie.uni-muenchen.de}
+Jaatha is a simulation based maximum likelihood parameter estimation
+methods.
 }
 \keyword{package}
 

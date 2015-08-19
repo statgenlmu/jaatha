@@ -6,7 +6,6 @@ env:
 sudo: required
 
 before_install:
-  - rm .Rprofile
   - curl -OL http://raw.github.com/craigcitro/r-travis/master/scripts/travis-tool.sh
   - chmod 755 ./travis-tool.sh
   - ./travis-tool.sh bootstrap
@@ -23,7 +22,8 @@ after_failure:
 
 after_success:
   - ./travis-tool.sh r_binary_install igraph stringdist shiny
-  - ./travis-tool.sh r_install covr
+  - ./travis-tool.sh install_github jimhester/lintr jimhester/covr 
+  - Rscript -e 'lintr::lint_package()'
   - Rscript -e 'library(covr); coveralls()'
 
 notifications:

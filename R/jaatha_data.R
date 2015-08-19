@@ -1,0 +1,73 @@
+#' @importFrom R6 R6Class
+jaatha_data_class <- R6Class("jaatha_data", 
+  lock_objects = TRUE, lock_class = TRUE,
+  private = list(
+    values = list(),
+    options = list(),
+    log_factorials = list()
+  ),
+  public = list(
+    initialize = function(data, model) {
+      assert_that(is_jaatha_model(model))
+      private$values <- lapply(model$get_sum_stats(), function(stat) {
+        private$options[[stat$get_name()]] <- stat$generate_data_opts(data)
+        stat$calculate(data, private$options[[stat$get_name()]])
+      })
+      private$log_factorials <- lapply(private$values, function(x) {
+        log(factorial(x))
+      })
+    },
+    get_values = function(stat = NULL) {
+      if (is.null(stat)) return(private$values)
+      if (is.character(stat) || is.numeric(stat)) return(private$values[[stat]])
+      private$values[[stat$get_name()]]
+    },
+    get_options = function(stat = NULL) {
+      if (is.null(stat)) return(private$options)
+      if (is.character(stat) || is.numeric(stat)) {
+        return(private$options[[stat]])
+      }
+      private$options[[stat$get_name()]]
+    },
+    get_log_factorial = function(stat = NULL) {
+      if (is.null(stat)) return(private$log_factorials)
+      if (is.character(stat) || is.numeric(stat)) {
+        return(private$log_factorials[[stat]])
+      }
+      private$log_factorials[[stat$get_name()]]
+    }
+  )
+)
+
+
+is_jaatha_data <- function(x) inherits(x, "jaatha_data")
+
+
+#' Prepare the observed data for Jaatha
+#' 
+#' By default, this function assumes that the observed data is in a format 
+#' identical to the format of the simulation results, before the summary
+#' statistics are calculated. Jaatha will then automatically calculate the
+#' 
+#' 
+#' @param data The data to be analysed with Jaatha. 
+#'   It should be in a format identical to the 
+#'   simulation results (see \code{\link{create_jaatha_model}}).
+#' @param ... Currently ignored.
+#' @inheritParams jaatha
+#' @export
+create_jaatha_data <- function(data, model, ...) UseMethod("create_jaatha_data")
+
+
+#' @describeIn create_jaatha_data The data's format is identicial to the 
+#'   simulated data.
+#' @export
+create_jaatha_data.default <- function(data, model, ...) {
+  jaatha_data_class$new(data, model)
+}
+
+
+create_test_data <- function(model) {
+  test_data <- model$test(quiet = TRUE)
+  create_jaatha_data(test_data, model)
+}

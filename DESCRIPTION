@@ -15,37 +15,13 @@ Description: A composite likelihood method for inferring evolutionary
 URL: http://evol.bio.lmu.de/_statgen/software/jaatha
 BugReports: https://github.com/statgenlmu/jaatha/issues
 Depends:
-    R (>= 3.1.0),
-    methods
+    R (>= 3.1.0)
 Imports:
     assertthat (>= 0.1),
-    coala (>= 0.1.0),
     R6 (>= 2.0.1),
     reshape2 (>= 1.4),
     parallel
 Suggests:
+    coala (>= 0.1.1),
     testthat (>= 0.10.0),
     PopGenome (>= 2.1.0)
-Collate:
-    'block.R'
-    'confidence_intervals.R'
-    'estimate_log_likelihood.R'
-    'fit_glm.R'
-    'helper_functions.R'
-    'import_popgenome.R'
-    'initial_search.R'
-    'initialize.R'
-    'jaatha.R'
-    'likelihood_table.R'
-    'normalize.R'
-    'parallelization.R'
-    'refined_search.R'
-    'run_simulations.R'
-    'search_best_par.R'
-    'sim_likelihood.R'
-    'simulate_within_block.R'
-    'sum_stat_classes.R'
-    'sum_stat_cube.R'
-    'sum_stat_fpc.R'
-    'sum_stat_jsfs.R'
-    'sum_stat_sfs.R'

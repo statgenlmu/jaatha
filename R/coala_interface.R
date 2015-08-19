@@ -1,0 +1,138 @@
+#' Use a coala model in Jaatha
+#' 
+#' This creates a Jaatha model from a coala model. Simulation for this model
+#' model are conducted via the \code{simulate} function for the coala model.
+#' The parameters that are
+#' estimated must be specified via \code{\link[coala]{par_range}} and the
+#' model must not have any other named parameters. Summary statistics present 
+#' in the coala model are used in Jaatha.
+#' 
+#' @param x The coala model
+#' @param jsfs_summary The way the Joint Site Frquency Spectrum (JSFS) 
+#'   is further summarized. Can be \code{sums} (default), \code{none} or 
+#'   \code{"smoothing"}. For \code{sums}, 23 different areas of the JSFS
+#'   are summed up, and the sums are used as indepented Poission statistcs, 
+#'   for \code{none}, all entries are used as indepented Possion statistics.
+#'   The value \code{smooth} is experimental so far and should not be used.
+#'   This option has no effect if the JSFS used as summary statistic in the
+#'   coala model.
+#' @inheritParams create_jaatha_model
+#' @export
+create_jaatha_model.coalmodel <- function(x, 
+                                          jsfs_summary = c("sums",
+                                                           "none",
+                                                           "smooth"),
+                                          ...,
+                                          scaling_factor = 1, 
+                                          test = TRUE) {
+  
+  if (!requireNamespace("coala", quietly = TRUE)) {
+    stop("Please install coala to use this function", call. = FALSE)
+  }
+  
+  if (length(jsfs_summary) > 1) jsfs_summary <- jsfs_summary[1]
+  
+  sim_func <- function(pars) simulate(x, pars = pars)
+  
+  # create parameter ranges
+  par_table <- coala::get_parameter_table(x)
+  par_ranges <- as.matrix(par_table[,-1])
+  rownames(par_ranges) <- par_table$name
+
+  # create summary statisics
+  sum_stats <- convert_coala_sumstats(x, jsfs_summary)
+  
+  create_jaatha_model.function(sim_func, par_ranges, sum_stats, 
+                               test = test)
+}
+
+
+convert_coala_sumstats <- function(coala_model, jsfs_summary = "sums") {
+  if (!requireNamespace("coala", quietly = TRUE)) {
+    stop("Please install coala to use this function", call. = FALSE)
+  }
+  
+  assert_that(is.string(jsfs_summary))
+  coala_sumstats <- coala::get_summary_statistics(coala_model)
+  sumstats <- list()
+  
+  for (stat in coala_sumstats) {
+    name <- stat$get_name()
+    
+    # --- JSFS Summary Statistic ------------------------------------
+    if (inherits(stat, "stat_jsfs")) {
+      if (jsfs_summary == "sums") {
+        sumstats[[name]] <- create_jaatha_stat(name, function(x, opts) {
+          sum_jsfs(x[[name]])
+        })
+      } else if (jsfs_summary == "none") {
+        sumstats[[name]] <- create_jaatha_stat(name, function(x, opts) {
+          as.vector(x[[name]])[-c(1, prod(dim(x[[name]])))]
+        })
+      } else if (jsfs_summary == "smooth") {
+        stop("Smoothing is not suppored right now")
+      }
+    }
+    
+    # --- JSFS Summary Statistic ------------------------------------
+    else if (inherits(stat, "stat_sfs")) {
+      sumstats[[name]] <- create_jaatha_stat(name, function(x, opts) x[[name]])
+    }
+    
+    # --- Four Gamete Summary Statistic -----------------------------
+    else if (inherits(stat, "stat_four_gamete")) {
+      sumstats[[name]] <- create_jaatha_stat(name, function(x, opts) {
+          x[[name]][ , c(1, 2, 6), drop = FALSE]
+        }, poisson = FALSE, breaks = c(.2, .5))
+    }
+    
+    # --- iHH Summary Statistic -------------------------------------
+    else if (inherits(stat, "stat_ihh")) {
+      sumstats[[name]] <- create_jaatha_stat(name, function(x, opts) {
+        vapply(x[[name]], function(x) max(x[ , 3]), numeric(1))
+      }, poisson = FALSE, breaks = c(.25, .5, .75, .95))
+    }
+    
+    # --- OmegaPrime Summary Statistic ----------------------------------
+    else if (inherits(stat, "stat_omega_prime")) {
+      sumstats[[name]] <- create_jaatha_stat(name, function(x, opts) x[[name]],
+                                             poisson = FALSE, 
+                                             breaks = c(.5, .75, .95))
+    }
+    
+    else {
+      warning("Summary statistic '", name, "' is not supported. Ignoring it.")
+    }
+  }
+  
+  sumstats
+}
+
+
+sum_jsfs <- function(jsfs) {
+  n <- nrow(jsfs)
+  m <- ncol(jsfs)
+  c(sum(jsfs[1, 2:3]),
+    sum(jsfs[2:3, 1]),
+    sum(jsfs[1, 4:(m - 3)]),
+    sum(jsfs[4:(n - 3), 1]),
+    sum(jsfs[1, (m - 2):(m - 1)]),
+    sum(jsfs[(n - 2):(n - 1), 1]),
+    sum(jsfs[2:3, 2:3]),
+    sum(jsfs[2:3, 4:(m - 3)]),
+    sum(jsfs[4:(n - 3), 2:3]),
+    sum(jsfs[(n - 2):(n - 1), 4:(m - 3)]),
+    sum(jsfs[4:(n - 3), (m - 2):(m - 1)]),
+    sum(jsfs[2:3, (m - 2):(m - 1)]),
+    sum(jsfs[(n - 2):(n - 1), 2:3]),
+    sum(jsfs[4:(n - 3), 4:(m - 3)]),
+    sum(jsfs[(n - 2):(n - 1), (m - 2):(m - 1)]),
+    jsfs[1, m],
+    jsfs[n, 1],
+    sum(jsfs[n, 2:3]),
+    sum(jsfs[2:3, m]),
+    sum(jsfs[n, 4:(m - 3)]),
+    sum(jsfs[4:(n - 3), m]),
+    sum(jsfs[n, (m - 2):(m - 1)]),
+    sum(jsfs[(n - 2):(n - 1), m]) )
+}
