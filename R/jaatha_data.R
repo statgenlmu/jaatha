@@ -43,15 +43,25 @@ jaatha_data_class <- R6Class("jaatha_data",
 is_jaatha_data <- function(x) inherits(x, "jaatha_data")
 
 
-#' Prepare data for use in jaatha
+#' Prepare the observed data for Jaatha
 #' 
-#' @param data The data that is imported
-#' @param ... Additinal arguments that might be used in a dispatched function
+#' By default, this function assumes that the observed data is in a format 
+#' identical to the format of the simulation results, before the summary
+#' statistics are calculated. Jaatha will then automatically calculate the
+#' 
+#' 
+#' @param data The data to be analysed with Jaatha. 
+#'   It should be in a format identical to the 
+#'   simulation results (see \code{\link{create_jaatha_model}}).
+#' @param ... Currently ignored.
 #' @inheritParams jaatha
 #' @export
 create_jaatha_data <- function(data, model, ...) UseMethod("create_jaatha_data")
 
 
+#' @describeIn create_jaatha_data The data's format is identicial to the 
+#'   simulated data.
+#' @export
 create_jaatha_data.default <- function(data, model, ...) {
   jaatha_data_class$new(data, model)
 }

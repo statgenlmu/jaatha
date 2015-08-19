@@ -2,19 +2,32 @@
 % Please edit documentation in R/jaatha_data.R
 \name{create_jaatha_data}
 \alias{create_jaatha_data}
-\title{Prepare data for use in jaatha}
+\alias{create_jaatha_data.default}
+\title{Prepare the observed data for Jaatha}
 \usage{
 create_jaatha_data(data, model, ...)
+
+\method{create_jaatha_data}{default}(data, model, ...)
 }
 \arguments{
-\item{data}{The data that is imported}
+\item{data}{The data to be analysed with Jaatha.
+It should be in a format identical to the
+simulation results (see \code{\link{create_jaatha_model}}).}
 
 \item{model}{The model used for the estimation.
 See \code{\link{create_jaatha_model}}.}
 
-\item{...}{Additinal arguments that might be used in a dispatched function}
+\item{...}{Currently ignored.}
 }
 \description{
-Prepare data for use in jaatha
+By default, this function assumes that the observed data is in a format
+identical to the format of the simulation results, before the summary
+statistics are calculated. Jaatha will then automatically calculate the
+
+
 }
+\section{Methods (by class)}{
+\itemize{
+\item \code{default}: The data's format is identicial to the simulated data.
+}}
 
