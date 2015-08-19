@@ -31,7 +31,6 @@ do_initial_search <- function(model, data, reps, sim, cores, sim_cache) {
   # Return the parameters for the best estimates
   best_indexes <- order(vapply(estimates, function(x) x$value, numeric(1)), 
                         decreasing = TRUE)[1:reps]
-  print(best_indexes)
   t(vapply(estimates[best_indexes], function(x) x$par, 
            numeric(model$get_par_number())))
 }
