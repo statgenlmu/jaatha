@@ -26,11 +26,12 @@ jaatha_log_class <- R6Class("jaatha_log",
       private$converged <- rep(FALSE, reps)
     },
     log_estimate = function(rep, step, estimate) {
+      if (rep == "final") rep <- 0.0
       entry <- c(rep, step, estimate$value, estimate$par)
-      if (is.numeric(rep)) {
-        private$estimates[[rep]][step, ] <- entry
-      } else if (all(rep == "final")) {
+      if (rep == 0) {
         private$final_estimates[step, ] <- entry
+      } else if (is.numeric(rep)) {
+        private$estimates[[rep]][step, ] <- entry
       } else {
         stop("Unexpected value for 'rep'")
       }
@@ -65,7 +66,8 @@ jaatha_log_class <- R6Class("jaatha_log",
     create_results = function() {
       "creates the results list the main function returns"
       best_estimate <- self$get_best_estimates(1, TRUE)
-      res <- list(param = as.numeric(best_estimate[1, -(1:3)]),
+      param <- as.numeric(best_estimate[1, -(1:3)])
+      res <- list(param = private$par_ranges$denormalize(param),
                   loglikelihood = as.numeric(best_estimate[1, 3]),
                   converged = all(private$converged))
       class(res) <- c("jaatha_result", class(res))
