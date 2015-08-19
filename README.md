@@ -1,5 +1,5 @@
 [![Linux Build Status](https://travis-ci.org/statgenlmu/jaatha.svg?branch=master)](https://travis-ci.org/statgenlmu/jaatha) 
-[![Test Coverage](https://coveralls.io/repos/paulstaab/jaatha/badge.svg?branch=master)](https://coveralls.io/r/paulstaab/jaatha)
+[![Coverage Status](https://coveralls.io/repos/statgenlmu/jaatha/badge.svg?branch=master&service=github)](https://coveralls.io/github/statgenlmu/jaatha?branch=master)
 [![CRAN Status](http://www.r-pkg.org/badges/version/jaatha)](http://cran.r-project.org/web/packages/jaatha)
 
 
