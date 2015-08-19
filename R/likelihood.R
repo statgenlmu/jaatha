@@ -29,8 +29,10 @@ approximate_llh.jaatha_model <- function(x, data, param, glm_fitted, sim) {
   assert_that(is_jaatha_data(data))
   assert_that(is.numeric(param))
   assert_that(is.list(glm_fitted))
-  sum(vapply(x$get_sum_stats(), approximate_llh, numeric(1),
-             data, param, glm_fitted, sim, x$get_scaling_factor()))
+  llh <- sum(vapply(x$get_sum_stats(), approximate_llh, numeric(1),
+                    data, param, glm_fitted, sim, x$get_scaling_factor()))
+  assert_that(is.finite(llh))
+  llh
 }
 
 
