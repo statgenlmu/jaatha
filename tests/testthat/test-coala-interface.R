@@ -50,6 +50,10 @@ test_that("the SFS can be used in Jaatha", {
   value <- jaatha_model$get_sum_stats()[[1]]$calculate(sim_data)
   expect_that(value, is_a("numeric"))
   expect_equal(length(value), 4)
+  
+  jaatha_model <- create_jaatha_model(coala_model, "sums", test = FALSE)
+  jaatha_data <- create_jaatha_data(sim_data, jaatha_model)
+  expect_true(is_jaatha_data(jaatha_data))
 })
 
 
@@ -67,11 +71,17 @@ test_that("the JSFS can be used in Jaatha", {
   expect_that(value, is_a("numeric"))
   expect_equal(length(value), 23)
   
+  jaatha_model <- create_jaatha_model(coala_model, "sums", test = FALSE)
+  jaatha_data <- create_jaatha_data(sim_data, jaatha_model)
+  expect_true(is_jaatha_data(jaatha_data))
+  
   jaatha_model <- create_jaatha_model(coala_model, "none", test = FALSE)
   expect_equal(length(jaatha_model$get_sum_stats()), 1)
   value <- jaatha_model$get_sum_stats()[[1]]$calculate(sim_data)
   expect_that(value, is_a("numeric"))
   expect_equal(length(value), 6 * 7 - 2)
+  
+
 })
 
 

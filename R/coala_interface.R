@@ -62,11 +62,11 @@ convert_coala_sumstats <- function(coala_model, jsfs_summary = "sums") {
     # --- JSFS Summary Statistic ------------------------------------
     if (inherits(stat, "stat_jsfs")) {
       if (jsfs_summary == "sums") {
-        sumstats[[name]] <- create_jaatha_stat(name, function(x) {
+        sumstats[[name]] <- create_jaatha_stat(name, function(x, opts) {
           sum_jsfs(x[[name]])
         })
       } else if (jsfs_summary == "none") {
-        sumstats[[name]] <- create_jaatha_stat(name, function(x) {
+        sumstats[[name]] <- create_jaatha_stat(name, function(x, opts) {
           as.vector(x[[name]])[-c(1, prod(dim(x[[name]])))]
         })
       } else if (jsfs_summary == "smooth") {
@@ -76,26 +76,26 @@ convert_coala_sumstats <- function(coala_model, jsfs_summary = "sums") {
     
     # --- JSFS Summary Statistic ------------------------------------
     else if (inherits(stat, "stat_sfs")) {
-      sumstats[[name]] <- create_jaatha_stat(name, function(x) x[[name]])
+      sumstats[[name]] <- create_jaatha_stat(name, function(x, opts) x[[name]])
     }
     
     # --- Four Gamete Summary Statistic -----------------------------
     else if (inherits(stat, "stat_four_gamete")) {
-      sumstats[[name]] <- create_jaatha_stat(name, function(x) {
+      sumstats[[name]] <- create_jaatha_stat(name, function(x, opts) {
           x[[name]][ , c(1, 2, 6), drop = FALSE]
         }, poisson = FALSE, breaks = c(.2, .5))
     }
     
     # --- iHH Summary Statistic -------------------------------------
     else if (inherits(stat, "stat_ihh")) {
-      sumstats[[name]] <- create_jaatha_stat(name, function(x) {
+      sumstats[[name]] <- create_jaatha_stat(name, function(x, opts) {
         vapply(x[[name]], function(x) max(x[ , 3]), numeric(1))
       }, poisson = FALSE, breaks = c(.25, .5, .75, .95))
     }
     
     # --- OmegaPrime Summary Statistic ----------------------------------
     else if (inherits(stat, "stat_omega_prime")) {
-      sumstats[[name]] <- create_jaatha_stat(name, function(x) x[[name]],
+      sumstats[[name]] <- create_jaatha_stat(name, function(x, opts) x[[name]],
                                              poisson = FALSE, 
                                              breaks = c(.5, .75, .95))
     }
