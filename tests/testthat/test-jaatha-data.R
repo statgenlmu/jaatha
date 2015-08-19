@@ -24,3 +24,12 @@ test_that("default creation of data works", {
   expect_equal(jaatha_data$get_log_factorial("id"), log_facs_id)
   expect_equal(jaatha_data$get_log_factorial(stat_identity()), log_facs_id)
 })
+
+
+test_that("it calculates logfactorials even for large numbers", {
+  model <- create_test_model()
+  real_data <- c(1e6, 1:9)
+  jaatha_data <- create_jaatha_data(real_data, model)
+  expect_true(all(is.finite(jaatha_data$get_log_factorial("id"))))
+  expect_true(all(is.finite(jaatha_data$get_log_factorial("sum"))))
+})
