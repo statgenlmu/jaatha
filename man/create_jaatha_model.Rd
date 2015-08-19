@@ -17,7 +17,7 @@ you can indicated this using this value. The estimated expectation values
 are multiplied with this factor before the likelihood is calculated.}
 
 \item{test}{A logical indicating whether a simulation is performed to test
-test model.}
+the model.}
 }
 \description{
 Specify a model for a Jaatha analysis

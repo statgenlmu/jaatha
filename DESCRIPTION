@@ -18,10 +18,10 @@ Depends:
     R (>= 3.1.0)
 Imports:
     assertthat (>= 0.1),
-    coala (>= 0.1.0),
     R6 (>= 2.0.1),
     reshape2 (>= 1.4),
     parallel
 Suggests:
+    coala (>= 0.1.1),
     testthat (>= 0.10.0),
     PopGenome (>= 2.1.0)

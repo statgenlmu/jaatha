@@ -7,7 +7,7 @@
 #' @docType package
 #' @keywords package
 #' @importFrom parallel mclapply
-#' @importFrom assertthat assert_that
+#' @importFrom assertthat assert_that is.string is.count
 NULL
 
 #' Simulation based maximum likelihood estimation

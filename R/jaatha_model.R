@@ -26,6 +26,7 @@ jaatha_model_class <- R6Class("jaatha_model",
       assert_that(is_single_numeric(scaling_factor))
       private$scaling_factor <- scaling_factor
       if (test) self$test()
+      invisible(NULL)
     },
     simulate = function(pars, data, cores = 1) {
       "conducts a simulation for each parameter combination in pars"
@@ -33,10 +34,10 @@ jaatha_model_class <- R6Class("jaatha_model",
       assert_that(ncol(pars) == private$par_ranges$get_par_number())
       assert_that(all(0-1e-5 <= pars & pars <= 1 + 1e-5))
       assert_that(is_jaatha_data(data))
-      assert_that(is_single_numeric(cores))
+      assert_that(is.count(cores))
       
       # Generate a seed for each simulation
-      seeds <- sample_seed(length(pars)+1)
+      seeds <- sample_seed(length(pars) + 1)
       
       # Simulate
       sim_data <- mclapply(1:nrow(pars), function(i) {
@@ -46,7 +47,7 @@ jaatha_model_class <- R6Class("jaatha_model",
         
         # Calculate Summary Statistics
         sum_stats <- lapply(private$sum_stats, function(sum_stat) {
-          sum_stat$calculate(sim_result, data$get_opts(sum_stat))
+          sum_stat$calculate(sim_result, data$get_options(sum_stat))
         })
         
         # Add the parameter values
@@ -54,7 +55,7 @@ jaatha_model_class <- R6Class("jaatha_model",
         sum_stats$pars_normal <- pars[i, ]
         
         sum_stats
-      }, mc.preschedule=TRUE, mc.cores=cores)
+      }, mc.preschedule = TRUE, mc.cores = cores)
       
       set.seed(seeds[length(seeds)])
       sim_data
@@ -91,7 +92,7 @@ jaatha_model_class <- R6Class("jaatha_model",
 #'   you can indicated this using this value. The estimated expectation values
 #'   are multiplied with this factor before the likelihood is calculated.
 #' @param test A logical indicating whether a simulation is performed to test
-#'   test model.
+#'   the model.
 #' @export
 create_jaatha_model <- function(x, ..., scaling_factor = 1, test = TRUE) {
   UseMethod("create_jaatha_model")
