@@ -31,7 +31,6 @@ par_ranges_class <- R6Class("par_ranges",
     },
     print = function() {
       print(private$range)
-      print(private$log_range)
     },
     get_middle = function() {
       (private$range[ , 2] - private$range[ , 1]) / 2 + private$range[ , 1]

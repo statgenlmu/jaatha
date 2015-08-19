@@ -14,7 +14,11 @@ jaatha_data_class <- R6Class("jaatha_data",
         stat$calculate(data, private$options[[stat$get_name()]])
       })
       private$log_factorials <- lapply(private$values, function(x) {
-        log(factorial(x))
+        vapply(x, function(y) {
+          if (y == 0) return(0)
+          assert_that(is.count(y))
+          sum(log(1:y))
+        }, numeric(1))
       })
     },
     get_values = function(stat = NULL) {

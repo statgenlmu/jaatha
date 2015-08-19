@@ -7,11 +7,13 @@ test_that("llh is approximatied for basic statistics", {
   sim_data <- model$simulate(block$sample_pars(10), data, 1)
   glms <- fit_glm(model, sim_data)
   
-  llh <- approximate_llh(model$get_sum_stats()[[1]], data, c(.5, .5), glms, 1)
+  llh <- approximate_llh(model$get_sum_stats()[[1]], data, c(.5, .5), 
+                         glms, 10, 1)
   expect_true(is.numeric(llh))
   expect_true(llh <= 0)
   
-  llh2 <- approximate_llh(model$get_sum_stats()[[1]], data, c(.5, .5), glms, 2)
+  llh2 <- approximate_llh(model$get_sum_stats()[[1]], data, c(.5, .5), 
+                          glms, 10, 2)
   expect_true(is.numeric(llh2))
   expect_true(llh2 <= 0)
   expect_true(llh != llh2)
@@ -35,12 +37,14 @@ test_that("llh is approximatied for complete models", {
   sim_data <- model$simulate(block$sample_pars(10), data, 1)
   glms <- fit_glm(model, sim_data)
   
-  llh <- approximate_llh(model, data, c(.5, .5), glms)
+  llh <- approximate_llh(model, data, c(.5, .5), glms, 10)
   expect_true(is.numeric(llh))
   expect_true(llh <= 0)
   
-  llh1 <- approximate_llh(model$get_sum_stats()[[1]], data, c(.5, .5), glms, 1)
-  llh2 <- approximate_llh(model$get_sum_stats()[[2]], data, c(.5, .5), glms, 1)
+  llh1 <- approximate_llh(model$get_sum_stats()[[1]], 
+                          data, c(.5, .5), glms, 10, 1)
+  llh2 <- approximate_llh(model$get_sum_stats()[[2]], 
+                          data, c(.5, .5), glms, 10, 1)
   expect_equal(llh, llh1 + llh2)
 })
 
@@ -52,7 +56,7 @@ test_that("llh optimization works", {
   sim_data <- model$simulate(block$sample_pars(10), data, 1)
   glms <- fit_glm(model, sim_data)
   
-  opt_llh <- optimize_llh(block, model, data, glms)
+  opt_llh <- optimize_llh(block, model, data, glms, 20)
   expect_equal(length(opt_llh$par), 2)
   expect_true(all(opt_llh$par > 0 & opt_llh$par < 1))
   expect_true(opt_llh$value < 0)

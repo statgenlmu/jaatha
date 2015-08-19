@@ -19,7 +19,6 @@ get_start_pos <- function(model, data, reps, sim, init_method, cores,
 
 
 do_initial_search <- function(model, data, reps, sim, cores, sim_cache) {
-  
   # Divide the parameter space in blocks
   par_number <- model$get_par_ranges()$get_par_number()
   blocks_per_par <- determine_bpp(par_number, reps)
@@ -32,7 +31,8 @@ do_initial_search <- function(model, data, reps, sim, cores, sim_cache) {
   # Return the parameters for the best estimates
   best_indexes <- order(vapply(estimates, function(x) x$value, numeric(1)), 
                         decreasing = TRUE)[1:reps]
-  t(vapply(estimates[best_indexes], function(x) x$par, numeric(2)))
+  t(vapply(estimates[best_indexes], function(x) x$par, 
+           numeric(model$get_par_number())))
 }
 
 

@@ -1,52 +1,60 @@
-calc_poisson_llh <- function(data, stat, loglambda, scaling_factor = 1) {
+calc_poisson_llh <- function(data, stat, loglambda, 
+                             sim = 100, scaling_factor = 1) {
+  
+  # If mean was estimated to be 0, replace it with a small value instead
+  # (assume we would have observed a 1 in the next simulation)
+  loglambda[!is.finite(loglambda)] <- log(1 / (sim + 1))
+  
   # Upscale predicted expectation value if we use scaling
   if (scaling_factor != 1) loglambda <- loglambda + log(scaling_factor)
   
   sum(data$get_values(stat) * loglambda - 
-        exp(loglambda) - data$get_log_factorial(stat)) 
+        exp(loglambda) - data$get_log_factorial(stat))
 }
 
 
-approximate_llh <- function(x, data, param, glm_fitted, ...) {
+approximate_llh <- function(x, data, param, glm_fitted, sim, ...) {
   "approximates the log-likelihood using the fitted glms"
   UseMethod("approximate_llh")
 }
 
 #' @export
-approximate_llh.default <- function(x, data, param, glm_fitted, ...) { 
+approximate_llh.default <- function(x, data, param, glm_fitted, sim, ...) { 
   stop("Unknown Summary Statistic")
 }
 
 
 #' @export
-approximate_llh.jaatha_model <- function(x, data, param, glm_fitted) {
+approximate_llh.jaatha_model <- function(x, data, param, glm_fitted, sim) {
   assert_that(is_jaatha_data(data))
   assert_that(is.numeric(param))
   assert_that(is.list(glm_fitted))
-  sum(vapply(x$get_sum_stats(), approximate_llh, numeric(1),
-             data, param, glm_fitted, x$get_scaling_factor()))
+  llh <- sum(vapply(x$get_sum_stats(), approximate_llh, numeric(1),
+                    data, param, glm_fitted, sim, x$get_scaling_factor()))
+  assert_that(is.finite(llh))
+  llh
 }
 
 
 #' @importFrom stats predict.glm
 #' @export
 approximate_llh.jaatha_stat_basic  <- function(x, data, param, glm_fitted, 
-                                               scaling_factor) {
+                                               sim, scaling_factor) {
   
   loglambda <- sapply(glm_fitted[[x$get_name()]], function(glm_obj) {
     glm_obj$coefficients %*% c(1, param)
   })
   
   # Calculate the Poission log-likelihood
-  calc_poisson_llh(data, x, loglambda, scaling_factor)
+  calc_poisson_llh(data, x, loglambda, sim, scaling_factor)
 }
 
 
 #' @importFrom stats optim
-optimize_llh <- function(block, model, data, glms) {
+optimize_llh <- function(block, model, data, glms, sim) {
   best_value <- optim(block$get_middle(),
                       function(param) {
-                        approximate_llh(model, data, param, glms)
+                        approximate_llh(model, data, param, glms, sim)
                       },
                       lower = block$get_border()[ , 1, drop = FALSE], 
                       upper = block$get_border()[ , 2, drop = FALSE],
@@ -59,18 +67,31 @@ optimize_llh <- function(block, model, data, glms) {
 
 
 estimate_local_ml <- function(block, model, data, sim, cores, sim_cache) {
-  sim_data <- model$simulate(pars = block$sample_pars(sim, add_corners = TRUE), 
-                             data = data,
-                             cores = cores)
+  for (j in 1:5) {
+    sim_data <- model$simulate(pars = block$sample_pars(sim, TRUE), 
+                               data = data, cores = cores)
   
-  # Cache simulation & load older simulations within this block
-  sim_cache$add(sim_data)
-  sim_data <- sim_cache$get_sim_data(block)
-  assert_that(length(sim_data) >= sim)
+    # Cache simulation & load older simulations within this block
+    sim_cache$add(sim_data)
+    sim_data <- sim_cache$get_sim_data(block)
+    assert_that(length(sim_data) >= sim)
+    
+    # Fit glms and find maximal likelihood value
+    glms <- fit_glm(model, sim_data)
   
-  # Fit glms and find maximal likelihood value
-  glms <- fit_glm(model, sim_data)
-  optimize_llh(block, model, data, glms)
+    # Conduct more simulations if the glms did not converge
+    converged <- vapply(glms, function(x) {
+      all(vapply(x, function(y) y$converged, logical(1)))
+    }, logical(1))
+    if (all(converged)) {
+      break
+    }
+    if (j == 5) {
+      stop("A GLM did not converge. Check your model and summary statistics")
+    } 
+  }
+  
+  optimize_llh(block, model, data, glms, length(sim_data))
 }
 
 
@@ -110,9 +131,9 @@ estimate_llh <- function(model, data, parameter, sim = 100,
     stat_values <- sapply(sim_data, function(x) x[[stat]])
     if (!is.matrix(stat_values)) stat_values <- matrix(stat_values, nrow = 1)
     log_means <- log(rowMeans(stat_values))
-    calc_poisson_llh(data, stat, log_means, model$get_scaling_factor())
+    calc_poisson_llh(data, stat, log_means, sim, model$get_scaling_factor())
   }, numeric(1)))
   
-  list(param = parameter,
-       value = llh)
+  assert_that(is.finite(llh))
+  list(param = parameter, value = llh)
 }
