@@ -23,11 +23,10 @@ See \code{\link{create_jaatha_model}}.}
 By default, this function assumes that the observed data is in a format
 identical to the format of the simulation results, before the summary
 statistics are calculated. Jaatha will then automatically calculate the
-
-
 }
 \section{Methods (by class)}{
 \itemize{
-\item \code{default}: The data's format is identicial to the simulated data.
+\item \code{default}: The data's format is identicial to the
+simulated data.
 }}
 

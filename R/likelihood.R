@@ -98,8 +98,8 @@ estimate_llh <- function(model, data, parameter, sim = 100,
   assert_that(is_jaatha_model(model))
   assert_that(is_jaatha_data(data))
   assert_that(is.numeric(parameter))
-  assert_that(is_positive_int(sim))
-  assert_that(is_positive_int(cores))
+  assert_that(is.count(sim))
+  assert_that(is.count(cores))
   assert_that(is_single_logical(normalized))
   
   if (!normalized) parameter <- model$get_par_ranges()$normalize(parameter)

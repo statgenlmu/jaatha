@@ -41,7 +41,7 @@ block_class <- R6Class("Block",
     },
     sample_pars = function(number, add_corners = FALSE) {
       "Generates random parameter combinations inside the block's range"
-      assert_that(is_single_numeric(number))
+      assert_that(is.count(number))
       assert_that(is_single_logical(add_corners))
       
       # Sample random simulation parameters

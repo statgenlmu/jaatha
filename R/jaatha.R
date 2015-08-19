@@ -50,9 +50,9 @@ jaatha <- function(model, data,
   # Check parameters
   assert_that(is_jaatha_model(model))
   assert_that(is_jaatha_data(data))
-  assert_that(is_positive_int(repetitions))
-  assert_that(is_positive_int(sim))
-  assert_that(is_positive_int(cores))
+  assert_that(is.count(repetitions))
+  assert_that(is.count(sim))
+  assert_that(is.count(cores))
   
   # Setup
   sim_cache <- create_sim_cache()
