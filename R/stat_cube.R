@@ -16,6 +16,10 @@ stat_cube_class <- R6Class("stat_cube", inherit = stat_basic_class,
       assert_that(ncol(stat) == length(break_values))
       assert_that(all(cols <= ncol(stat)))
       
+      # Remove rows that contain NAs or NaNs
+      stat <- stat[apply(stat, 1, function(x) all(is.finite(x))), , 
+                   drop = FALSE]
+      
       # Classify the loci accordingly to their statistics
       locus_class <- matrix(1, nrow(stat), ncol(stat))
       for (i in 1:ncol(stat)) {

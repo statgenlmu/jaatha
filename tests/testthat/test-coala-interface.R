@@ -24,7 +24,7 @@ test_that("it creates a jaatha model from a coala one", {
 
 test_that("conversion of coala sumstats works", {
   skip_if_not_installed("coala")
-  model <- coala::coal_model(10:15, 100) + 
+  model <- coala::coal_model(10:15, 1) + 
     coala::feat_mutation(coala::par_range("theta", 1, 5)) +
     coala::feat_migration(coala::par_range('m', 1, 5), symmetric = TRUE)
   
@@ -34,7 +34,12 @@ test_that("conversion of coala sumstats works", {
   model <- model + coala::sumstat_jsfs()
   expect_equal(length(convert_coala_sumstats(model)), 2)
   model <- model + coala::sumstat_ihh()
-  expect_equal(length(convert_coala_sumstats(model)), 3)
+  stats <- convert_coala_sumstats(model)
+  expect_equal(length(stats), 3)
+  
+  data <- simulate(model, pars = c(2, 2))
+  expect_equal(stats$jsfs$calculate(data, NULL), sum_jsfs(data$jsfs))
+  expect_equal(stats$sfs$calculate(data, NULL), data$sfs)
 })
 
 

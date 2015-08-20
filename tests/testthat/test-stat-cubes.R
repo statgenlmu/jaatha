@@ -66,3 +66,18 @@ test_that("generation of cubes works", {
   expect_equal(cube[3, 1], 1)
   expect_equal(cube[3, 2], 3)
 })
+
+
+test_that("cubes are calculated with NaNs present", {
+  calc_func <- function(x) matrix(x, ncol = 2)
+  opts <- list(break_values = list(1:2 + .5, 3.5))
+  stat <- create_jaatha_stat("cube", calc_func, poisson = FALSE)
+  
+  value = c(1:5, NaN, 1:6)
+  cube <- array(stat$calculate(value, opts), c(3,2))
+  expect_equal(sum(cube), 5)
+  
+  value = c(1:5, NA, 1:6)
+  cube <- array(stat$calculate(value, opts), c(3,2))
+  expect_equal(sum(cube), 5)
+})

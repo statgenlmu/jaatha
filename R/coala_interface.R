@@ -53,59 +53,54 @@ convert_coala_sumstats <- function(coala_model, jsfs_summary = "sums") {
   }
   
   assert_that(is.string(jsfs_summary))
-  coala_sumstats <- coala::get_summary_statistics(coala_model)
-  sumstats <- list()
   
-  for (stat in coala_sumstats) {
+  lapply(coala::get_summary_statistics(coala_model), function(stat) {
     name <- stat$get_name()
     
     # --- JSFS Summary Statistic ------------------------------------
     if (inherits(stat, "stat_jsfs")) {
       if (jsfs_summary == "sums") {
-        sumstats[[name]] <- create_jaatha_stat(name, function(x, opts) {
+        return(create_jaatha_stat(name, function(x, opts) {
           sum_jsfs(x[[name]])
-        })
+        }))
       } else if (jsfs_summary == "none") {
-        sumstats[[name]] <- create_jaatha_stat(name, function(x, opts) {
+        return(create_jaatha_stat(name, function(x, opts) {
           as.vector(x[[name]])[-c(1, prod(dim(x[[name]])))]
-        })
+        }))
       } else if (jsfs_summary == "smooth") {
         stop("Smoothing is not suppored right now")
       }
     }
     
     # --- JSFS Summary Statistic ------------------------------------
-    else if (inherits(stat, "stat_sfs")) {
-      sumstats[[name]] <- create_jaatha_stat(name, function(x, opts) x[[name]])
+    if (inherits(stat, "stat_sfs")) {
+      return(create_jaatha_stat(name, function(x, opts) x[[name]]))
     }
     
     # --- Four Gamete Summary Statistic -----------------------------
-    else if (inherits(stat, "stat_four_gamete")) {
-      sumstats[[name]] <- create_jaatha_stat(name, function(x, opts) {
-          x[[name]][ , c(1, 2, 6), drop = FALSE]
-        }, poisson = FALSE, breaks = c(.2, .5))
+    if (inherits(stat, "stat_four_gamete")) {
+      return(create_jaatha_stat(name, function(x, opts) {
+        x[[name]][ , c(1, 2, 6), drop = FALSE]
+      }, poisson = FALSE, breaks = c(.2, .5)))
     }
     
     # --- iHH Summary Statistic -------------------------------------
-    else if (inherits(stat, "stat_ihh")) {
-      sumstats[[name]] <- create_jaatha_stat(name, function(x, opts) {
+    if (inherits(stat, "stat_ihh")) {
+      return(create_jaatha_stat(name, function(x, opts) {
         vapply(x[[name]], function(x) max(x[ , 3]), numeric(1))
-      }, poisson = FALSE, breaks = c(.25, .5, .75, .95))
+      }, poisson = FALSE, breaks = c(.25, .5, .75, .95)))
     }
     
     # --- OmegaPrime Summary Statistic ----------------------------------
-    else if (inherits(stat, "stat_omega_prime")) {
-      sumstats[[name]] <- create_jaatha_stat(name, function(x, opts) x[[name]],
-                                             poisson = FALSE, 
-                                             breaks = c(.5, .75, .95))
+    if (inherits(stat, "stat_omega_prime")) {
+      return(create_jaatha_stat(name, function(x, opts) x[[name]],
+                                poisson = FALSE, 
+                                breaks = c(.5, .75, .95)))
     }
     
-    else {
-      warning("Summary statistic '", name, "' is not supported. Ignoring it.")
-    }
-  }
-  
-  sumstats
+    warning("Summary statistic '", name, "' is not supported. Ignoring it.")
+    NULL
+  })
 }
 
 

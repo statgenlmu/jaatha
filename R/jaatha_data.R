@@ -11,7 +11,12 @@ jaatha_data_class <- R6Class("jaatha_data",
       assert_that(is_jaatha_model(model))
       private$values <- lapply(model$get_sum_stats(), function(stat) {
         private$options[[stat$get_name()]] <- stat$generate_data_opts(data)
-        stat$calculate(data, private$options[[stat$get_name()]])
+        value <- stat$calculate(data, private$options[[stat$get_name()]])
+        if (any(!is.finite(value))) {
+          stop("Data has missing values for statistic ", 
+               stat$get_name(), call. = FALSE)
+        }
+        value
       })
       private$log_factorials <- lapply(private$values, function(x) {
         log_factorials <- vapply(x, function(y) {
