@@ -1,4 +1,4 @@
-context("Likelihood estimation")
+context("Likelihood Estimation")
 
 test_that("llh is approximatied for basic statistics", {
   model <- create_test_model()
