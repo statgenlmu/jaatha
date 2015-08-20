@@ -8,8 +8,11 @@ calc_poisson_llh <- function(data, stat, loglambda,
   # Upscale predicted expectation value if we use scaling
   if (scaling_factor != 1) loglambda <- loglambda + log(scaling_factor)
   
-  sum(data$get_values(stat) * loglambda - 
-        exp(loglambda) - data$get_log_factorial(stat))
+  llh <- sum(data$get_values(stat) * loglambda - 
+               exp(loglambda) - data$get_log_factorial(stat))
+  
+  assert_that(is.finite(llh))
+  llh
 }
 
 
@@ -29,10 +32,8 @@ approximate_llh.jaatha_model <- function(x, data, param, glm_fitted, sim) {
   assert_that(is_jaatha_data(data))
   assert_that(is.numeric(param))
   assert_that(is.list(glm_fitted))
-  llh <- sum(vapply(x$get_sum_stats(), approximate_llh, numeric(1),
-                    data, param, glm_fitted, sim, x$get_scaling_factor()))
-  assert_that(is.finite(llh))
-  llh
+  sum(vapply(x$get_sum_stats(), approximate_llh, numeric(1),
+             data, param, glm_fitted, sim, x$get_scaling_factor()))
 }
 
 
