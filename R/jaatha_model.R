@@ -19,6 +19,10 @@ jaatha_model_class <- R6Class("jaatha_model",
     initialize = function(sim_func, par_ranges, sum_stats, 
                           scaling_factor, test) {
       assert_that(is.function(sim_func))
+      if (length(formals(sim_func)) < 2) {
+        stop("The simulation function needs two arguments: ", 
+             "'Parameters' and 'Options'.")
+      }
       private$sim_func <- sim_func
       private$par_ranges <- par_ranges_class$new(par_ranges)
       assert_that(is.list(sum_stats))
@@ -111,7 +115,7 @@ is_jaatha_model <- function(x) inherits(x, "jaatha_model")
 
 
 create_test_model <- function() {
-  create_jaatha_model(function(x) rpois(10, x),
+  create_jaatha_model(function(x, y) rpois(10, x),
                       par_ranges = matrix(c(0.1, 0.1, 10, 10), 2, 2),
                       sum_stats = list(stat_identity(), stat_sum()),
                       test = FALSE)

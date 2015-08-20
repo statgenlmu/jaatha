@@ -5,11 +5,20 @@ test_that("jaatha model can be initialized", {
   expect_true(is_par_ranges(model$get_par_ranges()))
   expect_equal(model$get_par_number(), model$get_par_ranges()$get_par_number())
   expect_equal(model$get_scaling_factor(), 1)
+  
+
+})
+
+
+test_that("it checks that the simfunc has two arguments", {
+  sim_func <- function(x) rpois(10, x)
+  par_ranges = matrix(c(0.1, 0.1, 10, 10), 2, 2)
+  expect_error(create_jaatha_model(sim_func, par_ranges, list(stat_identity())))
 })
 
 
 test_that("adding summary statistics works", {
-  sim_func <- function(x) rpois(10, x)
+  sim_func <- function(x, y) rpois(10, x)
   par_ranges = matrix(c(0.1, 0.1, 10, 10), 2, 2)
   
   model <- create_jaatha_model(sim_func, par_ranges, list(stat_identity()))
