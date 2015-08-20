@@ -1,4 +1,4 @@
-context("Jaatha estimation")
+context("Jaatha Estimation")
 
 test_that("the main function works", {
   model <- create_test_model()
