@@ -16,14 +16,24 @@
 #'   The value \code{smooth} is experimental so far and should not be used.
 #'   This option has no effect if the JSFS used as summary statistic in the
 #'   coala model.
+#' @param ihs_breaks Quantiles of the real data that will be used as breaks
+#'   for binning the iHS statistic if present in the model.
+#' @param four_gamete_breaks Quantiles of the real data that will be used as 
+#'   breaks for binning the Four Gamete test based statistic if present in the 
+#'   model.
+#' @param mcmf_breaks Quantiles of the real data that will be used as breaks
+#'   for binning the MCMF statistic if present in the model.
 #' @inheritParams create_jaatha_model
 #' @export
 create_jaatha_model.coalmodel <- function(x, 
                                           jsfs_summary = c("sums",
                                                            "none",
                                                            "smooth"),
+                                          ihs_breaks = c(.5, .7, .9),
+                                          four_gamete_breaks = c(.2, .5),
+                                          mcmf_breaks = c(.5, .7, .9),
                                           ...,
-                                          scaling_factor = 1, 
+                                          scaling_factor = 1,
                                           test = TRUE) {
   
   if (!requireNamespace("coala", quietly = TRUE)) {
@@ -40,14 +50,18 @@ create_jaatha_model.coalmodel <- function(x,
   rownames(par_ranges) <- par_table$name
 
   # create summary statisics
-  sum_stats <- convert_coala_sumstats(x, jsfs_summary)
+  sum_stats <- convert_coala_sumstats(x, jsfs_summary, ihs_breaks,
+                                      four_gamete_breaks, mcmf_breaks)
   
   create_jaatha_model.function(sim_func, par_ranges, sum_stats, 
                                test = test)
 }
 
 
-convert_coala_sumstats <- function(coala_model, jsfs_summary = "sums") {
+convert_coala_sumstats <- function(coala_model, jsfs_summary = "sums",
+                                   ihs_breaks, four_gamete_breaks, 
+                                   mcmf_breaks) {
+  
   if (!requireNamespace("coala", quietly = TRUE)) {
     stop("Please install coala to use this function", call. = FALSE)
   }
@@ -81,21 +95,21 @@ convert_coala_sumstats <- function(coala_model, jsfs_summary = "sums") {
     if (inherits(stat, "stat_four_gamete")) {
       return(create_jaatha_stat(name, function(x, opts) {
         x[[name]][ , c(1, 2, 6), drop = FALSE]
-      }, poisson = FALSE, breaks = c(.2, .5)))
+      }, poisson = FALSE, breaks = four_gamete_breaks))
     }
     
     # --- iHH Summary Statistic -------------------------------------
     if (inherits(stat, "stat_ihh")) {
       return(create_jaatha_stat(name, function(x, opts) {
         vapply(x[[name]], function(x) max(x[ , 3]), numeric(1))
-      }, poisson = FALSE, breaks = c(.25, .5, .75, .95)))
+      }, poisson = FALSE, breaks = ihs_breaks))
     }
     
     # --- OmegaPrime Summary Statistic ----------------------------------
-    if (inherits(stat, "stat_omega_prime")) {
+    if (inherits(stat, "stat_omega_prime") || inherits(stat, "stat_mcmf")) {
       return(create_jaatha_stat(name, function(x, opts) x[[name]],
                                 poisson = FALSE, 
-                                breaks = c(.5, .75, .95)))
+                                breaks = mcmf_breaks))
     }
     
     warning("Summary statistic '", name, "' is not supported. Ignoring it.")

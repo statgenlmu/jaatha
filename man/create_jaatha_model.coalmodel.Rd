@@ -5,7 +5,9 @@
 \title{Use a coala model in Jaatha}
 \usage{
 \method{create_jaatha_model}{coalmodel}(x, jsfs_summary = c("sums", "none",
-  "smooth"), ..., scaling_factor = 1, test = TRUE)
+  "smooth"), ihs_breaks = c(0.5, 0.7, 0.9), four_gamete_breaks = c(0.2,
+  0.5), mcmf_breaks = c(0.5, 0.7, 0.9), ..., scaling_factor = 1,
+  test = TRUE)
 }
 \arguments{
 \item{x}{The coala model}
@@ -18,6 +20,16 @@ for \code{none}, all entries are used as indepented Possion statistics.
 The value \code{smooth} is experimental so far and should not be used.
 This option has no effect if the JSFS used as summary statistic in the
 coala model.}
+
+\item{ihs_breaks}{Quantiles of the real data that will be used as breaks
+for binning the iHS statistic if present in the model.}
+
+\item{four_gamete_breaks}{Quantiles of the real data that will be used as
+breaks for binning the Four Gamete test based statistic if present in the
+model.}
+
+\item{mcmf_breaks}{Quantiles of the real data that will be used as breaks
+for binning the MCMF statistic if present in the model.}
 
 \item{...}{Additinoal parameters passed on to the dispatched functions.}
 
