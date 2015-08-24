@@ -16,6 +16,7 @@
 #'   set this parameter to a list, in which each entry is a numeric
 #'   vector of length three containing the indexes of three loci 
 #'   which will form a trio.
+#' @export
 create_jaatha_data.GENOME <- function(data, model, coala_model,
                                       only_synonymous = FALSE,
                                       trios = NULL,

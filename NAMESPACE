@@ -3,6 +3,7 @@
 S3method(approximate_llh,default)
 S3method(approximate_llh,jaatha_model)
 S3method(approximate_llh,jaatha_stat_basic)
+S3method(create_jaatha_data,GENOME)
 S3method(create_jaatha_data,default)
 S3method(create_jaatha_model,coalmodel)
 S3method(fit_glm,jaatha_model)
