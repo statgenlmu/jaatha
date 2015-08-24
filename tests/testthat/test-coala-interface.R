@@ -34,7 +34,7 @@ test_that("conversion of coala sumstats works", {
   model <- model + coala::sumstat_jsfs()
   expect_equal(length(convert_coala_sumstats(model)), 2)
   model <- model + coala::sumstat_ihh()
-  stats <- convert_coala_sumstats(model)
+  stats <- convert_coala_sumstats(model, ihs_breaks = c(.5, .7, .9))
   expect_equal(length(stats), 3)
   
   data <- simulate(model, pars = c(2, 2))
