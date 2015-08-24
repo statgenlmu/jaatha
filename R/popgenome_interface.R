@@ -51,10 +51,10 @@ check_popgenome_consistency <- function(data, coala_model) {
       stop("Population ", pop, " has a different number of samples in the data",
            " and the coala model")
     }
-    if (coala::get_outgroup_size(coala_model) != length(data@outgroup)) {
-      stop("Outgroup has a different number of samples in the data and the",
-           " and the coala model")
-    }
+    #if (coala::get_outgroup_size(coala_model) != length(data@outgroup)) {
+    #  stop("Outgroup has a different number of samples in the data and the",
+    #       " and the coala model")
+    #}
   }
 }
  
