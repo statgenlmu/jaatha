@@ -57,6 +57,9 @@ jaatha <- function(model, data,
   # Setup
   sim_cache <- create_sim_cache()
   log <- create_jaatha_log(repetitions, max_steps, model, verbose)
+  
+  # Get start positions
+  log$log_initialization(init_method[1])
   start_pos <- get_start_pos(model, data, repetitions, sim, init_method, cores,
                              sim_cache = sim_cache)
   block_width <- 0.1
@@ -89,11 +92,12 @@ jaatha <- function(model, data,
   }
   
   # get presice llh values for best estimates
+  log$log_llh_correction()
   best_values <- log$get_best_estimates(5)
   for (i in 1:nrow(best_values)) {
     llh <- estimate_llh(model, data, as.numeric(best_values[i, -(1:3)]), 
                         100, cores, TRUE)
-    log$log_estimate("final", i, llh)
+    log$log_estimate("final", i, llh, best_values[i, 3])
   }
   
   # return the results

@@ -25,7 +25,7 @@ jaatha_log_class <- R6Class("jaatha_log",
       private$par_ranges <- model$get_par_ranges()
       private$converged <- rep(FALSE, reps)
     },
-    log_estimate = function(rep, step, estimate) {
+    log_estimate = function(rep, step, estimate, old_llh = NULL) {
       if (rep == "final") rep <- 0.0
       entry <- c(rep, step, estimate$value, estimate$par)
       if (rep == 0) {
@@ -36,20 +36,33 @@ jaatha_log_class <- R6Class("jaatha_log",
         stop("Unexpected value for 'rep'")
       }
       
-      if (private$verbose) {
-        message("Step ", step, ": Loglikelihood ", format(estimate$value), 
+      if (!private$verbose) return(invisible(NULL))
+      if (rep != 0.0) {
+        message(" Step ", step, ": Loglikelihood ", format(estimate$value), 
                 ", Parameter: ", private$format_par(estimate$par))
+      } else {
+        message(" Parameter: ", private$format_par(estimate$par), 
+                ", Loglikelihood ", format(old_llh), 
+                " -> ", format(estimate$value))
       }
     },
     log_new_rep = function(rep, start_pos) {
       if (private$verbose) {
         message("Repetition ", rep, 
-                " starting at ", private$format_par(start_pos))
+                " starting at ", private$format_par(start_pos), ":")
       }
     },
     log_convergence = function(step) {
-      if (private$verbose) message("Convergence detected")
+      if (private$verbose) message(" Convergence detected")
       private$converged[step] = TRUE
+    },
+    log_initialization = function(method) {
+      if (!private$verbose) return(invisible(NULL))
+      message("Determining starting positions using the '", 
+              method, "' method")
+    },
+    log_llh_correction = function() {
+      if (private$verbose) message("Correcting likelihoods for best estimates:")
     },
     get_estimates = function(rep) private$estimates[[rep]],
     get_best_estimates = function(n = 5, final = FALSE) {
