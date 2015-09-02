@@ -1,32 +1,37 @@
 language: c
-
-env:
-  global:
-  - WARNINGS_ARE_ERRORS=1
 sudo: required
 
 before_install:
-  - curl -OL http://raw.github.com/craigcitro/r-travis/master/scripts/travis-tool.sh
-  - chmod 755 ./travis-tool.sh
-  - ./travis-tool.sh bootstrap
+  - curl -OL https://raw.githubusercontent.com/metacran/r-builder/master/pkg-build.sh
+  - chmod 755 pkg-build.sh
+  - ./pkg-build.sh bootstrap
 
 install:
-  - ./travis-tool.sh r_binary_install ff bigmemory ape RcppArmadillo
-  - ./travis-tool.sh install_deps
-  - ./travis-tool.sh aptget_install seq-gen
+  - ./pkg-build.sh r_binary_install ff bigmemory RcppArmadillo
+  - ./pkg-build.sh install_deps
+  - ./pkg-build.sh aptget_install seq-gen
 
-script: ./travis-tool.sh run_tests
+script: ./pkg-build.sh run_tests
 
 after_failure:
-  - ./travis-tool.sh dump_logs
+  - ./pkg-build.sh dump_logs
 
 after_success:
-  - ./travis-tool.sh r_binary_install igraph stringdist shiny
-  - ./travis-tool.sh install_github jimhester/lintr jimhester/covr 
-  - Rscript -e 'lintr::lint_package()'
-  - Rscript -e 'library(covr); coveralls()'
+  - '[ "$RVERSION" == "release" ] && ./pkg-build.sh r_binary_install igraph stringdist shiny'
+  - '[ "$RVERSION" == "release" ] && ./pkg-build.sh install_github jimhester/lintr jimhester/covr' 
+  - '[ "$RVERSION" == "release" ] && Rscript -e "lintr::lint_package()"'
+  - '[ "$RVERSION" == "release" ] && Rscript -e "library(covr); coveralls()"'
 
 notifications:
   email:
     on_success: change
     on_failure: always
+
+env:
+  global:
+    - WARNINGS_ARE_ERRORS=1
+    - _R_CHECK_FORCE_SUGGESTS_=0
+  matrix:
+    - RVERSION=oldrel
+    - RVERSION=release
+    - RVERSION=devel
