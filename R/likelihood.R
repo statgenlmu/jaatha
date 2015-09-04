@@ -87,9 +87,7 @@ estimate_local_ml <- function(block, model, data, sim, cores, sim_cache) {
     if (all(converged)) {
       break
     }
-    if (j == 5) {
-      stop("A GLM did not converge. Check your model and summary statistics")
-    } 
+    if (j == 5) stop("A GLM did not converge. Check your model")
   }
   
   optimize_llh(block, model, data, glms, length(sim_data))

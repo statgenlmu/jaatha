@@ -14,6 +14,8 @@ test_that("fit_glm works for PoiInd", {
   glms <- fit_glm(model$get_sum_stats()[[2]], sim_data)
   expect_true(is.list(glms))
   expect_equal(1, length(glms))
+  
+  expect_error(fit_glm(1:10, sim_data))
 })
 
 

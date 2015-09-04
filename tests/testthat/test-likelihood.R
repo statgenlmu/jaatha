@@ -17,6 +17,8 @@ test_that("llh is approximatied for basic statistics", {
   expect_true(is.numeric(llh2))
   expect_true(llh2 <= 0)
   expect_true(llh != llh2)
+  
+  expect_error(approximate_llh(1:3, data, c(.5, .5), glms, 10, 2))
 })
 
 
@@ -79,4 +81,21 @@ test_that("precise llh estimation works", {
                       cores = 1, normalized = FALSE)
   expect_equivalent(llh$param, model$get_par_ranges()$normalize(c(1.5, 1.5)))
   expect_that(llh$value, is_less_than(0))
+})
+
+
+test_that("it estimates local llh maxima", {
+  model <- create_test_model()
+  data <- create_test_data(model)
+  sim_cache <- create_sim_cache()
+  block <- create_block(matrix(0:1, 2, 2, byrow = TRUE))
+  
+  est <- estimate_local_ml(block, model, data, 20, 1, sim_cache)
+  expect_is(est$par, "numeric")
+  expect_equal(length(est$par), 2)
+  expect_true(all(est$par >= 0 & est$par <= 1))
+  
+  expect_is(est$value, "numeric")
+  expect_equal(length(est$value), 1)
+  expect_true(all(est$value <= 0))
 })
