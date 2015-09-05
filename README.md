@@ -7,23 +7,21 @@
 Jaatha
 ======
 
-Jaatha is a frequentistic, simulation-based parameter estimation method primarily designed 
-for Evolutionary Biology. The method is described in the publications
+Jaatha is a composite-likelihood, simulation-based parameter estimation method. 
+It is designed for situations where the data are assumed to be a vector of independent 
+and approximately Poisson distributed variables, but the expectations of the distributions 
+depend on the model parameters in an unknown way. Hence, it is not possible to 
+evaluate the likelihood function directly. Jaatha fits local Generalized Linear
+Models to simulated data to approximate the (composite-) likelihood function and
+to produce maximum likelihood estimates.
 
-> L. Naduvilezhath, L.E. Rose and D. Metzler:
-> Jaatha: a fast composite-likelihood approach to estimate demographic 
-> parameters. Molecular Ecology 20(13):2709-23 (2011).
+The method was originally developed to infer the evolutionary history of
+two populations from genetic data, but is not limited to this settings. Practical 
+instructions on running Jaatha are provided in the `Jaatha-Introduction` vignette. 
 
-> L.A. Mathew, P.R. Staab, L.E. Rose and D. Metzler:
-> [Why to account for finite sites in population genetic studies and 
-> how to do this with Jaatha 2.0][1]. Ecology and Evolution (2013).
-
-Practical instructions for running Jaatha are provided in the 
-[The Jaatha HowTo][2]. Instructions how to use Jaatha with a non-standard 
-simulation method are given in the [Custom Simulation Method HowTo][3]. 
-
-Jaatha is developed openly on [GitHub][4]. Feel free to open an issue there if 
-you encounter problems using Jaatha or have suggestions for future versions.
+Jaatha is developed openly on [GitHub][https://github.com/statgenlmu/jaatha]. 
+Feel free to open an issue there if you encounter problems using Jaatha or have 
+suggestions for future versions.
 
 
 Installation
@@ -50,22 +48,22 @@ devtools::install_github('statgenlmu/jaatha')
 
 
 
-Usage
------
+Citation
+--------
+If you use Jaatha in a scientific publication, please cite
 
-Please refer to the [The Jaatha HowTo][2] for usage information.
+> L.A. Mathew, P.R. Staab, L.E. Rose and D. Metzler:
+> [Why to account for finite sites in population genetic studies and 
+> how to do this with Jaatha 2.0][http://onlinelibrary.wiley.com/doi/10.1002/ece3.722/abstract]. 
+> Ecology and Evolution (2013).
 
 
 
 Links
 -----
 
-[1]: http://onlinelibrary.wiley.com/doi/10.1002/ece3.722/abstract
-[2]: https://github.com/statgenlmu/jaatha/raw/master/howtos/jaatha_howto.pdf
-[3]: https://github.com/statgenlmu/jaatha/raw/master/howtos/custom_simulator_howto.pdf
-[4]: https://github.com/statgenlmu/jaatha
-
 * [Jaatha's Homepage](http://evol.bio.lmu.de/_statgen/software/jaatha)
 * [Source Code on GitHub](https://github.com/statgenlmu/jaatha)
 * [Bug tracker](https://github.com/paulstaab/statgenlmu/issues)
 * [Jaatha's page on CRAN](http://cran.r-project.org/web/packages/jaatha/index.html)
+
