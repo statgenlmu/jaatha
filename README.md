@@ -19,7 +19,7 @@ The method was originally developed to infer the evolutionary history of
 two populations from genetic data, but is not limited to this settings. Practical 
 instructions on running Jaatha are provided in the `Jaatha-Introduction` vignette. 
 
-Jaatha is developed openly on [GitHub][https://github.com/statgenlmu/jaatha]. 
+Jaatha is developed openly on [GitHub](https://github.com/statgenlmu/jaatha). 
 Feel free to open an issue there if you encounter problems using Jaatha or have 
 suggestions for future versions.
 
@@ -40,7 +40,7 @@ in R.
 
 ### Development Version
 
-You can install the development version from [GitHub][4] using: 
+You can install the development version from GitHub using: 
 
 ```R
 devtools::install_github('statgenlmu/jaatha')
@@ -54,7 +54,7 @@ If you use Jaatha in a scientific publication, please cite
 
 > L.A. Mathew, P.R. Staab, L.E. Rose and D. Metzler:
 > [Why to account for finite sites in population genetic studies and 
-> how to do this with Jaatha 2.0][http://onlinelibrary.wiley.com/doi/10.1002/ece3.722/abstract]. 
+> how to do this with Jaatha 2.0](http://onlinelibrary.wiley.com/doi/10.1002/ece3.722/abstract). 
 > Ecology and Evolution (2013).
 
 
