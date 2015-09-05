@@ -1,6 +1,6 @@
 Package: jaatha
-Version: 2.99.0.9210
-Date: 2015-09-04
+Version: 2.99.0.9211
+Date: 2015-09-05
 License: GPL (>= 3)
 Title: Simulation Based Parameter Estimation in a Frequentistic Framework
 Authors@R: c(
@@ -20,7 +20,9 @@ Imports:
     assertthat (>= 0.1),
     R6 (>= 2.0.1),
     reshape2 (>= 1.4),
-    parallel
+    parallel,
+    stats,
+    utils
 Suggests:
     coala (>= 0.1.1),
     testthat (>= 0.10.0),
