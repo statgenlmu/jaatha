@@ -22,9 +22,7 @@ create_jaatha_data.GENOME <- function(data, model, coala_model,
                                       trios = NULL,
                                       ...) {
   
-  if (!requireNamespace("coala", quietly = TRUE)) {
-    stop("Please install package 'coala'")
-  }
+  require_package("coala")
   
   check_popgenome_consistency(data, coala_model)
   seg_sites <- get_popgenome_segsites(data, only_synonymous, trios)
@@ -38,12 +36,8 @@ create_jaatha_data.GENOME <- function(data, model, coala_model,
 
 
 check_popgenome_consistency <- function(data, coala_model) {
-  if (!requireNamespace("PopGenome", quietly = TRUE)) {
-    stop("Please install package 'PopGenome'")
-  }
-  if (!requireNamespace("coala", quietly = TRUE)) {
-    stop("Please install package 'coala'")
-  }
+  require_package("PopGenome")
+  require_package("coala")
   
   # Check Populations
   for (pop in seq(along = data@populations)) {
@@ -61,9 +55,7 @@ check_popgenome_consistency <- function(data, coala_model) {
  
  
 get_popgenome_segsites <- function(data, only_synonymous, trios) {
-  if (!requireNamespace("PopGenome", quietly = TRUE)) {
-    stop("Please install package 'PopGenome'")
-  }
+  require_package("PopGenome")
 
   if (is.null(trios)) {
     seg_sites_list <- lapply(1:length(data@n.valid.sites), function(i) {
@@ -99,9 +91,7 @@ get_popgenome_segsites <- function(data, only_synonymous, trios) {
 # Gets PopGenome's biallelic matrix (bam) and converts it to Jaatha's 
 # segregating sites
 get_popgenome_locus <- function(data, locus_number, only_synonymous) {
-  if (!requireNamespace("PopGenome", quietly = TRUE)) {
-    stop("Please install package 'PopGenome'")
-  }
+  require_package("PopGenome")
   
   bam <- PopGenome::get.biallelic.matrix(data, locus_number)
   if (is.null(bam)) {
@@ -139,9 +129,7 @@ get_popgenome_locus <- function(data, locus_number, only_synonymous) {
 
 
 create_popgenome_test_data <- function() {
-  if (!requireNamespace("PopGenome", quietly = TRUE)) {
-    stop("Please install package PopGenome")
-  }
+  require_package("PopGenome")
   
   # Create Test Data
   output <- tempfile("output")

@@ -1,37 +1,22 @@
-language: c
+language: r
 sudo: required
 
-before_install:
-  - curl -OL https://raw.githubusercontent.com/metacran/r-builder/master/pkg-build.sh
-  - chmod 755 pkg-build.sh
-  - ./pkg-build.sh bootstrap
+warnings_are_errors: true
 
-install:
-  - ./pkg-build.sh r_binary_install ff bigmemory RcppArmadillo
-  - ./pkg-build.sh install_deps
-  - ./pkg-build.sh aptget_install seq-gen
+r_binary_packages:
+  - testthat
+  - ff 
+  - bigmemory 
+  - RcppArmadillo
+  - igraph 
+  - stringdist 
+  - shiny
 
-script: ./pkg-build.sh run_tests
-
-after_failure:
-  - ./pkg-build.sh dump_logs
+r_github_packages:
+  - jimhester/lintr 
+  - jimhester/covr
 
 after_success:
-  - '[ "$RVERSION" == "release" ] && ./pkg-build.sh r_binary_install igraph stringdist shiny'
-  - '[ "$RVERSION" == "release" ] && ./pkg-build.sh install_github jimhester/lintr jimhester/covr' 
-  - '[ "$RVERSION" == "release" ] && Rscript -e "lintr::lint_package()"'
-  - '[ "$RVERSION" == "release" ] && Rscript -e "library(covr); coveralls()"'
+  - Rscript -e "lintr::lint_package()"
+  - Rscript -e "library(covr); coveralls()"
 
-notifications:
-  email:
-    on_success: change
-    on_failure: always
-
-env:
-  global:
-    - WARNINGS_ARE_ERRORS=1
-    - _R_CHECK_FORCE_SUGGESTS_=0
-  matrix:
-    - RVERSION=oldrel
-    - RVERSION=release
-    - RVERSION=devel

@@ -36,10 +36,7 @@ create_jaatha_model.coalmodel <- function(x,
                                           scaling_factor = 1,
                                           test = TRUE) {
   
-  if (!requireNamespace("coala", quietly = TRUE)) {
-    stop("Please install coala to use this function", call. = FALSE)
-  }
-  
+  require_package("coala")
   if (length(jsfs_summary) > 1) jsfs_summary <- jsfs_summary[1]
   
   sim_func <- function(pars, opts = NULL) simulate(x, pars = pars)
@@ -62,10 +59,7 @@ convert_coala_sumstats <- function(coala_model, jsfs_summary = "sums",
                                    ihs_breaks, four_gamete_breaks, 
                                    mcmf_breaks) {
   
-  if (!requireNamespace("coala", quietly = TRUE)) {
-    stop("Please install coala to use this function", call. = FALSE)
-  }
-  
+  require_package("coala")
   assert_that(is.string(jsfs_summary))
   
   lapply(coala::get_summary_statistics(coala_model), function(stat) {
