@@ -1,4 +1,5 @@
 [![Linux Build Status](https://travis-ci.org/statgenlmu/jaatha.svg?branch=master)](https://travis-ci.org/statgenlmu/jaatha) 
+[![Windows Build status](https://ci.appveyor.com/api/projects/status/g4adpum1pkyn7ajn/branch/master?svg=true)](https://ci.appveyor.com/project/paulstaab/jaatha/branch/master)
 [![Coverage Status](https://coveralls.io/repos/statgenlmu/jaatha/badge.svg?branch=master&service=github)](https://coveralls.io/github/statgenlmu/jaatha?branch=master)
 [![CRAN Status](http://www.r-pkg.org/badges/version/jaatha)](http://cran.r-project.org/web/packages/jaatha)
 
