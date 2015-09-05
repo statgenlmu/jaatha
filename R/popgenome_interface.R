@@ -128,6 +128,7 @@ get_popgenome_locus <- function(data, locus_number, only_synonymous) {
 }
 
 
+#' @importFrom utils capture.output
 create_popgenome_test_data <- function() {
   require_package("PopGenome")
   

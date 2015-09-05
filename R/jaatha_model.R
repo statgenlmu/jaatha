@@ -114,6 +114,7 @@ create_jaatha_model.function <- function(x, par_ranges, sum_stats,
 is_jaatha_model <- function(x) inherits(x, "jaatha_model")
 
 
+#' @importFrom stats rpois
 create_test_model <- function() {
   create_jaatha_model(function(x, y) rpois(10, x),
                       par_ranges = matrix(c(0.1, 0.1, 10, 10), 2, 2),

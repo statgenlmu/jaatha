@@ -24,6 +24,7 @@
 #' @param mcmf_breaks Quantiles of the real data that will be used as breaks
 #'   for binning the MCMF statistic if present in the model.
 #' @inheritParams create_jaatha_model
+#' @importFrom stats simulate
 #' @export
 create_jaatha_model.coalmodel <- function(x, 
                                           jsfs_summary = c("sums",
@@ -37,6 +38,7 @@ create_jaatha_model.coalmodel <- function(x,
                                           test = TRUE) {
   
   require_package("coala")
+
   if (length(jsfs_summary) > 1) jsfs_summary <- jsfs_summary[1]
   
   sim_func <- function(pars, opts = NULL) simulate(x, pars = pars)
