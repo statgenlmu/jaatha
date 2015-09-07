@@ -68,3 +68,21 @@ test_that("sampling of parameters works", {
   expect_equal(dim(random_pars), c(5, 1))
   expect_true(all(apply(random_pars, 1, function(x) block$includes(x))))
 })
+
+
+test_that("it removes the outer area of a block", {
+  border <- matrix(c(0.4, 0.1, 0.6, 0.4), 2, 2)
+  block <- create_block(border)
+  
+  expect_equivalent(block$get_interior(0.1),
+                    matrix(c(0.42, 0.13, 0.58, 0.37), 2))
+  expect_equivalent(block$get_interior(0.25),
+                    matrix(c(0.45, 0.175, 0.55, 0.325), 2))
+  
+  border <- matrix(c(0.1, 0.9), 1, 2)
+  block <- create_block(border)
+  expect_equivalent(block$get_interior(0.1),
+                    matrix(c(0.18, 0.82), 1))
+  expect_equivalent(block$get_interior(0.2),
+                    matrix(c(0.26, 0.74), 1))
+})
