@@ -53,7 +53,7 @@ approximate_llh.jaatha_stat_basic  <- function(x, data, param, glm_fitted,
 
 #' @importFrom stats optim
 optimize_llh <- function(block, model, data, glms, sim) {
-  boundary <- block$get_interior(0.2)
+  boundary <- block$get_interior(0.15)
   best_value <- optim(block$get_middle(),
                       function(param) {
                         approximate_llh(model, data, param, glms, sim)
