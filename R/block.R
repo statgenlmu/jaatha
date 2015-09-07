@@ -55,6 +55,12 @@ block_class <- R6Class("Block",
       if (add_corners) random_pars <- rbind(random_pars, self$get_corners())
       assert_that(all(apply(random_pars, 1, self$includes)))
       random_pars
+    },
+    get_interior = function(x = 0.1) {
+      "removes the outer `x` percent at each side of the block "
+      border <- self$get_border()
+      outer <- apply(border, 1, diff) * x
+      border + cbind(outer, -outer)
     }
   )
 )
