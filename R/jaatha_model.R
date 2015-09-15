@@ -1,5 +1,6 @@
 #' @importFrom R6 R6Class
 #' @importFrom parallel mclapply
+#' @importFrom assertthat is.error
 jaatha_model_class <- R6Class("jaatha_model", 
   lock_objects = FALSE, lock_class = TRUE,
   private = list(
@@ -36,7 +37,7 @@ jaatha_model_class <- R6Class("jaatha_model",
       "conducts a simulation for each parameter combination in pars"
       assert_that(is.matrix(pars))
       assert_that(ncol(pars) == private$par_ranges$get_par_number())
-      assert_that(all(0-1e-5 <= pars & pars <= 1 + 1e-5))
+      assert_that(all(0 - 1e-5 <= pars & pars <= 1 + 1e-5))
       assert_that(is_jaatha_data(data))
       assert_that(is.count(cores))
       
@@ -61,6 +62,11 @@ jaatha_model_class <- R6Class("jaatha_model",
         sum_stats
       }, mc.preschedule = TRUE, mc.cores = cores)
       
+      if (any(vapply(sim_data, is.error, logical(1)))) {
+        dump.frames(to.file = TRUE)
+        stop("Simulations failed, check your model. Frame dump created.")
+      }
+        
       set.seed(seeds[length(seeds)])
       sim_data
     },

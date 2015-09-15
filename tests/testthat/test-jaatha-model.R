@@ -68,3 +68,17 @@ test_that("simulation works", {
   expect_error(model$simulate(pars = matrix(c(1, 1), 1), "data"))
   expect_error(model$simulate(pars = matrix(c(1, 1), 1), data, "blub"))
 })
+
+
+test_that("failing simulations are detected", {
+  model <- create_jaatha_model(function(x, y) stop("test"),
+                               par_ranges = matrix(c(0.1, 0.1, 10, 10), 2, 2),
+                               sum_stats = list(stat_identity(), stat_sum()),
+                               test = FALSE)
+  test_data <- create_test_data(create_test_model())
+  expect_error(model$simulate(pars = matrix(1, 2, 2), test_data, cores = 1))
+  suppressWarnings(
+    expect_error(model$simulate(pars = matrix(1, 2, 2), test_data, cores = 2))
+  )
+  unlink("last.dump.rda")
+})
