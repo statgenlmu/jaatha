@@ -62,9 +62,12 @@ jaatha_model_class <- R6Class("jaatha_model",
         sum_stats
       }, mc.preschedule = TRUE, mc.cores = cores)
       
-      if (any(vapply(sim_data, is.error, logical(1)))) {
-        dump.frames(to.file = TRUE)
-        stop("Simulations failed, check your model. Frame dump created.")
+      failed <- vapply(sim_data, is.error, logical(1))
+      if (any(failed)) {
+        lapply(which(failed), function(x) {
+          warning("Simulation failed: ", sim_data[[x]])
+        })
+        stop("Simulations failed, check your model.")
       }
         
       set.seed(seeds[length(seeds)])

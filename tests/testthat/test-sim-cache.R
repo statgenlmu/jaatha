@@ -23,7 +23,6 @@ test_that("caching of simulations works", {
   expect_error(sc$add(5))
   capture.output(expect_error(sc$add(list(5))))
   capture.output(expect_error(sc$add(list(list(5)))))
-  unlink("last.dump.rda")
   
   # One parameter
   sc <- create_sim_cache()

@@ -9,10 +9,8 @@ sim_cache_class <- R6Class("sim_cache",
         if (!any(names(x) == "pars_normal")) return(FALSE)
         TRUE
       }, logical(1))
-      if (!all(is_valid)) {
-        dump.frames(to.file = TRUE)
-        stop("Invalid simulation data. Frame dump created.")
-      }
+      if (!all(is_valid)) stop("Invalid simulation data")
+      
       private$sim_data[1:length(sim_data) + length(private$sim_data)] <- 
         sim_data[1:length(sim_data)]
     },

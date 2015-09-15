@@ -75,10 +75,10 @@ test_that("failing simulations are detected", {
                                par_ranges = matrix(c(0.1, 0.1, 10, 10), 2, 2),
                                sum_stats = list(stat_identity(), stat_sum()),
                                test = FALSE)
+  
   test_data <- create_test_data(create_test_model())
   expect_error(model$simulate(pars = matrix(1, 2, 2), test_data, cores = 1))
   suppressWarnings(
     expect_error(model$simulate(pars = matrix(1, 2, 2), test_data, cores = 2))
   )
-  unlink("last.dump.rda")
 })
