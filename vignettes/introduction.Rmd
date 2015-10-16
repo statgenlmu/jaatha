@@ -1,0 +1,81 @@
+---
+title: "Introduction to Jaatha"
+author: "Paul Staab"
+date: "jaatha `r packageVersion('jaatha')`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{jaatha-introduction}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r echo=FALSE, include=FALSE}
+set.seed(112233)
+```
+
+
+Jaatha is an estimation method that can use computer simulations to produce
+maximum-likelihood estimates even when the likelihood function can not be
+evaluated directly. It can be applied whenever it is feasible to conduct a lot 
+of simulations, but works best when the data is at least approximately possion
+distributed. 
+
+Jaatha was orginially designed for demographic inference in evolutionary 
+biology. Please refer to the vignette
+
+```{r eval=FALSE}
+vignette("jaatha-demographic-inference", package = jaatha)
+```
+
+if you are interested in this application.
+
+
+The Algorithm
+-------------
+
+```{r}
+data_obs <- c(2, 8, 0, 6, 1, 3, 2, 2, 0, 7)
+```
+
+
+Creating a Model
+--------------
+```{r}
+library(jaatha)
+sim_func <- function(x, y = NULL) rpois(10, x)
+sim_func(c(1, 10))
+sum_stats <- list(create_jaatha_stat("id", function(x, opts) x))
+
+par_ranges <- matrix(c(0.1, 0.1, 10, 10), 2, 2)
+rownames(par_ranges) <- c("x", "y")
+colnames(par_ranges) <- c("min", "max")
+par_ranges
+
+jaatha_model <- create_jaatha_model(sim_func, par_ranges, sum_stats)
+```
+
+
+Preparing the Data
+------------------
+Use the `create_jaatha_data` function to prepare the observed data for being
+used in Jaatha. The function expected the data to be in the format that is 
+also returned by simulation function. In our example, `sim_func` returns a
+numeric vector of length `10`, and `data_obs` already has the same format.
+So we can import it
+
+```{r}
+jaatha_data <- create_jaatha_data(data_obs, jaatha_model)
+```
+
+
+Running Jaatha
+--------------
+```{r}
+estimates <- jaatha(jaatha_model, jaatha_data, sim = 50, repetitions = 2)
+estimates
+```
+
+
+
+
+
