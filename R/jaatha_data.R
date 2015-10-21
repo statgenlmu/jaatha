@@ -64,8 +64,8 @@ is_jaatha_data <- function(x) inherits(x, "jaatha_data")
 #' @param data The data to be analysed with Jaatha. 
 #'   It should be in a format identical to the 
 #'   simulation results (see \code{\link{create_jaatha_model}}).
+#' @param model The jaatha model, see \code{\link{create_jaatha_model}}.
 #' @param ... Currently ignored.
-#' @inheritParams jaatha
 #' @export
 create_jaatha_data <- function(data, model, ...) UseMethod("create_jaatha_data")
 

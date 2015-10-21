@@ -1,6 +1,6 @@
 Package: jaatha
-Version: 2.99.0.9214
-Date: 2015-09-15
+Version: 2.99.0.9216
+Date: 2015-10-21
 License: GPL (>= 3)
 Title: Simulation Based Parameter Estimation in a Frequentistic Framework
 Authors@R: c(

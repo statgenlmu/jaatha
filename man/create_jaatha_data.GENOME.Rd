@@ -4,26 +4,25 @@
 \alias{create_jaatha_data.GENOME}
 \title{Use PopGenome Data for Jaatha}
 \usage{
-\method{create_jaatha_data}{GENOME}(data, model, coala_model,
-  only_synonymous = FALSE, trios = NULL, ...)
+\method{create_jaatha_data}{GENOME}(data, model, coala_model, trios = NULL,
+  only_synonymous = FALSE, ...)
 }
 \arguments{
 \item{data}{The \code{GENOME} data from \pkg{PopGenome}.}
 
-\item{model}{The model used for the estimation.
-See \code{\link{create_jaatha_model}}.}
+\item{model}{The jaatha model, see \code{\link{create_jaatha_model}}.}
 
 \item{coala_model}{The coala model that was used for creating \code{model}.}
-
-\item{only_synonymous}{Only use synonymous SNP if set to \code{TRUE}.
-This requires that \pkg{PopGenome} knows where coding regions are., e.g.
-by using gff files.}
 
 \item{trios}{If you are using locus trios for your anaylsis, then you need
 to tell Jaatha with loci should be combined to a trio. To do so,
 set this parameter to a list, in which each entry is a numeric
 vector of length three containing the indexes of three loci
 which will form a trio.}
+
+\item{only_synonymous}{Only use synonymous SNP if set to \code{TRUE}.
+This requires that \pkg{PopGenome} knows where coding regions are., e.g.
+by using gff files.}
 
 \item{...}{Currently ignored.}
 }

@@ -4,8 +4,8 @@ test_that("getting segsites from PopGenome works for individual loci", {
   skip_if_not_installed("PopGenome")
   data_pg <- create_popgenome_test_data()
   
-  seg_sites <- get_popgenome_segsites(data_pg, FALSE, NULL)
-  expect_is(seg_sites, "list")
+  seg_sites <- get_popgenome_segsites(data_pg, FALSE)
+  expect_is(seg_sites, "segsites_list")
   expect_equal(length(seg_sites), 1)
   expect_is(seg_sites[[1]], "matrix")
   expect_equal(nrow(seg_sites[[1]]), 12)
@@ -16,25 +16,6 @@ test_that("getting segsites from PopGenome works for individual loci", {
   expect_false(is.null(attr(seg_sites[[1]], "positions")))
   expect_true(all(attr(seg_sites[[1]], "positions") >= 0)) 
   expect_true(all(attr(seg_sites[[1]], "positions") <= 1))
-})
-
-
-test_that("getting segsites from PopGenome works for trios", {
-  skip_if_not_installed("PopGenome")
-  data_pg <- create_popgenome_test_data()
-  
-  seg_sites <- get_popgenome_segsites(data_pg, FALSE,
-                                      trios = list(rep(1, 3), rep(1, 3)))
-  expect_is(seg_sites, "list")
-  expect_equal(length(seg_sites), 2)
-  expect_equal(seg_sites[[1]], seg_sites[[2]])
-  expect_equal(ncol(seg_sites[[1]]), 48)
-  
-  expect_false(is.null(attr(seg_sites[[1]], "positions")))
-  expect_true(all(attr(seg_sites[[1]], "positions") >= 0)) 
-  expect_true(all(attr(seg_sites[[1]], "positions") <= 1))
-  expect_equal(attr(seg_sites[[1]], "positions")[1:16],
-               attr(seg_sites[[1]], "positions")[17:32])
 })
 
 
@@ -56,12 +37,8 @@ test_that("it imports PopGenome data", {
   jaatha_data <- create_jaatha_data(data_pg, jaatha_model, coala_model)
   expect_true(is_jaatha_data(jaatha_data))
   
+  # Check sample size consistency
   expect_error(create_jaatha_data(data_pg, jaatha_model, 
                                   coala::coal_model(c(6, 4, 2), 1) +
                                     coala::feat_outgroup(3)))
-  expect_error(create_jaatha_data(data_pg, jaatha_model, 
-                                  coala::coal_model(c(5, 5, 3), 1) +
-                                    coala::feat_outgroup(3)))
-  expect_error(create_jaatha_data(data_pg, jaatha_model, 
-                                  coala::coal_model(c(5, 5, 3), 1)))
 })
