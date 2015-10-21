@@ -123,10 +123,14 @@ test_that("the four gamete stat can be used in Jaatha", {
 
 test_that("MCMF can be used in Jaatha", {
   skip_if_not_installed("coala")
+  coala_version <- package_version(packageVersion("coala"))
+  if (coala_version$major == 0 & coala_version$minor == 1) {
+    skip("Insufficient coala version")
+  }
   
   coala_model <- coala::coal_model(10, 2) + 
     coala::feat_mutation(coala::par_range("theta", 10, 50)) +
-    coala:::sumstat_omegaprime("mcmf")
+    coala::sumstat_mcmf("mcmf")
   
   jaatha_model <- create_jaatha_model(coala_model, test = FALSE)
   jaatha_data <- create_jaatha_data(jaatha_model$test(), jaatha_model)
