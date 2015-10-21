@@ -5,33 +5,22 @@
 #' to calculate the summary statistics, you need to use a model that was created
 #' from a coala model.
 #' 
-#' @inheritParams create_jaatha_data
+#' @inheritParams create_jaatha_data.segsites_list
 #' @param data The \code{GENOME} data from \pkg{PopGenome}.
-#' @param coala_model The coala model that was used for creating \code{model}.
 #' @param only_synonymous Only use synonymous SNP if set to \code{TRUE}. 
 #'   This requires that \pkg{PopGenome} knows where coding regions are., e.g.
 #'   by using gff files.
-#' @param trios If you are using locus trios for your anaylsis, then you need
-#'   to tell Jaatha with loci should be combined to a trio. To do so,
-#'   set this parameter to a list, in which each entry is a numeric
-#'   vector of length three containing the indexes of three loci 
-#'   which will form a trio.
 #' @export
 create_jaatha_data.GENOME <- function(data, model, coala_model,
-                                      only_synonymous = FALSE,
                                       trios = NULL,
+                                      only_synonymous = FALSE,
                                       ...) {
-  
   require_package("coala")
   
   check_popgenome_consistency(data, coala_model)
-  seg_sites <- get_popgenome_segsites(data, only_synonymous, trios)
+  seg_sites_list <- get_popgenome_segsites(data, only_synonymous)
   
-  sumstat <- lapply(coala::get_summary_statistics(coala_model), function(stat) {
-    stat$calculate(seg_sites, NULL, NULL, coala_model)
-  })
-  
-  create_jaatha_data(sumstat, model)
+  create_jaatha_data(seg_sites_list, model, coala_model, trios, ...)
 }
 
 
@@ -54,37 +43,16 @@ check_popgenome_consistency <- function(data, coala_model) {
 }
  
  
-get_popgenome_segsites <- function(data, only_synonymous, trios) {
+get_popgenome_segsites <- function(data, only_synonymous) {
   require_package("PopGenome")
 
-  if (is.null(trios)) {
-    seg_sites_list <- lapply(1:length(data@n.valid.sites), function(i) {
-      if (data@n.valid.sites[[i]] == 0) return(NULL)
-      get_popgenome_locus(data, i, only_synonymous)
-    })
-  } else {
-    assert_that(is.list(trios))
-    seg_sites_list <- lapply(trios, function(trio) {
-      assert_that(is.numeric(trio))
-      assert_that(length(trio) == 3)
-      left <- get_popgenome_locus(data, trio[1], only_synonymous)
-      middle <- get_popgenome_locus(data, trio[2], only_synonymous)
-      right <- get_popgenome_locus(data, trio[3], only_synonymous)
-      
-      seg_sites <- cbind(left, middle, right)
-      
-      attr(seg_sites, "positions") <- c(attr(left, "positions"),
-                                        attr(middle, "positions"),
-                                        attr(right, "positions"))
-      
-      attr(seg_sites, "locus") <- c(rep(-1, ncol(left)),
-                                    rep( 0, ncol(middle)),
-                                    rep( 1, ncol(right)))
-      seg_sites
-    })
-  }
+  seg_sites_list <- lapply(1:length(data@n.valid.sites), function(i) {
+    if (data@n.valid.sites[[i]] == 0) return(NULL)
+    get_popgenome_locus(data, i, only_synonymous)
+  })
   
-  seg_sites_list[!sapply(seg_sites_list, is.null)]
+  class(seg_sites_list) <- "segsites_list"
+  seg_sites_list
 }
 
 

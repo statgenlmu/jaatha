@@ -14,8 +14,7 @@ create_jaatha_data(data, model, ...)
 It should be in a format identical to the
 simulation results (see \code{\link{create_jaatha_model}}).}
 
-\item{model}{The model used for the estimation.
-See \code{\link{create_jaatha_model}}.}
+\item{model}{The jaatha model, see \code{\link{create_jaatha_model}}.}
 
 \item{...}{Currently ignored.}
 }

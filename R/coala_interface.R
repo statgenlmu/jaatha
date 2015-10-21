@@ -141,3 +141,57 @@ sum_jsfs <- function(jsfs) {
     sum(jsfs[n, (m - 2):(m - 1)]),
     sum(jsfs[(n - 2):(n - 1), m]) )
 }
+
+
+#' Import Population Genetic Data using a list of segregating sites
+#' 
+#' @inheritParams create_jaatha_data
+#' @param coala_model The coala model that was used for creating \code{model}.
+#' @param trios If you are using locus trios for your anaylsis, then you need
+#'   to tell Jaatha with loci should be combined to a trio. To do so,
+#'   set this parameter to a list, in which each entry is a numeric
+#'   vector of length three containing the indexes of three loci 
+#'   which will form a trio.
+#' @export
+create_jaatha_data.segsites_list <- function(data, model, coala_model,
+                                             trios = NULL, ...) {
+  require_package("coala")
+  
+  if (!is.null(trios)) {
+    assert_that(is.list(trios))
+    data <- lapply(trios, function(trio) {
+      assert_that(is.numeric(trio))
+      assert_that(length(trio) == 3)
+      
+      left <- data[[trio[1]]]
+      middle <- data[[trio[2]]]
+      right <- data[[trio[3]]]
+      
+      seg_sites <- cbind(left, middle, right)
+      
+      attr(seg_sites, "positions") <- c(attr(left, "positions"),
+                                        attr(middle, "positions"),
+                                        attr(right, "positions"))
+      
+      attr(seg_sites, "locus") <- c(rep(-1, ncol(left)),
+                                    rep( 0, ncol(middle)),
+                                    rep( 1, ncol(right)))
+      seg_sites
+    })
+  }
+  
+  # Check that we have data for all loci
+  if (length(data) != coala::get_locus_number(coala_model)) {
+    stop("Different number of loci in data and model")
+  }
+  if (!all(vapply(data, is.matrix, logical(1)))) {
+    stop("Missing data in list of segregating sites")
+  }
+  
+  # Calculate summary statistics for `data`
+  sumstat <- lapply(coala::get_summary_statistics(coala_model), function(stat) {
+    stat$calculate(data, NULL, NULL, coala_model)
+  })
+  
+  create_jaatha_data(sumstat, model)
+}
