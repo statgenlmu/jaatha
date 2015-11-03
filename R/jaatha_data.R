@@ -46,6 +46,10 @@ jaatha_data_class <- R6Class("jaatha_data",
         return(private$log_factorials[[stat]])
       }
       private$log_factorials[[stat$get_name()]]
+    },
+    set_options = function(options) {
+      warning("This function is intented for internal use only")
+      private$options <- options
     }
   )
 )
