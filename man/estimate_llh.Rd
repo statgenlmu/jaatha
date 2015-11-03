@@ -5,7 +5,7 @@
 \title{Estimate the Log-Likelihood for a given parameter combination}
 \usage{
 estimate_llh(model, data, parameter, sim = 100, cores = 1,
-  normalized = FALSE)
+  normalized = FALSE, sim_data = NULL)
 }
 \arguments{
 \item{model}{The model used for the estimation.
@@ -27,6 +27,8 @@ core is supported on Windows.}
 \item{normalized}{For internal use. Indicates whether the parameter
 combination is normalized to [0, 1]-scale, or on its natural
 scale.}
+
+\item{sim_data}{For internal use. Use existing simulations.}
 }
 \description{
 This function estimates the Log-likelihood value for a given

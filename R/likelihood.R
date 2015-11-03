@@ -112,9 +112,10 @@ estimate_local_ml <- function(block, model, data, sim, cores, sim_cache) {
 #' @param normalized For internal use. Indicates whether the parameter
 #'          combination is normalized to [0, 1]-scale, or on its natural
 #'          scale.
+#' @param sim_data For internal use. Use existing simulations.
 #' @export
 estimate_llh <- function(model, data, parameter, sim = 100, 
-                         cores = 1, normalized = FALSE) {
+                         cores = 1, normalized = FALSE, sim_data = NULL) {
   
   assert_that(is_jaatha_model(model))
   assert_that(is_jaatha_data(data))
@@ -123,10 +124,12 @@ estimate_llh <- function(model, data, parameter, sim = 100,
   assert_that(is.count(cores))
   assert_that(is_single_logical(normalized))
   
-  if (!normalized) parameter <- model$get_par_ranges()$normalize(parameter)
-  sim_pars <- matrix(parameter, sim, length(parameter), byrow = TRUE)
-  sim_data <- model$simulate(sim_pars, data, cores)
-  
+  if (is.null(sim_data)) {
+    if (!normalized) parameter <- model$get_par_ranges()$normalize(parameter)
+    sim_pars <- matrix(parameter, sim, length(parameter), byrow = TRUE)
+    sim_data <- model$simulate(sim_pars, data, cores)
+  }
+
   llh <- sum(vapply(names(model$get_sum_stats()), function(stat){
     stat_values <- sapply(sim_data, function(x) x[[stat]])
     if (!is.matrix(stat_values)) stat_values <- matrix(stat_values, nrow = 1)
