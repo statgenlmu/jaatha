@@ -17,6 +17,9 @@ test_that("default creation of data works", {
   expect_equal(jaatha_data$get_options("id"), NULL)
   expect_equal(jaatha_data$get_options(stat_identity()), NULL)
   
+  expect_warning(jaatha_data$set_options(list(id = 5)))
+  expect_equal(jaatha_data$get_options("id"), 5)
+  
   log_facs_id <- log(factorial(real_data))
   log_facs_sum <- log(factorial(sum(real_data)))
   expect_equal(jaatha_data$get_log_factorial(), 
