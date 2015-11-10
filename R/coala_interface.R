@@ -94,13 +94,6 @@ convert_coala_sumstats <- function(coala_model, jsfs_summary = "sums",
       }, poisson = FALSE, breaks = four_gamete_breaks))
     }
     
-    # --- iHH Summary Statistic -------------------------------------
-    if (inherits(stat, "stat_ihh")) {
-      return(create_jaatha_stat(name, function(x, opts) {
-        vapply(x[[name]], function(x) max(x[ , 3]), numeric(1))
-      }, poisson = FALSE, breaks = ihs_breaks))
-    }
-    
     # --- OmegaPrime Summary Statistic ----------------------------------
     if (inherits(stat, "stat_omega_prime") || inherits(stat, "stat_mcmf")) {
       return(create_jaatha_stat(name, function(x, opts) x[[name]],
