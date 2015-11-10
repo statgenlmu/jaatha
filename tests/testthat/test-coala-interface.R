@@ -90,22 +90,6 @@ test_that("the JSFS can be used in Jaatha", {
 })
 
 
-test_that("iHS can be used in Jaatha", {
-  skip_if_not_installed("rehh")
-  skip_if_not_installed("coala")
-  
-  coala_model <- coala::coal_model(10, 2) + 
-    coala::feat_mutation(coala::par_range("theta", 10, 50)) +
-    coala::sumstat_ihh("ihh")
-  
-  jaatha_model <- create_jaatha_model(coala_model, test = FALSE)
-  jaatha_data <- create_jaatha_data(jaatha_model$test(), jaatha_model)
-  sim_results <- jaatha_model$simulate(matrix(.5, 1, 1), jaatha_data)
-  expect_equal(length(jaatha_model$get_sum_stats()), 1)
-  expect_equal(sum(sim_results[[1]]$ihh), 2)
-})
-
-
 test_that("the four gamete stat can be used in Jaatha", {
   skip_if_not_installed("coala")
   
