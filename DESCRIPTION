@@ -24,6 +24,7 @@ Imports:
     stats,
     utils
 Suggests:
-    coala (>= 0.1.1),
+    coala (>= 0.2.0.9000),
     testthat (>= 0.11.0),
     PopGenome (>= 2.1.0)
+RoxygenNote: 5.0.1

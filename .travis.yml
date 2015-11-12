@@ -13,6 +13,7 @@ r_binary_packages:
   - shiny
 
 r_github_packages:
+  - statgenlmu/coala
   - jimhester/lintr 
   - jimhester/covr
 
