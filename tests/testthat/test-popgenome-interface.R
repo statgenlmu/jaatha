@@ -27,7 +27,8 @@ test_that("it imports PopGenome data", {
                          base_frequencies = rep(.25, 4)) +
     coala::sumstat_sfs("sfs", population = 1) +
     coala::sumstat_jsfs("jsfs")
-  jaatha_model <- create_jaatha_model(coala_model, test = FALSE)
+  jaatha_model <- create_jaatha_model(coala_model, test = FALSE, 
+                                      jsfs_part = 1, jsfs_part_hi = 1)
   data_pg <- create_popgenome_test_data()
   
   jaatha_data <- create_jaatha_data(data_pg, jaatha_model, coala_model)
