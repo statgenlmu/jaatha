@@ -5,17 +5,13 @@ test_that("getting segsites from PopGenome works for individual loci", {
   data_pg <- create_popgenome_test_data()
   
   seg_sites <- get_popgenome_segsites(data_pg, FALSE)
-  expect_is(seg_sites, "segsites_list")
   expect_equal(length(seg_sites), 1)
-  expect_is(seg_sites[[1]], "matrix")
+  expect_true(coala::is_segsites(seg_sites[[1]]))
   expect_equal(nrow(seg_sites[[1]]), 12)
-  expect_equal(grep("Individual_1", row.names(seg_sites[[1]])), 1:5)
-  expect_equal(grep("Individual_2", row.names(seg_sites[[1]])), 6:10)  
-  expect_equal(grep("Out", row.names(seg_sites[[1]])), 11:12)
   
-  expect_false(is.null(attr(seg_sites[[1]], "positions")))
-  expect_true(all(attr(seg_sites[[1]], "positions") >= 0)) 
-  expect_true(all(attr(seg_sites[[1]], "positions") <= 1))
+  expect_false(is.null(coala::get_positions(seg_sites[[1]])))
+  expect_true(all(coala::get_positions(seg_sites[[1]]) >= 0)) 
+  expect_true(all(coala::get_positions(seg_sites[[1]]) <= 1))
 })
 
 

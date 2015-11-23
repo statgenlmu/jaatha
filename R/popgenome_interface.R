@@ -5,8 +5,13 @@
 #' to calculate the summary statistics, you need to use a model that was created
 #' from a coala model.
 #' 
-#' @inheritParams create_jaatha_data.segsites_list
+#' @inheritParams create_jaatha_data
 #' @param data The \code{GENOME} data from \pkg{PopGenome}.
+
+#' @param coala_model The coala model that was provided to 
+#'   \code{\link{create_jaatha_model}}.
+#' @param trios An optional argument that will be passed on to 
+#'   \code{coala::calc_sumstats_from_data} and is documented there.
 #' @param only_synonymous Only use synonymous SNP if set to \code{TRUE}. 
 #'   This requires that \pkg{PopGenome} knows where coding regions are., e.g.
 #'   by using gff files.
@@ -16,11 +21,11 @@ create_jaatha_data.GENOME <- function(data, model, coala_model,
                                       only_synonymous = FALSE,
                                       ...) {
   require_package("coala")
-  
   check_popgenome_consistency(data, coala_model)
-  seg_sites_list <- get_popgenome_segsites(data, only_synonymous)
   
-  create_jaatha_data(seg_sites_list, model, coala_model, trios, ...)
+  segsites_list <- get_popgenome_segsites(data, only_synonymous)
+  sumstats <- coala::calc_sumstats_from_data(coala_model, segsites_list)
+  create_jaatha_data(sumstats, model, coala_model, trios, ...)
 }
 
 
@@ -51,7 +56,6 @@ get_popgenome_segsites <- function(data, only_synonymous) {
     get_popgenome_locus(data, i, only_synonymous)
   })
   
-  class(seg_sites_list) <- "segsites_list"
   seg_sites_list
 }
 
@@ -60,14 +64,16 @@ get_popgenome_segsites <- function(data, only_synonymous) {
 # segregating sites
 get_popgenome_locus <- function(data, locus_number, only_synonymous) {
   require_package("PopGenome")
+  require_package("coala")
   
   bam <- PopGenome::get.biallelic.matrix(data, locus_number)
   if (is.null(bam)) {
     warning("Locus ", locus_number, " is NULL")
-    seg_sites <- matrix(0, length(data@populations[[1]]) + 
-                          length(data@populations[[2]]) + 
-                          length(data@outgroup), 0)
-    attr(seg_sites, "positions") <- numeric(0)
+    seg_sites <- coala::create_segsites(matrix(0, 
+                                               length(data@populations[[1]]) + 
+                                                 length(data@populations[[2]]) + 
+                                                 length(data@outgroup), 0), 
+                                        numeric(0))
     return(seg_sites)
   }
   
@@ -90,9 +96,8 @@ get_popgenome_locus <- function(data, locus_number, only_synonymous) {
   stopifnot(!is.null(seg_sites))
   
   # Add positions attribute
-  attr(seg_sites, "positions") <-
-    as.numeric(colnames(bam)) / data@n.sites[[locus_number]]
-  seg_sites
+  pos <- as.numeric(colnames(bam)) / data@n.sites[[locus_number]]
+  coala::create_segsites(seg_sites, pos)
 }
 
 

@@ -16,8 +16,6 @@
 #'   The value \code{smooth} is experimental so far and should not be used.
 #'   This option has no effect if the JSFS used as summary statistic in the
 #'   coala model.
-#' @param ihs_breaks Quantiles of the real data that will be used as breaks
-#'   for binning the iHS statistic if present in the model.
 #' @param four_gamete_breaks Quantiles of the real data that will be used as 
 #'   breaks for binning the Four Gamete test based statistic if present in the 
 #'   model.
@@ -30,7 +28,6 @@ create_jaatha_model.coalmodel <- function(x,
                                           jsfs_summary = c("sums",
                                                            "none",
                                                            "smooth"),
-                                          ihs_breaks = c(.5, .7, .9),
                                           four_gamete_breaks = c(.2, .5),
                                           mcmf_breaks = c(.5, .7, .9),
                                           ...,
@@ -49,7 +46,7 @@ create_jaatha_model.coalmodel <- function(x,
   rownames(par_ranges) <- par_table$name
 
   # create summary statisics
-  sum_stats <- convert_coala_sumstats(x, jsfs_summary, ihs_breaks,
+  sum_stats <- convert_coala_sumstats(x, jsfs_summary,
                                       four_gamete_breaks, mcmf_breaks)
   
   create_jaatha_model.function(sim_func, par_ranges, sum_stats, 
@@ -58,7 +55,7 @@ create_jaatha_model.coalmodel <- function(x,
 
 
 convert_coala_sumstats <- function(coala_model, jsfs_summary = "sums",
-                                   ihs_breaks, four_gamete_breaks, 
+                                   four_gamete_breaks, 
                                    mcmf_breaks) {
   
   require_package("coala")
@@ -133,58 +130,4 @@ sum_jsfs <- function(jsfs) {
     sum(jsfs[4:(n - 3), m]),
     sum(jsfs[n, (m - 2):(m - 1)]),
     sum(jsfs[(n - 2):(n - 1), m]) )
-}
-
-
-#' Import Population Genetic Data using a list of segregating sites
-#' 
-#' @inheritParams create_jaatha_data
-#' @param coala_model The coala model that was used for creating \code{model}.
-#' @param trios If you are using locus trios for your anaylsis, then you need
-#'   to tell Jaatha with loci should be combined to a trio. To do so,
-#'   set this parameter to a list, in which each entry is a numeric
-#'   vector of length three containing the indexes of three loci 
-#'   which will form a trio.
-#' @export
-create_jaatha_data.segsites_list <- function(data, model, coala_model,
-                                             trios = NULL, ...) {
-  require_package("coala")
-  
-  if (!is.null(trios)) {
-    assert_that(is.list(trios))
-    data <- lapply(trios, function(trio) {
-      assert_that(is.numeric(trio))
-      assert_that(length(trio) == 3)
-      
-      left <- data[[trio[1]]]
-      middle <- data[[trio[2]]]
-      right <- data[[trio[3]]]
-      
-      seg_sites <- cbind(left, middle, right)
-      
-      attr(seg_sites, "positions") <- c(attr(left, "positions"),
-                                        attr(middle, "positions"),
-                                        attr(right, "positions"))
-      
-      attr(seg_sites, "locus") <- c(rep(-1, ncol(left)),
-                                    rep( 0, ncol(middle)),
-                                    rep( 1, ncol(right)))
-      seg_sites
-    })
-  }
-  
-  # Check that we have data for all loci
-  if (length(data) != coala::get_locus_number(coala_model)) {
-    stop("Different number of loci in data and model")
-  }
-  if (!all(vapply(data, is.matrix, logical(1)))) {
-    stop("Missing data in list of segregating sites")
-  }
-  
-  # Calculate summary statistics for `data`
-  sumstat <- lapply(coala::get_summary_statistics(coala_model), function(stat) {
-    stat$calculate(data, NULL, NULL, coala_model)
-  })
-  
-  create_jaatha_data(sumstat, model)
 }

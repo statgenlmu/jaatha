@@ -62,8 +62,13 @@ is_jaatha_data <- function(x) inherits(x, "jaatha_data")
 #' 
 #' By default, this function assumes that the observed data is in a format 
 #' identical to the format of the simulation results, before the summary
-#' statistics are calculated. Jaatha will then automatically calculate the
+#' statistics are calculated.
 #' 
+#' @section Demographic Inference:
+#' When used with \pkg{coala}, \code{coala::calc_sumstats_from_data()} should
+#' create output that is compatible with this function. It is also possible to
+#' use data imported with the package \pkg{PopGenome}, 
+#' see \code{\link{create_jaatha_data.GENOME}}.
 #' 
 #' @param data The data to be analysed with Jaatha. 
 #'   It should be in a format identical to the 
