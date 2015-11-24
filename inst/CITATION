@@ -1,14 +1,16 @@
-citHeader("To cite the 'jaatha' package in publications use:")
-
-citEntry(
-  entry = 'article',
-  title = 'Why to account for finite sites in population genetic studies and how
-to do this with Jaatha 2.0',
-  author = 'Lisha A. Mathew, Paul R. Staab, Laura E. Rose and Dirk Metzler',
-  year = 2013,	
-  journal = 'Ecology and Evolution',
-  doi = '10.1002/ece3.722',
-  url = 'http://onlinelibrary.wiley.com/doi/10.1002/ece3.722/abstract',
-  textVersion = 'Mathew, L. A., Staab, P. R., Rose, L. E. and Metzler, D. (2013), 
-Why to account for finite sites in population genetic studies and how to
-do this with Jaatha 2.0. Ecology and Evolution. doi: 10.1002/ece3.722')
+bibentry(
+  bibtype = "Article",
+  title = "Why to account for finite sites in population genetic studies and how to do this with {Jaatha} 2.0",
+  author = c(person("Lisha A. Mathew"),
+             person("Paul R. Staab"),
+             person("Laura E. Rose"),
+             person("Dirk Metzler")),
+  year = 2013,
+  journal = "Ecology and Evolution",
+  volume = 3,
+  number = 11,
+  issn = "2045-7758",
+  doi = "10.1002/ece3.722",
+  pages = "3647--3662",
+  url = "http://onlinelibrary.wiley.com/doi/10.1002/ece3.722/abstract"
+)
