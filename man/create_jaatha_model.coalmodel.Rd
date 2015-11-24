@@ -6,7 +6,8 @@
 \usage{
 \method{create_jaatha_model}{coalmodel}(x, jsfs_summary = c("sums", "none",
   "smooth"), four_gamete_breaks = c(0.2, 0.5), mcmf_breaks = c(0.5, 0.7,
-  0.9), ..., scaling_factor = 1, test = TRUE)
+  0.9), jsfs_part = c(1, 3), jsfs_part_hi = c(1, 3), ...,
+  scaling_factor = 1, test = TRUE)
 }
 \arguments{
 \item{x}{The coala model}
@@ -26,6 +27,13 @@ model.}
 
 \item{mcmf_breaks}{Quantiles of the real data that will be used as breaks
 for binning the MCMF statistic if present in the model.}
+
+\item{jsfs_part}{Partitions used for the summarizing the JSFS. This is only 
+used if \code{jsfs_summary} is "sums". Is used as the \code{part} argument
+of \code{\link{coarsen_jsfs}}. Please go there for an explanation.}
+
+\item{jsfs_part_hi}{Same as \code{jsfs_part}, but used as \code{part_hi} 
+argument in \code{\link{coarsen_jsfs}}.}
 
 \item{...}{Additinoal parameters passed on to the dispatched functions.}
 

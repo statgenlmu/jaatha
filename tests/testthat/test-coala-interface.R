@@ -24,7 +24,7 @@ test_that("it creates a jaatha model from a coala one", {
 
 test_that("conversion of coala sumstats works", {
   skip_if_not_installed("coala")
-  model <- coala::coal_model(10:15, 1) +
+  model <- coala::coal_model(c(10, 15), 1) +
     coala::feat_mutation(coala::par_range("theta", 1, 5)) +
     coala::feat_migration(coala::par_range('m', 1, 5), symmetric = TRUE)
 
@@ -33,11 +33,14 @@ test_that("conversion of coala sumstats works", {
   expect_equal(length(convert_coala_sumstats(model)), 1)
   model <- model + coala::sumstat_jsfs()
   expect_equal(length(convert_coala_sumstats(model)), 2)
-  stats <- convert_coala_sumstats(model)
+  stats <- convert_coala_sumstats(model, 
+                                  jsfs_part = c(1, 3), 
+                                  jsfs_part_hi = c(1, 3))
   expect_equal(length(stats), 2)
 
   data <- simulate(model, pars = c(2, 2))
-  expect_equal(stats$jsfs$calculate(data, NULL), sum_jsfs(data$jsfs))
+  expect_equal(stats$jsfs$calculate(data, NULL), 
+               coarsen_jsfs(data$jsfs, c(1, 3),  c(1, 3)))
   expect_equal(stats$sfs$calculate(data, NULL), data$sfs)
 })
 
@@ -68,14 +71,18 @@ test_that("the JSFS can be used in Jaatha", {
     coala::feat_migration(coala::par_range("m", 1, 5), symmetric = TRUE) +
     coala::sumstat_jsfs()
 
-  jaatha_model <- create_jaatha_model(coala_model, "sums", test = FALSE)
+  jaatha_model <- create_jaatha_model(coala_model, "sums", 
+                                      jsfs_part = 1, 
+                                      jsfs_part_hi = 1,
+                                      test = FALSE)
   expect_equal(length(jaatha_model$get_sum_stats()), 1)
   sim_data <- jaatha_model$test()
   value <- jaatha_model$get_sum_stats()[[1]]$calculate(sim_data)
   expect_that(value, is_a("numeric"))
-  expect_equal(length(value), 23)
+  expect_equal(length(value), 7)
 
-  jaatha_model <- create_jaatha_model(coala_model, "sums", test = FALSE)
+  jaatha_model <- create_jaatha_model(coala_model, "sums", test = FALSE,
+                                      jsfs_part = 1, jsfs_part_hi = 1)
   jaatha_data <- create_jaatha_data(sim_data, jaatha_model)
   expect_true(is_jaatha_data(jaatha_data))
 
@@ -114,4 +121,19 @@ test_that("MCMF can be used in Jaatha", {
   sim_results <- jaatha_model$simulate(matrix(.5, 1, 1), jaatha_data)
   expect_equal(length(jaatha_model$get_sum_stats()), 1)
   expect_equal(sum(sim_results[[1]]$mcmf), 2)
+})
+
+
+test_that("the JSFS is correctly summarized", {
+  jsfs <- matrix(1:20, 4, 5)
+  expect_equal(coarsen_jsfs(jsfs, 1, 1),
+               c(5, 4, 27, 63, 36, 17, 37))
+  expect_equal(coarsen_jsfs(jsfs, 2, 1),
+               c(14, 10, 12, 46, 26, 28, 35, 19))
+  jsfs <- matrix(1, 5, 5)
+  expect_equal(coarsen_jsfs(jsfs, 2, 2),
+               c(4, 2, 4, 2, 1, 2, 4, 2, 4))
+  
+  expect_error(coarsen_jsfs(jsfs, 3, 3))
+  expect_error(coarsen_jsfs(jsfs, c(1, 3), c(1, 3)))
 })
