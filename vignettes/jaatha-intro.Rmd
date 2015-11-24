@@ -9,10 +9,6 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-```{r echo=FALSE, include=FALSE}
-set.seed(112233)
-```
-
 Jaatha is an estimation method that can use computer simulations to produce
 maximum-likelihood estimates even when the likelihood function can not be
 evaluated directly. It can be applied whenever it is feasible to conduct a lot 
@@ -23,7 +19,7 @@ Jaatha was orginially designed for demographic inference in evolutionary
 biology. Please refer to the vignette
 
 ```{r eval=FALSE}
-vignette("jaatha-demographic-inference", package = jaatha)
+vignette("jaatha-evolution", package = jaatha)
 ```
 
 if you are interested in this application.
@@ -43,14 +39,14 @@ samples from the first distribtion, and the even positions are samples taken
 from the second distribution.
 
 We can simulate such data with the following function:
-```{r}
+```{r sim_func}
 sim_func <- function(x, opts = NULL) rpois(10, x)
 sim_func(c(p1 = 1, p2 = 10))
 ```
 
 
-```{r}
-
+```{r create_model}
+library(jaatha)
 sum_stats <- list(create_jaatha_stat("id", function(x, opts) x))
 
 par_ranges <- matrix(c(0.1, 0.1, 10, 10), 2, 2)
@@ -58,8 +54,6 @@ rownames(par_ranges) <- c("x", "y")
 colnames(par_ranges) <- c("min", "max")
 par_ranges
 
-
-library(jaatha)
 jaatha_model <- create_jaatha_model(sim_func, par_ranges, sum_stats)
 ```
 
@@ -79,8 +73,13 @@ jaatha_data <- create_jaatha_data(data_obs, jaatha_model)
 
 Running Jaatha
 --------------
+Now that we have prepared model and data, we can use the `jaatha` function
+to estimate parameters:
+
 ```{r}
-estimates <- jaatha(jaatha_model, jaatha_data, sim = 50, repetitions = 2)
+set.seed(112233)
+estimates <- jaatha(jaatha_model, jaatha_data, sim = 50, 
+                    repetitions = 2, verbose = FALSE)
 estimates
 ```
 
