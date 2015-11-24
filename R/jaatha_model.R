@@ -112,7 +112,8 @@ create_jaatha_model <- function(x, ..., scaling_factor = 1, test = TRUE) {
 }
 
 
-create_jaatha_model.function <- function(x, par_ranges, sum_stats,
+#' @export
+create_jaatha_model.function <- function(x, par_ranges, sum_stats, ...,
                                          scaling_factor = 1, 
                                          test = TRUE) {
   jaatha_model_class$new(x, par_ranges, sum_stats, 

@@ -2,7 +2,7 @@ Package: jaatha
 Version: 2.99.0.9221
 Date: 2015-11-24
 License: GPL (>= 3)
-Title: Simulation Based Parameter Estimation in a Frequentistic Framework
+Title: Simulation-Based Maximum Likelihood Parameter Estimation
 Authors@R: c(
     person('Paul', 'Staab', , 'develop@paulstaab.de', role=c('aut', 'cre')),
     person('Lisha', 'Mathew', role=c('aut')),
