@@ -51,20 +51,20 @@ check_popgenome_consistency <- function(data, coala_model) {
 get_popgenome_segsites <- function(data, only_synonymous) {
   require_package("PopGenome")
 
-  seg_sites_list <- lapply(1:length(data@n.valid.sites), function(i) {
-    if (data@n.valid.sites[[i]] == 0) return(NULL)
-    get_popgenome_locus(data, i, only_synonymous)
-  })
+  seg_sites_list <- lapply(seq_along(data@n.valid.sites), get_popgenome_locus,
+                           data = data, only_synonymous = only_synonymous)
   
-  seg_sites_list
+  seg_sites_list[!vapply(seg_sites_list, is.null, logical(1))]
 }
 
 
 # Gets PopGenome's biallelic matrix (bam) and converts it to Jaatha's 
 # segregating sites
-get_popgenome_locus <- function(data, locus_number, only_synonymous) {
+get_popgenome_locus <- function(locus_number, data, only_synonymous) {
   require_package("PopGenome")
   require_package("coala")
+  
+  if (data@n.valid.sites[[locus_number]] == 0) return(NULL)
   
   bam <- PopGenome::get.biallelic.matrix(data, locus_number)
   if (is.null(bam)) {

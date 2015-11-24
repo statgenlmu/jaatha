@@ -1,12 +1,12 @@
 Package: jaatha
-Version: 2.99.0.9220
+Version: 2.99.0.9221
 Date: 2015-11-24
 License: GPL (>= 3)
 Title: Simulation Based Parameter Estimation in a Frequentistic Framework
 Authors@R: c(
-    person('Paul', 'Staab', , 'develop@paulstaab.de', role=c('aut', 'cre', 'cph')),
-    person('Lisha', 'Mathew', role=c('aut', 'cph')),
-    person('Dirk', 'Metzler', role=c('aut', 'cph', 'ths')) )
+    person('Paul', 'Staab', , 'develop@paulstaab.de', role=c('aut', 'cre')),
+    person('Lisha', 'Mathew', role=c('aut')),
+    person('Dirk', 'Metzler', role=c('aut', 'ths')) )
 Description: A composite likelihood method for inferring evolutionary
     parameters using genetic data. Given a model of the evolutionary history of
     two biological populations as well as genetic data from multiple individuals
