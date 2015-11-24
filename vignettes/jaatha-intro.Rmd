@@ -4,7 +4,7 @@ author: "Paul Staab"
 date: "jaatha `r packageVersion('jaatha')`"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{jaatha-introduction}
+  %\VignetteIndexEntry{Introduction to Jaatha}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

@@ -4,7 +4,7 @@ author: "Paul Staab"
 date: "jaatha `r packageVersion('jaatha')`"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{jaatha-demographic-inference}
+  %\VignetteIndexEntry{Using Jaatha for Demographic Inference}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -64,4 +64,4 @@ Once you imported the data with PopGenome, you can convert it using
 jaatha_data <- create_jaatha_data(pop_genome_data, jaatha_model)
 ```
 
-From here on, continue as described in the `Introduction` vignette.
+From here on, continue as described in the `jaatha-intro` vignette.
