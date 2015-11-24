@@ -1,0 +1,148 @@
+---
+title: "Introduction to Jaatha"
+author: "Paul Staab"
+date: "jaatha `r packageVersion('jaatha')`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Introduction to Jaatha}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+Jaatha is an estimation method that can use computer simulations to produce
+maximum-likelihood estimates even when the likelihood function can not be
+evaluated directly. It can be applied whenever it is feasible to conduct many
+simulations, but works best when the data is at least approximately possion
+distributed. 
+
+Jaatha was orginially designed for demographic inference in evolutionary 
+biology. Please also refer to the vignette
+
+```{r eval=FALSE}
+vignette("jaatha-evolution", package = jaatha)
+```
+
+if you are interested in this application.
+
+
+Before we start, we need to load the package and set a seed to ensure that
+jaatha's results are reproducible:
+
+```{r load_jaatha}
+library(jaatha)
+set.seed(112233)
+```
+
+
+The "real" data
+---------------
+
+Imagine that we have observed the following data
+```{r data_obs}
+data_obs <- c(2, 8, 0, 6, 1, 3, 2, 2, 0, 7)
+data_obs
+```
+and we assume that the data are indepented samples from two Poisson 
+distributions with parameters p1 and p2, respectively. The odd positions of the 
+vector are samples from the first distribtion, and the even positions are 
+samples taken from the second distribution.
+
+In order to run jaatha, we need first formalize this model and convert the data
+into a format that jaatha can work with.
+
+
+Creating a model
+----------------
+
+The usual way to describe the data generating model for jaatha is trough a 
+simulation function. The function takes model parameters as input, and
+simulates data according to the model. In our example of the mixed samples
+from Poisson distributions, we can use the function
+
+```{r sim_func}
+sim_func <- function(x, opts = NULL) rpois(10, x)
+sim_func(c(p1 = 1, p2 = 10))
+```
+
+Simulation functions for jaatha must always take two arguments. The first one --
+here `x` -- is the parameters for which the simulation is conducted. It is 
+usually fine to ignore the second argument. There are no requirements on the
+return format of a simulation function from jaatha's site, any R objects work 
+with Jaatha. Here, the function returns an vector of ten integers.
+
+
+Jaatha does not use the simulated data directly, but works on a number of 
+summary statistics instead. Summary statistics are transformations of the data
+that capture an aspect of the data. The transformation is again described by
+a function that takes the simulation results as input, and returns a fix number
+of Poisson distributed values. Here, this already applies to the simulation 
+results, and we can just use them:
+
+```{r sum_stats}
+sum_stats <- list(create_jaatha_stat("id", function(x, opts) x))
+```
+
+Note that we create a list containing our statistic. In our example, we'll use
+just one statistic, but it is possible to add more than one statistic to this
+list. Please refer to the documentation for `create_jaatha_stat` for additional
+information, in particular if you can not generate Possison distributed 
+statistics from the simulation results easily.
+
+
+Next, we need to define the possible values for the model parameters. These
+range should cover all reasonable values that the parameters can take:
+
+```{r par_ranges}
+par_ranges <- matrix(c(0.1, 0.1, 10, 10), 2, 2)
+rownames(par_ranges) <- c("x", "y")
+colnames(par_ranges) <- c("min", "max")
+par_ranges
+```
+
+
+This three components -- a simulation function, parameter ranges and a list of 
+summary statistics -- are required to descibe an probabilistic framework within 
+witch jaatha can fit parameters. Since we have the pieces together now, we can 
+use the `create_jaatha_model` function to combine them into a formal model that
+we can pass to the `jaatha` function later:
+
+```{r create_model}
+jaatha_model <- create_jaatha_model(sim_func, par_ranges, sum_stats)
+```
+
+The function performs a test simulation to ensure that the components fit
+together. Again, the documentation for `create_jaatha_model` provides additional 
+details.
+
+
+Preparing the Data
+------------------
+Use the `create_jaatha_data` function to prepare the observed data for being
+used in Jaatha. The function expected the data to be in the format that is 
+also returned by simulation function. In our example, `sim_func` returns a
+numeric vector of length `10`, and `data_obs` already has the same format.
+So we can import it
+
+```{r create_data}
+jaatha_data <- create_jaatha_data(data_obs, jaatha_model)
+```
+
+
+Running Jaatha
+--------------
+Now that we have prepared model and data, we can use the `jaatha` function
+to estimate parameters:
+
+```{r execute_jaatha}
+estimates <- jaatha(jaatha_model, jaatha_data, 
+                    sim = 50, repetitions = 2, verbose = FALSE)
+```
+
+Here, were are conducting `50` simulations in each step of the optimization
+procedure and repeat the complete optimization two times from different starting
+positions. For real applications, higher values are recommended.
+
+In this simple toy example, the above values work quite well:
+```{r print_estimates}
+estimates
+```
