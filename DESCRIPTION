@@ -1,6 +1,6 @@
 Package: jaatha
-Version: 2.99.0.9221
-Date: 2015-11-24
+Version: 2.99.0.9222
+Date: 2015-11-25
 License: GPL (>= 3)
 Title: Simulation-Based Maximum Likelihood Parameter Estimation
 Authors@R: c(
@@ -25,6 +25,9 @@ Imports:
     utils
 Suggests:
     coala (>= 0.2.1),
-    testthat (>= 0.11.0),
-    PopGenome (>= 2.1.0)
+    knitr,
+    PopGenome (>= 2.1.0),
+    rmarkdown,
+    testthat (>= 0.11.0)
+VignetteBuilder: knitr
 RoxygenNote: 5.0.1

@@ -1,11 +1,7 @@
-^NEWS.md$
-^Makefile$
-^howtos$
 ^misc$
 .tar.gz$
 ^.travis*
 ^.*\.Rproj$
 ^\.Rproj\.user$
 ^cran-comments\.md$
-^appveyor.yml$
 ^appveyor\.yml$
