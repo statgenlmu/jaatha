@@ -9,10 +9,10 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-When used for demographic inference, Jaatha optionally supports using the 
-package `coala` as simulation engine and `PopGenome` for importing genetic data.
-If these packages do not suit your needs, it is of course also possible to use
-the normal interface described in the `Introduction` vignette.
+When used for demographic inference, Jaatha supports using the package `coala` 
+as simulation engine. If these packages do not suit your needs, it is of course 
+also possible to use the normal interface described in the `Introduction` 
+vignette.
 
 
 Creating a Model
@@ -49,19 +49,14 @@ more information.
 
 Importing Data
 --------------
-Jaatha relies on the package `PopGenome` to import genetic data. `PopGenome`
-currently supports a number of commonly used file formats, including `FASTA` and
-`VCF`. Please refer to its documentation for instructions on how to import the
-data. 
+You can use coala's `calc_sumstats_form_data` function to calculate the summary
+statistic for genetic data. The output of this function can be directly passed
+on to `create_jaatha_data`.
 
-Jaatha relies on data that is divided into indepentend 'loci'. If you are using
-`VCF` files, consider splitting the data in different loci using PopGenome's 
-`splitting.data` function.
 
-Once you imported the data with PopGenome, you can convert it using
 
-```{r eval=FALSE}
-jaatha_data <- create_jaatha_data(pop_genome_data, jaatha_model)
-```
+Running Jaatha
+--------------
+From here on, you can estimate parameters using the `jaatha` as described in the
+introduction vignette.
 
-From here on, continue as described in the `jaatha-intro` vignette.

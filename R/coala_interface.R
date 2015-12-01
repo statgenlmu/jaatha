@@ -160,7 +160,6 @@ multi_index_range <- function(d, p) {
 #' @return vector of numbers, which are the sums over the blocks of the jsfs
 #'    for all combinations of partitions
 #' @author Dirk Metzler & Paul Staab
-#' @references P. Staab, N. Becker, D. Metzler (2016) in prep.
 #' @references A. Tellier, P. Pfaffelhuber, B. Haubold, L. Naduvilezhath,
 #'   L. E. Rose, T. Staedler, W. Stephan, and D. Metzler (2011) Estimating
 #'   parameters of speciation models based on refined summaries of the joint
@@ -185,7 +184,8 @@ coarsen_jsfs <- function(ja, part, part_hi = NULL) {
   }
   
   z <- numeric(length = prod(sapply(part, length) - 1))
-  combinations <- expand.grid(lapply(sapply(part, length) - 1, ":", 1))[length(z):1, ]
+  combinations <- 
+    expand.grid(lapply(sapply(part, length) - 1, ":", 1))[length(z):1, ]
   
   for (i in 1:length(z)) {
     comb <- combinations[i, ]
