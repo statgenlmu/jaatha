@@ -31,8 +31,6 @@ simulated data.
 \section{Demographic Inference}{
 
 When used with \pkg{coala}, \code{coala::calc_sumstats_from_data()} should
-create output that is compatible with this function. It is also possible to
-use data imported with the package \pkg{PopGenome}, 
-see \code{\link{create_jaatha_data.GENOME}}.
+create output that is compatible with this function.
 }
 

@@ -20,9 +20,8 @@ jaatha_model_class <- R6Class("jaatha_model",
     initialize = function(sim_func, par_ranges, sum_stats, 
                           scaling_factor, test) {
       assert_that(is.function(sim_func))
-      if (length(formals(sim_func)) < 2) {
-        stop("The simulation function needs two arguments: ", 
-             "'Parameters' and 'Options'.")
+      if (length(formals(sim_func)) != 1) {
+        stop("The simulation function must have exactly one argument.")
       }
       private$sim_func <- sim_func
       private$par_ranges <- par_ranges_class$new(par_ranges)
@@ -96,11 +95,16 @@ jaatha_model_class <- R6Class("jaatha_model",
 )
 
 
-#' Specify a model for a Jaatha analysis 
+#' Specify a Model for a Jaatha Analysis 
+#' 
+#' This function can be used to create models for an analysis with Jaatha.
+#' Models can be created using simulation function  
+#' (see \code{\link{create_jaatha_model.function}}) or using a \pkg{coala} 
+#' model (see \code{\link{create_jaatha_model.coalmodel}}).
 #' 
 #' @param x The primary argument. Can be a function used for simulations,
 #'   or a coala model.
-#' @param ... Additinoal parameters passed on to the dispatched functions.
+#' @param ... Additional parameters passed on to the dispatch function.
 #' @param scaling_factor If your model is a down-scaled version of your data,
 #'   you can indicated this using this value. The estimated expectation values
 #'   are multiplied with this factor before the likelihood is calculated.
@@ -112,7 +116,37 @@ create_jaatha_model <- function(x, ..., scaling_factor = 1, test = TRUE) {
 }
 
 
+create_jaatha_model.default <- function(x, ..., scaling_factor = 1, test = TRUE) {
+  stop("Can create a model from an object of class '", class(x), "'")
+}
+
+
+#' Specify a jaatha model using a simulation function
+#' 
+#' This is the usual way to specify a jaatha model. An detailed exampled on 
+#' doing so is given in the `jaatha-intro` vignette.
+#' 
+#' @param x A simulation function. This function takes model parameters as 
+#'   input, and returns the simulated data. The function must take exactly one 
+#'   argument, which is a numeric vector of model parameters for which the 
+#'   simulation should be conducted. The function should return the simulation
+#'   results in an arbitrary format, that is then passed on to the summary
+#'   statistics.
+#' @param par_ranges A matrix stating the possible values for the model 
+#'   parameters. The matrix must have one row for each parameter, and two
+#'   columns which state the minimal and maximal possible value for the 
+#'   parameter.
+#' @param sum_stats A list of summary statistics created with 
+#'   \code{\link{create_jaatha_stat}}. The simulation results will be passed
+#'   to the statistics, which should convert them into a numeric vector.
+#' @param ... Currently unused.
+#' @inheritParams create_jaatha_model
+#'
 #' @export
+#' @examples 
+#' create_jaatha_model(function(x) rpois(10, x),
+#'                     par_ranges = matrix(c(0.1, 0.1, 10, 10), 2, 2),
+#'                     sum_stats = list(create_jaatha_stat("sum", sum)))
 create_jaatha_model.function <- function(x, par_ranges, sum_stats, ...,
                                          scaling_factor = 1, 
                                          test = TRUE) {
@@ -126,7 +160,7 @@ is_jaatha_model <- function(x) inherits(x, "jaatha_model")
 
 #' @importFrom stats rpois
 create_test_model <- function() {
-  create_jaatha_model(function(x, y) rpois(10, x),
+  create_jaatha_model(function(x) rpois(10, x),
                       par_ranges = matrix(c(0.1, 0.1, 10, 10), 2, 2),
                       sum_stats = list(stat_identity(), stat_sum()),
                       test = FALSE)

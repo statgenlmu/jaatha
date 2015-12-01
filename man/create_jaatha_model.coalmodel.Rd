@@ -35,7 +35,7 @@ of \code{\link{coarsen_jsfs}}. Please go there for an explanation.}
 \item{jsfs_part_hi}{Same as \code{jsfs_part}, but used as \code{part_hi} 
 argument in \code{\link{coarsen_jsfs}}.}
 
-\item{...}{Additinoal parameters passed on to the dispatched functions.}
+\item{...}{Additional parameters passed on to the dispatch function.}
 
 \item{scaling_factor}{If your model is a down-scaled version of your data,
 you can indicated this using this value. The estimated expectation values

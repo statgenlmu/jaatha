@@ -45,8 +45,6 @@ different than in the original jaatha package.
 Dirk Metzler & Paul Staab
 }
 \references{
-P. Staab, N. Becker, D. Metzler (2016) in prep.
-
 A. Tellier, P. Pfaffelhuber, B. Haubold, L. Naduvilezhath,
   L. E. Rose, T. Staedler, W. Stephan, and D. Metzler (2011) Estimating
   parameters of speciation models based on refined summaries of the joint

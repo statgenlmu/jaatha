@@ -60,14 +60,14 @@ simulates data according to the model. In our example of the mixed samples
 from Poisson distributions, we can use the function
 
 ```{r sim_func}
-sim_func <- function(x, opts = NULL) rpois(10, x)
+sim_func <- function(x) rpois(10, x)
 sim_func(c(p1 = 1, p2 = 10))
 ```
 
-Simulation functions for jaatha must always take two arguments. The first one --
-here `x` -- is the parameters for which the simulation is conducted. It is 
-usually fine to ignore the second argument. There are no requirements on the
-return format of a simulation function from jaatha's site, any R objects work 
+Simulation functions for jaatha must have exactly one argument, which is the 
+a vector of model parameters for which the simulation is conducted. 
+There are no requirements on the return format of a simulation function from 
+jaatha's site, any R objects work 
 with Jaatha. Here, the function returns an vector of ten integers.
 
 
