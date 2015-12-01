@@ -45,7 +45,7 @@ create_jaatha_model.coalmodel <- function(x,
 
   if (length(jsfs_summary) > 1) jsfs_summary <- jsfs_summary[1]
   
-  sim_func <- function(pars, opts = NULL) simulate(x, pars = pars)
+  sim_func <- function(pars) simulate(x, pars = pars)
   
   # create parameter ranges
   par_table <- coala::get_parameter_table(x)

@@ -1,6 +1,6 @@
 Package: jaatha
-Version: 2.99.0.9222
-Date: 2015-11-25
+Version: 2.99.0.9223
+Date: 2015-12-01
 License: GPL (>= 3)
 Title: Simulation-Based Maximum Likelihood Parameter Estimation
 Authors@R: c(

@@ -2,7 +2,7 @@
 % Please edit documentation in R/jaatha_model.R
 \name{create_jaatha_model}
 \alias{create_jaatha_model}
-\title{Specify a model for a Jaatha analysis}
+\title{Specify a Model for a Jaatha Analysis}
 \usage{
 create_jaatha_model(x, ..., scaling_factor = 1, test = TRUE)
 }
@@ -10,7 +10,7 @@ create_jaatha_model(x, ..., scaling_factor = 1, test = TRUE)
 \item{x}{The primary argument. Can be a function used for simulations,
 or a coala model.}
 
-\item{...}{Additinoal parameters passed on to the dispatched functions.}
+\item{...}{Additional parameters passed on to the dispatch function.}
 
 \item{scaling_factor}{If your model is a down-scaled version of your data,
 you can indicated this using this value. The estimated expectation values
@@ -20,6 +20,9 @@ are multiplied with this factor before the likelihood is calculated.}
 the model.}
 }
 \description{
-Specify a model for a Jaatha analysis
+This function can be used to create models for an analysis with Jaatha.
+Models can be created using simulation function  
+(see \code{\link{create_jaatha_model.function}}) or using a \pkg{coala} 
+model (see \code{\link{create_jaatha_model.coalmodel}}).
 }
 
