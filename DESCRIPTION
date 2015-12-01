@@ -18,8 +18,7 @@ Imports:
     assertthat (>= 0.1),
     R6 (>= 2.0.1),
     parallel,
-    stats,
-    utils
+    stats
 Suggests:
     coala (>= 0.2.1),
     knitr,
