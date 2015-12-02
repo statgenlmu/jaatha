@@ -14,11 +14,13 @@ Description: An estimation method that can use computer simulations to
     Jaatha was originally designed for demographic inference in evolutionary
     biology. It has optional support for conducting coalescent simulation using
     the 'coala' package.
-URL: http://evol.bio.lmu.de/_statgen/software/jaatha
+URL: https://github.com/statgenlmu/jaatha
 BugReports: https://github.com/statgenlmu/jaatha/issues
+Depends: 
+    R (>= 3.0)
 Imports:
     assertthat (>= 0.1),
-    R6 (>= 2.0.1),
+    R6 (>= 2.1.1),
     parallel,
     stats,
     utils

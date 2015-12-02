@@ -2,6 +2,7 @@ context("Bootstrapping")
 
 test_that("the front-end for boot works", {
   skip_if_not_installed("boot")
+  if (R.Version()$major == 3 && R.Version()$minor < 2.2) skip()
   
   model <- create_test_model()
   data <- create_test_data(model)
@@ -14,6 +15,7 @@ test_that("the front-end for boot works", {
                               max_steps = 10,
                               init_method = "middle"))
   
-  capture.output(boot_values <- boot_jaatha(model, data, results, 10))
+  boot_values <- boot_jaatha(model, data, results, 10)
   expect_is(boot_values, "boot")
+  expect_true(all(is.finite(boot_values$t)))
 })

@@ -25,6 +25,9 @@
 #' @export
 boot_jaatha <- function(model, data, results, R, ...) {
   require_package("boot")
+  if (R.Version()$major == 3 && R.Version()$minor < 2.2) {
+    stop("This function requires at least R Version 3.2.2")
+  }
   
   args <- results$args
   sim_func <- model$get_sim_func()
@@ -35,7 +38,7 @@ boot_jaatha <- function(model, data, results, R, ...) {
   dir.create(log_folder)
     
   jaatha_stat <- function(data) {
-    null <- capture.output({
+    capture.output({
       results <- jaatha(model, data,
                         repetitions = args$repetition,
                         sim = args$sim,
