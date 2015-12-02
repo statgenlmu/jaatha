@@ -2,7 +2,7 @@ context("Logging")
 
 test_that("log initialization works", {
   model <- create_test_model()
-  log <- create_jaatha_log(2, 100, model)
+  log <- create_jaatha_log(model, NULL, 2, 100, 100, "initial_search")
   expect_equivalent(log$get_estimates(1), 
                     data.frame(rep(NA, 100), NA, NA, NA, NA))
   expect_equivalent(log$get_estimates(2), 
@@ -12,7 +12,7 @@ test_that("log initialization works", {
 
 test_that("logging estimates works", {
   model <- create_test_model()
-  log <- create_jaatha_log(2, 10, model)
+  log <- create_jaatha_log(model, NULL, 2, 100, 100, "initial_search")
   
   estimate <- list(par = 1:model$get_par_number(), value = 0.1)
   log$log_estimate(1, 1, estimate)
@@ -33,7 +33,7 @@ test_that("logging estimates works", {
 
 test_that("getting best estimates works", {
   model <- create_test_model()
-  log <- create_jaatha_log(2, 20, model)
+  log <- create_jaatha_log(model, NULL, 2, 100, 100, "initial_search")
   for (i in c(4, 3, 1, 5, 10, 2, 7, 9, 8) / 10) {
     log$log_estimate(1, i * 10, list(par = rep(i, model$get_par_number()), 
                                      value = i))
@@ -75,7 +75,7 @@ test_that("getting best estimates works", {
 
 test_that("it creates the results correctly", {
   model <- create_test_model()
-  log <- create_jaatha_log(2, 10, model)
+  log <- create_jaatha_log(model, NULL, 2, 100, 100, "initial_search")
   log$log_estimate("final", 1, list(par = rep(.1, model$get_par_number()),
                                     value = -1))
   log$log_estimate("final", 2, list(par = rep(.2, model$get_par_number()),
@@ -84,7 +84,11 @@ test_that("it creates the results correctly", {
   expect_equivalent(log$create_results(),
                     list(param = model$get_par_ranges()$denormalize(c(.1, .1)),
                          loglikelihood = -1,
-                         converged = FALSE))
+                         converged = FALSE,
+                         args = list(repetitions = 2,
+                                     sim = 100,
+                                     max_steps = 100,
+                                     init_method = "initial_search")))
   
   log$log_convergence(1)
   expect_equal(log$create_results()$converged, FALSE)

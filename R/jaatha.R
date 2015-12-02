@@ -56,7 +56,8 @@ jaatha <- function(model, data,
   
   # Setup
   sim_cache <- create_sim_cache()
-  log <- create_jaatha_log(repetitions, max_steps, model, verbose)
+  log <- create_jaatha_log(model, data, repetitions, sim, 
+                           max_steps, init_method, verbose)
   
   # Get start positions
   log$log_initialization(init_method[1])
