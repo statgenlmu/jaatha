@@ -2,7 +2,9 @@ context("Bootstrapping")
 
 test_that("the front-end for boot works", {
   skip_if_not_installed("boot")
-  if (R.Version()$major == 3 && R.Version()$minor < 2.2) skip()
+  if (R.Version()$major == 3 && R.Version()$minor < 2.2) {
+    skip("Insufficient R Version")
+  }
   
   model <- create_test_model()
   data <- create_test_data(model)
