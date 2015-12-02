@@ -1,5 +1,5 @@
 Package: jaatha
-Version: 2.99.0.9224
+Version: 3.0.0
 Date: 2015-12-02
 License: GPL (>= 3)
 Title: Simulation-Based Maximum Likelihood Parameter Estimation
@@ -7,11 +7,13 @@ Authors@R: c(
     person('Paul', 'Staab', , 'develop@paulstaab.de', role=c('aut', 'cre')),
     person('Lisha', 'Mathew', role=c('aut')),
     person('Dirk', 'Metzler', role=c('aut', 'ths')) )
-Description: A composite likelihood method for inferring evolutionary
-    parameters using genetic data. Given a model of the evolutionary history of
-    two biological populations as well as genetic data from multiple individuals
-    from each population, it estimates model parameters like the time of
-    separation of both species.
+Description: Jaatha is an estimation method that can use computer simulations to
+    approximate maximum-likelihood estimates even when the likelihood function can not
+    be evaluated directly. It can be applied whenever it is feasible to conduct many
+    simulations, but works best when the data is approximately Poisson distributed.
+    Jaatha was originally designed for demographic inference in evolutionary
+    biology. It has optional support for conducting coalescent simulation using
+    the 'coala' package.
 URL: http://evol.bio.lmu.de/_statgen/software/jaatha
 BugReports: https://github.com/statgenlmu/jaatha/issues
 Imports:

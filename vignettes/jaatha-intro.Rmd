@@ -15,7 +15,7 @@ evaluated directly. It can be applied whenever it is feasible to conduct many
 simulations, but works best when the data is at least approximately possion
 distributed. 
 
-Jaatha was orginially designed for demographic inference in evolutionary 
+Jaatha was originally designed for demographic inference in evolutionary 
 biology. Please also refer to the vignette
 
 ```{r eval=FALSE}
@@ -42,9 +42,9 @@ Imagine that we have observed the following data
 data_obs <- c(2, 8, 0, 6, 1, 3, 2, 2, 0, 7)
 data_obs
 ```
-and we assume that the data are indepented samples from two Poisson 
+and we assume that the data are independent samples from two Poisson 
 distributions with parameters p1 and p2, respectively. The odd positions of the 
-vector are samples from the first distribtion, and the even positions are 
+vector are samples from the first distribution, and the even positions are 
 samples taken from the second distribution.
 
 In order to run jaatha, we need first formalize this model and convert the data
@@ -64,7 +64,7 @@ sim_func <- function(x) rpois(10, x)
 sim_func(c(p1 = 1, p2 = 10))
 ```
 
-Simulation functions for jaatha must have exactly one argument, which is the 
+Simulation functions for jaatha must have exactly one argument, which is 
 a vector of model parameters for which the simulation is conducted. 
 There are no requirements on the return format of a simulation function from 
 jaatha's site, any R objects work 
@@ -85,7 +85,7 @@ sum_stats <- list(create_jaatha_stat("id", function(x, opts) x))
 Note that we create a list containing our statistic. In our example, we'll use
 just one statistic, but it is possible to add more than one statistic to this
 list. Please refer to the documentation for `create_jaatha_stat` for additional
-information, in particular if you can not generate Possison distributed 
+information, in particular if you can not generate Poisson distributed 
 statistics from the simulation results easily.
 
 
@@ -101,7 +101,7 @@ par_ranges
 
 
 This three components -- a simulation function, parameter ranges and a list of 
-summary statistics -- are required to descibe an probabilistic framework within 
+summary statistics -- are required to describe an probabilistic framework within 
 witch jaatha can fit parameters. Since we have the pieces together now, we can 
 use the `create_jaatha_model` function to combine them into a formal model that
 we can pass to the `jaatha` function later:
