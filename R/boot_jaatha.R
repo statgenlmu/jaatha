@@ -21,6 +21,7 @@
 #'   estimate standard errors or confidence intervals of the estimates using
 #'   the functions available in package \pkg{boot}.
 #' 
+#' @importFrom utils capture.output
 #' @export
 boot_jaatha <- function(model, data, results, R, ...) {
   require_package("boot")
