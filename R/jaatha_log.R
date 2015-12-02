@@ -2,7 +2,10 @@ jaatha_log_class <- R6Class("jaatha_log",
   private = list(
     estimates = NULL,
     final_estimates = NULL,
+    reps = 0,
+    sim = 0,
     max_steps = 0,
+    init_method = "none",
     verbose = FALSE,
     par_ranges = NULL,
     converged = NULL,
@@ -11,7 +14,9 @@ jaatha_log_class <- R6Class("jaatha_log",
     }
   ),
   public = list(
-    initialize = function(reps, max_steps, model, verbose = TRUE) {
+    initialize = function(model, data, reps, sim, max_steps, init_method, 
+                          verbose = TRUE) {
+      
       par_number <- model$get_par_number()
       par_names <- model$get_par_ranges()$get_par_names()
       private$estimates <- lapply(1:reps, function(i) {
@@ -20,7 +25,10 @@ jaatha_log_class <- R6Class("jaatha_log",
         as.data.frame(estimates)
       })
       private$final_estimates <- private$estimates[[1]][rep(1, 5 * par_number), ]
+      private$reps <- reps
+      private$sim <- sim
       private$max_steps <- max_steps
+      private$init_method <- init_method
       private$verbose <- verbose
       private$par_ranges <- model$get_par_ranges()
       private$converged <- rep(FALSE, reps)
@@ -80,9 +88,13 @@ jaatha_log_class <- R6Class("jaatha_log",
       "creates the results list the main function returns"
       best_estimate <- self$get_best_estimates(1, TRUE)
       param <- as.numeric(best_estimate[1, -(1:3)])
-      res <- list(param = private$par_ranges$denormalize(param),
+      res <- list(estimate = private$par_ranges$denormalize(param),
                   loglikelihood = as.numeric(best_estimate[1, 3]),
-                  converged = all(private$converged))
+                  converged = all(private$converged),
+                  args = list(repetitions = private$reps,
+                              sim = private$sim,
+                              max_steps = private$max_steps,
+                              init_method = private$init_method))
       class(res) <- c("jaatha_result", class(res))
       res
     }

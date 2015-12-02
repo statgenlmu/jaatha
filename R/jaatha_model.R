@@ -90,7 +90,8 @@ jaatha_model_class <- R6Class("jaatha_model",
       invisible(sim_data)
     },
     get_scaling_factor = function() private$scaling_factor,
-    get_par_number = function() private$par_ranges$get_par_number()
+    get_par_number = function() private$par_ranges$get_par_number(),
+    get_sim_func = function() private$sim_func
   )
 )
 
