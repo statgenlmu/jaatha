@@ -7,7 +7,7 @@ Authors@R: c(
     person('Paul', 'Staab', , 'develop@paulstaab.de', role=c('aut', 'cre')),
     person('Lisha', 'Mathew', role=c('aut')),
     person('Dirk', 'Metzler', role=c('aut', 'ths')) )
-Description: Jaatha is an estimation method that can use computer simulations to
+Description: An estimation method that can use computer simulations to
     approximate maximum-likelihood estimates even when the likelihood function can not
     be evaluated directly. It can be applied whenever it is feasible to conduct many
     simulations, but works best when the data is approximately Poisson distributed.
