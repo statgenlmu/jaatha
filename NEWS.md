@@ -1,3 +1,10 @@
+jaatha 3.1.0 (in development)
+============
+
+* Adds a limit to the number of cached simulations.
+
+
+
 jaatha 3.0.0
 ============
 

@@ -27,15 +27,19 @@ NULL
 #' @param cores The number of CPU cores that will be used for the simulations.
 #'   The relies on the \pkg{parallel} package, and consequenlty only one
 #'   core is supported on Windows.
+#' @param sim_cache_limit The maximal number of simulations results that will be 
+#'   cached. Cached results may be reused in following estimation steps if 
+#'   they are within the current block. Reduce this value to save memory. 
+#'   Setting this to a value smaller than \code{sim} disables caching. 
 #' @param verbose If \code{TRUE}, information about the optimization algorithm
 #'   is printed.
-#' @return TBR
-#' 
-#' @section Algorithm:
-#'   TBR
-#'   
-#' @section Initialization Methods:
-#'   TBR
+# @return TBR
+# 
+# @section Algorithm:
+#   TBR
+#   
+# @section Initialization Methods:
+#   TBR
 #'   
 #' @author Paul Staab and Lisha Mathew
 #' @export
@@ -45,7 +49,8 @@ jaatha <- function(model, data,
                    max_steps = 100, 
                    init_method = c("initial-search", "zoom-in", "middle"),
                    cores = 1,
-                   verbose = TRUE) {
+                   verbose = TRUE,
+                   sim_cache_limit = 10000) {
   
   # Check parameters
   assert_that(is_jaatha_model(model))
@@ -55,9 +60,11 @@ jaatha <- function(model, data,
   assert_that(is.count(cores))
   
   # Setup
-  sim_cache <- create_sim_cache()
+  if (sim_cache_limit < sim) sim_cache_limit <- 0
+  sim_cache <- create_sim_cache(sim_cache_limit)
   log <- create_jaatha_log(model, data, repetitions, sim, 
-                           max_steps, init_method, verbose)
+                           max_steps, init_method, verbose, 
+                           sim_cache_limit)
   
   # Get start positions
   log$log_initialization(init_method[1])

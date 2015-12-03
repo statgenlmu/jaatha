@@ -44,8 +44,9 @@ boot_jaatha <- function(model, data, results, R, ...) {
                         sim = args$sim,
                         max_steps = args$max_steps,
                         init_method = args$init_method,
+                        sim_cache_limit = args$sim_cache_limit,
                         cores = 1)
-    }, 
+    },
     file = tempfile(paste0("boot_log_", Sys.getpid(), "_")), 
     type = "message")
     

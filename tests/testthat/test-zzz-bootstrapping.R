@@ -15,7 +15,8 @@ test_that("the front-end for boot works", {
                   args = list(repetitions = 1,
                               sim = 10,
                               max_steps = 10,
-                              init_method = "middle"))
+                              init_method = "middle",
+                              sim_cache_limit = 10000))
   
   boot_values <- boot_jaatha(model, data, results, 10)
   expect_is(boot_values, "boot")

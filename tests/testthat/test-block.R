@@ -25,8 +25,6 @@ test_that("test if a block includes a point works", {
   expect_equal(block$includes(c(0.3, 0.3)), FALSE)
   expect_equal(block$includes(c(0.3, 0.1)), FALSE)
   expect_equal(block$includes(c(0.4, 0.61)), FALSE)
-  
-  expect_error(block$includes(0.5))
 })
 
 

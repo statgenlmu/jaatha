@@ -75,7 +75,8 @@ test_that("getting best estimates works", {
 
 test_that("it creates the results correctly", {
   model <- create_test_model()
-  log <- create_jaatha_log(model, NULL, 2, 100, 100, "initial_search")
+  log <- create_jaatha_log(model, NULL, 2, 123, 234, "initial_search", 
+                           sim_cache_limit = 345)
   log$log_estimate("final", 1, list(par = rep(.1, model$get_par_number()),
                                     value = -1))
   log$log_estimate("final", 2, list(par = rep(.2, model$get_par_number()),
@@ -86,9 +87,10 @@ test_that("it creates the results correctly", {
                          loglikelihood = -1,
                          converged = FALSE,
                          args = list(repetitions = 2,
-                                     sim = 100,
-                                     max_steps = 100,
-                                     init_method = "initial_search")))
+                                     sim = 123,
+                                     max_steps = 234,
+                                     init_method = "initial_search",
+                                     cache_limit = 345)))
   
   log$log_convergence(1)
   expect_equal(log$create_results()$converged, FALSE)
