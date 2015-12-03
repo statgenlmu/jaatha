@@ -2,7 +2,7 @@ context("Logging")
 
 test_that("log initialization works", {
   model <- create_test_model()
-  log <- create_jaatha_log(model, NULL, 2, 100, 100, "initial_search")
+  log <- create_jaatha_log(model, NULL, 2, 100)
   expect_equivalent(log$get_estimates(1), 
                     data.frame(rep(NA, 100), NA, NA, NA, NA))
   expect_equivalent(log$get_estimates(2), 
@@ -12,7 +12,7 @@ test_that("log initialization works", {
 
 test_that("logging estimates works", {
   model <- create_test_model()
-  log <- create_jaatha_log(model, NULL, 2, 100, 100, "initial_search")
+  log <- create_jaatha_log(model, NULL, 2, 100)
   
   estimate <- list(par = 1:model$get_par_number(), value = 0.1)
   log$log_estimate(1, 1, estimate)
@@ -33,7 +33,7 @@ test_that("logging estimates works", {
 
 test_that("getting best estimates works", {
   model <- create_test_model()
-  log <- create_jaatha_log(model, NULL, 2, 100, 100, "initial_search")
+  log <- create_jaatha_log(model, NULL, 2, 100)
   for (i in c(4, 3, 1, 5, 10, 2, 7, 9, 8) / 10) {
     log$log_estimate(1, i * 10, list(par = rep(i, model$get_par_number()), 
                                      value = i))
@@ -75,22 +75,18 @@ test_that("getting best estimates works", {
 
 test_that("it creates the results correctly", {
   model <- create_test_model()
-  log <- create_jaatha_log(model, NULL, 2, 123, 234, "initial_search", 
-                           sim_cache_limit = 345)
+  log <- create_jaatha_log(model, NULL, 2, 123)
   log$log_estimate("final", 1, list(par = rep(.1, model$get_par_number()),
                                     value = -1))
   log$log_estimate("final", 2, list(par = rep(.2, model$get_par_number()),
                                     value = -2))
   
-  expect_equivalent(log$create_results(),
-                    list(param = model$get_par_ranges()$denormalize(c(.1, .1)),
-                         loglikelihood = -1,
-                         converged = FALSE,
-                         args = list(repetitions = 2,
-                                     sim = 123,
-                                     max_steps = 234,
-                                     init_method = "initial_search",
-                                     cache_limit = 345)))
+  results <- log$create_results()
+  expect_equivalent(results$estimate, 
+                    model$get_par_ranges()$denormalize(c(.1, .1)))
+  expect_equal(results$loglikelihood, -1)
+  expect_equal(results$converged, FALSE)
+  expect_is(results$args, "list")
   
   log$log_convergence(1)
   expect_equal(log$create_results()$converged, FALSE)
