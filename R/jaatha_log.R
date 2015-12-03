@@ -9,13 +9,14 @@ jaatha_log_class <- R6Class("jaatha_log",
     verbose = FALSE,
     par_ranges = NULL,
     converged = NULL,
+    sim_cache_limit = 0,
     format_par = function(par) {
       paste(format(private$par_ranges$denormalize(par)), collapse = " ")
     }
   ),
   public = list(
     initialize = function(model, data, reps, sim, max_steps, init_method, 
-                          verbose = TRUE) {
+                          verbose = TRUE, sim_cache_limit = 10000) {
       
       par_number <- model$get_par_number()
       par_names <- model$get_par_ranges()$get_par_names()
@@ -32,6 +33,7 @@ jaatha_log_class <- R6Class("jaatha_log",
       private$verbose <- verbose
       private$par_ranges <- model$get_par_ranges()
       private$converged <- rep(FALSE, reps)
+      private$sim_cache_limit <- sim_cache_limit
     },
     log_estimate = function(rep, step, estimate, old_llh = NULL) {
       if (rep == "final") rep <- 0.0
@@ -94,7 +96,8 @@ jaatha_log_class <- R6Class("jaatha_log",
                   args = list(repetitions = private$reps,
                               sim = private$sim,
                               max_steps = private$max_steps,
-                              init_method = private$init_method))
+                              init_method = private$init_method,
+                              sim_cache_limit = private$sim_cache_limit))
       class(res) <- c("jaatha_result", class(res))
       res
     }

@@ -22,7 +22,6 @@ block_class <- R6Class("Block",
       paste0(round(lower, 3), "-", round(upper, 3), collapse = " x ")
     },
     includes = function(point) {
-      assert_that(length(point) == nrow(private$border))
       all(private$border[ , 1] - 1e-15 <= point & 
             point <= private$border[ , 2] + 1e-15)
     },

@@ -6,7 +6,7 @@
 \usage{
 jaatha(model, data, repetitions = 3, sim = model$get_par_number() * 25,
   max_steps = 100, init_method = c("initial-search", "zoom-in", "middle"),
-  cores = 1, verbose = TRUE)
+  cores = 1, verbose = TRUE, sim_cache_limit = 10000)
 }
 \arguments{
 \item{model}{The model used for the estimation. 
@@ -33,6 +33,11 @@ core is supported on Windows.}
 
 \item{verbose}{If \code{TRUE}, information about the optimization algorithm
 is printed.}
+
+\item{sim_cache_limit}{The maximal number of simulations results that will be 
+cached. Cached results may be reused in following estimation steps if 
+they are within the current block. Reduce this value to save memory. 
+Setting this to a value smaller than \code{sim} disables caching.}
 }
 \value{
 TBR
