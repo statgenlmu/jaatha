@@ -92,6 +92,23 @@ test_that("getting the start positions works", {
   expect_equal(get_start_pos(model, data, 3, 20, "middle", 1, sim_cache),
                matrix(0.5, 3, model$get_par_number()))
   
+  # random
+  pos <- get_start_pos(model, data, 1, 20, "random", 1, sim_cache)
+  expect_equal(dim(pos), c(1, 2))
+  expect_equal(length(unique(pos)), 2)
+  expect_true(all(pos >= 0 & pos <= 1))
+  
+  pos <- get_start_pos(model, data, 2, 20, "random", 1, sim_cache)
+  expect_equal(dim(pos), c(2, 2))
+  expect_equal(length(unique(pos)), 4)
+  expect_true(all(pos >= 0 & pos <= 1))
+  
+  pos <- get_start_pos(model, data, 3, 20, "random", 1, sim_cache)
+  expect_equal(dim(pos), c(3, 2))
+  expect_equal(length(unique(pos)), 6)
+  expect_true(all(pos >= 0 & pos <= 1))
+  
+  
   # initial search
   sim_cache <- create_sim_cache()
   pos <- get_start_pos(model, data, 1, 20, "initial-search", 1, sim_cache)

@@ -38,8 +38,17 @@ NULL
 # @section Algorithm:
 #   TBR
 #   
-# @section Initialization Methods:
-#   TBR
+#' @section Initialization Methods:
+#'   Jaatha has different options for determining the starting positions for 
+#'   it's optimization procedure. The option \code{initial-search} will divide
+#'   the parameter space in a number of equally sized block, estimate parameters
+#'   within each block and use the estimates with the highest likelihood as
+#'   starting positions. The option \code{zoom-in} starts with a block that
+#'   is equal to the complete parameter space, estimate parameters in there,
+#'   and then iteratively creates a smaller block around the estimates. Finally,
+#'   \code{random} chooses random starting postions and
+#'   \code{middle} will just start all repetitions at the middle of the 
+#'   parameter space.
 #'   
 #' @author Paul Staab and Lisha Mathew
 #' @export
@@ -47,7 +56,8 @@ jaatha <- function(model, data,
                    repetitions = 3, 
                    sim = model$get_par_number() * 25, 
                    max_steps = 100, 
-                   init_method = c("initial-search", "zoom-in", "middle"),
+                   init_method = c("zoom-in", "initial-search", 
+                                   "random", "middle"),
                    cores = 1,
                    verbose = TRUE,
                    sim_cache_limit = 10000) {

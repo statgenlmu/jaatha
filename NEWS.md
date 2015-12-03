@@ -1,7 +1,8 @@
 jaatha 3.1.0 (in development)
 ============
 
-* Adds a limit to the number of cached simulations.
+* Adds a limit to the number of cached simulations (#103).
+* Adds the `random` initialziation method for using random starting positions.
 
 
 
