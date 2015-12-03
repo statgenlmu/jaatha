@@ -2,13 +2,14 @@ jaatha 3.1.0 (in development)
 ============
 
 * Adds a limit to the number of cached simulations (#103).
-* Adds the `random` initialziation method for using random starting positions (#104).
+* Adds the `random` initialization method for using random starting positions (#104).
 * Also captures `model` and `data` in the `pars` argument of an jaatha analysis
   and removed the corresponding arguments from `boot_jaatha` (#105).
-* Adds a custom print methods for jaatha's results (#106).
+* Adds a custom print methods for Jaatha's results (#106).
 * Optimizes scheduling of simulations based on their duration. If simulations
   take more than five seconds, the `mc.preschedule` argument of 
   `parallel::mclapply` is now set to `FALSE` (#107).
+* Add the `block_width` argument to `jaatha`.
 
 
 

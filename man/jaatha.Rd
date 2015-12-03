@@ -6,7 +6,8 @@
 \usage{
 jaatha(model, data, repetitions = 3, sim = model$get_par_number() * 25,
   max_steps = 100, init_method = c("zoom-in", "initial-search", "random",
-  "middle"), cores = 1, verbose = TRUE, sim_cache_limit = 10000)
+  "middle"), cores = 1, verbose = TRUE, sim_cache_limit = 10000,
+  block_width = 0.1)
 }
 \arguments{
 \item{model}{The model used for the estimation. 
@@ -38,6 +39,12 @@ is printed.}
 cached. Cached results may be reused in following estimation steps if 
 they are within the current block. Reduce this value to save memory. 
 Setting this to a value smaller than \code{sim} disables caching.}
+
+\item{block_width}{The relative width of a block within jaatha will fit its
+local GLM. The default value is usually fine. Increasing this value may 
+help in case jaatha fails to converge, while you can try decreasing it if 
+the estimates of the likelihoods differ from the corrected values in the 
+'Correcting likelihoods for best estimates' phase.}
 }
 \value{
 A list contain the results. The list has the following entries:
