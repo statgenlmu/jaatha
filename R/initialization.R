@@ -8,6 +8,9 @@ get_start_pos <- function(model, data, reps, sim, init_method, cores,
     start_pos <- do_initial_search(model, data, reps, sim, cores, sim_cache)
   } else if (init_method[1] == "middle") {
     start_pos <- matrix(.5, reps, model$get_par_number())
+  } else if (init_method[1] == "random") {
+    start_pos <- matrix(runif(reps * model$get_par_number()), 
+                        reps, model$get_par_number())
   } else {
     stop("Unknown initialization method: ", init_method[1])
   }
