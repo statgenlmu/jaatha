@@ -2,8 +2,11 @@ jaatha 3.1.0 (in development)
 ============
 
 * Adds a limit to the number of cached simulations (#103).
-* Adds the `random` initialziation method for using random starting positions.
-
+* Adds the `random` initialziation method for using random starting positions 
+  (#104).
+* Optimizes scheduling of simulations based on their duration. If simulations
+  take more than five seconds, the `mc.preschedule` argument of 
+  `parallel::mclapply` is now set to `FALSE`.
 
 
 jaatha 3.0.0

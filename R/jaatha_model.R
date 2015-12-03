@@ -14,7 +14,8 @@ jaatha_model_class <- R6Class("jaatha_model",
              "' in the model")
       }
       private$sum_stats[[name]] <- stat
-    }
+    },
+    slow_sim = FALSE
   ),
   public = list(
     initialize = function(sim_func, par_ranges, sum_stats, 
@@ -59,7 +60,7 @@ jaatha_model_class <- R6Class("jaatha_model",
         sum_stats$pars_normal <- pars[i, ]
         
         sum_stats
-      }, mc.preschedule = TRUE, mc.cores = cores)
+      }, mc.preschedule = !private$slow_sim, mc.cores = cores)
       
       failed <- vapply(sim_data, is.error, logical(1))
       if (any(failed)) {
@@ -85,6 +86,8 @@ jaatha_model_class <- R6Class("jaatha_model",
         
         if (time < 1) message("A simulation takes less than a second")
         else message("A simulation takes about ", round(time), "s")
+        
+        if (time > 5) private$slow_sim <- TRUE
       }
       
       invisible(sim_data)
