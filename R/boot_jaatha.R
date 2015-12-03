@@ -9,10 +9,7 @@
 #' be executed in parallel using the corresponding options of 
 #' \code{\link[boot]{boot}}.
 #' 
-#' @param model The jaatha model
-#' @param data The jaatha data
-#' @param results The results of an \code{\link{jaatha}} analysis performed with 
-#'   the same \code{model} and \code{data} as passed to this function. 
+#' @param results The results of an \code{\link{jaatha}} analysis.
 #' @param R The number of bootstrapping replicates that are performed.
 #' @param ... Additional arguments that are passed on \code{\link[boot]{boot}}.
 #'   It is highly recommended to use its \code{parallel} and \code{ncpus} 
@@ -23,13 +20,15 @@
 #' 
 #' @importFrom utils capture.output
 #' @export
-boot_jaatha <- function(model, data, results, R, ...) {
+boot_jaatha <- function(results, R, ...) {
   require_package("boot")
   if (R.Version()$major == 3 && R.Version()$minor < 2.2) {
     stop("This function requires at least R Version 3.2.2")
   }
   
   args <- results$args
+  args$cores <- 1
+  model <- args$model
   sim_func <- model$get_sim_func()
   
   log_folder <- tempfile("logs_")
@@ -38,17 +37,9 @@ boot_jaatha <- function(model, data, results, R, ...) {
   dir.create(log_folder)
     
   jaatha_stat <- function(data) {
-    capture.output({
-      results <- jaatha(model, data,
-                        repetitions = args$repetition,
-                        sim = args$sim,
-                        max_steps = args$max_steps,
-                        init_method = args$init_method,
-                        sim_cache_limit = args$sim_cache_limit,
-                        cores = 1)
-    },
-    file = tempfile(paste0("boot_log_", Sys.getpid(), "_")), 
-    type = "message")
+    capture.output(results <- do.call(jaatha, args),
+                   file = tempfile(paste0("boot_log_", Sys.getpid(), "_")), 
+                   type = "message")
     
     results$estimate
   }

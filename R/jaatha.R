@@ -33,11 +33,20 @@ NULL
 #'   Setting this to a value smaller than \code{sim} disables caching. 
 #' @param verbose If \code{TRUE}, information about the optimization algorithm
 #'   is printed.
-# @return TBR
-# 
-# @section Algorithm:
-#   TBR
-#   
+#' @param block_width The relative width of a block within jaatha will fit its
+#'   local GLM. The default value is usually fine. Increasing this value may 
+#'   help in case jaatha fails to converge, while you can try decreasing it if 
+#'   the estimates of the likelihoods differ from the corrected values in the 
+#'   'Correcting likelihoods for best estimates' phase.
+#' @return A list contain the results. The list has the following entries:
+#' \describe{
+#'    \item{estimate}{The (approximated) maximum likelihood estimate}
+#'    \item{loglikelihood}{The estimate log-likelihood of the estimate.}
+#'    \item{converged}{A boolean indicating whether the optimization procedure
+#'                     converged or not}
+#'    \item{args}{The arguments provided to the jaatha function}
+#' }
+#' 
 #' @section Initialization Methods:
 #'   Jaatha has different options for determining the starting positions for 
 #'   it's optimization procedure. The option \code{initial-search} will divide
@@ -60,7 +69,8 @@ jaatha <- function(model, data,
                                    "random", "middle"),
                    cores = 1,
                    verbose = TRUE,
-                   sim_cache_limit = 10000) {
+                   sim_cache_limit = 10000,
+                   block_width = 0.1) {
   
   # Check parameters
   assert_that(is_jaatha_model(model))
@@ -68,19 +78,19 @@ jaatha <- function(model, data,
   assert_that(is.count(repetitions))
   assert_that(is.count(sim))
   assert_that(is.count(cores))
+  assert_that(is.numeric(block_width) && length(block_width) == 1)
+  assert_that(block_width > 0 && block_width < 1)
   
   # Setup
+  log <- create_jaatha_log(model, data, repetitions, max_steps, verbose = TRUE)
   if (sim_cache_limit < sim) sim_cache_limit <- 0
   sim_cache <- create_sim_cache(sim_cache_limit)
-  log <- create_jaatha_log(model, data, repetitions, sim, 
-                           max_steps, init_method, verbose, 
-                           sim_cache_limit)
+
   
   # Get start positions
   log$log_initialization(init_method[1])
   start_pos <- get_start_pos(model, data, repetitions, sim, init_method, cores,
                              sim_cache = sim_cache)
-  block_width <- 0.1
   
   for (rep in 1:repetitions) {
     estimate <- start_pos[rep, ]

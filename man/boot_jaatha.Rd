@@ -4,15 +4,10 @@
 \alias{boot_jaatha}
 \title{Parametric Bootstrapping of Jaatha Estimates}
 \usage{
-boot_jaatha(model, data, results, R, ...)
+boot_jaatha(results, R, ...)
 }
 \arguments{
-\item{model}{The jaatha model}
-
-\item{data}{The jaatha data}
-
-\item{results}{The results of an \code{\link{jaatha}} analysis performed with 
-the same \code{model} and \code{data} as passed to this function.}
+\item{results}{The results of an \code{\link{jaatha}} analysis.}
 
 \item{R}{The number of bootstrapping replicates that are performed.}
 

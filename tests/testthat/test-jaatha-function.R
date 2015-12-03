@@ -22,9 +22,15 @@ test_that("it supports a one parameter model", {
   
   data <- create_test_data(model)
   results <- jaatha(model, data, repetitions = 1, sim = 10, cores = 1, 
-                    max_steps = 15)
+                    max_steps = 5 * 3)
+  
   expect_is(results, "list")
   expect_true(is.finite(results$loglikelihood))
   expect_true(all(results$param > 1))
-  expect_true(is_single_logical(results$converged))
+  expect_identical(results$args$model, model)
+  expect_identical(results$args$data, data)
+  expect_equal(results$args$repetitions, 1)
+  expect_equal(results$args$sim, 10)
+  expect_equal(results$args$cores, 1)
+  expect_equal(results$args$max_steps, 15)
 })

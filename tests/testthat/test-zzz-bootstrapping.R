@@ -12,13 +12,16 @@ test_that("the front-end for boot works", {
   results <- list(estimate = c(5.05, 5.05),
                   loglikelihood = -5,
                   converged = TRUE,
-                  args = list(repetitions = 1,
+                  args = list(model = model,
+                              data = data,
+                              repetitions = 1,
                               sim = 10,
                               max_steps = 10,
                               init_method = "middle",
-                              sim_cache_limit = 10000))
+                              sim_cache_limit = 0,
+                              cores = 1))
   
-  boot_values <- boot_jaatha(model, data, results, 10)
+  boot_values <- boot_jaatha(results, 10)
   expect_is(boot_values, "boot")
   expect_true(all(is.finite(boot_values$t)))
 })
