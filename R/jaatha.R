@@ -33,11 +33,15 @@ NULL
 #'   Setting this to a value smaller than \code{sim} disables caching. 
 #' @param verbose If \code{TRUE}, information about the optimization algorithm
 #'   is printed.
-# @return TBR
-# 
-# @section Algorithm:
-#   TBR
-#   
+#' @return A list contain the results. The list has the following entries:
+#' \describe{
+#'    \item{estimate}{The (approximated) maximum likelihood estimate}
+#'    \item{loglikelihood}{The estimate log-likelihood of the estimate.}
+#'    \item{converged}{A boolean indicating whether the optimization procedure
+#'                     converged or not}
+#'    \item{args}{The arguments provided to the jaatha function}
+#' }
+#' 
 #' @section Initialization Methods:
 #'   Jaatha has different options for determining the starting positions for 
 #'   it's optimization procedure. The option \code{initial-search} will divide
@@ -70,11 +74,10 @@ jaatha <- function(model, data,
   assert_that(is.count(cores))
   
   # Setup
+  log <- create_jaatha_log(model, data, repetitions, max_steps, verbose = TRUE)
   if (sim_cache_limit < sim) sim_cache_limit <- 0
   sim_cache <- create_sim_cache(sim_cache_limit)
-  log <- create_jaatha_log(model, data, repetitions, sim, 
-                           max_steps, init_method, verbose, 
-                           sim_cache_limit)
+
   
   # Get start positions
   log$log_initialization(init_method[1])

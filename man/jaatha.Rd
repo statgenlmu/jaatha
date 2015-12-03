@@ -39,6 +39,16 @@ cached. Cached results may be reused in following estimation steps if
 they are within the current block. Reduce this value to save memory. 
 Setting this to a value smaller than \code{sim} disables caching.}
 }
+\value{
+A list contain the results. The list has the following entries:
+\describe{
+   \item{estimate}{The (approximated) maximum likelihood estimate}
+   \item{loglikelihood}{The estimate log-likelihood of the estimate.}
+   \item{converged}{A boolean indicating whether the optimization procedure
+                    converged or not}
+   \item{args}{The arguments provided to the jaatha function}
+}
+}
 \description{
 Simulation based maximum likelihood estimation
 }
