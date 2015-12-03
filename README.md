@@ -19,7 +19,7 @@ the [coala](https://github.com/statgenlmu/coala) R package, but can also be
 used for different applications.
 
 Jaatha is implemented as an [R](https://www.r-project.org) package and available on
-[CRAN](https://cran.r-project.org/web/packages/jaatha).
+[CRAN](https://cran.r-project.org/web/packages/jaatha/).
 
 
 

@@ -11,7 +11,7 @@ Description: An estimation method that can use computer simulations to
     approximate maximum-likelihood estimates even when the likelihood function can not
     be evaluated directly. It can be applied whenever it is feasible to conduct many
     simulations, but works best when the data is approximately Poisson distributed.
-    Jaatha was originally designed for demographic inference in evolutionary
+    It was originally designed for demographic inference in evolutionary
     biology. It has optional support for conducting coalescent simulation using
     the 'coala' package.
 URL: https://github.com/statgenlmu/jaatha
