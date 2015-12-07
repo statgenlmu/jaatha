@@ -9,7 +9,9 @@ jaatha 3.1.0 (in development)
 * Optimizes scheduling of simulations based on their duration. If simulations
   take more than five seconds, the `mc.preschedule` argument of 
   `parallel::mclapply` is now set to `FALSE` (#107).
-* Add the `block_width` argument to `jaatha`.
+* Adds the `block_width` argument to `jaatha` (#108).
+* Also exports `create_jaatha_model.function` and  
+  `create_jaatha_model.coalmodel` as functions.
 
 
 

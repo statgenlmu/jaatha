@@ -147,6 +147,7 @@ create_jaatha_model.default <- function(x, ..., scaling_factor = 1, test = TRUE)
 #' @inheritParams create_jaatha_model
 #'
 #' @export
+#' @export create_jaatha_model.function
 #' @examples 
 #' create_jaatha_model(function(x) rpois(10, x),
 #'                     par_ranges = matrix(c(0.1, 0.1, 10, 10), 2, 2),

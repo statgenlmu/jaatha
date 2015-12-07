@@ -29,6 +29,7 @@
 #' @inheritParams create_jaatha_model
 #' @importFrom stats simulate
 #' @export
+#' @export create_jaatha_model.coalmodel
 create_jaatha_model.coalmodel <- function(x, 
                                           jsfs_summary = c("sums",
                                                            "none",
