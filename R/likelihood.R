@@ -88,10 +88,7 @@ estimate_local_ml <- function(block, model, data, sim, cores, sim_cache) {
     if (all(converged)) break
     
     if (j == 3) sim_cache$clear()
-    if (j == 6) {
-      warning("A GLM failed to converge. One repetition was aborted.")
-      return(NULL)
-    }
+    if (j == 6) return(NULL)
   }
   
   optimize_llh(block, model, data, glms, length(sim_data))
