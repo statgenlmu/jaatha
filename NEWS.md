@@ -11,7 +11,10 @@ jaatha 3.1.0 (in development)
   `parallel::mclapply` is now set to `FALSE` (#107).
 * Adds the `block_width` argument to `jaatha` (#108).
 * Also exports `create_jaatha_model.function` and  
-  `create_jaatha_model.coalmodel` as functions.
+  `create_jaatha_model.coalmodel` as functions (#109).
+* Increases robustsness to not-converging GLMs. If a GLM fails to converge, now
+  only the current repetition is aborded instead of the compelete analysis 
+  (#110). 
 
 
 
@@ -47,8 +50,8 @@ jaatha 2.6.0
 ============
 
 * Switched unittests from RUnit to testthat
-* Added a Rcpp function to parse tree from ms(ms) output for seqgen. This should
-  make seqgen less platform dependent (it still requires a Unix platform).
+* Added a Rcpp function to parse tree from ms(ms) output for seq-gen. This should
+  make seq-gen less platform dependent (it still requires a Unix platform).
 * Add a subset parameter to Jaatha.confidenceIntervals that allows to distribute
   the calculation on multiple machines.
 * Bug fix: in 2.5.1, the ms output file was not delete when using seq-gen. This can cause

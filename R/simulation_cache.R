@@ -40,7 +40,11 @@ sim_cache_class <- R6Class("sim_cache",
       }, logical(1))
       private$sim_data[in_block]
     },
-    get_size = function() private$size
+    get_size = function() private$size,
+    clear = function() {
+      private$size <- 0
+      private$sim_data <- list()
+    }
   )
 )
 

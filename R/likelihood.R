@@ -69,7 +69,7 @@ optimize_llh <- function(block, model, data, glms, sim) {
 
 
 estimate_local_ml <- function(block, model, data, sim, cores, sim_cache) {
-  for (j in 1:5) {
+  for (j in 1:6) {
     sim_data <- model$simulate(pars = block$sample_pars(sim, TRUE), 
                                data = data, cores = cores)
   
@@ -85,10 +85,13 @@ estimate_local_ml <- function(block, model, data, sim, cores, sim_cache) {
     converged <- vapply(glms, function(x) {
       all(vapply(x, function(y) y$converged, logical(1)))
     }, logical(1))
-    if (all(converged)) {
-      break
+    if (all(converged)) break
+    
+    if (j == 3) sim_cache$clear()
+    if (j == 6) {
+      warning("A GLM failed to converge. One repetition was aborted.")
+      return(NULL)
     }
-    if (j == 5) stop("A GLM did not converge. Check your model")
   }
   
   optimize_llh(block, model, data, glms, length(sim_data))

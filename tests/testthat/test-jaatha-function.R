@@ -26,7 +26,7 @@ test_that("it supports a one parameter model", {
   
   expect_is(results, "list")
   expect_true(is.finite(results$loglikelihood))
-  expect_true(all(results$param > 1))
+  expect_true(all(results$estimate > 1))
   expect_identical(results$args$model, model)
   expect_identical(results$args$data, data)
   expect_equal(results$args$repetitions, 1)

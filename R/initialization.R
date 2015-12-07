@@ -27,9 +27,13 @@ do_initial_search <- function(model, data, reps, sim, cores, sim_cache) {
   blocks_per_par <- determine_bpp(par_number, reps)
   blocks <- create_initial_blocks(model$get_par_ranges(), blocks_per_par)
   
-  # Get an estimate infor each block
+  # Get an estimate for each block
   estimates <- lapply(blocks, estimate_local_ml, model, data, 
                       sim, cores, sim_cache)
+  estimates <- estimates[!vapply(estimates, is.null, logical(1))]
+  if (length(estimates) < reps) {
+    stop("To many GLMs in initial search failed to converge.")
+  }
   
   # Return the parameters for the best estimates
   best_indexes <- order(vapply(estimates, function(x) x$value, numeric(1)), 
@@ -80,6 +84,7 @@ do_zoom_in_search <- function(model, data, reps, sim, cores, sim_cache) {
       block <- create_block(cbind(middle - block_width * .5,
                                   middle + block_width * .5), cut = TRUE)
       middle <- estimate_local_ml(block, model, data, sim, cores, sim_cache)$par
+      if (is.null(middle)) return(block$get_middle())
     }
     middle
   }, numeric(model$get_par_number())))
