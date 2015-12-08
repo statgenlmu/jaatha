@@ -104,6 +104,10 @@ jaatha <- function(model, data,
                             cut = TRUE)
       
       local_ml <- estimate_local_ml(block, model, data, sim, cores, sim_cache)
+      if (is.null(local_ml)) {
+        warning("A GLM failed to converge. Aborting one repetition.")
+        break
+      }
       log$log_estimate(rep, step, local_ml)
       estimate <- local_ml$par
       
@@ -122,6 +126,7 @@ jaatha <- function(model, data,
   # get presice llh values for best estimates
   log$log_llh_correction()
   best_values <- log$get_best_estimates(5)
+  if (nrow(best_values) == 0) stop("No valid estimates.")
   for (i in 1:nrow(best_values)) {
     llh <- estimate_llh(model, data, as.numeric(best_values[i, -(1:3)]), 
                         100, cores, TRUE)

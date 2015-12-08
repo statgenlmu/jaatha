@@ -77,7 +77,7 @@ jaatha_log_class <- R6Class("jaatha_log",
       else estimates_list <- private$estimates
       best_est <- do.call(rbind, lapply(estimates_list, function(estimates) {
         best_llh <- order(estimates$llh, decreasing = TRUE)[1:n]
-        best_llh <- best_llh[!is.na(best_llh)]
+        best_llh <- best_llh[!is.na(estimates$llh[best_llh])]
         estimates[best_llh, ]
       }))
       best_est[order(best_est$llh, decreasing = TRUE), ]
