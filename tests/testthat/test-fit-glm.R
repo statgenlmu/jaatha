@@ -19,6 +19,22 @@ test_that("fit_glm works for PoiInd", {
 })
 
 
+test_that("glm fitting throws an error if coefficients are 0", {
+  model <- create_test_model()
+  data <- create_test_data(model)
+  block <- create_block(matrix(c(0, 0, 1, 1), 2))
+  sim_data <- model$simulate(block$sample_pars(5), data, 1)
+  sim_data <- lapply(sim_data, function(x) {
+    x$id <- rep(5, 10)
+    x$sum <- 0
+    x
+  })
+  
+  expect_error(fit_glm(model$get_sum_stats()[[1]], sim_data))
+  expect_error(fit_glm(model$get_sum_stats()[[2]], sim_data))
+})
+
+
 test_that("fit_glm works for PoiSmooth", {
   skip("Smoothing not implemented")
   glms.fitted.smooth <- fit_glm(smooth_jaatha, smooth_sim_data)

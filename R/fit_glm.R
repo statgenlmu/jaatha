@@ -7,7 +7,6 @@ fit_glm.default <- function(x, sim_data, ...) {
 #' @export
 fit_glm.jaatha_model <- function(x, sim_data, ...) { 
   "Fits a GLM to the simulation results"
-  glm_fitted <- list()
   lapply(x$get_sum_stats(), fit_glm, sim_data, ...)
 }
 
@@ -21,11 +20,20 @@ fit_glm.jaatha_stat_basic <- function(x, sim_data, ...) {
              do.call(rbind, lapply(sim_data, function(data) data$pars_normal)))
   
   glms <- lapply(1:ncol(Y), function(i) {
-    glm.fit(X, Y[ , i], family = poisson("log"), 
-            control = list(maxit = 200))[c("coefficients", "converged")]
+    suppressWarnings(
+      glm.fit(X, Y[ , i], family = poisson("log"), 
+              control = list(maxit = 100))[c("coefficients", "converged")]
+    )
   })
   
-  sapply(glms, function(x){if (!x$converged) stop("GLM did not converge")})
+  sapply(glms, function(x) {
+    if (!x$converged) stop("GLM did not converge", call. = FALSE)
+    if (all(abs(x$coefficients[-1]) < 1e-10)) {
+      stop("GLM coefficients are all numerically 0", call. = FALSE)
+    }
+    NULL
+  })
+
   glms
 }
 

@@ -14,7 +14,7 @@ jaatha 3.1.0 (in development)
   `create_jaatha_model.coalmodel` as functions (#109).
 * Increases robustsness to not-converging GLMs. If a GLM fails to converge, now
   only the current repetition is aborded instead of the compelete analysis 
-  (#110). 
+  (#110, #111). 
 
 
 

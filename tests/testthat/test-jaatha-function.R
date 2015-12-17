@@ -34,3 +34,14 @@ test_that("it supports a one parameter model", {
   expect_equal(results$args$cores, 1)
   expect_equal(results$args$max_steps, 15)
 })
+
+
+test_that("An error is thrown if all glms fail to converge", {
+  model <-   create_jaatha_model(function(x) rpois(10, x),
+                                 par_ranges = matrix(c(0.1, 0.1, 10, 10), 2, 2),
+                                 sum_stats = list(create_jaatha_stat("null", function(x, y) 0)),
+                                 test = FALSE)
+  data <- create_test_data(model)
+  
+  expect_error(jaatha(model, data, repetitions = 2, sim = 10, cores = 1))
+})
