@@ -48,7 +48,18 @@ jaatha_model_class <- R6Class("jaatha_model",
       sim_data <- mclapply(1:nrow(pars), function(i) {
         set.seed(seeds[i])
         sim_pars <- private$par_ranges$denormalize(pars[i, ])
-        sim_result <- private$sim_func(sim_pars)
+        
+        # Simulate and dump frames if an error occurs
+        withCallingHandlers({
+          sim_result <- private$sim_func(sim_pars)
+        }, error = function(e) {
+          error_dump = tempfile("jaatha_frame_dump_", fileext = ".Rda")
+          dump.frames("sim_error_dump")
+          save("sim_error_dump", file = error_dump)
+          stop(paste(e$message, "[Frame dump written to", error_dump, "]"), 
+               call. = FALSE)
+        })
+        
         
         # Calculate Summary Statistics
         sum_stats <- lapply(private$sum_stats, function(sum_stat) {

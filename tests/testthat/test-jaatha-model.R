@@ -82,4 +82,8 @@ test_that("failing simulations are detected", {
   suppressWarnings(
     expect_error(model$simulate(pars = matrix(1, 2, 2), test_data, cores = 2))
   )
+  
+  frame_dumps <- list.files(tempdir(), "jaatha_frame_dump_*")
+  expect_equal(length(frame_dumps), 3)
+  unlink(frame_dumps)
 })
