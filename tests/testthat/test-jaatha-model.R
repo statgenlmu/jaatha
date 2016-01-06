@@ -80,6 +80,11 @@ test_that("failing simulations are detected", {
   test_data <- create_test_data(create_test_model())
   expect_error(model$simulate(pars = matrix(1, 2, 2), test_data, cores = 1))
   suppressWarnings(
+    # Always fails on Windows
     expect_error(model$simulate(pars = matrix(1, 2, 2), test_data, cores = 2))
   )
+  
+  frame_dumps <- list.files(tempdir(), "jaatha_frame_dump_*")
+  expect_gte(length(frame_dumps), 1)
+  unlink(frame_dumps)
 })
