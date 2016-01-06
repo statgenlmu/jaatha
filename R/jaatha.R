@@ -84,7 +84,7 @@ jaatha <- function(model, data,
   # Setup
   log <- create_jaatha_log(model, data, repetitions, max_steps, verbose = TRUE)
   if (sim_cache_limit < sim) sim_cache_limit <- 0
-  sim_cache <- create_sim_cache(sim_cache_limit)
+  sim_cache <- create_sim_cache(sim_cache_limit) #nolint
 
   
   # Get start positions
@@ -128,7 +128,7 @@ jaatha <- function(model, data,
   best_values <- log$get_best_estimates(5)
   if (nrow(best_values) == 0) stop("No valid estimates.")
   for (i in 1:nrow(best_values)) {
-    llh <- estimate_llh(model, data, as.numeric(best_values[i, -(1:3)]), 
+    llh <- estimate_llh(model, data, as.numeric(best_values[i, -(1:3)]), #nolint 
                         100, cores, TRUE)
     log$log_estimate("final", i, llh, best_values[i, 3])
   }

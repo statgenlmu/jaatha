@@ -26,9 +26,9 @@ test_that("calcStatLLH works for Stat_PoiSmooth", {
   skip("Smoothing not implemented")
   glm_fit <- fit_glm(smooth_stat, smooth_sim_data)
   
-  ll <- calcStatLLH(smooth_stat, glm_fit, c(x=.5, y=.5), scaling_factor=1)
-  expect_true(is.numeric(ll))
-  expect_true(0 <= exp(ll) | exp(ll) <= 1)
+  #ll <- calcStatLLH(smooth_stat, glm_fit, c(x=.5, y=.5), scaling_factor=1)
+  #expect_true(is.numeric(ll))
+  #expect_true(0 <= exp(ll) | exp(ll) <= 1)
 })
 
 

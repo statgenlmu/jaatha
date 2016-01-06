@@ -1,6 +1,7 @@
 ^misc$
 .tar.gz$
 ^.travis*
+^.lintr$
 ^.*\.Rproj$
 ^\.Rproj\.user$
 ^cran-comments\.md$

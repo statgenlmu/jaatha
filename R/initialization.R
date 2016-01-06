@@ -31,7 +31,7 @@ get_start_pos <- function(model, data, reps, sim, init_method, cores,
   }
   
   assert_that(is.matrix(start_pos))
-  assert_that(all((dim(start_pos) == c(reps, model$get_par_number()))))
+  assert_that(all(dim(start_pos) == c(reps, model$get_par_number())))
   start_pos
 }
 
