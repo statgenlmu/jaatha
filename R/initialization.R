@@ -1,9 +1,24 @@
+#' Determine good starting postions
+#' 
+#' This is a simple dispatch function returns good starting positions
+#' based on the provided \code{init_method}. The different methods are
+#' explained on \code{\link{jaatha}}.
+#'
+#' @inheritParams jaatha
+#' @param init_method Determines how the starting position of each 
+#'   repetition is chosen.
+#' @param sim_cache The simulation cache used in the jaatha analysis
+#' @param reps The number of independent repetitions.
+#' @return The starting positions, as a matrix. Each row corresponds
+#'   to a starting positions. 
+#' @author Paul Staab
+#' @keywords internal
 get_start_pos <- function(model, data, reps, sim, init_method, cores, 
-                          sim_cache) {
+                          sim_cache, block_width) {
   
   start_pos <- NULL
   if (init_method[1] == "zoom-in") {
-    start_pos <- do_zoom_in_search(model, data, reps, sim, cores, sim_cache)
+    start_pos <- do_zoom_in_search(model, data, reps, sim, cores, sim_cache, block_width)
   } else if (init_method[1] == "initial-search") {
     start_pos <- do_initial_search(model, data, reps, sim, cores, sim_cache)
   } else if (init_method[1] == "middle") {
@@ -22,6 +37,8 @@ get_start_pos <- function(model, data, reps, sim, init_method, cores,
 
 
 do_initial_search <- function(model, data, reps, sim, cores, sim_cache) {
+  "determines starting postions by cutting the parameters in equally sized blocks
+   and estimating parameters therein"
   # Divide the parameter space in blocks
   par_number <- model$get_par_ranges()$get_par_number()
   blocks_per_par <- determine_bpp(par_number, reps)
@@ -55,6 +72,7 @@ determine_bpp <- function(par_number, repetitions) {
 
 
 create_initial_blocks <- function(par_ranges, blocks_per_par) {
+  "Creates the blocks for do_initial_search"
   par_number <- par_ranges$get_par_number()
   basic_block <- matrix(c(0, 1), par_number, 2, byrow = TRUE)
 
@@ -77,13 +95,22 @@ create_initial_blocks <- function(par_ranges, blocks_per_par) {
 }
 
 
-do_zoom_in_search <- function(model, data, reps, sim, cores, sim_cache) {
+do_zoom_in_search <- function(model, data, reps, sim, cores, sim_cache, block_width, 
+                              n_steps = 3) {
+  "Starts with estimating parameters in the complete parameter space, an then iteratively 
+   deceases the size of the block"
   t(vapply(1:reps, function(i) {
     middle <- rep(.5, model$get_par_number())
-    for (block_width in c(1, 0.5, 0.25)) {
+    block_widths <- head(seq(1, block_width, length.out = n_steps + 1), -1)
+    for (block_width in block_widths) {
+      # Create the block
       block <- create_block(cbind(middle - block_width * .5,
                                   middle + block_width * .5), cut = TRUE)
+      
+      # Estimate Parameters
       middle <- estimate_local_ml(block, model, data, sim, cores, sim_cache)$par
+      
+      # If estimation has failed, continue with the previuos best estimate
       if (is.null(middle)) return(block$get_middle())
     }
     middle
