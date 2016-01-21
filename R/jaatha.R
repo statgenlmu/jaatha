@@ -90,7 +90,7 @@ jaatha <- function(model, data,
   # Get start positions
   log$log_initialization(init_method[1])
   start_pos <- get_start_pos(model, data, repetitions, sim, init_method, cores,
-                             sim_cache = sim_cache)
+                             sim_cache = sim_cache, block_width = block_width)
   
   for (rep in 1:repetitions) {
     estimate <- start_pos[rep, ]
