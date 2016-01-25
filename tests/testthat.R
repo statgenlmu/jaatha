@@ -1,2 +1,2 @@
 library(testthat)
-test_check('jaatha')
+test_check("jaatha")

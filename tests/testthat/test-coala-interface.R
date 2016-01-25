@@ -4,7 +4,7 @@ test_that("it creates a jaatha model from a coala one", {
   skip_if_not_installed("coala")
   coala_model <- coala::coal_model(10:15, 100) +
     coala::feat_mutation(coala::par_range("theta", 1, 5)) +
-    coala::feat_migration(coala::par_range('m', 1, 5), symmetric = TRUE) +
+    coala::feat_migration(coala::par_range("m", 1, 5), symmetric = TRUE) +
     coala::sumstat_sfs()
   jaatha_model <- create_jaatha_model(coala_model, test = FALSE)
 
@@ -26,7 +26,7 @@ test_that("conversion of coala sumstats works", {
   skip_if_not_installed("coala")
   model <- coala::coal_model(c(10, 15), 1) +
     coala::feat_mutation(coala::par_range("theta", 1, 5)) +
-    coala::feat_migration(coala::par_range('m', 1, 5), symmetric = TRUE)
+    coala::feat_migration(coala::par_range("m", 1, 5), symmetric = TRUE)
 
   expect_equal(convert_coala_sumstats(model), list())
   model <- model + coala::sumstat_sfs()

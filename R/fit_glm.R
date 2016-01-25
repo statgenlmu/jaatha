@@ -5,7 +5,7 @@ fit_glm.default <- function(x, sim_data, ...) {
 
 
 #' @export
-fit_glm.jaatha_model <- function(x, sim_data, ...) { 
+fit_glm.jaatha_model <- function(x, sim_data, ...) { #nolint
   "Fits a GLM to the simulation results"
   lapply(x$get_sum_stats(), fit_glm, sim_data, ...)
 }
@@ -21,7 +21,7 @@ fit_glm.jaatha_stat_basic <- function(x, sim_data, ...) {
   
   glms <- lapply(1:ncol(Y), function(i) {
     suppressWarnings(
-      glm.fit(X, Y[ , i], family = poisson("log"), 
+      glm.fit(X, Y[, i], family = poisson("log"), 
               control = list(maxit = 100))[c("coefficients", "converged")]
     )
   })

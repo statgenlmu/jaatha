@@ -53,7 +53,7 @@ jaatha_model_class <- R6Class("jaatha_model",
         withCallingHandlers({
           sim_result <- private$sim_func(sim_pars)
         }, error = function(e) {
-          error_dump = tempfile("jaatha_frame_dump_", fileext = ".Rda")
+          error_dump <- tempfile("jaatha_frame_dump_", fileext = ".Rda")
           dump.frames("sim_error_dump")
           save("sim_error_dump", file = error_dump)
           stop(paste(e$message, "[Frame dump written to", error_dump, "]"), 
@@ -131,7 +131,9 @@ create_jaatha_model <- function(x, ..., scaling_factor = 1, test = TRUE) {
 }
 
 
-create_jaatha_model.default <- function(x, ..., scaling_factor = 1, test = TRUE) {
+create_jaatha_model.default <- function(x, ..., 
+                                        scaling_factor = 1, 
+                                        test = TRUE) {
   stop("Can create a model from an object of class '", class(x), "'")
 }
 

@@ -37,12 +37,12 @@ test_that("glm fitting throws an error if coefficients are 0", {
 
 test_that("fit_glm works for PoiSmooth", {
   skip("Smoothing not implemented")
-  glms.fitted.smooth <- fit_glm(smooth_jaatha, smooth_sim_data)
-  expect_true(is.list(glms.fitted.smooth))
-  expect_equal(1, length(glms.fitted.smooth))
-  expect_true(is.list(glms.fitted.smooth$csi))
-  expect_equal(1, length(glms.fitted.smooth$csi))
-  expect_true("glm" %in% is(glms.fitted.smooth$csi[[1]]))
+  glms_fitted_smooth <- fit_glm(smooth_jaatha, smooth_sim_data)
+  expect_true(is.list(glms_fitted_smooth))
+  expect_equal(1, length(glms_fitted_smooth))
+  expect_true(is.list(glms_fitted_smooth$csi))
+  expect_equal(1, length(glms_fitted_smooth$csi))
+  expect_true("glm" %in% is(glms_fitted_smooth$csi[[1]]))
 })
 
 

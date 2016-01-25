@@ -5,18 +5,14 @@ warnings_are_errors: true
 
 r_binary_packages:
   - testthat
-  - ff 
-  - bigmemory 
-  - RcppArmadillo
-  - igraph 
-  - stringdist 
-  - shiny
-
-r_github_packages:
-  - jimhester/lintr 
-  - jimhester/covr
+  - covr
+  - RcppArmadillo # for coala
+  - knitr # for lintr
+  - igraph # for lintr
+  
+r_packages:
+  - lintr 
 
 after_success:
   - Rscript -e "lintr::lint_package()"
   - Rscript -e "library(covr); coveralls()"
-

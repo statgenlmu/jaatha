@@ -34,3 +34,4 @@ test_that("it supports a one parameter model", {
   expect_equal(results$args$cores, 1)
   expect_equal(results$args$max_steps, 15)
 })
+

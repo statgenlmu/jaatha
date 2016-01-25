@@ -50,7 +50,7 @@ create_jaatha_model.coalmodel <- function(x,
   
   # create parameter ranges
   par_table <- coala::get_parameter_table(x)
-  par_ranges <- as.matrix(par_table[,-1])
+  par_ranges <- as.matrix(par_table[, -1])
   rownames(par_ranges) <- par_table$name
 
   # create summary statisics
@@ -96,7 +96,7 @@ convert_coala_sumstats <- function(coala_model, jsfs_summary = "sums",
     # --- Four Gamete Summary Statistic -----------------------------
     if (inherits(stat, "stat_four_gamete")) {
       return(create_jaatha_stat(name, function(x, opts) {
-        x[[name]][ , c(1, 2, 6), drop = FALSE]
+        x[[name]][, c(1, 2, 6), drop = FALSE]
       }, poisson = FALSE, breaks = four_gamete_breaks))
     }
     
@@ -119,10 +119,10 @@ multi_index_range <- function(d, p) {
   ## A[p[1,1]:p[1:2],p[2,1]:p[2:2],...] consists of the same values as A[v],
   ## even though no necessarily in the same order.
   N <- nrow(p)
-  v <- p[N,1]:p[N,2]
+  v <- p[N, 1]:p[N, 2]
   if (N > 1) {
     for (n in (N - 1):1) {
-      v <- as.vector(outer((v - 1)*d[n], p[n, 1]:p[n, 2], "+"))
+      v <- as.vector(outer( (v - 1) * d[n], p[n, 1]:p[n, 2], "+"))
     }
   }
   
@@ -174,7 +174,7 @@ coarsen_jsfs <- function(ja, part, part_hi = NULL) {
     if (!is.list(part_hi)) part_hi <- rep(list(part_hi), n)
     for (i in 1:n) {
       upper <- sort(d[i] - part_hi[[i]])
-      if (tail(part[[i]],1) >= upper[1]) {
+      if (tail(part[[i]], 1) >= upper[1]) {
         stop(paste("part and part_hi incompatible in dim", i))
       }
       part[[i]] <- c(part[[i]], upper)

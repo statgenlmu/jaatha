@@ -23,7 +23,8 @@ jaatha_log_class <- R6Class("jaatha_log",
         colnames(estimates) <- c("rep", "step", "llh", par_names)
         as.data.frame(estimates)
       })
-      private$final_estimates <- private$estimates[[1]][rep(1, 5 * par_number), ]
+      private$final_estimates <- 
+        private$estimates[[1]][rep(1, 5 * par_number), ]
       private$reps <- reps
       private$max_steps <- max_steps
       private$verbose <- verbose
@@ -60,7 +61,7 @@ jaatha_log_class <- R6Class("jaatha_log",
     },
     log_convergence = function(step) {
       if (private$verbose) message(" Convergence detected")
-      private$converged[step] = TRUE
+      private$converged[step] <- TRUE
     },
     log_initialization = function(method) {
       if (!private$verbose) return(invisible(NULL))
@@ -85,7 +86,7 @@ jaatha_log_class <- R6Class("jaatha_log",
     create_results = function() {
       "creates the results list the main function returns"
       best_estimate <- self$get_best_estimates(1, TRUE)
-      param <- as.numeric(best_estimate[1, -(1:3)])
+      param <- as.numeric(best_estimate[1, -(1:3)]) #nolint
       res <- list(estimate = private$par_ranges$denormalize(param),
                   loglikelihood = as.numeric(best_estimate[1, 3]),
                   converged = all(private$converged),

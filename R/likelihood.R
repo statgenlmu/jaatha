@@ -22,7 +22,7 @@ approximate_llh <- function(x, data, param, glm_fitted, sim, ...) {
 }
 
 #' @export
-approximate_llh.default <- function(x, data, param, glm_fitted, sim, ...) { 
+approximate_llh.default <- function(x, data, param, glm_fitted, sim, ...) { #nolint 
   stop("Unknown Summary Statistic")
 }
 
@@ -58,8 +58,8 @@ optimize_llh <- function(block, model, data, glms, sim) {
                       function(param) {
                         approximate_llh(model, data, param, glms, sim)
                       },
-                      lower = boundary[ , 1, drop = FALSE], 
-                      upper = boundary[ , 2, drop = FALSE],
+                      lower = boundary[, 1, drop = FALSE], 
+                      upper = boundary[, 2, drop = FALSE],
                       method = "L-BFGS-B", 
                       control = list(fnscale = -1))
   

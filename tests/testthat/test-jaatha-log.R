@@ -60,7 +60,7 @@ test_that("getting best estimates works", {
   
   # Final
   for (i in c(4, 3, 1, 5, 10, 2, 7, 9, 8) / 10) {
-    log$log_estimate("final", i * 10, list(par = rep(i, model$get_par_number()), 
+    log$log_estimate("final", i * 10, list(par = rep(i, model$get_par_number()),
                                            value = -i))
   }
   
