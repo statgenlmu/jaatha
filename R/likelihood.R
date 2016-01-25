@@ -42,9 +42,9 @@ approximate_llh.jaatha_model <- function(x, data, param, glm_fitted, sim) {
 approximate_llh.jaatha_stat_basic  <- function(x, data, param, glm_fitted, 
                                                sim, scaling_factor) {
   
-  loglambda <- sapply(glm_fitted[[x$get_name()]], function(glm_obj) {
+  loglambda <- vapply(glm_fitted[[x$get_name()]], function(glm_obj) {
     glm_obj$coefficients %*% c(1, param)
-  })
+  }, numeric(1))
   
   # Calculate the Poission log-likelihood
   calc_poisson_llh(data, x, loglambda, sim, scaling_factor)
