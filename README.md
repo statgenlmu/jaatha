@@ -36,16 +36,11 @@ install.packages('jaatha')
 Usage
 -----
 
-The R package includes an introduction vignette that explains how a jaatha
-analysis is conducted. After the package is installed, you can open the
-vignette using:
-
-```R
-vignette("jaatha-intro")
-```
-
-A second vignette called `jaatha-evolution` describes how jaatha can be used
-together with `coala` for demographic inference.
+The R package includes an 
+[introduction vignette](https://cran.r-project.org/web/packages/jaatha/vignettes/jaatha-intro.html) 
+that explains how to conduct a jaatha analysis. 
+A [second vignette](https://cran.r-project.org/web/packages/jaatha/vignettes/jaatha-evolution.html) 
+describes how jaatha can be used together with `coala` for demographic inference.
 
 Further help is provided using R's help system, in particular via `?jaatha`,
 `?create_jaatha_model` and `?create_jaatha_data`.
@@ -83,3 +78,4 @@ The current development version can be installed using:
 ```R
 devtools::install_github('statgenlmu/jaatha')
 ```
+
