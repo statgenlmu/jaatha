@@ -13,6 +13,7 @@
 #'   to a starting positions. 
 #' @author Paul Staab
 #' @keywords internal
+#' @importFrom stats runif
 get_start_pos <- function(model, data, reps, sim, init_method, cores, 
                           sim_cache, block_width) {
   
@@ -95,6 +96,7 @@ create_initial_blocks <- function(par_ranges, blocks_per_par) {
 }
 
 
+#' @importFrom utils head
 do_zoom_in_search <- function(model, data, reps, sim, cores, sim_cache, block_width, 
                               n_steps = 3) {
   "Starts with estimating parameters in the complete parameter space, an then iteratively 
