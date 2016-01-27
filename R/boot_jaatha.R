@@ -49,7 +49,7 @@ boot_jaatha <- function(results, R, ...) {
     create_jaatha_data.default(sim_data, model)
   }
   
-  boot::boot(data, jaatha_stat, R = R, 
+  boot::boot(0, jaatha_stat, R = R, 
              sim = "parametric", 
              ran.gen = simulate_data, 
              mle = results$estimate, ...)

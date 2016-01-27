@@ -1,7 +1,10 @@
+[![Project Status: Active - The project has reached a stable, usable state and is being actively developed.](http://www.repostatus.org/badges/latest/active.svg)](http://www.repostatus.org/#active)
 [![Linux Build Status](https://travis-ci.org/statgenlmu/jaatha.svg?branch=master)](https://travis-ci.org/statgenlmu/jaatha) 
 [![Windows Build status](https://ci.appveyor.com/api/projects/status/g4adpum1pkyn7ajn/branch/master?svg=true)](https://ci.appveyor.com/project/paulstaab/jaatha/branch/master)
 [![Coverage Status](https://coveralls.io/repos/statgenlmu/jaatha/badge.svg?branch=master&service=github)](https://coveralls.io/github/statgenlmu/jaatha?branch=master)
 [![CRAN Status](http://www.r-pkg.org/badges/version/jaatha)](https://cran.r-project.org/web/packages/jaatha/)
+
+<img align="right" alt="Jaatha Logo" width="40%" height="40%" src="https://raw.githubusercontent.com/statgenlmu/jaatha/master/misc/logo.png">
 
 
 Jaatha
@@ -36,16 +39,11 @@ install.packages('jaatha')
 Usage
 -----
 
-The R package includes an introduction vignette that explains how a jaatha
-analysis is conducted. After the package is installed, you can open the
-vignette using:
-
-```R
-vignette("jaatha-intro")
-```
-
-A second vignette called `jaatha-evolution` describes how jaatha can be used
-together with `coala` for demographic inference.
+The R package includes an 
+[introduction vignette](https://cran.r-project.org/web/packages/jaatha/vignettes/jaatha-intro.html) 
+that explains how to conduct a jaatha analysis. 
+A [second vignette](https://cran.r-project.org/web/packages/jaatha/vignettes/jaatha-evolution.html) 
+describes how jaatha can be used together with `coala` for demographic inference.
 
 Further help is provided using R's help system, in particular via `?jaatha`,
 `?create_jaatha_model` and `?create_jaatha_data`.
@@ -83,3 +81,4 @@ The current development version can be installed using:
 ```R
 devtools::install_github('statgenlmu/jaatha')
 ```
+
