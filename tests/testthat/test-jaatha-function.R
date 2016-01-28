@@ -14,6 +14,24 @@ test_that("the main function works", {
 })
 
 
+test_that("output can be suppessed by verbose argument", {
+  model <- create_test_model()
+  data <- create_test_data(model)
+  
+  expect_message(
+    jaatha(model, data, repetitions = 1, sim = 10, cores = 1, 
+           max_steps = 5, verbose = FALSE),
+    NA
+  )
+  
+  expect_message(
+    jaatha(model, data, repetitions = 1, sim = 10, cores = 1, 
+           max_steps = 5, verbose = TRUE),
+    "Step"
+  )
+})
+
+
 test_that("it supports a one parameter model", {
   model <- create_jaatha_model(function(x) rpois(10, x),
                                par_ranges = matrix(c(0.1, 10), 1, 2),

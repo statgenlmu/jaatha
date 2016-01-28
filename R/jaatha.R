@@ -74,10 +74,9 @@ jaatha <- function(model, data,
   assert_that(block_width > 0 && block_width < 1)
   
   # Setup
-  log <- create_jaatha_log(model, data, repetitions, max_steps, verbose = TRUE)
+  log <- create_jaatha_log(model, data, repetitions, max_steps, verbose)
   if (sim_cache_limit < sim) sim_cache_limit <- 0
   sim_cache <- create_sim_cache(sim_cache_limit) #nolint
-
   
   # Get start positions
   log$log_initialization(init_method[1])
