@@ -15,7 +15,6 @@ jaatha_log_class <- R6Class("jaatha_log",
   ),
   public = list(
     initialize = function(model, data, reps, max_steps, verbose = TRUE) {
-      
       par_number <- model$get_par_number()
       par_names <- model$get_par_ranges()$get_par_names()
       private$estimates <- lapply(1:reps, function(i) {
