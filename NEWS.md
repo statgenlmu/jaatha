@@ -2,7 +2,8 @@ jaatha 3.1.1 (in development)
 ============
 
 * Fixes broken suppression of messages with `verbose` argument of the `jaatha` 
-  function.
+  function (#118).
+* Adds more assertions to the code (#120).
 
 
 
