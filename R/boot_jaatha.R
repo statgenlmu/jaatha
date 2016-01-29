@@ -37,7 +37,8 @@ boot_jaatha <- function(results, R, ...) {
     
   jaatha_stat <- function(data) {
     utils::capture.output(results <- do.call(jaatha, args),
-                          file = tempfile(paste0("boot_log_", Sys.getpid(), "_")), 
+                          file = tempfile(paste0("boot_log_", 
+                                                 Sys.getpid(), "_")), 
                           type = "message")
     
     results$estimate

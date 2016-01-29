@@ -21,7 +21,8 @@ fit_glm.jaatha_stat_basic <- function(x, sim_data, ...) {
   glms <- lapply(1:ncol(Y), function(i) {
     suppressWarnings(
       stats::glm.fit(X, Y[, i], family = stats::poisson("log"), 
-                     control = list(maxit = 100))[c("coefficients", "converged")]
+                     control = list(maxit = 100))[c("coefficients", 
+                                                    "converged")]
     )
   })
   

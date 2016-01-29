@@ -1,4 +1,4 @@
-jaatha_data_class <- R6Class("jaatha_data", 
+jaatha_data_class <- R6::R6Class("jaatha_data", 
   lock_objects = TRUE, lock_class = TRUE,
   private = list(
     values = list(),

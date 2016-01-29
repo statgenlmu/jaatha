@@ -1,6 +1,6 @@
 #' @importFrom parallel mclapply
 #' @importFrom assertthat is.error
-jaatha_model_class <- R6Class("jaatha_model", 
+jaatha_model_class <- R6::R6Class("jaatha_model", 
   lock_objects = FALSE, lock_class = TRUE,
   private = list(
     par_ranges = NA,

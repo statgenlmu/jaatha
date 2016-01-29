@@ -1,4 +1,4 @@
-sim_cache_class <- R6Class("sim_cache",
+sim_cache_class <- R6::R6Class("sim_cache",
   private = list(
     max_size = 0,
     size = 0,

@@ -102,7 +102,8 @@ do_zoom_in_search <- function(model, data, reps, sim, cores, sim_cache,
    iteratively deceases the size of the block"
   t(vapply(1:reps, function(i) {
     middle <- rep(.5, model$get_par_number())
-    block_widths <- utils::head(seq(1, block_width, length.out = n_steps + 1), -1)
+    block_widths <- utils::head(seq(1, block_width, 
+                                    length.out = n_steps + 1), -1)
     for (block_width in block_widths) {
       # Create the block
       block <- create_block(cbind(middle - block_width * .5,

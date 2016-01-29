@@ -1,4 +1,4 @@
-block_class <- R6Class("Block",
+block_class <- R6::R6Class("Block",
   private = list(border = NULL),
   public = list(
     initialize = function(border, cut) {
