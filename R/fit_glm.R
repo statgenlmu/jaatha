@@ -26,13 +26,13 @@ fit_glm.jaatha_stat_basic <- function(x, sim_data, ...) {
     )
   })
   
-  sapply(glms, function(x) {
+  vapply(glms, function(x) {
     if (!x$converged) stop("GLM did not converge", call. = FALSE)
     if (all(abs(x$coefficients[-1]) < 1e-10)) {
       stop("GLM coefficients are all numerically 0", call. = FALSE)
     }
-    NULL
-  })
+    numeric(0)
+  }, numeric(0))
 
   glms
 }
