@@ -1,5 +1,4 @@
-#' @importFrom R6 R6Class
-par_ranges_class <- R6Class("par_ranges", 
+par_ranges_class <- R6::R6Class("par_ranges", 
   private = list(
     range = NA,
     log_range = NA,

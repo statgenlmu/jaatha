@@ -1,5 +1,4 @@
-#' @importFrom R6 R6Class
-stat_basic_class <- R6Class("jaatha_stat_basic",
+stat_basic_class <- R6::R6Class("jaatha_stat_basic",
   lock_objects = FALSE, lock_class = TRUE,
   public = list(
     initialize = function(name, calc_func) {

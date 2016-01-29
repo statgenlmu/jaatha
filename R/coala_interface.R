@@ -27,7 +27,6 @@
 #' @param jsfs_part_hi Same as \code{jsfs_part}, but used as \code{part_hi} 
 #'   argument in \code{\link{coarsen_jsfs}}.
 #' @inheritParams create_jaatha_model
-#' @importFrom stats simulate
 #' @export
 #' @export create_jaatha_model.coalmodel
 create_jaatha_model.coalmodel <- function(x, 
@@ -46,7 +45,7 @@ create_jaatha_model.coalmodel <- function(x,
 
   if (length(jsfs_summary) > 1) jsfs_summary <- jsfs_summary[1]
   
-  sim_func <- function(pars) simulate(x, pars = pars)
+  sim_func <- function(pars) stats::simulate(x, pars = pars)
   
   # create parameter ranges
   par_table <- coala::get_parameter_table(x)
@@ -165,7 +164,6 @@ multi_index_range <- function(d, p) {
 #'   L. E. Rose, T. Staedler, W. Stephan, and D. Metzler (2011) Estimating
 #'   parameters of speciation models based on refined summaries of the joint
 #'   site-frequency spectrum. PLoS One 6(5): e18155
-#' @importFrom utils tail
 coarsen_jsfs <- function(ja, part, part_hi = NULL) {
   d <- dim(ja)
   n <- length(d)
@@ -174,7 +172,7 @@ coarsen_jsfs <- function(ja, part, part_hi = NULL) {
     if (!is.list(part_hi)) part_hi <- rep(list(part_hi), n)
     for (i in 1:n) {
       upper <- sort(d[i] - part_hi[[i]])
-      if (tail(part[[i]], 1) >= upper[1]) {
+      if (utils::tail(part[[i]], 1) >= upper[1]) {
         stop(paste("part and part_hi incompatible in dim", i))
       }
       part[[i]] <- c(part[[i]], upper)
@@ -187,7 +185,7 @@ coarsen_jsfs <- function(ja, part, part_hi = NULL) {
   
   z <- numeric(length = prod(vapply(part, length, numeric(1)) - 1))
   combinations <- 
-    expand.grid(lapply(vapply(part, length, numeric(1)) - 1, ":", 1))[length(z):1, ]
+    expand.grid(lapply(vapply(part, length, numeric(1)) - 1, ":", 1))[length(z):1, ] #nolint
   
   for (i in 1:length(z)) {
     comb <- combinations[i, ]

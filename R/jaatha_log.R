@@ -1,4 +1,4 @@
-jaatha_log_class <- R6Class("jaatha_log", 
+jaatha_log_class <- R6::R6Class("jaatha_log", 
   private = list(
     estimates = NULL,
     final_estimates = NULL,

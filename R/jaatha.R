@@ -1,5 +1,6 @@
 #' @importFrom parallel mclapply
 #' @importFrom assertthat assert_that is.string is.count
+#' @importFrom R6 R6Class
 NULL
 
 #' Simulation based maximum likelihood estimation

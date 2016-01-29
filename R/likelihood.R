@@ -8,10 +8,11 @@ calc_poisson_llh <- function(data, stat, loglambda,
   # Upscale predicted expectation value if we use scaling
   if (scaling_factor != 1) loglambda <- loglambda + log(scaling_factor)
   
+  # Calculate the log-likelihood
   llh <- sum(data$get_values(stat) * loglambda - 
                exp(loglambda) - data$get_log_factorial(stat))
+  assert_that(is.finite(llh) && llh < 0)
   
-  assert_that(is.finite(llh))
   llh
 }
 
@@ -37,31 +38,31 @@ approximate_llh.jaatha_model <- function(x, data, param, glm_fitted, sim) {
 }
 
 
-#' @importFrom stats predict.glm
 #' @export
-approximate_llh.jaatha_stat_basic  <- function(x, data, param, glm_fitted, 
+approximate_llh.jaatha_stat_basic  <- function(x, data, param, glm_fitted, #nolint
                                                sim, scaling_factor) {
   
+  # Calculate the predicted expectation values
   loglambda <- vapply(glm_fitted[[x$get_name()]], function(glm_obj) {
     glm_obj$coefficients %*% c(1, param)
   }, numeric(1))
+  assert_that(all(is.finite(loglambda)))
   
   # Calculate the Poission log-likelihood
   calc_poisson_llh(data, x, loglambda, sim, scaling_factor)
 }
 
 
-#' @importFrom stats optim
 optimize_llh <- function(block, model, data, glms, sim) {
   boundary <- block$get_interior(0.15)
-  best_value <- optim(block$get_middle(),
-                      function(param) {
-                        approximate_llh(model, data, param, glms, sim)
-                      },
-                      lower = boundary[, 1, drop = FALSE], 
-                      upper = boundary[, 2, drop = FALSE],
-                      method = "L-BFGS-B", 
-                      control = list(fnscale = -1))
+  best_value <- stats::optim(block$get_middle(),
+                             function(param) {
+                               approximate_llh(model, data, param, glms, sim)
+                             },
+                             lower = boundary[, 1, drop = FALSE], 
+                             upper = boundary[, 2, drop = FALSE],
+                             method = "L-BFGS-B", 
+                             control = list(fnscale = -1))
   
   assert_that(block$includes(best_value$par))
   best_value

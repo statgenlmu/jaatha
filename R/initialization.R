@@ -13,19 +13,19 @@
 #'   to a starting positions. 
 #' @author Paul Staab
 #' @keywords internal
-#' @importFrom stats runif
 get_start_pos <- function(model, data, reps, sim, init_method, cores, 
                           sim_cache, block_width) {
   
   start_pos <- NULL
   if (init_method[1] == "zoom-in") {
-    start_pos <- do_zoom_in_search(model, data, reps, sim, cores, sim_cache, block_width)
+    start_pos <- do_zoom_in_search(model, data, reps, sim, 
+                                   cores, sim_cache, block_width)
   } else if (init_method[1] == "initial-search") {
     start_pos <- do_initial_search(model, data, reps, sim, cores, sim_cache)
   } else if (init_method[1] == "middle") {
     start_pos <- matrix(.5, reps, model$get_par_number())
   } else if (init_method[1] == "random") {
-    start_pos <- matrix(runif(reps * model$get_par_number()), 
+    start_pos <- matrix(stats::runif(reps * model$get_par_number()), 
                         reps, model$get_par_number())
   } else {
     stop("Unknown initialization method: ", init_method[1])
@@ -38,8 +38,8 @@ get_start_pos <- function(model, data, reps, sim, init_method, cores,
 
 
 do_initial_search <- function(model, data, reps, sim, cores, sim_cache) {
-  "determines starting postions by cutting the parameters in equally sized blocks
-   and estimating parameters therein"
+  "determines starting postions by cutting the parameters in equally sized 
+   blocks and estimating parameters therein"
   # Divide the parameter space in blocks
   par_number <- model$get_par_ranges()$get_par_number()
   blocks_per_par <- determine_bpp(par_number, reps)
@@ -96,14 +96,14 @@ create_initial_blocks <- function(par_ranges, blocks_per_par) {
 }
 
 
-#' @importFrom utils head
-do_zoom_in_search <- function(model, data, reps, sim, cores, sim_cache, block_width, 
-                              n_steps = 3) {
-  "Starts with estimating parameters in the complete parameter space, an then iteratively 
-   deceases the size of the block"
+do_zoom_in_search <- function(model, data, reps, sim, cores, sim_cache, 
+                              block_width, n_steps = 3) {
+  "Starts with estimating parameters in the complete parameter space, an then 
+   iteratively deceases the size of the block"
   t(vapply(1:reps, function(i) {
     middle <- rep(.5, model$get_par_number())
-    block_widths <- head(seq(1, block_width, length.out = n_steps + 1), -1)
+    block_widths <- utils::head(seq(1, block_width, 
+                                    length.out = n_steps + 1), -1)
     for (block_width in block_widths) {
       # Create the block
       block <- create_block(cbind(middle - block_width * .5,

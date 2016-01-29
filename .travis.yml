@@ -10,8 +10,8 @@ r_binary_packages:
   - knitr # for lintr
   - igraph # for lintr
   
-r_packages:
-  - lintr 
+r_github_packages:
+  - jimhester/lintr 
 
 after_success:
   - Rscript -e "lintr::lint_package()"

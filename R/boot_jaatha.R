@@ -18,7 +18,6 @@
 #'   estimate standard errors or confidence intervals of the estimates using
 #'   the functions available in package \pkg{boot}.
 #' 
-#' @importFrom utils capture.output
 #' @export
 boot_jaatha <- function(results, R, ...) {
   require_package("boot")
@@ -37,9 +36,10 @@ boot_jaatha <- function(results, R, ...) {
   dir.create(log_folder)
     
   jaatha_stat <- function(data) {
-    capture.output(results <- do.call(jaatha, args),
-                   file = tempfile(paste0("boot_log_", Sys.getpid(), "_")), 
-                   type = "message")
+    utils::capture.output(results <- do.call(jaatha, args),
+                          file = tempfile(paste0("boot_log_", 
+                                                 Sys.getpid(), "_")), 
+                          type = "message")
     
     results$estimate
   }
