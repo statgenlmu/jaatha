@@ -187,7 +187,7 @@ coarsen_jsfs <- function(ja, part, part_hi = NULL) {
   
   z <- numeric(length = prod(vapply(part, length, numeric(1)) - 1))
   combinations <- 
-    expand.grid(lapply(vapply(part, length, numeric(1)) - 1, ":", 1))[length(z):1, ]
+    expand.grid(lapply(vapply(part, length, numeric(1)) - 1, ":", 1))[length(z):1, ] #nolint
   
   for (i in 1:length(z)) {
     comb <- combinations[i, ]
