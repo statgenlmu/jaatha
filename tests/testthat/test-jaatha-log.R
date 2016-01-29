@@ -82,6 +82,8 @@ test_that("it creates the results correctly", {
                                     value = -2))
   
   results <- log$create_results()
+  expect_true(is_jaatha_result(results))
+  expect_output(print(results), "p1")
   expect_equivalent(results$estimate, 
                     model$get_par_ranges()$denormalize(c(.1, .1)))
   expect_equal(results$loglikelihood, -1)
