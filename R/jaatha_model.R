@@ -1,4 +1,3 @@
-#' @importFrom R6 R6Class
 #' @importFrom parallel mclapply
 #' @importFrom assertthat is.error
 jaatha_model_class <- R6Class("jaatha_model", 
@@ -176,9 +175,8 @@ create_jaatha_model.function <- function(x, par_ranges, sum_stats, ...,
 is_jaatha_model <- function(x) inherits(x, "jaatha_model")
 
 
-#' @importFrom stats rpois
 create_test_model <- function() {
-  create_jaatha_model(function(x) rpois(10, x),
+  create_jaatha_model(function(x) stats::rpois(10, x),
                       par_ranges = matrix(c(0.1, 0.1, 10, 10), 2, 2),
                       sum_stats = list(stat_identity(), stat_sum()),
                       test = FALSE)

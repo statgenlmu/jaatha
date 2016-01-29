@@ -1,4 +1,3 @@
-#' @importFrom R6 R6Class
 stat_cube_class <- R6Class("stat_cube", inherit = stat_basic_class,
   lock_objects = FALSE, lock_class = TRUE,
   private = list(

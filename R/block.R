@@ -1,4 +1,3 @@
-#' @importFrom R6 R6Class
 block_class <- R6Class("Block",
   private = list(border = NULL),
   public = list(

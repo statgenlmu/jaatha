@@ -39,9 +39,8 @@ approximate_llh.jaatha_model <- function(x, data, param, glm_fitted, sim) {
 }
 
 
-#' @importFrom stats predict.glm
 #' @export
-approximate_llh.jaatha_stat_basic  <- function(x, data, param, glm_fitted, 
+approximate_llh.jaatha_stat_basic  <- function(x, data, param, glm_fitted, #nolint
                                                sim, scaling_factor) {
   
   # Calculate the predicted expectation values
@@ -55,17 +54,16 @@ approximate_llh.jaatha_stat_basic  <- function(x, data, param, glm_fitted,
 }
 
 
-#' @importFrom stats optim
 optimize_llh <- function(block, model, data, glms, sim) {
   boundary <- block$get_interior(0.15)
-  best_value <- optim(block$get_middle(),
-                      function(param) {
-                        approximate_llh(model, data, param, glms, sim)
-                      },
-                      lower = boundary[, 1, drop = FALSE], 
-                      upper = boundary[, 2, drop = FALSE],
-                      method = "L-BFGS-B", 
-                      control = list(fnscale = -1))
+  best_value <- stats::optim(block$get_middle(),
+                             function(param) {
+                               approximate_llh(model, data, param, glms, sim)
+                             },
+                             lower = boundary[, 1, drop = FALSE], 
+                             upper = boundary[, 2, drop = FALSE],
+                             method = "L-BFGS-B", 
+                             control = list(fnscale = -1))
   
   assert_that(block$includes(best_value$par))
   best_value
