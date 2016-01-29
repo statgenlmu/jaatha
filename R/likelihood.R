@@ -11,8 +11,7 @@ calc_poisson_llh <- function(data, stat, loglambda,
   # Calculate the log-likelihood
   llh <- sum(data$get_values(stat) * loglambda - 
                exp(loglambda) - data$get_log_factorial(stat))
-  assert_that(is.finite(llh))
-  assert_that(llh <= 0)
+  assert_that(is.finite(llh) && llh < 0)
   
   llh
 }
