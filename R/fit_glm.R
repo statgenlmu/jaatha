@@ -40,7 +40,7 @@ fit_glm.jaatha_stat_basic <- function(x, sim_data, ...) {
 
 # fit_glm.Stat_PoiSmooth <- function(sum_stat, sim_data) {
 #   par_names <- names(sim_data[[1]]$pars)
-x`#   model <- paste0("sum.stat ~ ",
+#   model <- paste0("sum.stat ~ ",
 #                   "(", sum_stat$get_model(), ")",  
 #                   "*(", paste(par_names, collapse="+"), ")") 
 # 
