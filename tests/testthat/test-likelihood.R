@@ -102,7 +102,7 @@ test_that("it estimates local llh maxima", {
 
 
 
-test_that("All nummerically 0 glms create an error when estimate the likelihood", {
+test_that("All nummerically 0 glms create an error", {
   model <- create_jaatha_model(
              function(x) rpois(10, x),
              par_ranges = matrix(c(0.1, 10), 2, 2, TRUE),
