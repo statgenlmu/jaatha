@@ -97,7 +97,7 @@ jaatha <- function(model, data,
       
       local_ml <- estimate_local_ml(block, model, data, sim, cores, sim_cache)
       if (is.null(local_ml)) {
-        warning("A GLM failed to converge. Aborting one repetition.")
+        warning("The GLMs failed to converge. Aborting one repetition.")
         break
       }
       log$log_estimate(rep, step, local_ml)
