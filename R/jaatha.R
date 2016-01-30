@@ -1,5 +1,5 @@
 #' @importFrom parallel mclapply
-#' @importFrom assertthat assert_that is.string is.count
+#' @importFrom assertthat assert_that is.string is.count are_equal
 #' @importFrom R6 R6Class
 NULL
 
