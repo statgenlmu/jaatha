@@ -9,6 +9,7 @@ calc_poisson_llh <- function(data, stat, loglambda,
   if (scaling_factor != 1) loglambda <- loglambda + log(scaling_factor)
   
   # Calculate the log-likelihood
+  assert_that(are_equal(length(loglambda), length(data$get_values(stat))))
   llh <- sum(data$get_values(stat) * loglambda - 
                exp(loglambda) - data$get_log_factorial(stat))
   assert_that(is.finite(llh) && llh < 0)
@@ -47,6 +48,8 @@ approximate_llh.jaatha_stat_basic  <- function(x, data, param, glm_fitted, #noli
     glm_obj$coefficients %*% c(1, param)
   }, numeric(1))
   assert_that(all(is.finite(loglambda)))
+  assert_that(are_equal(length(loglambda), 
+                        length(glm_fitted[[x$get_name()]])))
   
   # Calculate the Poission log-likelihood
   calc_poisson_llh(data, x, loglambda, sim, scaling_factor)
@@ -83,7 +86,8 @@ estimate_local_ml <- function(block, model, data, sim, cores, sim_cache) {
     glms <- tryCatch(fit_glm(model, sim_data), error = identity)
   
     # Conduct more simulations if the glms did not converge
-    converged <- !vapply(glms, inherits, logical(1), what = "simpleError")
+    converged <- !(inherits(glms, "simpleError") ||
+                     vapply(glms, inherits, logical(1), what = "simpleError"))
     if (all(converged)) break
     
     if (j == 5) sim_cache$clear()
