@@ -26,14 +26,13 @@ fit_glm.jaatha_stat_basic <- function(x, sim_data, ...) {
     )
   })
   
-  vapply(glms, function(x) {
+  stat_is_uninformative <- vapply(glms, function(x) {
     if (!x$converged) stop("GLM did not converge", call. = FALSE)
-    if (all(abs(x$coefficients[-1]) < 1e-10)) {
-      stop("GLM coefficients are all numerically 0", call. = FALSE)
-    }
-    numeric(0)
-  }, numeric(0))
-
+    all(abs(x$coefficients[-1]) < 1e-10)
+  }, logical(1))
+  
+  if (all(stat_is_uninformative)) stop("No informative statistics available") 
+  
   glms
 }
 
