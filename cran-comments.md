@@ -1,5 +1,9 @@
+Please excuse the short time since the last submission. I introduced a severe
+bug in the last version which can cause false results in some situations. This
+release fixes it.
+
 ## Test environments
-* Ubuntu 15.10 (local), R 3.2.3
+* Fedora 23 (local), R 3.2.3
 * Ubuntu 12.04 (on Travis-CI), R 3.2.3
 * Windows (on AppVeyor), R-devel
 * win-builder (R-devel and R-release)

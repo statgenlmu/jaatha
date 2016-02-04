@@ -1,8 +1,13 @@
-jaatha 3.1.1 (in development)
+jaatha 3.1.1
 ============
 
 * Fixes broken suppression of messages with `verbose` argument of the `jaatha` 
   function (#118).
+* Removes a buggy check for summary statistics that are insensitve about the 
+  parameters introduced in version 3.1.0. Together with the previous bug, this
+  could lead to false results in some applications of _jaatha_. For any runs
+  conducted with that version, check if the output contained an estimated 
+  likelihood of `1` and repreat the runs with the new version if so (#124).
 * Adds more assertions to the code (#120).
 
 

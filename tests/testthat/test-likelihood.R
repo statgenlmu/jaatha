@@ -22,16 +22,6 @@ test_that("llh is approximatied for basic statistics", {
 })
 
 
-test_that("calcStatLLH works for Stat_PoiSmooth", {
-  skip("Smoothing not implemented")
-  glm_fit <- fit_glm(smooth_stat, smooth_sim_data)
-  
-  #ll <- calcStatLLH(smooth_stat, glm_fit, c(x=.5, y=.5), scaling_factor=1)
-  #expect_true(is.numeric(ll))
-  #expect_true(0 <= exp(ll) | exp(ll) <= 1)
-})
-
-
 test_that("llh is approximatied for complete models", {
   model <- create_test_model()
   data <- create_test_data(model)
@@ -98,21 +88,4 @@ test_that("it estimates local llh maxima", {
   expect_is(est$value, "numeric")
   expect_equal(length(est$value), 1)
   expect_true(all(est$value <= 0))
-})
-
-
-
-test_that("All nummerically 0 glms create an error", {
-  model <- create_jaatha_model(
-             function(x) rpois(10, x),
-             par_ranges = matrix(c(0.1, 10), 2, 2, TRUE),
-             sum_stats = list(create_jaatha_stat("1", 
-                                                 function(x, y) rep(1, 10))),
-             test = FALSE
-           )
-  data <- create_test_data(model)
-  block <- create_block(matrix(c(0, 0, 1, 1), 2))  
-  
-  local_ml <- estimate_local_ml(block, model, data, 50, 1, create_sim_cache())
-  expect_equal(local_ml, NULL)
 })
