@@ -1,17 +1,10 @@
 language: r
-sudo: required
-
+cache: packages
 warnings_are_errors: true
 
-r_binary_packages:
-  - testthat
-  - covr
-  - RcppArmadillo # for coala
-  - knitr # for lintr
-  - igraph # for lintr
-  
 r_github_packages:
   - jimhester/lintr 
+  - jimhester/covr
 
 after_success:
   - Rscript -e "lintr::lint_package()"
