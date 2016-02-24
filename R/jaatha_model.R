@@ -92,7 +92,8 @@ jaatha_model_class <- R6::R6Class("jaatha_model",
       
       if (!quiet) {
         if (time > 30) warning("Each simulation takes about ", round(time),
-                               "s, Jaatha might run for a long time.")
+                               "s, Jaatha might run for a long time.", 
+                               call. = FALSE)
         
         if (time < 1) message("A simulation takes less than a second")
         else message("A simulation takes about ", round(time), "s")
