@@ -4,12 +4,19 @@
 \alias{boot_jaatha}
 \title{Parametric Bootstrapping of Jaatha Estimates}
 \usage{
-boot_jaatha(results, R, ...)
+boot_jaatha(results, R, cores_per_run = 1, ...)
 }
 \arguments{
 \item{results}{The results of an \code{\link{jaatha}} analysis.}
 
 \item{R}{The number of bootstrapping replicates that are performed.}
+
+\item{cores_per_run}{The number of cores that are used for each replicate.
+This corresponds to the \code{cores} option of \code{\link{jaatha}}.
+Different replicates can be executed in parallel using the 
+\code{parallel}, \code{ncpus} and \code{cl} options of 
+\code{\link[boot]{boot}}.  The total number of CPU cores
+used is \code{ncpus} * \code{cores_per_run}.}
 
 \item{...}{Additional arguments that are passed on \code{\link[boot]{boot}}.
 It is highly recommended to use its \code{parallel} and \code{ncpus} 
@@ -25,9 +32,29 @@ This function is a helper function for using the \code{\link[boot]{boot}}
 function to bootstrap Jaatha estimates. Each bootstap replication requires
 a complete jaatha estimation on data simulated with the original parameter
 estimates. Therefore, bootstrapping is normally computationally demanding and
-should be executed on a computing cluster. The jaatha analyses are
-resticted to a single CPU cores, so that as many replicas as possible can 
-be executed in parallel using the corresponding options of 
-\code{\link[boot]{boot}}.
+should be executed on a computing cluster.
+}
+\examples{
+\dontrun{
+# The original Jaatha anaylsis:
+jaatha_result <- jaatha(model, data, cores = 4)
+
+# Bootstrapping the results using 4 CPU cores on host1 and 2 on host2/host3:
+library(boot)
+library(snow)
+cl <- makeSOCKcluster(c("host1", "host1", "host2", "host3"))
+
+jaatha_boot_results <- boot_jaatha(jaatha_result, 200, 
+                                   cores_per_run = 2,
+                                   parallel = "snow",
+                                   cl = cl)
+
+stopCluster(cl)
+boot.ci(jaatha_boot_results, type = "norm")
+}
+
+}
+\seealso{
+\code{\link[boot]{boot}}, \code{\link{jaatha}}
 }
 

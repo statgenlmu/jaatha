@@ -1,3 +1,11 @@
+jaatha 3.2.0 (in development)
+============
+
+* Adds the `cores_per_run` to `boot_jaatha` which can be set to use more than 
+  one CPU core for each replica.
+
+
+
 jaatha 3.1.1
 ============
 
