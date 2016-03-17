@@ -154,5 +154,3 @@ test_that("the JSFS is correctly summarized", {
   expect_error(coarsen_jsfs(jsfs, 3, 3))
   expect_error(coarsen_jsfs(jsfs, c(1, 3), c(1, 3)))
 })
-
-

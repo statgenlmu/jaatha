@@ -221,6 +221,7 @@ calc_folded_jsfs_sums <- function(jsfs) {
   m <- ncol(jsfs)
   assert_that(n > 7 && m > 7)
   
+  # nolint start
   sumstats <- 
     c(sum(jsfs[1, 2:3], 
           jsfs[n, (m-2):(m-1)]),
@@ -239,6 +240,7 @@ calc_folded_jsfs_sums <- function(jsfs) {
       sum(jsfs[4:(n-3), 4:(m-3)]),
       sum(jsfs[4:(n-3), m])
     )
+  # nolint end
   
   sumstats
 }
