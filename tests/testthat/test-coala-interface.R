@@ -94,6 +94,23 @@ test_that("the JSFS can be used in Jaatha", {
 })
 
 
+test_that("the folded JSFS can be used in Jaatha", {
+  skip_if_not_installed("coala")
+  coala_model <- coala::coal_model(7:8, 2) +
+    coala::feat_mutation(coala::par_range("theta", 1, 5)) +
+    coala::feat_migration(coala::par_range("m", 1, 5), symmetric = TRUE) +
+    coala::sumstat_jsfs()
+  
+  jaatha_model <- create_jaatha_model(coala_model, "folded_sums", test = FALSE)
+  expect_equal(length(jaatha_model$get_sum_stats()), 1)
+  
+  sim_data <- jaatha_model$test()
+  value <- jaatha_model$get_sum_stats()[[1]]$calculate(sim_data)
+  expect_that(value, is_a("numeric"))
+  expect_equal(sum(value), sum(sim_data$jsfs))
+})
+
+
 test_that("the four gamete stat can be used in Jaatha", {
   skip_if_not_installed("coala")
 

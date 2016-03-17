@@ -4,10 +4,10 @@
 \alias{create_jaatha_model.coalmodel}
 \title{Use a coala model in Jaatha}
 \usage{
-\method{create_jaatha_model}{coalmodel}(x, jsfs_summary = c("sums", "none",
-  "smooth"), four_gamete_breaks = c(0.2, 0.5), mcmf_breaks = c(0.5, 0.7,
-  0.9), jsfs_part = c(1, 3), jsfs_part_hi = c(1, 3), ...,
-  scaling_factor = 1, test = TRUE)
+\method{create_jaatha_model}{coalmodel}(x, jsfs_summary = c("sums",
+  "folded_sums", "none", "smooth"), four_gamete_breaks = c(0.2, 0.5),
+  mcmf_breaks = c(0.5, 0.7, 0.9), jsfs_part = c(1, 3), jsfs_part_hi = c(1,
+  3), ..., scaling_factor = 1, test = TRUE)
 }
 \arguments{
 \item{x}{The coala model}
@@ -15,10 +15,13 @@
 \item{jsfs_summary}{The way the Joint Site Frquency Spectrum (JSFS) 
 is further summarized. Can be \code{sums} (default), \code{none} or 
 \code{"smoothing"}. For \code{sums}, 23 different areas of the JSFS
-are summed up, and the sums are used as indepented Poission statistcs, 
-for \code{none}, all entries are used as indepented Possion statistics.
+are summed up, and the sums are used as indepented Poission statistcs.
+For \code{folded_sums}, the same sums will be calculate from the 
+unpolarized (folded) JSFS. This does only support two population spectra 
+and the default partitions at the moment. 
+For \code{none}, all entries are used as indepented Possion statistics.
 The value \code{smooth} is experimental so far and should not be used.
-This option has no effect if the JSFS used as summary statistic in the
+This option has no effect if the JSFS is not a summary statistic of the 
 coala model.}
 
 \item{four_gamete_breaks}{Quantiles of the real data that will be used as 
@@ -30,7 +33,10 @@ for binning the MCMF statistic if present in the model.}
 
 \item{jsfs_part}{Partitions used for the summarizing the JSFS. This is only 
 used if \code{jsfs_summary} is "sums". Is used as the \code{part} argument
-of \code{\link{coarsen_jsfs}}. Please go there for an explanation.}
+of \code{\link{coarsen_jsfs}}. Please go there for an explanation.
+If \code{folded_sums} is used as jsfs summary, the values of jsfs_part
+and jsfs_part_hi will be ignored, and their default values \code{c(1, 3)}
+will be used instead.}
 
 \item{jsfs_part_hi}{Same as \code{jsfs_part}, but used as \code{part_hi} 
 argument in \code{\link{coarsen_jsfs}}.}

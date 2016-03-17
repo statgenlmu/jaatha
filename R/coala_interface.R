@@ -11,10 +11,13 @@
 #' @param jsfs_summary The way the Joint Site Frquency Spectrum (JSFS) 
 #'   is further summarized. Can be \code{sums} (default), \code{none} or 
 #'   \code{"smoothing"}. For \code{sums}, 23 different areas of the JSFS
-#'   are summed up, and the sums are used as indepented Poission statistcs, 
-#'   for \code{none}, all entries are used as indepented Possion statistics.
+#'   are summed up, and the sums are used as indepented Poission statistcs.
+#'   For \code{folded_sums}, the same sums will be calculate from the 
+#'   unpolarized (folded) JSFS. This does only support two population spectra 
+#'   and the default partitions at the moment. 
+#'   For \code{none}, all entries are used as indepented Possion statistics.
 #'   The value \code{smooth} is experimental so far and should not be used.
-#'   This option has no effect if the JSFS used as summary statistic in the
+#'   This option has no effect if the JSFS is not a summary statistic of the 
 #'   coala model.
 #' @param four_gamete_breaks Quantiles of the real data that will be used as 
 #'   breaks for binning the Four Gamete test based statistic if present in the 
@@ -24,6 +27,9 @@
 #' @param jsfs_part Partitions used for the summarizing the JSFS. This is only 
 #'   used if \code{jsfs_summary} is "sums". Is used as the \code{part} argument
 #'   of \code{\link{coarsen_jsfs}}. Please go there for an explanation.
+#'   If \code{folded_sums} is used as jsfs summary, the values of jsfs_part
+#'   and jsfs_part_hi will be ignored, and their default values \code{c(1, 3)}
+#'   will be used instead.
 #' @param jsfs_part_hi Same as \code{jsfs_part}, but used as \code{part_hi} 
 #'   argument in \code{\link{coarsen_jsfs}}.
 #' @inheritParams create_jaatha_model
@@ -31,6 +37,7 @@
 #' @export create_jaatha_model.coalmodel
 create_jaatha_model.coalmodel <- function(x, 
                                           jsfs_summary = c("sums",
+                                                           "folded_sums",
                                                            "none",
                                                            "smooth"),
                                           four_gamete_breaks = c(.2, .5),
@@ -77,6 +84,10 @@ convert_coala_sumstats <- function(coala_model, jsfs_summary = "sums",
       if (jsfs_summary == "sums") {
         return(create_jaatha_stat(name, function(x, opts) {
           coarsen_jsfs(x[[name]], jsfs_part, jsfs_part_hi)
+        }))
+      } else if (jsfs_summary == "folded_sums") {
+        return(create_jaatha_stat(name, function(x, opts) {
+          calc_folded_jsfs_sums(x[[name]])
         }))
       } else if (jsfs_summary == "none") {
         return(create_jaatha_stat(name, function(x, opts) {
@@ -201,4 +212,35 @@ coarsen_jsfs <- function(ja, part, part_hi = NULL) {
   if (all(mapply(function(x, y) any(x == y), part, d - 1))) z <- z[-length(z)]
   
   z
+}
+
+
+calc_folded_jsfs_sums <- function(jsfs) {
+  assert_that(is.matrix(jsfs))
+  n <- nrow(jsfs)
+  m <- ncol(jsfs)
+  assert_that(n > 7 && m > 7)
+  
+  # nolint start
+  sumstats <- 
+    c(sum(jsfs[1, 2:3], 
+          jsfs[n, (m-2):(m-1)]),
+      sum(jsfs[1, 4:(m-3)], 
+          jsfs[n, 4:(m-3)]),
+      sum(jsfs[1, (m-2):(m-1)], jsfs[n, 2:3]),
+      sum(jsfs[1, m], jsfs[n, 1]),
+      sum(jsfs[2:3, 1], jsfs[(n-2):(n-1),m]),
+      sum(jsfs[2:3, 2:3], jsfs[(n-2):(n-1), (m-2):(m-1)]),
+      sum(jsfs[2:3, 4:(m-3)], jsfs[(n-2):(n-1), 4:(m-3)]),
+      sum(jsfs[2:3, (m-2):(m-1)], jsfs[(n-2):(n-1), 2:3]),
+      sum(jsfs[n, 2:3], jsfs[(n-2):(n-1), 1]),
+      sum(jsfs[4:(n-3), 1]),
+      sum(jsfs[4:(n-3), 2:3]),
+      sum(jsfs[4:(n-3), (m-2):(m-1)]),
+      sum(jsfs[4:(n-3), 4:(m-3)]),
+      sum(jsfs[4:(n-3), m])
+    )
+  # nolint end
+  
+  sumstats
 }
