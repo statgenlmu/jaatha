@@ -4,7 +4,9 @@ jaatha 3.2.0 (in development)
 * Adds the `cores_per_run` to `boot_jaatha` which can be set to use more than 
   one CPU core for each replica (#128).
 * Coala support: Adds JSFS summary options `folded_sums`, which calculates
-  the standard JSFS coarsening from an unpolarized spectrum.
+  the standard JSFS coarsening from an unpolarized spectrum (#130).
+* Now tries to continue the estimation even when a few simulations return 
+  errors.
 
 
 

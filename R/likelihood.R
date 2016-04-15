@@ -75,7 +75,8 @@ optimize_llh <- function(block, model, data, glms, sim) {
 estimate_local_ml <- function(block, model, data, sim, cores, sim_cache) {
   for (j in 1:10) {
     sim_data <- model$simulate(pars = block$sample_pars(sim, TRUE), 
-                               data = data, cores = cores)
+                               data = data, 
+                               cores = cores)
   
     # Cache simulation & load older simulations within this block
     sim_cache$add(sim_data)
@@ -91,7 +92,7 @@ estimate_local_ml <- function(block, model, data, sim, cores, sim_cache) {
     if (all(converged)) break
     
     if (j == 5) sim_cache$clear()
-    if (j == 10) return(NULL)
+    if (j == 10) stop("GLMs failed to converge")
   }
   
   optimize_llh(block, model, data, glms, length(sim_data))

@@ -110,10 +110,13 @@ do_zoom_in_search <- function(model, data, reps, sim, cores, sim_cache,
                                   middle + block_width * .5), cut = TRUE)
       
       # Estimate Parameters
-      middle <- estimate_local_ml(block, model, data, sim, cores, sim_cache)$par
-      
-      # If estimation has failed, continue with the previuos best estimate
-      if (is.null(middle)) return(block$get_middle())
+      middle <- tryCatch(estimate_local_ml(block, model, data,
+                                           sim, cores, sim_cache)$par,
+                         error = function(e) {
+                           warning("Estimation failed: ", e$message, 
+                                   call. = FALSE)
+                           block$get_middle()
+                         })
     }
     middle
   }, numeric(model$get_par_number())))
