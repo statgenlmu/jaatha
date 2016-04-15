@@ -55,10 +55,10 @@ jaatha_model_class <- R6::R6Class("jaatha_model",
           error_dump <- tempfile("jaatha_frame_dump_", fileext = ".Rda")
           dump.frames("sim_error_dump")
           save("sim_error_dump", file = error_dump)
-          stop(paste(e$message, "[Frame dump written to", error_dump, "]"), 
+          stop(paste("Simulation error: ", e$message, 
+                     "[Frame dump written to", error_dump, "]"), 
                call. = FALSE)
         })
-        
         
         # Calculate Summary Statistics
         sum_stats <- lapply(private$sum_stats, function(sum_stat) {
