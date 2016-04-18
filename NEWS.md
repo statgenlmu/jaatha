@@ -6,7 +6,8 @@ jaatha 3.2.0 (in development)
 * Coala support: Adds JSFS summary options `folded_sums`, which calculates
   the standard JSFS coarsening from an unpolarized spectrum (#130).
 * Now tries to continue the estimation even when a few simulations return 
-  errors.
+  errors (#131).
+* Skip tests if `testthat` is not available.
 
 
 
