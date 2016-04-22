@@ -100,9 +100,10 @@ jaatha <- function(model, data,
                            error = function(e) {
         warning("Error: ", e$message, " | Aborting one repetition.", 
                 call. = FALSE)
-        break
+        invisible(NULL)
       })
-
+      if (is.null(local_ml)) break
+      
       log$log_estimate(rep, step, local_ml)
       estimate <- local_ml$par
       
