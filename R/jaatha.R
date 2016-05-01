@@ -9,7 +9,7 @@ NULL
 #'   See \code{\link{create_jaatha_model}}.
 #' @param data The data used for the estimation.
 #'   See \code{\link{create_jaatha_data}}.
-#' @param repetitions The number of independend optimizations that will be
+#' @param repetitions The number of independent optimizations that will be
 #'   conducted. You should use a value greater than one here, to minimize
 #'   the chance that the algorithms is stuck in a local maximum.
 #' @param sim The number of simulations conducted for each step.
@@ -18,7 +18,7 @@ NULL
 #' @param init_method Determines how the starting position of each repetition
 #'   is chosen. See below for a description of the different options. 
 #' @param cores The number of CPU cores that will be used for the simulations.
-#'   The relies on the \pkg{parallel} package, and consequenlty only one
+#'   The relies on the \pkg{parallel} package, and consequently only one
 #'   core is supported on Windows.
 #' @param sim_cache_limit The maximal number of simulations results that will be 
 #'   cached. Cached results may be reused in following estimation steps if 
@@ -31,6 +31,14 @@ NULL
 #'   help in case jaatha fails to converge, while you can try decreasing it if 
 #'   the estimates of the likelihoods differ from the corrected values in the 
 #'   'Correcting likelihoods for best estimates' phase.
+#' @param final_sim The number of simulations conducted for calculating 
+#'   precise likelihoods for the best estimates found in the optimization
+#'   procedure. These number of simulations is conducted for the best
+#'   five estimates from each repetition. Using the default value is usually
+#'   fine.
+#' @param zoom_in_steps The number of steps conducted in the \code{zoom-in}
+#'   initialization method. Has no effect if a different initialization method
+#'   is used. Using the default value is usually fine.
 #' @return A list contain the results. The list has the following entries:
 #' \describe{
 #'    \item{estimate}{The (approximated) maximum likelihood estimate}
@@ -48,7 +56,7 @@ NULL
 #'   starting positions. The option \code{zoom-in} starts with a block that
 #'   is equal to the complete parameter space, estimate parameters in there,
 #'   and then iteratively creates a smaller block around the estimates. Finally,
-#'   \code{random} chooses random starting postions and
+#'   \code{random} chooses random starting positions and
 #'   \code{middle} will just start all repetitions at the middle of the 
 #'   parameter space.
 #'   
@@ -57,13 +65,15 @@ NULL
 jaatha <- function(model, data, 
                    repetitions = 3, 
                    sim = model$get_par_number() * 25, 
-                   max_steps = 100, 
+                   max_steps = 100,
                    init_method = c("zoom-in", "initial-search", 
                                    "random", "middle"),
                    cores = 1,
                    verbose = TRUE,
                    sim_cache_limit = 10000,
-                   block_width = 0.1) {
+                   block_width = 0.1,
+                   final_sim = 100,
+                   zoom_in_steps = 3) {
   
   # Check parameters
   assert_that(is_jaatha_model(model))
@@ -73,6 +83,8 @@ jaatha <- function(model, data,
   assert_that(is.count(cores))
   assert_that(is.numeric(block_width) && length(block_width) == 1)
   assert_that(block_width > 0 && block_width < 1)
+  assert_that(is.count(final_sim))
+  assert_that(is.count(zoom_in_steps))
   
   # Setup
   log <- create_jaatha_log(model, data, repetitions, max_steps, verbose)
@@ -82,7 +94,8 @@ jaatha <- function(model, data,
   # Get start positions
   log$log_initialization(init_method[1])
   start_pos <- get_start_pos(model, data, repetitions, sim, init_method, cores,
-                             sim_cache = sim_cache, block_width = block_width)
+                             sim_cache = sim_cache, block_width = block_width,
+                             zoom_in_steps)
   
   for (rep in 1:repetitions) {
     estimate <- start_pos[rep, ]
@@ -125,7 +138,7 @@ jaatha <- function(model, data,
   if (nrow(best_values) == 0) stop("No valid estimates.")
   for (i in 1:nrow(best_values)) {
     llh <- estimate_llh(model, data, as.numeric(best_values[i, -(1:3)]), #nolint 
-                        100, cores, TRUE)
+                        final_sim, cores, TRUE)
     log$log_estimate("final", i, llh, best_values[i, 3])
   }
   

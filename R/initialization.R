@@ -14,12 +14,12 @@
 #' @author Paul Staab
 #' @keywords internal
 get_start_pos <- function(model, data, reps, sim, init_method, cores, 
-                          sim_cache, block_width) {
+                          sim_cache, block_width, zoom_in_steps = 3) {
   
   start_pos <- NULL
   if (init_method[1] == "zoom-in") {
     start_pos <- do_zoom_in_search(model, data, reps, sim, 
-                                   cores, sim_cache, block_width)
+                                   cores, sim_cache, block_width, zoom_in_steps)
   } else if (init_method[1] == "initial-search") {
     start_pos <- do_initial_search(model, data, reps, sim, cores, sim_cache)
   } else if (init_method[1] == "middle") {
