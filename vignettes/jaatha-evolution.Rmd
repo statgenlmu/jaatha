@@ -58,5 +58,13 @@ on to `create_jaatha_data`.
 Running Jaatha
 --------------
 From here on, you can estimate parameters using the `jaatha` as described in the
-introduction vignette.
+introduction vignette. 
 
+If you are using a simulator that is writing temporary
+files to disk (e.g. `ms`, `msms` and `seq-gen`), please make sure that there
+is sufficient free space on your `tempdir()` to store the output of `sim` 
+simulations per core that you use (arguments `sim` and `cores` in the `jaatha`
+function). Also, please make sure that your machine does not run out of memory.
+Both will lead to failtures during the estimation process. Reducing the number
+of cores reduces both the required memory and disk space at the cost of a 
+longer runtime.
