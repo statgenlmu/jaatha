@@ -7,7 +7,8 @@ jaatha 3.2.0 (in development)
   the standard JSFS coarsening from an unpolarized spectrum (#130).
 * Now tries to continue the estimation even when a few simulations return 
   errors (#131).
-* Skip tests if `testthat` is not available (#132).
+* Skips tests if `testthat` is not available (#132).
+* Adds new options `final_sim` and `zoom_in_steps` to the main jaatha `method`.
 
 
 

@@ -7,7 +7,7 @@
 jaatha(model, data, repetitions = 3, sim = model$get_par_number() * 25,
   max_steps = 100, init_method = c("zoom-in", "initial-search", "random",
   "middle"), cores = 1, verbose = TRUE, sim_cache_limit = 10000,
-  block_width = 0.1)
+  block_width = 0.1, final_sim = 100, zoom_in_steps = 3)
 }
 \arguments{
 \item{model}{The model used for the estimation. 
@@ -45,6 +45,16 @@ local GLM. The default value is usually fine. Increasing this value may
 help in case jaatha fails to converge, while you can try decreasing it if 
 the estimates of the likelihoods differ from the corrected values in the 
 'Correcting likelihoods for best estimates' phase.}
+
+\item{final_sim}{The number of simulations conducted for calculating 
+precise likelihoods for the best estimates found in the optimization
+predure. These number of simulations is conducted for the the best
+five estimates from each repetition. Using the default value is usually
+fine.}
+
+\item{zoom_in_steps}{The number of steps conducted in the \code{zoom-in}
+initialization method. Has no effect if a different initialization method
+is used. Using the default value is usually fine.}
 }
 \value{
 A list contain the results. The list has the following entries:
