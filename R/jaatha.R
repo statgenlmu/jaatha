@@ -18,7 +18,7 @@ NULL
 #' @param init_method Determines how the starting position of each repetition
 #'   is chosen. See below for a description of the different options. 
 #' @param cores The number of CPU cores that will be used for the simulations.
-#'   The relies on the \pkg{parallel} package, and consequently only one
+#'   This relies on the \pkg{parallel} package, and consequently only one
 #'   core is supported on Windows.
 #' @param sim_cache_limit The maximal number of simulations results that will be 
 #'   cached. Cached results may be reused in following estimation steps if 

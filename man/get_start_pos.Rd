@@ -22,7 +22,7 @@ See \code{\link{create_jaatha_data}}.}
 repetition is chosen.}
 
 \item{cores}{The number of CPU cores that will be used for the simulations.
-The relies on the \pkg{parallel} package, and consequenlty only one
+This relies on the \pkg{parallel} package, and consequently only one
 core is supported on Windows.}
 
 \item{sim_cache}{The simulation cache used in the jaatha analysis}
