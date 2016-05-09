@@ -17,7 +17,7 @@ jaatha_log_class <- R6::R6Class("jaatha_log",
     initialize = function(model, data, reps, max_steps, verbose = TRUE) {
       par_number <- model$get_par_number()
       par_names <- model$get_par_ranges()$get_par_names()
-      private$estimates <- lapply(1:reps, function(i) {
+      private$estimates <- lapply(seq_len(reps), function(i) {
         estimates <- matrix(NA, max_steps, par_number + 3)
         colnames(estimates) <- c("rep", "step", "llh", par_names)
         as.data.frame(estimates)
