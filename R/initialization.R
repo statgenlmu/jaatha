@@ -56,8 +56,10 @@ do_initial_search <- function(model, data, reps, sim, cores, sim_cache) {
   # Return the parameters for the best estimates
   best_indexes <- order(vapply(estimates, function(x) x$value, numeric(1)), 
                         decreasing = TRUE)[1:reps]
-  t(vapply(estimates[best_indexes], function(x) x$par, 
-           numeric(model$get_par_number())))
+  best_est <- vapply(estimates[best_indexes], function(x) x$par, 
+                     numeric(model$get_par_number()))
+  if (!is.matrix(best_est)) best_est <- matrix(best_est, nrow = 1)
+  t(best_est)
 }
 
 
@@ -100,7 +102,7 @@ do_zoom_in_search <- function(model, data, reps, sim, cores, sim_cache,
                               block_width, n_steps = 3) {
   "Starts with estimating parameters in the complete parameter space, an then 
    iteratively deceases the size of the block"
-  t(vapply(1:reps, function(i) {
+  best_est <- vapply(1:reps, function(i) {
     middle <- rep(.5, model$get_par_number())
     block_widths <- utils::head(seq(1, block_width, 
                                     length.out = n_steps + 1), -1)
@@ -119,5 +121,7 @@ do_zoom_in_search <- function(model, data, reps, sim, cores, sim_cache,
                          })
     }
     middle
-  }, numeric(model$get_par_number())))
+  }, numeric(model$get_par_number()))
+  if (!is.matrix(best_est)) best_est <- matrix(best_est, nrow = 1)
+  t(best_est)
 }

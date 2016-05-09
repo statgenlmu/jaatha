@@ -16,7 +16,7 @@ See \code{\link{create_jaatha_model}}.}
 \item{data}{The data used for the estimation.
 See \code{\link{create_jaatha_data}}.}
 
-\item{repetitions}{The number of independend optimizations that will be
+\item{repetitions}{The number of independent optimizations that will be
 conducted. You should use a value greater than one here, to minimize
 the chance that the algorithms is stuck in a local maximum.}
 
@@ -29,7 +29,7 @@ converge.}
 is chosen. See below for a description of the different options.}
 
 \item{cores}{The number of CPU cores that will be used for the simulations.
-The relies on the \pkg{parallel} package, and consequenlty only one
+The relies on the \pkg{parallel} package, and consequently only one
 core is supported on Windows.}
 
 \item{verbose}{If \code{TRUE}, information about the optimization algorithm
@@ -48,7 +48,7 @@ the estimates of the likelihoods differ from the corrected values in the
 
 \item{final_sim}{The number of simulations conducted for calculating 
 precise likelihoods for the best estimates found in the optimization
-predure. These number of simulations is conducted for the the best
+procedure. These number of simulations is conducted for the best
 five estimates from each repetition. Using the default value is usually
 fine.}
 
@@ -78,7 +78,7 @@ Simulation based maximum likelihood estimation
   starting positions. The option \code{zoom-in} starts with a block that
   is equal to the complete parameter space, estimate parameters in there,
   and then iteratively creates a smaller block around the estimates. Finally,
-  \code{random} chooses random starting postions and
+  \code{random} chooses random starting positions and
   \code{middle} will just start all repetitions at the middle of the 
   parameter space.
 }

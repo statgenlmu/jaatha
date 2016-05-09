@@ -8,7 +8,11 @@ jaatha 3.2.0 (in development)
 * Now tries to continue the estimation even when a few simulations return 
   errors (#131).
 * Skips tests if `testthat` is not available (#132).
-* Adds new options `final_sim` and `zoom_in_steps` to the main jaatha `method`.
+* Adds new options `final_sim` and `zoom_in_steps` to the main jaatha `method` 
+  (#134).
+* Fixes a bug that lead to a broken assertion when jaatha was used on a model
+  with one parameter and `repetitions` was greater than one (#135). 
+  Thanks to Amaya Romero for reporting and locating this bug!.
 
 
 

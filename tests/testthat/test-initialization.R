@@ -79,6 +79,23 @@ test_that("zoom-in search works", {
 })
 
 
+test_that("the initialization supports one-parameter models", {
+  model <- create_jaatha_model(function(x) rpois(10, x),
+                               par_ranges = matrix(c(0.1, 10), 1, 2),
+                               sum_stats = list(stat_identity(), stat_sum()),
+                               test = FALSE)
+  data <- create_test_data(model)
+  sim_cache <- create_sim_cache()
+  
+  for (method in c("zoom-in", "initial-search", "random", "middle")) {
+    par <- get_start_pos(model, data, 2, 20, method, cores = 1, 
+                         sim_cache = sim_cache, block_width = 0.05)
+    expect_that(par, is_a("matrix"))
+    expect_equal(dim(par), c(2, 1))
+  }
+})
+
+
 test_that("getting the start positions works", {
   model <- create_test_model()
   data <- create_test_data(model)
