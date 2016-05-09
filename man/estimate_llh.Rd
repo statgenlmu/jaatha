@@ -21,7 +21,7 @@ will be estimated.}
 expectation values of the summary statistics.}
 
 \item{cores}{The number of CPU cores that will be used for the simulations.
-The relies on the \pkg{parallel} package, and consequenlty only one
+The relies on the \pkg{parallel} package, and consequently only one
 core is supported on Windows.}
 
 \item{normalized}{For internal use. Indicates whether the parameter
