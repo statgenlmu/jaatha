@@ -31,7 +31,7 @@ block_class <- R6::R6Class("Block",
       m
     },
     get_corners = function() {
-      corners <- expand.grid(lapply(1:nrow(private$border), function(i) {
+      corners <- expand.grid(lapply(seq_len(nrow(private$border)), function(i) {
         private$border[i, , drop = FALSE] #nolint
       }), KEEP.OUT.ATTRS = FALSE) #nolint
       colnames(corners) <- rownames(private$border)

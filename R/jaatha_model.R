@@ -36,15 +36,18 @@ jaatha_model_class <- R6::R6Class("jaatha_model",
       "conducts a simulation for each parameter combination in pars"
       assert_that(is.matrix(pars))
       assert_that(ncol(pars) == private$par_ranges$get_par_number())
+      assert_that(nrow(pars) >= 1)
       assert_that(all(0 - 1e-5 <= pars & pars <= 1 + 1e-5))
       assert_that(is_jaatha_data(data))
       assert_that(is.count(cores))
       
       # Generate a seed for each simulation
-      seeds <- sample_seed(length(pars) + 1)
+      n_pars <- nrow(pars)
+      seeds <- sample_seed(n_pars + 1)
       
       # Simulate
-      sim_data <- mclapply(1:nrow(pars), function(i) {
+      sim_data <- mclapply(seq_len(n_pars), function(i) {
+        assert_that(is.count(i))
         set.seed(seeds[i])
         sim_pars <- private$par_ranges$denormalize(pars[i, ])
         
@@ -80,7 +83,7 @@ jaatha_model_class <- R6::R6Class("jaatha_model",
         stop("Simulations failed, check your model.")
       }
         
-      set.seed(seeds[length(seeds)])
+      set.seed(tail(seeds, 1))
       sim_data
     },
     get_par_ranges = function() private$par_ranges,

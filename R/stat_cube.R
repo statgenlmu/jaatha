@@ -58,7 +58,7 @@ stat_cube_class <- R6::R6Class("stat_cube", inherit = stat_basic_class,
       data_matrix <- private$calculate_matrix(data)
       assert_that(is.numeric(data_matrix))
       if (!is.matrix(data_matrix)) data_matrix <- matrix(data_matrix, ncol = 1)
-      list(break_values = lapply(1:ncol(data_matrix), function(i) {
+      list(break_values = lapply(seq_len(ncol(data_matrix)), function(i) {
         private$calc_break_values(data_matrix[, i], private$break_values)
       }))
     }

@@ -102,7 +102,7 @@ do_zoom_in_search <- function(model, data, reps, sim, cores, sim_cache,
                               block_width, n_steps = 3) {
   "Starts with estimating parameters in the complete parameter space, an then 
    iteratively deceases the size of the block"
-  best_est <- vapply(1:reps, function(i) {
+  best_est <- vapply(seq_len(reps), function(i) {
     middle <- rep(.5, model$get_par_number())
     block_widths <- utils::head(seq(1, block_width, 
                                     length.out = n_steps + 1), -1)

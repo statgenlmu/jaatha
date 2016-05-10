@@ -18,7 +18,7 @@ fit_glm.jaatha_stat_basic <- function(x, sim_data, ...) {
   X <- cbind(1, 
              do.call(rbind, lapply(sim_data, function(data) data$pars_normal)))
   
-  glms <- lapply(1:ncol(Y), function(i) {
+  glms <- lapply(seq_len(ncol(Y)), function(i) {
     suppressWarnings(
       stats::glm.fit(X, Y[, i], family = stats::poisson("log"), 
                      control = list(maxit = 100))[c("coefficients", 
