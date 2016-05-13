@@ -1,4 +1,4 @@
-jaatha 3.2.0 (in development)
+jaatha 3.2.0
 ============
 
 * Adds the `cores_per_run` to `boot_jaatha` which can be set to use more than 

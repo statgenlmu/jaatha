@@ -2,7 +2,7 @@
 [![Linux Build Status](https://travis-ci.org/statgenlmu/jaatha.svg?branch=master)](https://travis-ci.org/statgenlmu/jaatha) 
 [![Windows Build status](https://ci.appveyor.com/api/projects/status/g4adpum1pkyn7ajn/branch/master?svg=true)](https://ci.appveyor.com/project/paulstaab/jaatha/branch/master)
 [![Coverage Status](https://coveralls.io/repos/statgenlmu/jaatha/badge.svg?branch=master&service=github)](https://coveralls.io/github/statgenlmu/jaatha?branch=master)
-[![CRAN Status](http://www.r-pkg.org/badges/version/jaatha)](https://cran.r-project.org/web/packages/jaatha/)
+[![CRAN Status](http://www.r-pkg.org/badges/version/jaatha)](https://cran.r-project.org/package=jaatha)
 
 <img align="right" alt="Jaatha Logo" width="40%" height="40%" src="https://raw.githubusercontent.com/statgenlmu/jaatha/master/misc/logo.png">
 
@@ -22,7 +22,7 @@ the [coala](https://github.com/statgenlmu/coala) R package, but can also be
 used for different applications.
 
 Jaatha is implemented as an [R](https://www.r-project.org) package and available on
-[CRAN](https://cran.r-project.org/web/packages/jaatha/).
+[CRAN](https://cran.r-project.org/package=jaatha).
 
 
 
