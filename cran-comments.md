@@ -5,7 +5,7 @@
 * win-builder (R-devel and R-release)
 
 ## R CMD check results
-There were no ERRORs, WARNINGs or NOTEs (other than CRAN incomming feasibility).
+There were no ERRORs, WARNINGs or NOTEs.
 
 ## Downstream dependencies
 No packages are depending on jaatha.
