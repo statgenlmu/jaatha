@@ -1,7 +1,3 @@
-Please excuse the short time since the last submission. I introduced a severe
-bug in the last version which can cause false results in some situations. This
-release fixes it.
-
 ## Test environments
 * Fedora 23 (local), R 3.2.3
 * Ubuntu 14.04 (on Travis-CI), R 3.2.3
