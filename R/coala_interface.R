@@ -42,6 +42,8 @@ create_jaatha_model.coalmodel <- function(x,
                                                            "smooth"),
                                           four_gamete_breaks = c(.2, .5),
                                           mcmf_breaks = c(.5, .7, .9),
+                                          mcmf_bal_breaks = c(0.9),
+                                          perc_poly_breaks = c(.2, .8),
                                           jsfs_part = c(1, 3),
                                           jsfs_part_hi = c(1, 3),
                                           ...,
@@ -58,10 +60,11 @@ create_jaatha_model.coalmodel <- function(x,
   par_table <- coala::get_parameter_table(x)
   par_ranges <- as.matrix(par_table[, -1])
   rownames(par_ranges) <- par_table$name
-
+  
   # create summary statisics
   sum_stats <- convert_coala_sumstats(x, jsfs_summary,
                                       four_gamete_breaks, mcmf_breaks,
+                                      mcmf_bal_breaks, perc_poly_breaks,
                                       jsfs_part, jsfs_part_hi)
   
   create_jaatha_model.function(sim_func, par_ranges, sum_stats, 
@@ -71,6 +74,7 @@ create_jaatha_model.coalmodel <- function(x,
 
 convert_coala_sumstats <- function(coala_model, jsfs_summary = "sums",
                                    four_gamete_breaks, mcmf_breaks,
+                                   mcmf_bal_breaks, perc_poly_breaks,
                                    jsfs_part, jsfs_part_hi) {
   
   require_package("coala")
@@ -114,7 +118,9 @@ convert_coala_sumstats <- function(coala_model, jsfs_summary = "sums",
     if (inherits(stat, "stat_omega_prime") || inherits(stat, "stat_mcmf")) {
       return(create_jaatha_stat(name, function(x, opts) x[[name]],
                                 poisson = FALSE, 
-                                breaks = mcmf_breaks))
+                                breaks = mcmf_breaks,
+                                bal_breaks = mcmf_bal_breaks,
+                                poly_break = perc_poly_breaks))
     }
     
     warning("Summary statistic '", name, "' is not supported. Ignoring it.")
