@@ -1,4 +1,4 @@
-jaatha_data_class <- R6::R6Class("jaatha_data", 
+jaatha_data_class <- R6::R6Class("jaatha_data",
   lock_objects = TRUE, lock_class = TRUE,
   private = list(
     values = list(),
@@ -9,10 +9,11 @@ jaatha_data_class <- R6::R6Class("jaatha_data",
     initialize = function(data, model) {
       assert_that(is_jaatha_model(model))
       private$values <- lapply(model$get_sum_stats(), function(stat) {
+        #browser()
         private$options[[stat$get_name()]] <- stat$generate_data_opts(data)
         value <- stat$calculate(data, private$options[[stat$get_name()]])
         if (any(!is.finite(value))) {
-          stop("Data has missing values for statistic ", 
+          stop("Data has missing values for statistic ",
                stat$get_name(), call. = FALSE)
         }
         value
@@ -58,17 +59,17 @@ is_jaatha_data <- function(x) inherits(x, "jaatha_data")
 
 
 #' Prepare the observed data for Jaatha
-#' 
-#' By default, this function assumes that the observed data is in a format 
+#'
+#' By default, this function assumes that the observed data is in a format
 #' identical to the format of the simulation results, before the summary
 #' statistics are calculated.
-#' 
+#'
 #' @section Demographic Inference:
 #' When used with \pkg{coala}, \code{coala::calc_sumstats_from_data()} should
 #' create output that is compatible with this function.
-#' 
-#' @param data The data to be analysed with Jaatha. 
-#'   It should be in a format identical to the 
+#'
+#' @param data The data to be analysed with Jaatha.
+#'   It should be in a format identical to the
 #'   simulation results (see \code{\link{create_jaatha_model}}).
 #' @param model The jaatha model, see \code{\link{create_jaatha_model}}.
 #' @param ... Currently ignored.
@@ -76,7 +77,7 @@ is_jaatha_data <- function(x) inherits(x, "jaatha_data")
 create_jaatha_data <- function(data, model, ...) UseMethod("create_jaatha_data")
 
 
-#' @describeIn create_jaatha_data The data's format is identicial to the 
+#' @describeIn create_jaatha_data The data's format is identicial to the
 #'   simulated data.
 #' @export
 create_jaatha_data.default <- function(data, model, ...) {

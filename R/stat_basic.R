@@ -56,9 +56,10 @@ stat_basic_class <- R6::R6Class("jaatha_stat_basic",
 #'   \code{\link{create_jaatha_model}}.
 #' @export
 create_jaatha_stat <- function(name, calc_func, poisson = TRUE, 
-                               breaks = c(.1, .5, .9)) {
-  
+                               breaks = c(.1, .5, .9), bal_breaks = c(0.3), poly_breaks = c(.2, .5)) {
+  #browser()
   if (poisson) return(stat_basic_class$new(name, calc_func))
+  if (name == "mcmf") return(stat_cube_class_mcmf$new(name, calc_func, breaks, bal_breaks, poly_breaks))
   stat_cube_class$new(name, calc_func, breaks)
 }
 
