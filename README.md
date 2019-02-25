@@ -48,9 +48,6 @@ describes how jaatha can be used together with `coala` for demographic inference
 Further help is provided using R's help system, in particular via `?jaatha`,
 `?create_jaatha_model` and `?create_jaatha_data`.
 
-You can ask questions on [jaatha's mailing list](https://groups.google.com/forum/#!forum/jaatha): 
-`jaatha (at) googlegroups (dot) com`
-
 
 Problems
 --------
