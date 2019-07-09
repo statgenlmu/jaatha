@@ -25,4 +25,3 @@ Models can be created using simulation function
 (see \code{\link{create_jaatha_model.function}}) or using a \pkg{coala} 
 model (see \code{\link{create_jaatha_model.coalmodel}}).
 }
-

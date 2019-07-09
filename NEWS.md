@@ -1,6 +1,14 @@
 jaatha 3.2.0
 ============
 
+* Fixes a problem with a vector-valued condition during error handling which
+  became appartent in the tests.
+
+
+
+jaatha 3.2.0
+============
+
 * Adds the `cores_per_run` to `boot_jaatha` which can be set to use more than 
   one CPU core for each replica (#128).
 * Coala support: Adds JSFS summary options `folded_sums`, which calculates

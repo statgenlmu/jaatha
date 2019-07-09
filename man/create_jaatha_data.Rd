@@ -28,6 +28,7 @@ statistics are calculated.
 \item \code{default}: The data's format is identicial to the 
 simulated data.
 }}
+
 \section{Demographic Inference}{
 
 When used with \pkg{coala}, \code{coala::calc_sumstats_from_data()} should

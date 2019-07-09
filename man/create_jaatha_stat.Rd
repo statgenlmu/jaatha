@@ -4,8 +4,8 @@
 \alias{create_jaatha_stat}
 \title{Create a summary statistic for Jaatha}
 \usage{
-create_jaatha_stat(name, calc_func, poisson = TRUE, breaks = c(0.1, 0.5,
-  0.9))
+create_jaatha_stat(name, calc_func, poisson = TRUE, breaks = c(0.1,
+  0.5, 0.9))
 }
 \arguments{
 \item{name}{The name of the summary statistic}

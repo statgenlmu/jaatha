@@ -38,4 +38,3 @@ esimate their expected values, and uses them to calculate the
 likelihood. For a resonable number of simulation, this is more
 precise than the glm fitting used in the main algorithm.
 }
-

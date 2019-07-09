@@ -6,8 +6,8 @@
 \usage{
 \method{create_jaatha_model}{coalmodel}(x, jsfs_summary = c("sums",
   "folded_sums", "none", "smooth"), four_gamete_breaks = c(0.2, 0.5),
-  mcmf_breaks = c(0.5, 0.7, 0.9), jsfs_part = c(1, 3), jsfs_part_hi = c(1,
-  3), ..., scaling_factor = 1, test = TRUE)
+  mcmf_breaks = c(0.5, 0.7, 0.9), jsfs_part = c(1, 3),
+  jsfs_part_hi = c(1, 3), ..., scaling_factor = 1, test = TRUE)
 }
 \arguments{
 \item{x}{The coala model}
@@ -58,4 +58,3 @@ estimated must be specified via \code{\link[coala]{par_range}} and the
 model must not have any other named parameters. Summary statistics present 
 in the coala model are used in Jaatha.
 }
-
