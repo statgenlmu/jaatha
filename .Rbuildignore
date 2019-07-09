@@ -2,6 +2,7 @@
 .tar.gz$
 ^.travis*
 ^.lintr$
+^.mergify$
 ^.*\.Rproj$
 ^\.Rproj\.user$
 ^cran-comments\.md$

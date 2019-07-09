@@ -57,4 +57,3 @@ boot.ci(jaatha_boot_results, type = "norm")
 \seealso{
 \code{\link[boot]{boot}}, \code{\link{jaatha}}
 }
-

@@ -87,8 +87,8 @@ estimate_local_ml <- function(block, model, data, sim, cores, sim_cache) {
     glms <- tryCatch(fit_glm(model, sim_data), error = identity)
   
     # Conduct more simulations if the glms did not converge
-    converged <- !(inherits(glms, "simpleError") ||
-                     vapply(glms, inherits, logical(1), what = "simpleError"))
+    converged <- !(any(vapply(glms, inherits, logical(1), 
+                              what = "simpleError")))
     if (all(converged)) break
     
     if (j == 5) sim_cache$clear()

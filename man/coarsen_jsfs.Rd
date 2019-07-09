@@ -41,13 +41,12 @@ part=c(1,3) and part_hi=c(1,3) we get the classical jaatha summary
 statistics. Note, however, that the order in which they appear will be
 different than in the original jaatha package.
 }
-\author{
-Dirk Metzler & Paul Staab
-}
 \references{
 A. Tellier, P. Pfaffelhuber, B. Haubold, L. Naduvilezhath,
   L. E. Rose, T. Staedler, W. Stephan, and D. Metzler (2011) Estimating
   parameters of speciation models based on refined summaries of the joint
   site-frequency spectrum. PLoS One 6(5): e18155
 }
-
+\author{
+Dirk Metzler & Paul Staab
+}

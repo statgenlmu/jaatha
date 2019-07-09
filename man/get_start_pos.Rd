@@ -50,4 +50,3 @@ explained on \code{\link{jaatha}}.
 Paul Staab
 }
 \keyword{internal}
-

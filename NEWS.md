@@ -1,3 +1,12 @@
+jaatha 3.2.1
+============
+
+* Fixes a problem with a vector-valued condition during error handling which
+  became appartent in the tests.
+* Exports `coarsen_jsfs` function (#141).
+
+
+
 jaatha 3.2.0
 ============
 
