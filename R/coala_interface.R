@@ -175,6 +175,7 @@ multi_index_range <- function(d, p) {
 #'   L. E. Rose, T. Staedler, W. Stephan, and D. Metzler (2011) Estimating
 #'   parameters of speciation models based on refined summaries of the joint
 #'   site-frequency spectrum. PLoS One 6(5): e18155
+#' @export
 coarsen_jsfs <- function(ja, part, part_hi = NULL) {
   d <- dim(ja)
   n <- length(d)
