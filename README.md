@@ -1,4 +1,4 @@
-[![Project Status: Inactive - The project has reached a stable, usable state but is no longer being actively developed; support/maintenance will be provided as time allows.](http://www.repostatus.org/badges/latest/inactive.svg)](http://www.repostatus.org/#inactive)
+[![Project Status: Inactive - The project has reached a stable, usable state but is no longer being actively developed; support/maintenance will be provided as time allows.](http://www.repostatus.org/badges/latest/inactive.svg)](https://www.repostatus.org/)
 [![Linux Build Status](https://travis-ci.org/statgenlmu/jaatha.svg?branch=master)](https://travis-ci.org/statgenlmu/jaatha) 
 [![Windows Build status](https://ci.appveyor.com/api/projects/status/g4adpum1pkyn7ajn/branch/master?svg=true)](https://ci.appveyor.com/project/paulstaab/jaatha/branch/master)
 [![Coverage Status](https://coveralls.io/repos/statgenlmu/jaatha/badge.svg?branch=master&service=github)](https://coveralls.io/github/statgenlmu/jaatha?branch=master)
@@ -40,9 +40,9 @@ Usage
 -----
 
 The R package includes an 
-[introduction vignette](https://cran.r-project.org/package=jaatha/vignettes/jaatha-intro.html) 
+[introduction vignette](https://evol.bio.lmu.de/_statgen/jaatha/jaatha-intro.html) 
 that explains how to conduct a jaatha analysis. 
-A [second vignette](https://cran.r-project.org/package=jaatha/vignettes/jaatha-evolution.html) 
+A [second vignette](https://evol.bio.lmu.de/_statgen/jaatha/jaatha-evolution.html) 
 describes how jaatha can be used together with `coala` for demographic inference.
 
 Further help is provided using R's help system, in particular via `?jaatha`,
@@ -62,15 +62,16 @@ References
 Jaatha's original algorithm is described in the publication:
 
 > L. Naduvilezhath, L.E. Rose and D. Metzler:
-> Jaatha: a fast composite-likelihood approach to estimate demographic 
-> parameters. Molecular Ecology 20(13):2709-23 (2011).
+> [Jaatha: a fast composite-likelihood approach to estimate demographic
+> parameters.](https://onlinelibrary.wiley.com/doi/10.1111/j.1365-294X.2011.05131.x)
+> Molecular Ecology 20(13):2709-23 (2011).
 
 The revised version of the algorithm that is implemented in this package 
 is described in:
 
 > L.A. Mathew, P.R. Staab, L.E. Rose and D. Metzler:
 > [Why to account for finite sites in population genetic studies and 
-> how to do this with Jaatha 2.0](http://onlinelibrary.wiley.com/doi/10.1002/ece3.722/abstract). 
+> how to do this with Jaatha 2.0](https://onlinelibrary.wiley.com/doi/abs/10.1002/ece3.722). 
 > Ecology and Evolution (2013).
 
 

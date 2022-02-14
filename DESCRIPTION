@@ -1,17 +1,23 @@
 Package: jaatha
-Version: 3.2.1
+Version: 3.2.2
 License: GPL (>= 3)
 Title: Simulation-Based Maximum Likelihood Parameter Estimation
 Authors@R: c(
-    person('Paul', 'Staab', , 'develop@paulstaab.de', role=c('aut', 'cre')),
+    person('Paul', 'Staab', role=c('aut')),
     person('Lisha', 'Mathew', role=c('aut')),
-    person('Dirk', 'Metzler', role=c('aut', 'ths')) )
+    person('Dirk', 'Metzler', ,'metzler@bio.lmu.de', role=c('aut', 'ths', 'cre')) )
+Author:
+    Paul Staab [aut],
+    Lisha Mathew [aut],
+    Dirk Metzler [aut, ths, cre]
 Description: An estimation method that can use computer simulations to
     approximate maximum-likelihood estimates even when the likelihood function can not
     be evaluated directly. It can be applied whenever it is feasible to conduct many
     simulations, but works best when the data is approximately Poisson distributed.
     It was originally designed for demographic inference in evolutionary
-    biology. It has optional support for conducting coalescent simulation using
+    biology (Naduvilezhath et al., 2011 <doi:10.1111/j.1365-294X.2011.05131.x>,
+    Mathew et al., 2013 <doi:10.1002/ece3.722>).
+    It has optional support for conducting coalescent simulation using
     the 'coala' package.
 URL: https://github.com/statgenlmu/jaatha
 BugReports: https://github.com/statgenlmu/jaatha/issues
