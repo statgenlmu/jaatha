@@ -4,8 +4,17 @@
 \alias{get_start_pos}
 \title{Determine good starting postions}
 \usage{
-get_start_pos(model, data, reps, sim, init_method, cores, sim_cache,
-  block_width, zoom_in_steps = 3)
+get_start_pos(
+  model,
+  data,
+  reps,
+  sim,
+  init_method,
+  cores,
+  sim_cache,
+  block_width,
+  zoom_in_steps = 3
+)
 }
 \arguments{
 \item{model}{The model used for the estimation. 

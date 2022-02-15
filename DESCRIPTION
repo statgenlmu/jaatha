@@ -34,6 +34,7 @@ Suggests:
     coala (>= 0.2.1),
     knitr,
     rmarkdown,
-    testthat (>= 0.11.0)
+    testthat (>= 0.11.0),
+    snow
 VignetteBuilder: knitr
-RoxygenNote: 6.1.1
+RoxygenNote: 7.1.2

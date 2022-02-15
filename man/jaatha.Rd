@@ -4,11 +4,20 @@
 \alias{jaatha}
 \title{Simulation based maximum likelihood estimation}
 \usage{
-jaatha(model, data, repetitions = 3, sim = model$get_par_number() * 25,
-  max_steps = 100, init_method = c("zoom-in", "initial-search",
-  "random", "middle"), cores = 1, verbose = TRUE,
-  sim_cache_limit = 10000, block_width = 0.1, final_sim = 100,
-  zoom_in_steps = 3)
+jaatha(
+  model,
+  data,
+  repetitions = 3,
+  sim = model$get_par_number() * 25,
+  max_steps = 100,
+  init_method = c("zoom-in", "initial-search", "random", "middle"),
+  cores = 1,
+  verbose = TRUE,
+  sim_cache_limit = 10000,
+  block_width = 0.1,
+  final_sim = 100,
+  zoom_in_steps = 3
+)
 }
 \arguments{
 \item{model}{The model used for the estimation. 

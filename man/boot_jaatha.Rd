@@ -35,14 +35,18 @@ estimates. Therefore, bootstrapping is normally computationally demanding and
 should be executed on a computing cluster.
 }
 \examples{
-\dontrun{
+\donttest{
 # The original Jaatha anaylsis:
-jaatha_result <- jaatha(model, data, cores = 4)
+model <- create_jaatha_model(function(x) rpois(10, x),
+                    par_ranges = matrix(c(0.1, 0.1, 10, 10), 2, 2),
+                    sum_stats = list(create_jaatha_stat("sum", sum)))
+data <- create_jaatha_data(rpois(10, 9), model)
+jaatha_result <- jaatha(model, data, cores = 2)
 
-# Bootstrapping the results using 4 CPU cores on host1 and 2 on host2/host3:
+# Bootstrapping the results using 2 CPU cores on localhost:
 library(boot)
 library(snow)
-cl <- makeSOCKcluster(c("host1", "host1", "host2", "host3"))
+cl <- makeSOCKcluster(c("localhost", "localhost"))
 
 jaatha_boot_results <- boot_jaatha(jaatha_result, 200, 
                                    cores_per_run = 2,

@@ -4,8 +4,15 @@
 \alias{estimate_llh}
 \title{Estimate the Log-Likelihood for a given parameter combination}
 \usage{
-estimate_llh(model, data, parameter, sim = 100, cores = 1,
-  normalized = FALSE, sim_data = NULL)
+estimate_llh(
+  model,
+  data,
+  parameter,
+  sim = 100,
+  cores = 1,
+  normalized = FALSE,
+  sim_data = NULL
+)
 }
 \arguments{
 \item{model}{The model used for the estimation. 

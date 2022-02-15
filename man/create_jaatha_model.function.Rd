@@ -4,8 +4,14 @@
 \alias{create_jaatha_model.function}
 \title{Specify a jaatha model using a simulation function}
 \usage{
-\method{create_jaatha_model}{function}(x, par_ranges, sum_stats, ...,
-  scaling_factor = 1, test = TRUE)
+\method{create_jaatha_model}{`function`}(
+  x,
+  par_ranges,
+  sum_stats,
+  ...,
+  scaling_factor = 1,
+  test = TRUE
+)
 }
 \arguments{
 \item{x}{A simulation function. This function takes model parameters as 
