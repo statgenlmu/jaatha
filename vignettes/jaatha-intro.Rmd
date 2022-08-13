@@ -12,7 +12,7 @@ vignette: >
 Jaatha is an estimation method that can use computer simulations to produce
 maximum-likelihood estimates even when the likelihood function can not be
 evaluated directly. It can be applied whenever it is feasible to conduct many
-simulations, but works best when the data is at least approximately possion
+simulations, but works best when the data is at least approximately Poisson
 distributed. 
 
 Jaatha was originally designed for demographic inference in evolutionary 
