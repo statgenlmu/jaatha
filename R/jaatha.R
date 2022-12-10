@@ -75,10 +75,6 @@ jaatha <- function(model, data,
                    final_sim = 100,
                    zoom_in_steps = 3) {
 
-
-    print("Start jaatha with data")
-    print(data$get_values())
-    
   ## Check parameters
   ##  print(data)
   assert_that(is_jaatha_model(model))
