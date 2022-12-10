@@ -74,8 +74,13 @@ jaatha <- function(model, data,
                    block_width = 0.1,
                    final_sim = 100,
                    zoom_in_steps = 3) {
-  
-  # Check parameters
+
+
+    print("Start jaatha with data")
+    print(data$get_values())
+    
+  ## Check parameters
+  ##  print(data)
   assert_that(is_jaatha_model(model))
   assert_that(is_jaatha_data(data))
   assert_that(is.count(repetitions))
@@ -141,7 +146,7 @@ jaatha <- function(model, data,
                         final_sim, cores, TRUE)
     log$log_estimate("final", i, llh, best_values[i, 3])
   }
-  
+
   # return the results
   log$create_results()
 }
