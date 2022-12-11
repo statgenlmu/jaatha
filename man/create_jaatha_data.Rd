@@ -25,10 +25,10 @@ statistics are calculated.
 }
 \section{Methods (by class)}{
 \itemize{
-\item \code{default}: The data's format is identicial to the 
+\item \code{create_jaatha_data(default)}: The data's format is identicial to the 
 simulated data.
-}}
 
+}}
 \section{Demographic Inference}{
 
 When used with \pkg{coala}, \code{coala::calc_sumstats_from_data()} should

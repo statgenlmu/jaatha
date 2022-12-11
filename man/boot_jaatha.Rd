@@ -26,6 +26,14 @@ options to parallelize the bootstrap replicates.}
 The result of \code{\link[boot]{boot}}. This object can be used to
   estimate standard errors or confidence intervals of the estimates using
   the functions available in package \pkg{boot}.
+  Note that the returned object contains a vector of parameter values \code{t0}
+  that is the result of an additional jaatha run for the original data, whereas
+  the parametric bootstrap simulations used parameter values that are in the vector
+  \code{mle} in the returned \code{boot} object.
+  By default, the function \code{boot.ci} of the \code{\link[boot]{boot}} package
+  uses the parameter values \code{t0} as a reference point.
+  To use the values in \code{mle} instead, overwrite \code{t0} with \code{mle} before
+  applying the function \code{boot.ci}.
 }
 \description{
 This function is a helper function for using the \code{\link[boot]{boot}}
@@ -48,12 +56,14 @@ library(boot)
 library(snow)
 cl <- makeSOCKcluster(c("localhost", "localhost"))
 
-jaatha_boot_results <- boot_jaatha(jaatha_result, 200, 
+jaatha_boot_results <- boot_jaatha(jaatha_result, 50, 
                                    cores_per_run = 2,
                                    parallel = "snow",
                                    cl = cl)
 
 stopCluster(cl)
+boot.ci(jaatha_boot_results, type = "norm")
+jaatha_boot_results$t0 <- jaatha_boot_results$mle
 boot.ci(jaatha_boot_results, type = "norm")
 }
 
