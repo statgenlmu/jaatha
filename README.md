@@ -40,9 +40,9 @@ Usage
 -----
 
 The R package includes an 
-[introduction vignette](https://cran.r-project.org/web/packages/jaatha/vignettes/jaatha-intro.html) 
+[introduction vignette](https://cran.r-project.org/package=jaatha/vignettes/jaatha-intro.html) 
 that explains how to conduct a jaatha analysis. 
-A [second vignette](https://cran.r-project.org/web/packages/jaatha/vignettes/jaatha-evolution.html) 
+A [second vignette](https://cran.r-project.org/package=jaatha/vignettes/jaatha-evolution.html) 
 describes how jaatha can be used together with `coala` for demographic inference.
 
 Further help is provided using R's help system, in particular via `?jaatha`,
