@@ -18,7 +18,7 @@ Different replicates can be executed in parallel using the
 \code{\link[boot]{boot}}.  The total number of CPU cores
 used is \code{ncpus} * \code{cores_per_run}.}
 
-\item{verbose}{If TRUE, which is default, each bootstrap estimation is written
+\item{verbose}{If TRUE (default), each bootstrap estimation is written
 as a message.}
 
 \item{...}{Additional arguments that are passed on \code{\link[boot]{boot}}.

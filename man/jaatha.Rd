@@ -94,5 +94,5 @@ Simulation based maximum likelihood estimation
 }
 
 \author{
-Paul Staab and Lisha Mathew
+Paul Staab, Lisha Mathew and Dirk Metzler
 }

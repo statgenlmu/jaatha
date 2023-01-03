@@ -60,7 +60,7 @@ NULL
 #'   \code{middle} will just start all repetitions at the middle of the 
 #'   parameter space.
 #'   
-#' @author Paul Staab and Lisha Mathew
+#' @author Paul Staab, Lisha Mathew and Dirk Metzler
 #' @export
 jaatha <- function(model, data, 
                    repetitions = 3, 
