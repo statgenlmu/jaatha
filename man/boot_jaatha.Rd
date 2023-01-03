@@ -4,7 +4,7 @@
 \alias{boot_jaatha}
 \title{Parametric Bootstrapping of Jaatha Estimates}
 \usage{
-boot_jaatha(results, R, cores_per_run = 1, ...)
+boot_jaatha(results, R, cores_per_run = 1, verbose = TRUE, ...)
 }
 \arguments{
 \item{results}{The results of an \code{\link{jaatha}} analysis.}
@@ -17,6 +17,9 @@ Different replicates can be executed in parallel using the
 \code{parallel}, \code{ncpus} and \code{cl} options of 
 \code{\link[boot]{boot}}.  The total number of CPU cores
 used is \code{ncpus} * \code{cores_per_run}.}
+
+\item{verbose}{If TRUE, which is default, each bootstrap estimation is written
+as a message.}
 
 \item{...}{Additional arguments that are passed on \code{\link[boot]{boot}}.
 It is highly recommended to use its \code{parallel} and \code{ncpus} 

@@ -14,6 +14,8 @@
 #'        \code{parallel}, \code{ncpus} and \code{cl} options of 
 #'        \code{\link[boot]{boot}}.  The total number of CPU cores
 #'        used is \code{ncpus} * \code{cores_per_run}.
+#' @param verbose If TRUE (default), each bootstrap estimation is written
+#'        as a message.
 #' @param ... Additional arguments that are passed on \code{\link[boot]{boot}}.
 #'   It is highly recommended to use its \code{parallel} and \code{ncpus} 
 #'   options to parallelize the bootstrap replicates.
@@ -57,7 +59,7 @@
 #' }
 #' 
 #' @export
-boot_jaatha <- function(results, R, cores_per_run = 1, ...) {
+boot_jaatha <- function(results, R, cores_per_run = 1, verbose=TRUE, ...) {
   require_package("boot")
   if (R.Version()$major == 3 && R.Version()$minor < 2.2) {
     stop("This function requires at least R Version 3.2.2")
@@ -79,7 +81,11 @@ boot_jaatha <- function(results, R, cores_per_run = 1, ...) {
                           file = tempfile(paste0("boot_log_", 
                                                  Sys.getpid(), "_")), 
                           type = "message")
-    
+    if(verbose) {
+        message("Bootstrap estimation: ",
+                paste(results$estimate, collapse=" "))
+    }
+   
     results$estimate
   }
   
