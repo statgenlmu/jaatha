@@ -166,7 +166,7 @@ multi_index_range <- function(d, p) {
 #'    single vector, it will be used for all dimensions. Thus, with the
 #'    combination of part=c(1,3) and part_hi=c(1,3), the classical jaatha summary
 #'    statistics, plus the two values \code{ja[0]} and
-#'    \cite{ja[length(ja)]}. Note that the order in which they appear will
+#'    \code{ja[length(ja)]}. Note that the order in which they appear will
 #'    however be different than in the original jaatha summary statistics.
 #' @return vector of numbers, which are the sums over the blocks of the jsfs
 #'    for all combinations of partitions

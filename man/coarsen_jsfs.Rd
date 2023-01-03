@@ -23,7 +23,7 @@ will be appended to the end of \code{part[[i]]}. If \code{part_hi} is a
 single vector, it will be used for all dimensions. Thus, with the
 combination of part=c(1,3) and part_hi=c(1,3), the classical jaatha summary
 statistics, plus the two values \code{ja[0]} and
-\cite{ja[length(ja)]}. Note that the order in which they appear will
+\code{ja[length(ja)]}. Note that the order in which they appear will
 however be different than in the original jaatha summary statistics.}
 }
 \value{
