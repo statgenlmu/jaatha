@@ -63,7 +63,7 @@ Jaatha's original algorithm is described in the publication:
 
 > L. Naduvilezhath, L.E. Rose and D. Metzler:
 > [Jaatha: a fast composite-likelihood approach to estimate demographic
-> parameters.](https://onlinelibrary.wiley.com/doi/10.1111/j.1365-294X.2011.05131.x)
+> parameters.](https://doi.org/10.1111/j.1365-294X.2011.05131.x)
 > Molecular Ecology 20(13):2709-23 (2011).
 
 The revised version of the algorithm that is implemented in this package 
@@ -71,7 +71,7 @@ is described in:
 
 > L.A. Mathew, P.R. Staab, L.E. Rose and D. Metzler:
 > [Why to account for finite sites in population genetic studies and 
-> how to do this with Jaatha 2.0](https://onlinelibrary.wiley.com/doi/abs/10.1002/ece3.722). 
+> how to do this with Jaatha 2.0](https://onlinelibrary.wiley.com/doi/10.1002/ece3.722). 
 > Ecology and Evolution (2013).
 
 
