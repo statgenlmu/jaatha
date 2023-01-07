@@ -38,3 +38,4 @@ Suggests:
     snow
 VignetteBuilder: knitr
 RoxygenNote: 7.2.2
+Maintainer: Dirk Metzler <metzler@bio.lmu.de>
