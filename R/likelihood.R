@@ -18,30 +18,31 @@ calc_poisson_llh <- function(data, stat, loglambda,
 }
 
 
-approximate_llh <- function(x, data, param, glm_fitted, sim, ...) {
+approximate_llh <- function(x, data, param, glm_fitted, sim, scaling_factor, ...) {
   "approximates the log-likelihood using the fitted glms"
   UseMethod("approximate_llh")
 }
 
 #' @export
-approximate_llh.default <- function(x, data, param, glm_fitted, sim, ...) { #nolint 
+approximate_llh.default <- function(x, data, param, glm_fitted, sim, scaling_factor, ...) { #nolint 
   stop("Unknown Summary Statistic")
 }
 
 
 #' @export
-approximate_llh.jaatha_model <- function(x, data, param, glm_fitted, sim) {
+approximate_llh.jaatha_model <- function(x, data, param, glm_fitted, sim, scaling_factor=NA, ...) {
   assert_that(is_jaatha_data(data))
   assert_that(is.numeric(param))
   assert_that(is.list(glm_fitted))
+  if(is.na(scaling_factor)) scaling_factor <- x$get_scaling_factor()
   sum(vapply(x$get_sum_stats(), approximate_llh, numeric(1),
-             data, param, glm_fitted, sim, x$get_scaling_factor()))
+             data, param, glm_fitted, sim, scaling_factor))
 }
 
 
 #' @export
 approximate_llh.jaatha_stat_basic  <- function(x, data, param, glm_fitted, #nolint
-                                               sim, scaling_factor) {
+                                               sim, scaling_factor, ...) {
   
   # Calculate the predicted expectation values
   loglambda <- vapply(glm_fitted[[x$get_name()]], function(glm_obj) {
