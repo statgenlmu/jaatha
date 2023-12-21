@@ -130,9 +130,6 @@ jaatha <- function(model, data,
         log$log_convergence(rep)
         break
       }
-      if(verbose) {
-          cat("Best estimates after ", step,": ", unlist(log$get_best_estimates(1)), ".\n")
-      }
     }
   }
   

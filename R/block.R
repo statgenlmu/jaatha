@@ -52,6 +52,7 @@ block_class <- R6::R6Class("Block",
       # Add corners if requested
       if (add_corners) random_pars <- rbind(random_pars, self$get_corners())
       assert_that(all(apply(random_pars, 1, self$includes)))
+
       random_pars
     },
     get_interior = function(x = 0.1) {
