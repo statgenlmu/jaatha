@@ -1,20 +1,22 @@
 calc_poisson_llh <- function(data, stat, loglambda, 
                              sim = 100, scaling_factor = 1) {
   
-  # If mean was estimated to be 0, replace it with a small value instead
-  # (assume we would have observed a 1 in the next simulation)
-  loglambda[!is.finite(loglambda)] <- log(1 / (sim + 1))
-  
-  # Upscale predicted expectation value if we use scaling
-  if (scaling_factor != 1) loglambda <- loglambda + log(scaling_factor)
-  
-  # Calculate the log-likelihood
-  assert_that(are_equal(length(loglambda), length(data$get_values(stat))))
-  llh <- sum(data$get_values(stat) * loglambda - 
+    ## If mean was estimated to be 0, replace it with a small value instead
+    ## (assume we would have observed a 1 in the next simulation)
+    loglambda[!is.finite(loglambda)] <- log(1 / (sim + 1))
+    
+    ## Upscale predicted expectation value if we use scaling
+    if (scaling_factor != 1) loglambda <- loglambda + log(scaling_factor)
+    
+    ## Calculate the log-likelihood
+    assert_that(are_equal(length(loglambda), length(data$get_values(stat))))
+    loglambda[loglambda>700] <- 700
+    llh <- sum(data$get_values(stat) * loglambda - 
                exp(loglambda) - data$get_log_factorial(stat))
-  assert_that(is.finite(llh) && llh < 0)
-  
-  llh
+    
+    assert_that(is.finite(llh) && llh < 0)
+    
+    llh
 }
 
 
@@ -139,7 +141,7 @@ estimate_llh <- function(model, data, parameter, sim = 100,
     log_means <- log(rowMeans(stat_values))
     calc_poisson_llh(data, stat, log_means, sim, model$get_scaling_factor())
   }, numeric(1)))
-  
+
   assert_that(is.finite(llh))
   list(param = parameter, value = llh)
 }
