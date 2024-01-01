@@ -105,17 +105,19 @@ jaatha <- function(model, data,
     last_lh_increase <- 0
     
     for (step in 1:max_steps) {
-      block <- create_block(cbind(estimate - block_width * .5,
-                                  estimate + block_width * .5), 
-                            cut = TRUE)
+        block <- create_block(cbind(estimate - block_width * .5,
+                                    estimate + block_width * .5), 
+                              cut = TRUE)
       
-      local_ml <- tryCatch(estimate_local_ml(block, model, data, 
-                                             sim, cores, sim_cache),
-                           error = function(e) {
-        warning("Error: ", e$message, " | Aborting one repetition.", 
-                call. = FALSE)
-        invisible(NULL)
-      })
+        local_ml <- tryCatch(estimate_local_ml(block, model, data, 
+                                               sim, cores, sim_cache),
+                             error = function(e) {
+                                 warning("Error: ", e$message, " | Aborting one repetition.", 
+                                         call. = FALSE)
+                                 invisible(NULL)
+                             }
+                             )
+
       if (is.null(local_ml)) break
       
       log$log_estimate(rep, step, local_ml)
