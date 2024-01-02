@@ -133,13 +133,22 @@ create_jaatha_model <- function(x, ..., scaling_factor = 1, test = TRUE) {
   UseMethod("create_jaatha_model")
 }
 
-
+#' For other uappropriate create_jaatha_model will throw an error
+#'
+#' @param x The primary argument. Can be a function used for simulations,
+#'   or a coala model.
+#' @param ... Additional parameters passed on to the dispatch function.
+#' @param scaling_factor If your model is a down-scaled version of your data,
+#'   you can indicated this using this value. The estimated expectation values
+#'   are multiplied with this factor before the likelihood is calculated.
+#' @param test A logical indicating whether a simulation is performed to test
+#'   the model.
+#' @export
 create_jaatha_model.default <- function(x, ..., 
                                         scaling_factor = 1, 
                                         test = TRUE) {
-  stop("Can create a model from an object of class '", class(x), "'")
+  stop("Can't create a model from an object of class '", class(x), "'")
 }
-
 
 #' Specify a jaatha model using a simulation function
 #' 
@@ -174,7 +183,6 @@ create_jaatha_model.function <- function(x, par_ranges, sum_stats, ...,
   jaatha_model_class$new(x, par_ranges, sum_stats, 
                          scaling_factor = scaling_factor, test = test)
 }
-
 
 is_jaatha_model <- function(x) inherits(x, "jaatha_model")
 
