@@ -54,17 +54,12 @@ model <- create_jaatha_model(function(x) rpois(10, x),
 data <- create_jaatha_data(rpois(10, 9), model)
 jaatha_result <- jaatha(model, data, cores = 2)
 
-# Bootstrapping the results using 2 CPU cores on localhost:
+# Bootstrapping the results:
 library(boot)
-library(snow)
-cl <- makeSOCKcluster(c("localhost", "localhost"))
 
 jaatha_boot_results <- boot_jaatha(jaatha_result, 50, 
-                                   cores_per_run = 2,
-                                   parallel = "snow",
-                                   cl = cl)
+                                   cores_per_run = 2)
 
-stopCluster(cl)
 boot.ci(jaatha_boot_results, type = "norm")
 jaatha_boot_results$t0 <- jaatha_boot_results$mle
 boot.ci(jaatha_boot_results, type = "norm")

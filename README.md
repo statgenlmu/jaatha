@@ -1,8 +1,3 @@
-[![Project Status: Inactive - The project has reached a stable, usable state but is no longer being actively developed; support/maintenance will be provided as time allows.](http://www.repostatus.org/badges/latest/inactive.svg)](https://www.repostatus.org/)
-[![Linux Build Status](https://travis-ci.org/statgenlmu/jaatha.svg?branch=master)](https://travis-ci.org/statgenlmu/jaatha) 
-[![Windows Build status](https://ci.appveyor.com/api/projects/status/g4adpum1pkyn7ajn/branch/master?svg=true)](https://ci.appveyor.com/project/paulstaab/jaatha/branch/master)
-[![Coverage Status](https://coveralls.io/repos/statgenlmu/jaatha/badge.svg?branch=master&service=github)](https://coveralls.io/github/statgenlmu/jaatha?branch=master)
-[![CRAN Status](http://www.r-pkg.org/badges/version/jaatha)](https://cran.r-project.org/package=jaatha)
 
 <img align="right" alt="Jaatha Logo" width="40%" height="40%" src="https://raw.githubusercontent.com/statgenlmu/jaatha/master/misc/logo.png">
 
@@ -71,7 +66,7 @@ is described in:
 
 > L.A. Mathew, P.R. Staab, L.E. Rose and D. Metzler:
 > [Why to account for finite sites in population genetic studies and 
-> how to do this with Jaatha 2.0](https://onlinelibrary.wiley.com/doi/10.1002/ece3.722). 
+> how to do this with Jaatha 2.0](https://doi.org/10.1002/ece3.722). 
 > Ecology and Evolution (2013).
 
 
